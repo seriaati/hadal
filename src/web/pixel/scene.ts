@@ -1,6 +1,6 @@
 import { METERS_PER_POINT } from "../../shared/types";
-import { ZONES, formatMeters, lightOf, zoneAt } from "../depth";
-import { AIR_SECONDS, type Game } from "../state";
+import { ZONES, formatMeters, lightOf } from "../depth";
+import { AIR_SECONDS, ascentSeconds, type Game } from "../state";
 import { Ambient } from "./creatures";
 import { FONTS, drawText, fit, measure, plain, wrap, type Font } from "./font";
 import { dither, hash, type Frame, type Light } from "./frame";
@@ -119,10 +119,18 @@ export class Scene {
   draw(frame: Frame, game: Game, dt: number, time: number): Light[] {
     const { width: W, height: H } = frame;
     const gap = game.depth - this.depth;
-    // Ease towards the real depth, but never slower than 25 m/s, so the dive actually arrives.
-    const eased = gap * (1 - Math.exp(-dt * 1.6));
-    const least = Math.sign(gap) * Math.min(Math.abs(gap), 25 * dt);
-    this.depth += Math.abs(eased) > Math.abs(least) ? eased : least;
+    if (game.phase === "ascent") {
+      // The dive is over: the diver is hauled back up the line, past every lamp, gently at both ends.
+      const t = Math.min(1, game.phaseTime / ascentSeconds(game.depth));
+      this.depth = game.depth * (1 - t * t * (3 - 2 * t));
+    } else if (game.phase === "done") {
+      this.depth = 0;
+    } else {
+      // Ease towards the real depth, but never slower than 25 m/s, so the dive actually arrives.
+      const eased = gap * (1 - Math.exp(-dt * 1.6));
+      const least = Math.sign(gap) * Math.min(Math.abs(gap), 25 * dt);
+      this.depth += Math.abs(eased) > Math.abs(least) ? eased : least;
+    }
     const diving = Math.abs(gap) > 4;
     const camera = Math.round(this.depth / METERS_PER_PIXEL);
     const scroll = camera - this.camera;
@@ -422,20 +430,13 @@ export class Scene {
       return;
     }
 
-    if (game.phase === "done") {
-      const depth = formatMeters(game.depth).toUpperCase();
-      const lit = game.lamps.filter((lamp) => lamp.lit).length;
-      say(tiny, "The line ends here", x, base - 2, 6);
-      frame.emit = 255;
-      say(fit([large, medium], depth, room), depth, x, base + 7, amber(14));
-      frame.emit = 0;
-      say(tiny, zoneAt(game.depth), x, base + 27, 7);
-      say(tiny, `${lit} of ${game.lamps.length} lamps lit`, x, base + 35, 6);
-      key(x, base + 47, "Dive again");
-      return;
-    }
+    const depth = formatMeters(this.depth).toUpperCase();
+    frame.emit = 255;
+    say(large, depth, W - 8, H - 22, amber(14), true);
+    frame.emit = 0;
+    say(tiny, "Depth", W - 8 - measure(large, depth) - 5, H - 13, 6, true);
 
-    // The prompt, and the air left to answer it.
+    // The prompt, and the air left to answer it. A finished dive has none, only the depth unwinding.
     const prompt = game.prompts[game.round];
     if (!prompt) return;
     const asking = game.phase === "ask";
@@ -494,12 +495,6 @@ export class Scene {
         key(x, y + 12, game.round + 1 === game.prompts.length ? "End the dive" : "Keep going");
       }
     }
-
-    const depth = formatMeters(this.depth).toUpperCase();
-    frame.emit = 255;
-    say(large, depth, W - 8, H - 22, amber(14), true);
-    frame.emit = 0;
-    say(tiny, "Depth", W - 8 - measure(large, depth) - 5, H - 13, 6, true);
   }
 }
 

@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
-import { createGame, pressEnter, tick } from "./state";
+import { useEffect, useRef, useState } from "react";
+import { Logbook } from "./Logbook";
+import { createGame, pressEnter, tick, type Game as Dive } from "./state";
 import { Display, Frame } from "./pixel/frame";
 import { Scene } from "./pixel/scene";
 
@@ -8,6 +9,8 @@ export function Game() {
   const pixels = useRef<HTMLCanvasElement>(null);
   const glow = useRef<HTMLCanvasElement>(null);
   const keys = useRef<HTMLInputElement>(null);
+  /** The dive the logbook is open on, once one has ended. */
+  const [logged, setLogged] = useState<Dive | null>(null);
 
   useEffect(() => {
     const input = keys.current!;
@@ -33,6 +36,7 @@ export function Game() {
     input.addEventListener("keydown", onKey);
     addEventListener("mousedown", keepFocus);
 
+    let done = false;
     let last = performance.now();
     let request = requestAnimationFrame(function loop(now) {
       request = requestAnimationFrame(loop);
@@ -41,8 +45,13 @@ export function Game() {
       if (game.phase === "ask") game.input = input.value;
       else input.value = "";
       tick(game, dt);
+      if ((game.phase === "done") !== done) {
+        done = !done;
+        setLogged(done ? game : null);
+      }
       display.fit(frame);
-      display.present(frame, scene.draw(frame, game, dt, now / 1000));
+      // Once the logbook has faded in it hides the sea, which need not be drawn.
+      if (!done || game.phaseTime < 1) display.present(frame, scene.draw(frame, game, dt, now / 1000));
     });
 
     return () => {
@@ -56,6 +65,7 @@ export function Game() {
     <main className="stage">
       <canvas ref={pixels} className="pixels" />
       <canvas ref={glow} className="glow" />
+      <Logbook dive={logged} />
       <input ref={keys} className="keys" aria-label="Your answer" maxLength={40} autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} />
     </main>
   );
