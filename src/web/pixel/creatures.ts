@@ -63,7 +63,8 @@ export class Ambient {
     this.wait = (20 - 12 * Math.min(1, depth / 9000)) * (0.6 + Math.random() * 0.8);
     const large = this.creatures.some((creature) => creature.kind !== "eyes");
     const kinds = (Object.keys(HOME) as CreatureKind[]).filter((kind) => depth >= HOME[kind] && (kind === "eyes" || !large));
-    const kind = kinds[Math.floor(Math.random() * kinds.length)]!;
+    const kind = kinds[Math.floor(Math.random() * kinds.length)];
+    if (!kind) return;
     const count = kind === "eyes" ? 1 + Math.floor(Math.random() * 3) : 1;
     for (let i = 0; i < count; i++) this.spawn(kind, width, height, depth);
   }
