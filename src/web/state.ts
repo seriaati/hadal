@@ -54,8 +54,10 @@ function finish(game: Game, result: Result) {
   enter(game, "verdict");
 }
 
-async function start(game: Game) {
-  const res = await fetch("/api/game");
+/** Begin a dive: in the built-in packs, or in the one of the player's own packs that `pack` names. */
+export async function start(game: Game, pack?: string) {
+  const res = await fetch(pack ? `/api/game?pack=${pack}` : "/api/game");
+  if (!res.ok) return;
   const { prompts } = (await res.json()) as { prompts: GamePrompt[] };
   Object.assign(game, createGame(), { prompts });
   enter(game, "ask");

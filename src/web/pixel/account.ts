@@ -1,7 +1,7 @@
 import type { Account } from "../../shared/types";
 import { FONTS, drawText, measure, wrap } from "./font";
 import type { Frame } from "./frame";
-import { centre, drawPanel } from "./settings";
+import { centre, drawButton, drawPanel } from "./settings";
 
 const WIDTH = 140;
 const PAD = 7;
@@ -144,17 +144,7 @@ export class AccountPanel {
       y += 17;
     }
     // The button is its label in a box. No Enter key is drawn: there is nothing here to choose between.
-    const label = this.submit.textContent;
-    const wide = measure(tiny, label) + 7;
-    for (let i = 1; i < wide; i++) {
-      frame.put(x + i, y, 6);
-      frame.put(x + i, y + 8, 5);
-    }
-    for (let j = 1; j < 8; j++) {
-      frame.put(x, y + j, 6);
-      frame.put(x + wide, y + j, 5);
-    }
-    drawText(frame, tiny, label, x + 4, y + 2, 7);
+    const wide = drawButton(frame, x, y, this.submit.textContent);
     cover(this.submit, y + 2, wide + 1);
     if (this.account) return;
     y += 15;

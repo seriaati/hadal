@@ -3,9 +3,10 @@ import { MAX_ANSWER_LENGTH, PASSWORD_MAX, USERNAME_MAX, type Config } from "../s
 import { DevMenu, type DevTools } from "./DevMenu";
 import { Logbook } from "./Logbook";
 import { Sound } from "./sound";
-import { createGame, pressEnter, tick, type Game as Dive } from "./state";
+import { createGame, pressEnter, start, tick, type Game as Dive } from "./state";
 import { AccountPanel } from "./pixel/account";
 import { Display, Frame } from "./pixel/frame";
+import { PacksPanel } from "./pixel/packs";
 import { Scene } from "./pixel/scene";
 import { Settings } from "./pixel/settings";
 
@@ -15,6 +16,7 @@ export function Game() {
   const glow = useRef<HTMLCanvasElement>(null);
   const keys = useRef<HTMLInputElement>(null);
   const form = useRef<HTMLFormElement>(null);
+  const packsForm = useRef<HTMLFormElement>(null);
   /** The dive the logbook is drawn for, from the moment it ends, and whether the diver is back at the surface. */
   const [logged, setLogged] = useState<Dive | null>(null);
   const [surfaced, setSurfaced] = useState(false);
@@ -32,13 +34,18 @@ export function Game() {
     const settings = new Settings(sound);
     const account = new AccountPanel(form.current!, input);
     /** The title menu: its lines, and the one Enter acts on. */
-    const menu = { items: ["Descend", "Sign in"], choice: 0 };
+    const menu = { items: ["Descend", "Packs", "Sign in"], choice: 0 };
+    const packs = new PacksPanel(packsForm.current!, input, {
+      dive: (pack) => void start(game, pack),
+      signIn: () => account.show(),
+    });
     const choose = (line: number) => {
       if (line === 0) pressEnter(game);
+      else if (line === 1) packs.show(account.account !== null);
       else account.show();
     };
     // In development, let the browser console (and test scripts) reach the game.
-    if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game, scene, frame, display, sound, settings, account } });
+    if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game, scene, frame, display, sound, settings, account, packs } });
 
     void fetch("/api/config")
       .then((res) => res.json() as Promise<Config>)
@@ -63,9 +70,10 @@ export function Game() {
     };
     // Keep the typing focus wherever the player clicks or taps.
     const keepFocus = (event: MouseEvent) => {
-      if (form.current!.contains(event.target as Node)) return; // the account panel's fields take the focus themselves
+      // The controls of the account and packs panels take the focus themselves.
+      if (form.current!.contains(event.target as Node) || packsForm.current!.contains(event.target as Node)) return;
       if (event.target !== input) event.preventDefault();
-      if (!account.open) input.focus();
+      if (!account.open && !packs.open) input.focus();
     };
     // A press that takes hold of a slider in the settings keeps it until the pointer lifts.
     const onPointer = (event: PointerEvent) => {
@@ -77,6 +85,7 @@ export function Game() {
         // A press that opens or closes the settings does nothing else.
         const settingsWereOpen = settings.open;
         if (account.open) account.press(frame, x, y);
+        else if (packs.open) packs.press(frame, x, y);
         else if (settings.press(frame, x, y)) canvas.setPointerCapture(event.pointerId);
         else if (game.phase === "title" && !settingsWereOpen && !settings.open && menu.items[line]) choose(line);
       }
@@ -108,10 +117,11 @@ export function Game() {
       display.fit(frame);
       // Once the logbook has faded in it hides the sea, which need not be drawn.
       if (!done || game.phaseTime < 1) {
-        menu.items[1] = account.account?.username ?? "Sign in";
+        menu.items[2] = account.account?.username ?? "Sign in";
         const lights = scene.draw(frame, game, menu, dt, now / 1000);
         settings.draw(frame);
         account.draw(frame, canvas.clientWidth / frame.width, now / 1000);
+        packs.draw(frame, canvas.clientWidth / frame.width);
         display.present(frame, lights);
       }
       sound.update(game, scene, dt);
@@ -133,11 +143,15 @@ export function Game() {
       <canvas ref={glow} className="glow" />
       <Logbook dive={logged} surfaced={surfaced} />
       <input ref={keys} className="keys" aria-label="Your answer" maxLength={MAX_ANSWER_LENGTH} autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} />
-      <form ref={form} className="account" aria-label="Account" hidden>
+      <form ref={form} className="panel" aria-label="Account" hidden>
         <input name="username" aria-label="Name" autoComplete="username" maxLength={USERNAME_MAX} autoCapitalize="off" spellCheck={false} />
         <input name="password" type="password" aria-label="Password" maxLength={PASSWORD_MAX} />
         <button name="send" />
         <button name="other" type="button" />
+      </form>
+      <form ref={packsForm} className="panel" aria-label="Packs" hidden>
+        <input name="file" type="file" accept=".json,application/json" aria-label="Add a pack" />
+        <button name="button" type="button" />
       </form>
       {dev && <DevMenu {...dev} />}
     </main>

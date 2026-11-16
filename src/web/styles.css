@@ -123,19 +123,20 @@ body {
   font-size: 16px;
 }
 
-/* The account panel's form: invisible, each control laid over where the game draws it. */
-.account {
+/* The form of the account panel or the packs panel: invisible, each control laid over where the game draws it. */
+.panel {
   opacity: 0;
 }
 
-.account > * {
+.panel > * {
   position: fixed;
   padding: 0;
   border: 0;
   font-size: 16px;
 }
 
-.account button {
+.panel button,
+.panel [type="file"] {
   cursor: pointer;
 }
 

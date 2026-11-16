@@ -1,5 +1,5 @@
 import { LEVELS, type Level, type Sound } from "../sound";
-import { FONTS, drawText } from "./font";
+import { FONTS, drawText, measure } from "./font";
 import type { Frame } from "./frame";
 
 const COG = [
@@ -29,6 +29,21 @@ export function drawPanel(frame: Frame, width: number, height: number) {
     }
   }
   frame.block = -1;
+}
+
+/** A button: its label in a box, brighter when it has the focus (`on`). Returns how wide the box is. */
+export function drawButton(frame: Frame, x: number, y: number, label: string, on = false): number {
+  const wide = measure(FONTS.tiny, label) + 7;
+  for (let i = 1; i < wide; i++) {
+    frame.put(x + i, y, on ? 7 : 6);
+    frame.put(x + i, y + 8, on ? 6 : 5);
+  }
+  for (let j = 1; j < 8; j++) {
+    frame.put(x, y + j, on ? 7 : 6);
+    frame.put(x + wide, y + j, on ? 6 : 5);
+  }
+  drawText(frame, FONTS.tiny, label, x + 4, y + 2, 7);
+  return wide;
 }
 
 /** Where the settings are. `rows` is the top of the first slider's row. */
