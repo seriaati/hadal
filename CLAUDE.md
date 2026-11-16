@@ -29,7 +29,8 @@ correctly at a chosen rarity, run out of air, end the dive, summon a creature.
   `logbook/` draws the hand-drawn summary of a finished dive (`sketch.ts` holds the paint and
   ink tools, `dive.ts` and `entries.ts` are the two pages)
 - `src/shared/`: types and constants used by both sides
-- `packs/`: built-in packs, one JSON file each
+- `packs/`: built-in packs, one JSON file each, in the format described under "Pack format" in
+  `docs/PLAN.md` and checked by `validatePack` in `src/server/packs.ts`
 - `design/explorations/`: the eight art-direction mock-ups; 01 is the chosen style, 02 is the
   summary screen
 
