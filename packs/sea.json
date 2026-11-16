@@ -1,0 +1,97 @@
+{
+  "id": "sea",
+  "name": "The Sea",
+  "prompts": [
+    {
+      "id": "oceans",
+      "text": "Name one of the world's five oceans",
+      "answers": [
+        { "text": "Pacific Ocean", "aliases": ["Pacific"], "rarity": 5 },
+        { "text": "Atlantic Ocean", "aliases": ["Atlantic"], "rarity": 5 },
+        { "text": "Indian Ocean", "aliases": ["Indian"], "rarity": 25 },
+        { "text": "Arctic Ocean", "aliases": ["Arctic"], "rarity": 35 },
+        { "text": "Southern Ocean", "aliases": ["Antarctic Ocean", "Austral Ocean", "Southern", "Antarctic", "Austral"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "depth-zones",
+      "text": "Name one of the five depth zones of the open ocean",
+      "answers": [
+        { "text": "Twilight zone", "aliases": ["Mesopelagic zone", "Disphotic zone", "Twilight", "Mesopelagic", "Disphotic"], "rarity": 25 },
+        { "text": "Sunlight zone", "aliases": ["Epipelagic zone", "Sunlit zone", "Euphotic zone", "Sunlight", "Epipelagic", "Sunlit", "Euphotic"], "rarity": 30 },
+        { "text": "Midnight zone", "aliases": ["Bathypelagic zone", "Bathyal zone", "Midnight", "Bathypelagic", "Bathyal"], "rarity": 35 },
+        { "text": "Abyssal zone", "aliases": ["Abyssopelagic zone", "Abyss", "Abyssal", "Abyssopelagic"], "rarity": 55 },
+        { "text": "Hadal zone", "aliases": ["Hadopelagic zone", "Hadalpelagic zone", "Trenches", "Hadal", "Hadopelagic", "Hadalpelagic"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "sea-turtles",
+      "text": "Name a species of sea turtle",
+      "answers": [
+        { "text": "Green sea turtle", "aliases": ["Green turtle", "Green"], "rarity": 15 },
+        { "text": "Leatherback sea turtle", "aliases": ["Leatherback turtle", "Leatherback"], "rarity": 15 },
+        { "text": "Loggerhead sea turtle", "aliases": ["Loggerhead turtle", "Loggerhead"], "rarity": 25 },
+        { "text": "Hawksbill sea turtle", "aliases": ["Hawksbill turtle", "Hawksbill"], "rarity": 40 },
+        { "text": "Olive ridley sea turtle", "aliases": ["Pacific ridley sea turtle", "Olive ridley turtle", "Olive ridley", "Pacific ridley turtle", "Pacific ridley"], "rarity": 80 },
+        { "text": "Kemp's ridley sea turtle", "aliases": ["Atlantic ridley sea turtle", "Kemp's ridley turtle", "Kemp's ridley", "Atlantic ridley turtle", "Atlantic ridley"], "rarity": 85 },
+        { "text": "Flatback sea turtle", "aliases": ["Australian flatback sea turtle", "Flatback turtle", "Flatback", "Australian flatback turtle", "Australian flatback"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "sharks",
+      "text": "Name a kind of shark",
+      "answers": [
+        { "text": "Great white shark", "aliases": ["White shark", "White pointer", "Great white", "White"], "rarity": 5 },
+        { "text": "Hammerhead shark", "aliases": ["Great hammerhead shark", "Scalloped hammerhead shark", "Hammerhead", "Great hammerhead", "Scalloped hammerhead"], "rarity": 10 },
+        { "text": "Tiger shark", "aliases": ["Tiger"], "rarity": 15 },
+        { "text": "Whale shark", "aliases": ["Whale"], "rarity": 15 },
+        { "text": "Bull shark", "aliases": ["Zambezi shark", "Bull", "Zambezi"], "rarity": 25 },
+        { "text": "Mako shark", "aliases": ["Shortfin mako shark", "Longfin mako shark", "Mako", "Shortfin mako", "Longfin mako"], "rarity": 30 },
+        { "text": "Nurse shark", "aliases": ["Tawny nurse shark", "Nurse", "Tawny nurse"], "rarity": 30 },
+        { "text": "Megalodon", "rarity": 30 },
+        { "text": "Blue shark", "aliases": ["Blue"], "rarity": 40 },
+        { "text": "Basking shark", "aliases": ["Basking"], "rarity": 40 },
+        { "text": "Reef shark", "aliases": ["Blacktip reef shark", "Whitetip reef shark", "Grey reef shark", "Gray reef shark", "Caribbean reef shark", "Reef", "Blacktip reef", "Whitetip reef", "Grey reef", "Gray reef", "Caribbean reef"], "rarity": 40 },
+        { "text": "Lemon shark", "aliases": ["Lemon"], "rarity": 45 },
+        { "text": "Thresher shark", "aliases": ["Common thresher shark", "Bigeye thresher shark", "Thresher", "Common thresher", "Bigeye thresher"], "rarity": 45 },
+        { "text": "Greenland shark", "aliases": ["Greenland"], "rarity": 50 },
+        { "text": "Goblin shark", "aliases": ["Goblin"], "rarity": 50 },
+        { "text": "Leopard shark", "aliases": ["Leopard"], "rarity": 55 },
+        { "text": "Blacktip shark", "aliases": ["Blacktip"], "rarity": 55 },
+        { "text": "Oceanic whitetip shark", "aliases": ["Whitetip shark", "Oceanic whitetip", "Whitetip"], "rarity": 60 },
+        { "text": "Dogfish", "aliases": ["Spiny dogfish", "Spurdog", "Dogfish shark"], "rarity": 60 },
+        { "text": "Angel shark", "aliases": ["Angel"], "rarity": 65 },
+        { "text": "Sand tiger shark", "aliases": ["Grey nurse shark", "Gray nurse shark", "Ragged-tooth shark", "Sand tiger", "Grey nurse", "Gray nurse", "Ragged-tooth"], "rarity": 65 },
+        { "text": "Wobbegong", "aliases": ["Wobbegong shark", "Carpet shark", "Carpet"], "rarity": 65 },
+        { "text": "Zebra shark", "aliases": ["Zebra"], "rarity": 70 },
+        { "text": "Megamouth shark", "aliases": ["Megamouth"], "rarity": 70 },
+        { "text": "Cookiecutter shark", "aliases": ["Cookiecutter"], "rarity": 75 },
+        { "text": "Port Jackson shark", "aliases": ["Port Jackson"], "rarity": 75 },
+        { "text": "Frilled shark", "aliases": ["Frill shark", "Frilled", "Frill"], "rarity": 75 },
+        { "text": "Catshark", "rarity": 80 },
+        { "text": "Horn shark", "aliases": ["Horn"], "rarity": 80 },
+        { "text": "Porbeagle", "aliases": ["Porbeagle shark"], "rarity": 80 },
+        { "text": "Sixgill shark", "aliases": ["Bluntnose sixgill shark", "Cow shark", "Sixgill", "Bluntnose sixgill", "Cow"], "rarity": 85 },
+        { "text": "Sevengill shark", "aliases": ["Broadnose sevengill shark", "Sevengill", "Broadnose sevengill"], "rarity": 90 },
+        { "text": "Salmon shark", "aliases": ["Salmon"], "rarity": 90 },
+        { "text": "Silky shark", "aliases": ["Silky"], "rarity": 90 },
+        { "text": "Sandbar shark", "aliases": ["Sandbar"], "rarity": 90 },
+        { "text": "Dusky shark", "aliases": ["Dusky"], "rarity": 90 },
+        { "text": "Spinner shark", "aliases": ["Spinner"], "rarity": 90 },
+        { "text": "Bamboo shark", "aliases": ["Bamboo"], "rarity": 90 },
+        { "text": "Epaulette shark", "aliases": ["Epaulette"], "rarity": 90 },
+        { "text": "Lantern shark", "aliases": ["Dwarf lanternshark", "Lantern"], "rarity": 90 },
+        { "text": "Tope", "aliases": ["Tope shark", "School shark", "Soupfin shark", "School", "Soupfin"], "rarity": 95 },
+        { "text": "Sawshark", "rarity": 95 },
+        { "text": "Bonnethead shark", "aliases": ["Bonnethead"], "rarity": 95 },
+        { "text": "Swell shark", "aliases": ["Swell"], "rarity": 95 },
+        { "text": "Copper shark", "aliases": ["Bronze whaler", "Copper"], "rarity": 95 },
+        { "text": "Galapagos shark", "aliases": ["Galapagos"], "rarity": 95 },
+        { "text": "Silvertip shark", "aliases": ["Silvertip"], "rarity": 95 },
+        { "text": "Sleeper shark", "aliases": ["Pacific sleeper shark", "Sleeper", "Pacific sleeper"], "rarity": 100 },
+        { "text": "Crocodile shark", "aliases": ["Crocodile"], "rarity": 100 },
+        { "text": "Blacknose shark", "aliases": ["Blacknose"], "rarity": 100 }
+      ]
+    }
+  ]
+}

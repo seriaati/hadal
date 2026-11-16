@@ -66,6 +66,26 @@
         { "text": "Mole", "aliases": ["Moles", "mol"], "rarity": 75 },
         { "text": "Candela", "aliases": ["Candelas"], "rarity": 100 }
       ]
+    },
+    {
+      "id": "galilean-moons",
+      "text": "Name one of the four Galilean moons of Jupiter",
+      "answers": [
+        { "text": "Europa", "rarity": 20 },
+        { "text": "Io", "rarity": 25 },
+        { "text": "Ganymede", "rarity": 45 },
+        { "text": "Callisto", "rarity": 100 }
+      ]
+    },
+    {
+      "id": "fundamental-forces",
+      "text": "Name one of the four fundamental forces of nature",
+      "answers": [
+        { "text": "Gravity", "aliases": ["Gravitation", "Gravitational force", "Gravitational"], "rarity": 5 },
+        { "text": "Electromagnetism", "aliases": ["Electromagnetic force", "Electromagnetic", "Electromagnetic interaction"], "rarity": 30 },
+        { "text": "Strong nuclear force", "aliases": ["Strong force", "Strong interaction", "Strong nuclear", "Strong"], "rarity": 60 },
+        { "text": "Weak nuclear force", "aliases": ["Weak force", "Weak interaction", "Weak nuclear", "Weak"], "rarity": 100 }
+      ]
     }
   ]
 }

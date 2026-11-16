@@ -1,0 +1,91 @@
+{
+  "id": "books",
+  "name": "Books",
+  "prompts": [
+    {
+      "id": "fellowship",
+      "text": "Name a member of the Fellowship of the Ring",
+      "answers": [
+        { "text": "Frodo", "aliases": ["Frodo Baggins"], "rarity": 5 },
+        { "text": "Gandalf", "aliases": ["Gandalf the Grey", "Mithrandir"], "rarity": 5 },
+        { "text": "Aragorn", "aliases": ["Strider", "Elessar"], "rarity": 15 },
+        { "text": "Legolas", "rarity": 15 },
+        { "text": "Sam", "aliases": ["Samwise", "Samwise Gamgee", "Sam Gamgee"], "rarity": 20 },
+        { "text": "Gimli", "rarity": 25 },
+        { "text": "Boromir", "rarity": 65 },
+        { "text": "Pippin", "aliases": ["Peregrin Took", "Peregrin", "Pippin Took"], "rarity": 80 },
+        { "text": "Merry", "aliases": ["Meriadoc Brandybuck", "Meriadoc", "Merry Brandybuck"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "austen-novels",
+      "text": "Name a novel by Jane Austen",
+      "answers": [
+        { "text": "Pride and Prejudice", "aliases": ["Pride & Prejudice"], "rarity": 5 },
+        { "text": "Sense and Sensibility", "aliases": ["Sense & Sensibility"], "rarity": 15 },
+        { "text": "Emma", "rarity": 20 },
+        { "text": "Persuasion", "rarity": 55 },
+        { "text": "Mansfield Park", "rarity": 60 },
+        { "text": "Northanger Abbey", "rarity": 70 },
+        { "text": "Lady Susan", "rarity": 95 },
+        { "text": "Sanditon", "rarity": 100 },
+        { "text": "The Watsons", "rarity": 100 }
+      ]
+    },
+    {
+      "id": "narnia-books",
+      "text": "Name a book in The Chronicles of Narnia",
+      "answers": [
+        { "text": "The Lion, the Witch and the Wardrobe", "aliases": ["The Lion, the Witch & the Wardrobe"], "rarity": 5 },
+        { "text": "Prince Caspian", "rarity": 30 },
+        { "text": "The Voyage of the Dawn Treader", "aliases": ["Dawn Treader"], "rarity": 35 },
+        { "text": "The Magician's Nephew", "rarity": 50 },
+        { "text": "The Silver Chair", "rarity": 60 },
+        { "text": "The Last Battle", "rarity": 65 },
+        { "text": "The Horse and His Boy", "aliases": ["The Horse & His Boy", "A Horse and His Boy"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "shakespeare-plays",
+      "text": "Name a play by William Shakespeare",
+      "answers": [
+        { "text": "Romeo and Juliet", "aliases": ["Romeo & Juliet"], "rarity": 5 },
+        { "text": "Hamlet", "rarity": 5 },
+        { "text": "Macbeth", "aliases": ["The Scottish Play"], "rarity": 8 },
+        { "text": "Othello", "rarity": 15 },
+        { "text": "A Midsummer Night's Dream", "aliases": ["Midsummer Night's Dream"], "rarity": 15 },
+        { "text": "King Lear", "aliases": ["Lear"], "rarity": 20 },
+        { "text": "The Tempest", "rarity": 20 },
+        { "text": "Julius Caesar", "rarity": 20 },
+        { "text": "Much Ado About Nothing", "aliases": ["Much Ado"], "rarity": 25 },
+        { "text": "Twelfth Night", "aliases": ["12th Night"], "rarity": 25 },
+        { "text": "The Merchant of Venice", "rarity": 25 },
+        { "text": "The Taming of the Shrew", "rarity": 30 },
+        { "text": "As You Like It", "rarity": 35 },
+        { "text": "Richard III", "aliases": ["Richard 3", "Richard the Third"], "rarity": 35 },
+        { "text": "Henry V", "aliases": ["Henry 5", "Henry the Fifth"], "rarity": 40 },
+        { "text": "Antony and Cleopatra", "aliases": ["Antony & Cleopatra"], "rarity": 40 },
+        { "text": "The Comedy of Errors", "aliases": ["A Comedy of Errors"], "rarity": 50 },
+        { "text": "The Winter's Tale", "aliases": ["A Winter's Tale"], "rarity": 50 },
+        { "text": "Measure for Measure", "rarity": 55 },
+        { "text": "Henry IV", "aliases": ["Henry IV Part 1", "Henry IV Part 2", "Henry IV Part I", "Henry IV Part II", "Henry 4", "Henry the Fourth"], "rarity": 55 },
+        { "text": "Richard II", "aliases": ["Richard 2", "Richard the Second"], "rarity": 60 },
+        { "text": "Love's Labour's Lost", "aliases": ["Love's Labor's Lost"], "rarity": 60 },
+        { "text": "Coriolanus", "rarity": 60 },
+        { "text": "Titus Andronicus", "aliases": ["Titus"], "rarity": 60 },
+        { "text": "The Merry Wives of Windsor", "rarity": 65 },
+        { "text": "All's Well That Ends Well", "rarity": 65 },
+        { "text": "The Two Gentlemen of Verona", "rarity": 70 },
+        { "text": "Henry VI", "aliases": ["Henry VI Part 1", "Henry VI Part 2", "Henry VI Part 3", "Henry 6", "Henry the Sixth"], "rarity": 70 },
+        { "text": "Cymbeline", "rarity": 75 },
+        { "text": "Troilus and Cressida", "aliases": ["Troilus & Cressida"], "rarity": 75 },
+        { "text": "Henry VIII", "aliases": ["Henry 8", "Henry the Eighth", "All Is True"], "rarity": 75 },
+        { "text": "King John", "rarity": 80 },
+        { "text": "Timon of Athens", "aliases": ["Timon"], "rarity": 80 },
+        { "text": "Pericles", "aliases": ["Pericles, Prince of Tyre"], "rarity": 85 },
+        { "text": "The Two Noble Kinsmen", "rarity": 95 },
+        { "text": "Edward III", "aliases": ["Edward 3", "Edward the Third"], "rarity": 100 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "id": "history",
+  "name": "History",
+  "prompts": [
+    {
+      "id": "ancient-wonders",
+      "text": "Name one of the Seven Wonders of the Ancient World",
+      "answers": [
+        { "text": "Great Pyramid of Giza", "aliases": ["Pyramids of Giza", "Pyramid of Giza", "Great Pyramid", "Great Pyramids", "Pyramids", "Pyramid", "Pyramid of Khufu", "Pyramid of Cheops"], "rarity": 5 },
+        { "text": "Hanging Gardens of Babylon", "aliases": ["Hanging Gardens", "Gardens of Babylon"], "rarity": 15 },
+        { "text": "Colossus of Rhodes", "aliases": ["Colossus"], "rarity": 30 },
+        { "text": "Lighthouse of Alexandria", "aliases": ["Pharos of Alexandria", "Pharos", "Lighthouse"], "rarity": 40 },
+        { "text": "Statue of Zeus at Olympia", "aliases": ["Statue of Zeus", "Zeus at Olympia", "Zeus"], "rarity": 60 },
+        { "text": "Temple of Artemis at Ephesus", "aliases": ["Temple of Artemis", "Temple of Artemis in Ephesus", "Artemision", "Temple of Diana"], "rarity": 80 },
+        { "text": "Mausoleum at Halicarnassus", "aliases": ["Mausoleum of Halicarnassus", "Mausoleum", "Tomb of Mausolus", "Halicarnassus"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "henry-viii-wives",
+      "text": "Name a wife of Henry VIII",
+      "answers": [
+        { "text": "Anne Boleyn", "aliases": ["Boleyn"], "rarity": 5 },
+        { "text": "Catherine of Aragon", "aliases": ["Katherine of Aragon", "Aragon"], "rarity": 25 },
+        { "text": "Jane Seymour", "aliases": ["Seymour"], "rarity": 40 },
+        { "text": "Anne of Cleves", "aliases": ["Cleves"], "rarity": 60 },
+        { "text": "Catherine Parr", "aliases": ["Katherine Parr", "Kateryn Parr", "Parr"], "rarity": 70 },
+        { "text": "Catherine Howard", "aliases": ["Katherine Howard", "Kathryn Howard", "Howard"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "thirteen-colonies",
+      "text": "Name one of the thirteen original American colonies",
+      "answers": [
+        { "text": "Virginia", "rarity": 10 },
+        { "text": "Massachusetts", "aliases": ["Massachusetts Bay"], "rarity": 10 },
+        { "text": "New York", "rarity": 15 },
+        { "text": "Pennsylvania", "rarity": 25 },
+        { "text": "Georgia", "rarity": 40 },
+        { "text": "Maryland", "rarity": 45 },
+        { "text": "North Carolina", "rarity": 50 },
+        { "text": "South Carolina", "rarity": 50 },
+        { "text": "Connecticut", "rarity": 55 },
+        { "text": "New Jersey", "rarity": 55 },
+        { "text": "Rhode Island", "rarity": 60 },
+        { "text": "Delaware", "rarity": 80 },
+        { "text": "New Hampshire", "rarity": 100 }
+      ]
+    },
+    {
+      "id": "assassinated-presidents",
+      "text": "Name a US president who was assassinated",
+      "answers": [
+        { "text": "Abraham Lincoln", "aliases": ["Lincoln", "Abe Lincoln"], "rarity": 5 },
+        { "text": "John F. Kennedy", "aliases": ["Kennedy", "JFK", "John Kennedy", "John Fitzgerald Kennedy", "Jack Kennedy"], "rarity": 5 },
+        { "text": "William McKinley", "aliases": ["McKinley"], "rarity": 75 },
+        { "text": "James A. Garfield", "aliases": ["James Garfield", "Garfield"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "first-roman-emperors",
+      "text": "Name one of the first five Roman emperors",
+      "answers": [
+        { "text": "Augustus", "aliases": ["Octavian", "Octavius", "Caesar Augustus", "Augustus Caesar"], "rarity": 10 },
+        { "text": "Nero", "rarity": 15 },
+        { "text": "Caligula", "aliases": ["Gaius", "Gaius Caligula"], "rarity": 30 },
+        { "text": "Claudius", "rarity": 60 },
+        { "text": "Tiberius", "rarity": 100 }
+      ]
+    }
+  ]
+}

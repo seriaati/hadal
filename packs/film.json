@@ -1,0 +1,102 @@
+{
+  "id": "film",
+  "name": "Film",
+  "prompts": [
+    {
+      "id": "seven-dwarfs",
+      "text": "Name one of the seven dwarfs in Disney's Snow White",
+      "answers": [
+        { "text": "Dopey", "rarity": 10 },
+        { "text": "Grumpy", "rarity": 10 },
+        { "text": "Sleepy", "rarity": 25 },
+        { "text": "Happy", "rarity": 35 },
+        { "text": "Sneezy", "rarity": 40 },
+        { "text": "Doc", "rarity": 55 },
+        { "text": "Bashful", "rarity": 100 }
+      ]
+    },
+    {
+      "id": "bond-actors",
+      "text": "Name an actor who has played James Bond in the official films",
+      "answers": [
+        { "text": "Sean Connery", "aliases": ["Connery"], "rarity": 10 },
+        { "text": "Daniel Craig", "aliases": ["Craig"], "rarity": 10 },
+        { "text": "Pierce Brosnan", "aliases": ["Brosnan"], "rarity": 20 },
+        { "text": "Roger Moore", "aliases": ["Moore"], "rarity": 30 },
+        { "text": "Timothy Dalton", "aliases": ["Dalton"], "rarity": 70 },
+        { "text": "George Lazenby", "aliases": ["Lazenby"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "nolan-films",
+      "text": "Name a film directed by Christopher Nolan",
+      "answers": [
+        { "text": "Inception", "rarity": 5 },
+        { "text": "The Dark Knight", "rarity": 5 },
+        { "text": "Oppenheimer", "rarity": 10 },
+        { "text": "Interstellar", "rarity": 10 },
+        { "text": "Dunkirk", "rarity": 30 },
+        { "text": "Tenet", "rarity": 30 },
+        { "text": "Batman Begins", "rarity": 35 },
+        { "text": "The Dark Knight Rises", "rarity": 35 },
+        { "text": "The Prestige", "rarity": 45 },
+        { "text": "Memento", "rarity": 50 },
+        { "text": "The Odyssey", "rarity": 60 },
+        { "text": "Insomnia", "rarity": 85 },
+        { "text": "Following", "rarity": 100 }
+      ]
+    },
+    {
+      "id": "star-wars-saga",
+      "text": "Name a film of the Star Wars saga, Episodes I to IX",
+      "answers": [
+        { "text": "The Empire Strikes Back", "aliases": ["Empire", "Episode V", "Episode 5"], "rarity": 5 },
+        { "text": "A New Hope", "aliases": ["New Hope", "Star Wars", "Star Wars: A New Hope", "Episode IV", "Episode 4"], "rarity": 15 },
+        { "text": "Return of the Jedi", "aliases": ["Episode VI", "Episode 6"], "rarity": 15 },
+        { "text": "The Phantom Menace", "aliases": ["Episode I", "Episode 1"], "rarity": 25 },
+        { "text": "Revenge of the Sith", "aliases": ["Episode III", "Episode 3"], "rarity": 25 },
+        { "text": "The Force Awakens", "aliases": ["Episode VII", "Episode 7"], "rarity": 35 },
+        { "text": "The Last Jedi", "aliases": ["Episode VIII", "Episode 8"], "rarity": 50 },
+        { "text": "The Rise of Skywalker", "aliases": ["Episode IX", "Episode 9"], "rarity": 80 },
+        { "text": "Attack of the Clones", "aliases": ["Episode II", "Episode 2"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "pixar-films",
+      "text": "Name a Pixar feature film",
+      "answers": [
+        { "text": "Toy Story", "rarity": 5 },
+        { "text": "Finding Nemo", "rarity": 10 },
+        { "text": "Up", "rarity": 20 },
+        { "text": "Monsters, Inc.", "aliases": ["Monsters Incorporated"], "rarity": 20 },
+        { "text": "The Incredibles", "rarity": 20 },
+        { "text": "Cars", "rarity": 20 },
+        { "text": "Ratatouille", "rarity": 25 },
+        { "text": "WALL-E", "rarity": 25 },
+        { "text": "Inside Out", "rarity": 25 },
+        { "text": "Coco", "rarity": 25 },
+        { "text": "Toy Story 2", "aliases": ["Toy Story II"], "rarity": 35 },
+        { "text": "Toy Story 3", "aliases": ["Toy Story III"], "rarity": 35 },
+        { "text": "Brave", "rarity": 45 },
+        { "text": "Soul", "rarity": 45 },
+        { "text": "Finding Dory", "rarity": 45 },
+        { "text": "A Bug's Life", "aliases": ["Bug's Life"], "rarity": 50 },
+        { "text": "Toy Story 4", "aliases": ["Toy Story IV"], "rarity": 55 },
+        { "text": "Monsters University", "rarity": 55 },
+        { "text": "Inside Out 2", "rarity": 55 },
+        { "text": "Incredibles 2", "rarity": 55 },
+        { "text": "Luca", "rarity": 60 },
+        { "text": "Turning Red", "rarity": 65 },
+        { "text": "Cars 2", "rarity": 70 },
+        { "text": "Elemental", "rarity": 70 },
+        { "text": "Onward", "rarity": 80 },
+        { "text": "Lightyear", "rarity": 80 },
+        { "text": "Cars 3", "rarity": 85 },
+        { "text": "Toy Story 5", "aliases": ["Toy Story V"], "rarity": 85 },
+        { "text": "Elio", "rarity": 90 },
+        { "text": "Hoppers", "rarity": 95 },
+        { "text": "The Good Dinosaur", "rarity": 100 }
+      ]
+    }
+  ]
+}

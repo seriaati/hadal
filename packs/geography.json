@@ -113,6 +113,45 @@
         { "text": "Benin", "rarity": 90 },
         { "text": "Burundi", "rarity": 100 }
       ]
+    },
+    {
+      "id": "great-lakes",
+      "text": "Name one of the five Great Lakes of North America",
+      "answers": [
+        { "text": "Lake Michigan", "aliases": ["Michigan"], "rarity": 10 },
+        { "text": "Lake Superior", "aliases": ["Superior"], "rarity": 15 },
+        { "text": "Lake Erie", "aliases": ["Erie"], "rarity": 30 },
+        { "text": "Lake Ontario", "aliases": ["Ontario"], "rarity": 55 },
+        { "text": "Lake Huron", "aliases": ["Huron"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "mediterranean-coast",
+      "text": "Name a country with a coast on the Mediterranean Sea",
+      "answers": [
+        { "text": "Italy", "rarity": 5 },
+        { "text": "Greece", "rarity": 5 },
+        { "text": "Spain", "rarity": 10 },
+        { "text": "France", "rarity": 15 },
+        { "text": "Turkey", "aliases": ["Türkiye"], "rarity": 20 },
+        { "text": "Egypt", "rarity": 25 },
+        { "text": "Croatia", "rarity": 30 },
+        { "text": "Morocco", "rarity": 35 },
+        { "text": "Malta", "rarity": 35 },
+        { "text": "Cyprus", "rarity": 35 },
+        { "text": "Israel", "rarity": 40 },
+        { "text": "Libya", "rarity": 45 },
+        { "text": "Tunisia", "rarity": 45 },
+        { "text": "Lebanon", "rarity": 50 },
+        { "text": "Algeria", "rarity": 50 },
+        { "text": "Monaco", "rarity": 55 },
+        { "text": "Syria", "rarity": 60 },
+        { "text": "Albania", "rarity": 65 },
+        { "text": "Montenegro", "rarity": 75 },
+        { "text": "Slovenia", "rarity": 85 },
+        { "text": "Palestine", "aliases": ["State of Palestine", "Gaza", "Gaza Strip"], "rarity": 90 },
+        { "text": "Bosnia and Herzegovina", "aliases": ["Bosnia", "Bosnia-Herzegovina"], "rarity": 100 }
+      ]
     }
   ]
 }

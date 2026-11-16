@@ -129,6 +129,17 @@
         { "text": "Banon", "rarity": 100 },
         { "text": "Laguiole", "rarity": 100 }
       ]
+    },
+    {
+      "id": "basic-tastes",
+      "text": "Name one of the five basic tastes",
+      "answers": [
+        { "text": "Sweet", "aliases": ["Sweetness"], "rarity": 5 },
+        { "text": "Sour", "aliases": ["Sourness"], "rarity": 15 },
+        { "text": "Salty", "aliases": ["Salt", "Saltiness"], "rarity": 15 },
+        { "text": "Bitter", "aliases": ["Bitterness"], "rarity": 30 },
+        { "text": "Umami", "aliases": ["Savoury", "Savory"], "rarity": 100 }
+      ]
     }
   ]
 }

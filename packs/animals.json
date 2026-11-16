@@ -1,0 +1,83 @@
+{
+  "id": "animals",
+  "name": "Animals",
+  "prompts": [
+    {
+      "id": "bears",
+      "text": "Name a species of bear",
+      "answers": [
+        { "text": "Polar bear", "aliases": ["Polar"], "rarity": 10 },
+        { "text": "Brown bear", "aliases": ["Grizzly bear", "Kodiak bear", "Brown", "Grizzly", "Kodiak"], "rarity": 10 },
+        { "text": "Giant panda", "aliases": ["Panda", "Panda bear"], "rarity": 15 },
+        { "text": "American black bear", "aliases": ["Black bear", "American black", "Black"], "rarity": 20 },
+        { "text": "Sun bear", "aliases": ["Malayan sun bear", "Sun", "Malayan sun"], "rarity": 65 },
+        { "text": "Sloth bear", "aliases": ["Sloth"], "rarity": 80 },
+        { "text": "Asian black bear", "aliases": ["Asiatic black bear", "Moon bear", "Himalayan black bear", "Asian black", "Asiatic black", "Moon", "Himalayan black"], "rarity": 85 },
+        { "text": "Spectacled bear", "aliases": ["Andean bear", "Spectacled", "Andean"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "great-apes",
+      "text": "Name a great ape",
+      "answers": [
+        { "text": "Gorilla", "aliases": ["Western gorilla", "Eastern gorilla", "Mountain gorilla"], "rarity": 10 },
+        { "text": "Chimpanzee", "aliases": ["Chimp", "Common chimpanzee"], "rarity": 15 },
+        { "text": "Orangutan", "aliases": ["Bornean orangutan", "Sumatran orangutan", "Tapanuli orangutan"], "rarity": 20 },
+        { "text": "Human", "aliases": ["Homo sapiens", "Man"], "rarity": 60 },
+        { "text": "Bonobo", "aliases": ["Pygmy chimpanzee"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "penguins",
+      "text": "Name a species of penguin",
+      "answers": [
+        { "text": "Emperor penguin", "aliases": ["Emperor"], "rarity": 5 },
+        { "text": "King penguin", "aliases": ["King"], "rarity": 20 },
+        { "text": "Adélie penguin", "aliases": ["Adélie"], "rarity": 35 },
+        { "text": "Rockhopper penguin", "aliases": ["Southern rockhopper penguin", "Northern rockhopper penguin", "Eastern rockhopper penguin", "Rockhopper", "Southern rockhopper", "Northern rockhopper", "Eastern rockhopper"], "rarity": 40 },
+        { "text": "Little penguin", "aliases": ["Fairy penguin", "Little blue penguin", "Blue penguin", "Little", "Fairy", "Little blue", "Blue"], "rarity": 45 },
+        { "text": "Macaroni penguin", "aliases": ["Macaroni"], "rarity": 50 },
+        { "text": "African penguin", "aliases": ["Jackass penguin", "Cape penguin", "Black-footed penguin", "African", "Jackass", "Cape", "Black-footed"], "rarity": 55 },
+        { "text": "Chinstrap penguin", "aliases": ["Chinstrap"], "rarity": 55 },
+        { "text": "Gentoo penguin", "aliases": ["Gentoo"], "rarity": 55 },
+        { "text": "Galápagos penguin", "aliases": ["Galápagos"], "rarity": 60 },
+        { "text": "Humboldt penguin", "aliases": ["Peruvian penguin", "Humboldt", "Peruvian"], "rarity": 70 },
+        { "text": "Magellanic penguin", "aliases": ["Magellanic"], "rarity": 75 },
+        { "text": "Yellow-eyed penguin", "aliases": ["Hoiho", "Yellow-eyed"], "rarity": 85 },
+        { "text": "Royal penguin", "aliases": ["Royal"], "rarity": 90 },
+        { "text": "Fiordland penguin", "aliases": ["Fiordland crested penguin", "Tawaki", "Fiordland", "Fiordland crested"], "rarity": 95 },
+        { "text": "Erect-crested penguin", "aliases": ["Erect-crested"], "rarity": 100 },
+        { "text": "Snares penguin", "aliases": ["Snares crested penguin", "Snares Island penguin", "Snares", "Snares crested", "Snares Island"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "chinese-zodiac",
+      "text": "Name an animal of the Chinese zodiac",
+      "answers": [
+        { "text": "Dragon", "rarity": 5 },
+        { "text": "Tiger", "rarity": 15 },
+        { "text": "Rat", "aliases": ["Mouse"], "rarity": 15 },
+        { "text": "Monkey", "rarity": 25 },
+        { "text": "Snake", "aliases": ["Serpent"], "rarity": 25 },
+        { "text": "Dog", "rarity": 30 },
+        { "text": "Pig", "aliases": ["Boar"], "rarity": 30 },
+        { "text": "Rabbit", "aliases": ["Hare"], "rarity": 35 },
+        { "text": "Horse", "rarity": 40 },
+        { "text": "Ox", "aliases": ["Cow", "Bull", "Buffalo", "Water buffalo"], "rarity": 60 },
+        { "text": "Rooster", "aliases": ["Chicken", "Cock", "Cockerel"], "rarity": 75 },
+        { "text": "Goat", "aliases": ["Sheep", "Ram"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "big-five",
+      "text": "Name one of the Big Five game animals of Africa",
+      "answers": [
+        { "text": "Lion", "aliases": ["African lion"], "rarity": 5 },
+        { "text": "Elephant", "aliases": ["African elephant", "African bush elephant"], "rarity": 10 },
+        { "text": "Rhinoceros", "aliases": ["Rhino", "Black rhinoceros", "Black rhino", "White rhinoceros", "White rhino"], "rarity": 30 },
+        { "text": "Leopard", "aliases": ["African leopard"], "rarity": 45 },
+        { "text": "Buffalo", "aliases": ["Cape buffalo", "African buffalo"], "rarity": 100 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "id": "mythology",
+  "name": "Mythology",
+  "prompts": [
+    {
+      "id": "olympians",
+      "text": "Name one of the twelve Olympian gods of Greek myth",
+      "answers": [
+        { "text": "Zeus", "rarity": 5 },
+        { "text": "Poseidon", "rarity": 10 },
+        { "text": "Athena", "aliases": ["Athene", "Pallas Athena"], "rarity": 15 },
+        { "text": "Apollo", "aliases": ["Apollon"], "rarity": 20 },
+        { "text": "Aphrodite", "rarity": 20 },
+        { "text": "Ares", "rarity": 25 },
+        { "text": "Hermes", "rarity": 30 },
+        { "text": "Artemis", "rarity": 35 },
+        { "text": "Hera", "rarity": 35 },
+        { "text": "Hephaestus", "aliases": ["Hephaistos"], "rarity": 60 },
+        { "text": "Dionysus", "aliases": ["Dionysos", "Bacchus"], "rarity": 60 },
+        { "text": "Demeter", "rarity": 65 },
+        { "text": "Hestia", "rarity": 100 }
+      ]
+    },
+    {
+      "id": "deadly-sins",
+      "text": "Name one of the seven deadly sins",
+      "answers": [
+        { "text": "Lust", "rarity": 10 },
+        { "text": "Greed", "aliases": ["Avarice", "Covetousness"], "rarity": 15 },
+        { "text": "Gluttony", "rarity": 30 },
+        { "text": "Sloth", "aliases": ["Laziness", "Acedia"], "rarity": 40 },
+        { "text": "Pride", "aliases": ["Vanity", "Hubris"], "rarity": 55 },
+        { "text": "Wrath", "aliases": ["Anger", "Rage", "Ire"], "rarity": 70 },
+        { "text": "Envy", "aliases": ["Jealousy"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "underworld-rivers",
+      "text": "Name a river of the Greek underworld",
+      "answers": [
+        { "text": "Styx", "rarity": 5 },
+        { "text": "Lethe", "rarity": 50 },
+        { "text": "Acheron", "rarity": 65 },
+        { "text": "Phlegethon", "aliases": ["Pyriphlegethon"], "rarity": 90 },
+        { "text": "Cocytus", "aliases": ["Kokytos"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "four-horsemen",
+      "text": "Name one of the Four Horsemen of the Apocalypse",
+      "answers": [
+        { "text": "Death", "rarity": 10 },
+        { "text": "War", "rarity": 15 },
+        { "text": "Famine", "aliases": ["Hunger"], "rarity": 35 },
+        { "text": "Pestilence", "aliases": ["Plague", "Conquest"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "santas-reindeer",
+      "text": "Name one of Santa Claus's reindeer",
+      "answers": [
+        { "text": "Rudolph", "aliases": ["Rudolf"], "rarity": 5 },
+        { "text": "Blitzen", "aliases": ["Blixem", "Blixen"], "rarity": 25 },
+        { "text": "Dasher", "rarity": 30 },
+        { "text": "Dancer", "rarity": 30 },
+        { "text": "Prancer", "rarity": 35 },
+        { "text": "Comet", "rarity": 40 },
+        { "text": "Cupid", "rarity": 45 },
+        { "text": "Vixen", "rarity": 60 },
+        { "text": "Donner", "aliases": ["Donder", "Dunder"], "rarity": 100 }
+      ]
+    }
+  ]
+}

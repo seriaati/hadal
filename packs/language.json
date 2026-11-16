@@ -1,0 +1,127 @@
+{
+  "id": "language",
+  "name": "Language",
+  "prompts": [
+    {
+      "id": "greek-letters",
+      "text": "Name a letter of the Greek alphabet",
+      "answers": [
+        { "text": "Alpha", "rarity": 5 },
+        { "text": "Beta", "rarity": 5 },
+        { "text": "Omega", "rarity": 10 },
+        { "text": "Delta", "rarity": 10 },
+        { "text": "Gamma", "rarity": 10 },
+        { "text": "Pi", "rarity": 15 },
+        { "text": "Sigma", "rarity": 20 },
+        { "text": "Theta", "rarity": 25 },
+        { "text": "Epsilon", "rarity": 30 },
+        { "text": "Lambda", "rarity": 30 },
+        { "text": "Omicron", "rarity": 35 },
+        { "text": "Kappa", "rarity": 35 },
+        { "text": "Phi", "rarity": 40 },
+        { "text": "Zeta", "rarity": 45 },
+        { "text": "Mu", "rarity": 45 },
+        { "text": "Psi", "rarity": 50 },
+        { "text": "Iota", "rarity": 50 },
+        { "text": "Tau", "rarity": 55 },
+        { "text": "Rho", "rarity": 55 },
+        { "text": "Chi", "rarity": 55 },
+        { "text": "Eta", "rarity": 60 },
+        { "text": "Nu", "rarity": 70 },
+        { "text": "Xi", "rarity": 75 },
+        { "text": "Upsilon", "aliases": ["Ypsilon"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "un-languages",
+      "text": "Name an official language of the United Nations",
+      "answers": [
+        { "text": "English", "rarity": 5 },
+        { "text": "French", "rarity": 10 },
+        { "text": "Spanish", "rarity": 15 },
+        { "text": "Chinese", "aliases": ["Mandarin", "Mandarin Chinese", "Standard Chinese"], "rarity": 25 },
+        { "text": "Russian", "rarity": 60 },
+        { "text": "Arabic", "aliases": ["Modern Standard Arabic"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "parts-of-speech",
+      "text": "Name one of the eight traditional parts of speech in English",
+      "answers": [
+        { "text": "Noun", "aliases": ["Nouns"], "rarity": 5 },
+        { "text": "Verb", "aliases": ["Verbs"], "rarity": 5 },
+        { "text": "Adjective", "rarity": 10 },
+        { "text": "Adverb", "rarity": 20 },
+        { "text": "Pronoun", "rarity": 40 },
+        { "text": "Preposition", "rarity": 55 },
+        { "text": "Conjunction", "rarity": 60 },
+        { "text": "Interjection", "aliases": ["Exclamation"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "nato-alphabet",
+      "text": "Name a code word of the NATO phonetic alphabet",
+      "answers": [
+        { "text": "Alfa", "aliases": ["Alpha"], "rarity": 5 },
+        { "text": "Bravo", "rarity": 5 },
+        { "text": "Charlie", "rarity": 10 },
+        { "text": "Delta", "rarity": 15 },
+        { "text": "Foxtrot", "rarity": 15 },
+        { "text": "Tango", "rarity": 20 },
+        { "text": "Zulu", "rarity": 25 },
+        { "text": "Whiskey", "aliases": ["Whisky"], "rarity": 25 },
+        { "text": "Echo", "rarity": 25 },
+        { "text": "X-ray", "rarity": 35 },
+        { "text": "Oscar", "rarity": 40 },
+        { "text": "Romeo", "rarity": 40 },
+        { "text": "Sierra", "rarity": 45 },
+        { "text": "Yankee", "rarity": 45 },
+        { "text": "Victor", "rarity": 50 },
+        { "text": "Hotel", "rarity": 50 },
+        { "text": "Golf", "rarity": 55 },
+        { "text": "Kilo", "rarity": 55 },
+        { "text": "Mike", "rarity": 60 },
+        { "text": "Papa", "rarity": 60 },
+        { "text": "Juliett", "aliases": ["Juliet"], "rarity": 65 },
+        { "text": "India", "rarity": 70 },
+        { "text": "November", "rarity": 75 },
+        { "text": "Quebec", "rarity": 85 },
+        { "text": "Lima", "rarity": 90 },
+        { "text": "Uniform", "rarity": 100 }
+      ]
+    },
+    {
+      "id": "romance-languages",
+      "text": "Name a Romance language",
+      "answers": [
+        { "text": "Spanish", "aliases": ["Castilian", "Español"], "rarity": 5 },
+        { "text": "French", "rarity": 5 },
+        { "text": "Italian", "rarity": 10 },
+        { "text": "Portuguese", "rarity": 20 },
+        { "text": "Romanian", "aliases": ["Rumanian", "Moldovan"], "rarity": 35 },
+        { "text": "Catalan", "aliases": ["Valencian"], "rarity": 45 },
+        { "text": "Galician", "rarity": 70 },
+        { "text": "Occitan", "aliases": ["Provençal", "Gascon"], "rarity": 75 },
+        { "text": "Sardinian", "rarity": 80 },
+        { "text": "Sicilian", "rarity": 80 },
+        { "text": "Corsican", "rarity": 85 },
+        { "text": "Romansh", "aliases": ["Romansch", "Rumantsch"], "rarity": 85 },
+        { "text": "Neapolitan", "rarity": 90 },
+        { "text": "Venetian", "rarity": 90 },
+        { "text": "Ladino", "aliases": ["Judaeo-Spanish", "Judeo-Spanish"], "rarity": 90 },
+        { "text": "Aragonese", "rarity": 95 },
+        { "text": "Asturian", "aliases": ["Asturleonese", "Leonese"], "rarity": 95 },
+        { "text": "Walloon", "rarity": 95 },
+        { "text": "Friulian", "aliases": ["Friulan"], "rarity": 95 },
+        { "text": "Lombard", "rarity": 95 },
+        { "text": "Piedmontese", "rarity": 95 },
+        { "text": "Ladin", "rarity": 100 },
+        { "text": "Ligurian", "aliases": ["Genoese"], "rarity": 100 },
+        { "text": "Franco-Provençal", "aliases": ["Arpitan"], "rarity": 100 },
+        { "text": "Aromanian", "aliases": ["Vlach"], "rarity": 100 },
+        { "text": "Dalmatian", "rarity": 100 },
+        { "text": "Mirandese", "rarity": 100 }
+      ]
+    }
+  ]
+}

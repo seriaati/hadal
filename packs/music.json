@@ -1,0 +1,62 @@
+{
+  "id": "music",
+  "name": "Music",
+  "prompts": [
+    {
+      "id": "beatles",
+      "text": "Name a member of the Beatles",
+      "answers": [
+        { "text": "John Lennon", "aliases": ["John", "Lennon"], "rarity": 5 },
+        { "text": "Paul McCartney", "aliases": ["Paul", "McCartney", "Macca"], "rarity": 5 },
+        { "text": "Ringo Starr", "aliases": ["Ringo", "Starr", "Richard Starkey"], "rarity": 15 },
+        { "text": "George Harrison", "aliases": ["George", "Harrison"], "rarity": 20 },
+        { "text": "Pete Best", "rarity": 85 },
+        { "text": "Stuart Sutcliffe", "aliases": ["Stu Sutcliffe", "Sutcliffe"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "queen",
+      "text": "Name a member of the band Queen",
+      "answers": [
+        { "text": "Freddie Mercury", "aliases": ["Freddie", "Mercury", "Farrokh Bulsara"], "rarity": 5 },
+        { "text": "Brian May", "aliases": ["May"], "rarity": 30 },
+        { "text": "Roger Taylor", "aliases": ["Taylor", "Roger Meddows Taylor"], "rarity": 70 },
+        { "text": "John Deacon", "aliases": ["Deacon"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "brass-instruments",
+      "text": "Name a brass instrument",
+      "answers": [
+        { "text": "Trumpet", "aliases": ["Piccolo trumpet", "Bass trumpet"], "rarity": 5 },
+        { "text": "Trombone", "aliases": ["Bass trombone", "Tenor trombone", "Valve trombone"], "rarity": 10 },
+        { "text": "Tuba", "rarity": 15 },
+        { "text": "French horn", "aliases": ["Horn"], "rarity": 20 },
+        { "text": "Cornet", "rarity": 50 },
+        { "text": "Bugle", "rarity": 50 },
+        { "text": "Euphonium", "rarity": 65 },
+        { "text": "Sousaphone", "rarity": 70 },
+        { "text": "Flugelhorn", "aliases": ["Fluegelhorn"], "rarity": 75 },
+        { "text": "Baritone horn", "aliases": ["Baritone"], "rarity": 80 },
+        { "text": "Tenor horn", "aliases": ["Alto horn"], "rarity": 85 },
+        { "text": "Mellophone", "rarity": 90 },
+        { "text": "Saxhorn", "rarity": 95 },
+        { "text": "Post horn", "rarity": 95 },
+        { "text": "Cimbasso", "rarity": 100 },
+        { "text": "Wagner tuba", "rarity": 100 },
+        { "text": "Helicon", "rarity": 100 },
+        { "text": "Ophicleide", "rarity": 100 }
+      ]
+    },
+    {
+      "id": "thrash-big-four",
+      "text": "Name one of the Big Four bands of thrash metal",
+      "answers": [
+        { "text": "Metallica", "rarity": 5 },
+        { "text": "Slayer", "rarity": 45 },
+        { "text": "Megadeth", "rarity": 45 },
+        { "text": "Anthrax", "rarity": 100 }
+      ]
+    }
+  ]
+}

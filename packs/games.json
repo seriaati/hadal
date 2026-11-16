@@ -1,0 +1,70 @@
+{
+  "id": "games",
+  "name": "Games",
+  "prompts": [
+    {
+      "id": "tennis-grand-slams",
+      "text": "Name one of the four Grand Slam tennis tournaments",
+      "answers": [
+        { "text": "Wimbledon", "aliases": ["The Championships", "Wimbledon Championships"], "rarity": 5 },
+        { "text": "US Open", "aliases": ["United States Open", "Flushing Meadows"], "rarity": 30 },
+        { "text": "French Open", "aliases": ["Roland Garros"], "rarity": 40 },
+        { "text": "Australian Open", "aliases": ["Aussie Open"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "decathlon-events",
+      "text": "Name one of the ten events of the decathlon",
+      "answers": [
+        { "text": "100 metres", "aliases": ["100 meters", "100m", "100 metres sprint", "100 meter dash", "100m sprint", "100m dash", "100"], "rarity": 15 },
+        { "text": "Long jump", "rarity": 20 },
+        { "text": "High jump", "rarity": 20 },
+        { "text": "Javelin throw", "aliases": ["Javelin"], "rarity": 20 },
+        { "text": "Shot put", "aliases": ["Shot"], "rarity": 25 },
+        { "text": "Discus throw", "aliases": ["Discus"], "rarity": 25 },
+        { "text": "Pole vault", "rarity": 30 },
+        { "text": "110 metres hurdles", "aliases": ["110 meters hurdles", "110m hurdles", "110 hurdles", "110m", "Hurdles", "High hurdles"], "rarity": 30 },
+        { "text": "1500 metres", "aliases": ["1500 meters", "1500m", "1500", "Metric mile"], "rarity": 55 },
+        { "text": "400 metres", "aliases": ["400 meters", "400m", "400"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "chess-pieces",
+      "text": "Name a chess piece",
+      "answers": [
+        { "text": "Queen", "rarity": 10 },
+        { "text": "King", "aliases": ["Kings"], "rarity": 10 },
+        { "text": "Knight", "aliases": ["Horse"], "rarity": 15 },
+        { "text": "Pawn", "aliases": ["Pawns"], "rarity": 30 },
+        { "text": "Bishop", "rarity": 60 },
+        { "text": "Rook", "aliases": ["Rooks", "Castle", "Tower"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "poker-hands",
+      "text": "Name a poker hand ranking",
+      "answers": [
+        { "text": "Royal flush", "rarity": 10 },
+        { "text": "Full house", "aliases": ["Boat", "Full boat"], "rarity": 10 },
+        { "text": "Straight", "rarity": 20 },
+        { "text": "Flush", "rarity": 20 },
+        { "text": "Straight flush", "rarity": 30 },
+        { "text": "Pair", "aliases": ["One pair", "A pair", "Two of a kind"], "rarity": 30 },
+        { "text": "Four of a kind", "aliases": ["Quads", "4 of a kind"], "rarity": 35 },
+        { "text": "Three of a kind", "aliases": ["Trips", "Set", "3 of a kind"], "rarity": 40 },
+        { "text": "Two pair", "aliases": ["2 pair", "2 pairs"], "rarity": 50 },
+        { "text": "High card", "aliases": ["No pair"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "golf-majors",
+      "text": "Name one of the four men's major golf championships",
+      "answers": [
+        { "text": "The Masters", "aliases": ["Masters Tournament", "US Masters", "Augusta"], "rarity": 5 },
+        { "text": "The Open Championship", "aliases": ["British Open", "The Open"], "rarity": 25 },
+        { "text": "US Open", "aliases": ["United States Open"], "rarity": 40 },
+        { "text": "PGA Championship", "aliases": ["US PGA Championship", "US PGA", "PGA"], "rarity": 100 }
+      ]
+    }
+  ]
+}
