@@ -1,0 +1,71 @@
+{
+  "id": "science",
+  "name": "Science",
+  "prompts": [
+    {
+      "id": "noble-gases",
+      "text": "Name a noble gas",
+      "answers": [
+        { "text": "Helium", "rarity": 10 },
+        { "text": "Neon", "rarity": 15 },
+        { "text": "Argon", "rarity": 35 },
+        { "text": "Krypton", "rarity": 50 },
+        { "text": "Xenon", "rarity": 60 },
+        { "text": "Radon", "rarity": 75 },
+        { "text": "Oganesson", "rarity": 100 }
+      ]
+    },
+    {
+      "id": "planets",
+      "text": "Name a planet or dwarf planet in the Solar System",
+      "answers": [
+        { "text": "Mars", "rarity": 8 },
+        { "text": "Earth", "rarity": 10 },
+        { "text": "Jupiter", "rarity": 12 },
+        { "text": "Saturn", "rarity": 15 },
+        { "text": "Pluto", "rarity": 20 },
+        { "text": "Venus", "rarity": 25 },
+        { "text": "Mercury", "rarity": 30 },
+        { "text": "Neptune", "rarity": 35 },
+        { "text": "Uranus", "rarity": 35 },
+        { "text": "Ceres", "rarity": 75 },
+        { "text": "Eris", "rarity": 85 },
+        { "text": "Makemake", "rarity": 95 },
+        { "text": "Haumea", "rarity": 100 }
+      ]
+    },
+    {
+      "id": "single-letter-elements",
+      "text": "Name a chemical element whose symbol is a single letter",
+      "answers": [
+        { "text": "Hydrogen", "aliases": ["H"], "rarity": 5 },
+        { "text": "Oxygen", "aliases": ["O"], "rarity": 5 },
+        { "text": "Carbon", "aliases": ["C"], "rarity": 10 },
+        { "text": "Nitrogen", "aliases": ["N"], "rarity": 15 },
+        { "text": "Potassium", "aliases": ["K"], "rarity": 35 },
+        { "text": "Sulfur", "aliases": ["Sulphur", "S"], "rarity": 40 },
+        { "text": "Fluorine", "aliases": ["F"], "rarity": 45 },
+        { "text": "Phosphorus", "aliases": ["P"], "rarity": 45 },
+        { "text": "Uranium", "aliases": ["U"], "rarity": 50 },
+        { "text": "Iodine", "aliases": ["I"], "rarity": 55 },
+        { "text": "Boron", "aliases": ["B"], "rarity": 60 },
+        { "text": "Tungsten", "aliases": ["Wolfram", "W"], "rarity": 75 },
+        { "text": "Vanadium", "aliases": ["V"], "rarity": 85 },
+        { "text": "Yttrium", "aliases": ["Y"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "si-base-units",
+      "text": "Name one of the seven SI base units",
+      "answers": [
+        { "text": "Metre", "aliases": ["Meter", "Metres", "Meters"], "rarity": 10 },
+        { "text": "Kilogram", "aliases": ["Kilograms", "Kilogramme", "kg"], "rarity": 10 },
+        { "text": "Second", "aliases": ["Seconds"], "rarity": 15 },
+        { "text": "Kelvin", "aliases": ["Kelvins"], "rarity": 45 },
+        { "text": "Ampere", "aliases": ["Amperes", "Amp", "Amps"], "rarity": 50 },
+        { "text": "Mole", "aliases": ["Moles", "mol"], "rarity": 75 },
+        { "text": "Candela", "aliases": ["Candelas"], "rarity": 100 }
+      ]
+    }
+  ]
+}

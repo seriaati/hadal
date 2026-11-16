@@ -1,0 +1,13 @@
+/** A pack file in `packs/`. */
+export type Pack = { id: string; name: string; prompts: Prompt[] };
+export type Prompt = { id: string; text: string; answers: Answer[] };
+/** `rarity` runs from 1 (everyone says it) to 100 (almost nobody does). */
+export type Answer = { text: string; aliases?: string[]; rarity: number };
+
+/** A prompt as the browser sees it: no answers. */
+export type GamePrompt = { id: string; text: string; pack: string };
+/** `answer` is the pack's spelling of a correct answer, or null when wrong (rarity 0). */
+export type Verdict = { answer: string | null; rarity: number };
+
+/** A correct answer scores its rarity in points; each point is this many metres. */
+export const METERS_PER_POINT = 11;

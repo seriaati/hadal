@@ -1,0 +1,44 @@
+import { expect, test } from "bun:test";
+import { buildIndex, judge, loadPacks, normalize, pickPrompts } from "./game";
+
+// Building the index also validates every built-in pack (rarity range, duplicate answers).
+const index = buildIndex(await loadPacks());
+const ASIA = "geography/asia-countries";
+
+test("normalize ignores case, accents, punctuation, spaces and a leading 'the'", () => {
+  expect(normalize("  The Pont-l'Évêque ")).toBe("pontleveque");
+  expect(normalize("TIMOR LESTE")).toBe(normalize("Timor-Leste"));
+});
+
+test("a correct answer returns the pack's spelling and its rarity", () => {
+  const verdict = judge(index, ASIA, "  taiwan ");
+  expect(verdict?.answer).toBe("Taiwan");
+  expect(verdict?.rarity).toBeGreaterThan(judge(index, ASIA, "China")!.rarity);
+});
+
+test("an alias counts as the answer it belongs to", () => {
+  expect(judge(index, ASIA, "East Timor")?.answer).toBe("Timor-Leste");
+});
+
+test("a wrong answer scores nothing", () => {
+  expect(judge(index, ASIA, "USA")).toEqual({ answer: null, rarity: 0 });
+  expect(judge(index, ASIA, "")).toEqual({ answer: null, rarity: 0 });
+});
+
+test("an unknown prompt is reported as null", () => {
+  expect(judge(index, "nope/nope", "China")).toBeNull();
+});
+
+test("pickPrompts returns distinct prompts", () => {
+  const prompts = pickPrompts(index, 10);
+  expect(prompts).toHaveLength(10);
+  expect(new Set(prompts.map((prompt) => prompt.id)).size).toBe(10);
+});
+
+test("buildIndex rejects duplicate answers and out-of-range rarity", () => {
+  const pack = (answers: { text: string; rarity: number }[]) => [
+    { id: "p", name: "P", prompts: [{ id: "q", text: "Q", answers }] },
+  ];
+  expect(() => buildIndex(pack([{ text: "Peru", rarity: 5 }, { text: "peru", rarity: 9 }]))).toThrow("duplicate");
+  expect(() => buildIndex(pack([{ text: "Peru", rarity: 0 }]))).toThrow("rarity");
+});
