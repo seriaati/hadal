@@ -22,14 +22,14 @@ async function answer(game: Game, rarity: number) {
   pressEnter(game);
 }
 
-/** End the dive here, by the ascent or straight at the logbook, which then holds only the prompts that were finished. */
-function endDive(game: Game, phase: "ascent" | "done") {
-  const diving = game.phase === "ask" || game.phase === "verdict" || (game.phase === "ascent" && phase === "done");
+/** End the dive here. The logbook then holds only the prompts that were finished. */
+function endDive(game: Game) {
+  const diving = game.phase === "ask" || game.phase === "verdict";
   if (!diving || game.judging) return;
   game.prompts = game.prompts.slice(0, game.results.length);
   game.round = game.prompts.length;
   game.result = null;
-  game.phase = phase;
+  game.phase = "ascent";
   game.phaseTime = 0;
 }
 
@@ -51,8 +51,7 @@ export function DevMenu({ game, scene, frame }: DevTools) {
       </div>
       <div>
         Dive
-        <button onClick={() => endDive(game, "ascent")}>End</button>
-        <button onClick={() => endDive(game, "done")}>End at the logbook</button>
+        <button onClick={() => endDive(game)}>End</button>
       </div>
       <div>
         Creature
