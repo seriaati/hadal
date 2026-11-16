@@ -16,6 +16,10 @@ Use `bun`, not `npm`/`node`/`vite`.
 - `bun test`: run tests
 - `bun typecheck`: type-check
 
+Developer mode: put `HADAL_DEV_MODE=1` in `.env` (git-ignored, read by Bun at start-up) and
+restart the server. The game then shows a menu of shortcuts (`src/web/DevMenu.tsx`): answer
+correctly at a chosen rarity, run out of air, end the dive, summon a creature.
+
 ## Layout
 
 - `src/server/`: `Bun.serve` entry, API routes, pack loading and answer judging
@@ -31,6 +35,8 @@ Use `bun`, not `npm`/`node`/`vite`.
 ## Rules
 
 - Pack answers stay on the server. `src/web` may import from `src/shared`, never from `src/server`.
+  The one exception is developer mode, whose `/api/dev/answer` endpoint names a correct answer;
+  it must stay off on any instance other people play on.
 - The project owner is new to web development: build in small stages and explain tradeoffs.
 - Everything in the game view is drawn on one pixel grid with the 19-colour palette. Keep the
   screen clean: a new on-screen element must earn its place or live in the world. The logbook

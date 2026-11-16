@@ -54,6 +54,13 @@ export function pickPrompts(index: PromptIndex, count: number): GamePrompt[] {
   return prompts.slice(0, count);
 }
 
+/** The pack's spelling of the answer whose rarity is nearest to `rarity`, or null when the prompt id is unknown. */
+export function nearestAnswer(index: PromptIndex, promptId: string, rarity: number): string | null {
+  const answers = [...(index.get(promptId)?.answers.values() ?? [])];
+  const nearest = answers.reduce<Answer | null>((best, answer) => (best && Math.abs(best.rarity - rarity) <= Math.abs(answer.rarity - rarity) ? best : answer), null);
+  return nearest?.text ?? null;
+}
+
 /** Returns null when the prompt id is unknown. */
 export function judge(index: PromptIndex, promptId: string, input: string): Verdict | null {
   const entry = index.get(promptId);

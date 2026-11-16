@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { buildIndex, judge, loadPacks, normalize, pickPrompts } from "./game";
+import { buildIndex, judge, loadPacks, nearestAnswer, normalize, pickPrompts } from "./game";
 
 // Building the index also validates every built-in pack (rarity range, duplicate answers).
 const index = buildIndex(await loadPacks());
@@ -27,6 +27,15 @@ test("a wrong answer scores nothing", () => {
 
 test("an unknown prompt is reported as null", () => {
   expect(judge(index, "nope/nope", "China")).toBeNull();
+  expect(nearestAnswer(index, "nope/nope", 50)).toBeNull();
+});
+
+test("the nearest answer to a rarity is a correct answer of about that rarity", () => {
+  const rarest = judge(index, ASIA, nearestAnswer(index, ASIA, 100)!)!;
+  const commonest = judge(index, ASIA, nearestAnswer(index, ASIA, 1)!)!;
+  expect(commonest.rarity).toBe(5);
+  expect(rarest.rarity).toBeGreaterThan(60);
+  expect(judge(index, ASIA, nearestAnswer(index, ASIA, 30)!)?.rarity).toBe(30);
 });
 
 test("pickPrompts returns distinct prompts", () => {

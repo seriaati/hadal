@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import type { Config } from "../shared/types";
+import { DevMenu, type DevTools } from "./DevMenu";
 import { Logbook } from "./Logbook";
 import { createGame, pressEnter, tick, type Game as Dive } from "./state";
 import { Display, Frame } from "./pixel/frame";
@@ -11,6 +13,8 @@ export function Game() {
   const keys = useRef<HTMLInputElement>(null);
   /** The dive the logbook is open on, once one has ended. */
   const [logged, setLogged] = useState<Dive | null>(null);
+  /** What the developer menu works on, if this instance is in developer mode. */
+  const [dev, setDev] = useState<DevTools | null>(null);
 
   useEffect(() => {
     const input = keys.current!;
@@ -20,6 +24,10 @@ export function Game() {
     const display = new Display(pixels.current!, glow.current!);
     // In development, let the browser console (and test scripts) reach the game.
     if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game, scene, frame, display } });
+
+    void fetch("/api/config")
+      .then((res) => res.json() as Promise<Config>)
+      .then((config) => config.devMode && setDev({ game, scene, frame }));
 
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== "Enter") return;
@@ -67,6 +75,7 @@ export function Game() {
       <canvas ref={glow} className="glow" />
       <Logbook dive={logged} />
       <input ref={keys} className="keys" aria-label="Your answer" maxLength={40} autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} />
+      {dev && <DevMenu {...dev} />}
     </main>
   );
 }

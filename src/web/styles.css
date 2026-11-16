@@ -116,3 +116,30 @@ body {
   opacity: 0;
   font-size: 16px;
 }
+
+/* The developer menu: a plain panel over everything, in a corner the game leaves dark. */
+.dev {
+  position: fixed;
+  left: 8px;
+  bottom: 8px;
+  z-index: 1;
+  padding: 6px 8px;
+  border: 1px solid #2e4a6e;
+  background: rgba(5, 6, 11, 0.9);
+  color: #9cc0d6;
+  font: 12px/22px monospace;
+}
+
+.dev button {
+  margin-left: 4px;
+  border: 1px solid #2e4a6e;
+  background: #0f1526;
+  color: inherit;
+  font: inherit;
+  line-height: 16px;
+  cursor: pointer;
+}
+
+.dev button:hover {
+  background: #1f3352;
+}
