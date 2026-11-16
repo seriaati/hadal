@@ -24,7 +24,8 @@ correctly at a chosen rarity, run out of air, end the dive, summon a creature.
 
 - `src/server/`: `Bun.serve` entry, API routes, pack loading and answer judging
 - `src/web/`: the game client (served by the same Bun process). `state.ts` holds the rules of
-  a run; `pixel/` is the renderer (frame buffer and soft light, fonts, the scene, creatures);
+  a run; `sound.ts` makes every sound (there are no sound files); `pixel/` is the renderer
+  (frame buffer and soft light, fonts, the scene, creatures, the settings panel);
   `logbook/` draws the hand-drawn summary of a finished dive (`sketch.ts` holds the paint and
   ink tools, `dive.ts` and `entries.ts` are the two pages)
 - `src/shared/`: types and constants used by both sides
