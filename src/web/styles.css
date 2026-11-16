@@ -21,6 +21,7 @@ body {
 /* The game itself: low resolution, scaled up with hard pixel edges. */
 .pixels {
   image-rendering: pixelated;
+  touch-action: none; /* so a finger can drag a slider in the settings */
 }
 
 /* Soft light, added on top of the pixels. */

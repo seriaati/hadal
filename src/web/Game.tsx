@@ -6,6 +6,7 @@ import { Sound } from "./sound";
 import { createGame, pressEnter, tick, type Game as Dive } from "./state";
 import { Display, Frame } from "./pixel/frame";
 import { Scene } from "./pixel/scene";
+import { Settings } from "./pixel/settings";
 
 /** The whole game is drawn on canvas. A hidden text field takes the typing, so phones get a keyboard. */
 export function Game() {
@@ -19,21 +20,28 @@ export function Game() {
 
   useEffect(() => {
     const input = keys.current!;
+    const canvas = pixels.current!;
     const game = createGame();
     const scene = new Scene();
     const frame = new Frame();
-    const display = new Display(pixels.current!, glow.current!);
+    const display = new Display(canvas, glow.current!);
     const sound = new Sound();
+    const settings = new Settings(sound);
     // In development, let the browser console (and test scripts) reach the game.
-    if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game, scene, frame, display, sound } });
+    if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game, scene, frame, display, sound, settings } });
 
     void fetch("/api/config")
       .then((res) => res.json() as Promise<Config>)
       .then((config) => config.devMode && setDev({ game, scene, frame }));
 
     const onKey = (event: KeyboardEvent) => {
-      if (event.key !== "Enter") return;
+      if (event.key !== "Enter" && event.key !== "Escape") return;
       event.preventDefault();
+      if (settings.open) {
+        settings.open = false; // with the settings open, either key only closes them
+        return;
+      }
+      if (event.key !== "Enter") return;
       if (game.phase === "ask") game.input = input.value; // include keys typed since the last frame
       pressEnter(game);
       if (game.phase === "ask") input.value = game.input; // an answer that was sent leaves the field empty
@@ -43,8 +51,17 @@ export function Game() {
       if (event.target !== input) event.preventDefault();
       input.focus();
     };
+    // A press that takes hold of a slider in the settings keeps it until the pointer lifts.
+    const onPointer = (event: PointerEvent) => {
+      const scale = canvas.clientWidth / frame.width;
+      const x = event.clientX / scale;
+      if (event.type === "pointerdown" && settings.press(frame, x, event.clientY / scale)) canvas.setPointerCapture(event.pointerId);
+      if (canvas.hasPointerCapture(event.pointerId)) settings.drag(frame, x);
+    };
     input.addEventListener("keydown", onKey);
     addEventListener("mousedown", keepFocus);
+    canvas.addEventListener("pointerdown", onPointer);
+    canvas.addEventListener("pointermove", onPointer);
 
     let done = false;
     let last = performance.now();
@@ -61,7 +78,11 @@ export function Game() {
       }
       display.fit(frame);
       // Once the logbook has faded in it hides the sea, which need not be drawn.
-      if (!done || game.phaseTime < 1) display.present(frame, scene.draw(frame, game, dt, now / 1000));
+      if (!done || game.phaseTime < 1) {
+        const lights = scene.draw(frame, game, dt, now / 1000);
+        settings.draw(frame);
+        display.present(frame, lights);
+      }
       sound.update(game, scene, dt);
     });
 
@@ -69,6 +90,8 @@ export function Game() {
       cancelAnimationFrame(request);
       input.removeEventListener("keydown", onKey);
       removeEventListener("mousedown", keepFocus);
+      canvas.removeEventListener("pointerdown", onPointer);
+      canvas.removeEventListener("pointermove", onPointer);
       sound.close();
     };
   }, []);
