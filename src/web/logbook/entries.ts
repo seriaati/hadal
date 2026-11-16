@@ -3,7 +3,7 @@ import { formatMeters, zoneAt } from "../depth";
 import type { Game } from "../state";
 import {
   DISPLAY, GLAZE, GRAPHITE, INK, RED, RUST, TYPED,
-  blob, createSheet, ink, newCanvas, pencil, ring, rnd, txt, wash, wrap, type Lettering, type Sheet,
+  blob, createSheet, ink, newCanvas, pencil, ring, rnd, speckle, txt, wash, wrap, type Lettering, type Sheet,
 } from "./sketch";
 
 const STAMP_RED = "#b03a26";
@@ -29,7 +29,7 @@ function mugRing(paint: CanvasRenderingContext2D, x: number, y: number) {
   paint.restore();
 }
 
-/** A rubber stamp naming the deepest zone reached, its middle at (x, y). It is made on a canvas of its own, so that its label can be cut out of its rings. */
+/** A rubber stamp naming the deepest zone reached, its middle at (x, y). It is inked unevenly, so it is worn away on a canvas of its own. */
 function stampZone(dark: CanvasRenderingContext2D, x: number, y: number, zone: string) {
   const size = 170;
   const stamp = newCanvas(undefined, size, size);
@@ -62,6 +62,7 @@ function stampZone(dark: CanvasRenderingContext2D, x: number, y: number, zone: s
   stamp.letterSpacing = "1px";
   stamp.fillText(zone.toUpperCase(), 0, 9);
   stamp.restore();
+  speckle(stamp, "destination-out", 0.9, 2.5, size, size);
   dark.drawImage(stamp.canvas, x - size / 2, y - size / 2, size, size);
 }
 
