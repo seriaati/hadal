@@ -1,0 +1,216 @@
+/** The 19-colour palette. Sprites and text refer to colours by index. */
+export const PALETTE = [
+  "#05060b", // 0  void
+  "#0a0d18", // 1  abyss water
+  "#0f1526", // 2  midnight water
+  "#16223b", // 3
+  "#1f3352", // 4
+  "#2e4a6e", // 5
+  "#4d7396", // 6  dim text
+  "#9cc0d6", // 7  pale steel
+  "#17525e", // 8  dark teal
+  "#2fa39a", // 9  teal
+  "#6fe3c1", // 10 mint
+  "#d6fff0", // 11 pale mint
+  "#43202a", // 12 maroon
+  "#8c3b2a", // 13 rust
+  "#d9772f", // 14 orange
+  "#f5c15a", // 15 amber
+  "#fff1c2", // 16 cream
+  "#5b3a78", // 17 violet
+  "#c2415c", // 18 rose
+];
+const RGB = PALETTE.map((hex) => [0, 1, 2].map((i) => parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16)));
+
+/** Sprite rows are strings in which each character names a palette colour; "." is transparent. */
+const SPRITE_COLORS: Record<string, number> = {
+  "0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7,
+  t: 8, T: 9, m: 10, w: 11, r: 12, R: 13, o: 14, a: 15, c: 16, v: 17, x: 18,
+};
+
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+
+/** Ordered dithering: true for a fraction `t` of pixels, in a fixed 4x4 pattern. */
+export function dither(x: number, y: number, t: number): boolean {
+  return t * 16 > BAYER[(y & 3) * 4 + (x & 3)]! + 0.5;
+}
+
+/** A repeatable pseudo-random number in [0, 1) for a pair of whole numbers. */
+export function hash(a: number, b: number): number {
+  let h = (Math.imul(a, 374761393) + Math.imul(b, 668265263)) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+
+/** A soft light, in frame pixels. Drawn as a smooth glow over the crisp pixels. */
+export type Light = { x: number; y: number; radius: number; rgb: [number, number, number]; strength: number };
+
+/**
+ * One low-resolution frame. Every pixel has a palette colour, an optional glow (emissive
+ * pixels bloom) and a shade (how much of the soft light behind it the pixel blocks).
+ */
+export class Frame {
+  width = 0;
+  height = 0;
+  color = new Uint8Array(0);
+  /** Palette index + 1 of a glowing pixel, or 0. */
+  glowColor = new Uint8Array(0);
+  glowStrength = new Uint8Array(0);
+  shade = new Uint8Array(0);
+  /** Glow strength (0-255) given to pixels drawn from now on. */
+  emit = 0;
+  /** Shade (0-255) given to pixels drawn from now on, or -1 to leave the shade as it is. */
+  block = -1;
+
+  resize(width: number, height: number) {
+    if (width === this.width && height === this.height) return;
+    this.width = width;
+    this.height = height;
+    this.color = new Uint8Array(width * height);
+    this.glowColor = new Uint8Array(width * height);
+    this.glowStrength = new Uint8Array(width * height);
+    this.shade = new Uint8Array(width * height);
+  }
+
+  clear() {
+    this.color.fill(0);
+    this.glowColor.fill(0);
+    this.shade.fill(0);
+    this.emit = 0;
+    this.block = -1;
+  }
+
+  put(x: number, y: number, color: number) {
+    x |= 0;
+    y |= 0;
+    if (x < 0 || y < 0 || x >= this.width || y >= this.height) return;
+    const i = y * this.width + x;
+    this.color[i] = color;
+    this.glowColor[i] = this.emit ? color + 1 : 0;
+    this.glowStrength[i] = this.emit;
+    if (this.block >= 0) this.shade[i] = this.block;
+  }
+
+  /** Draw a sprite. If `glowChars` is given, only those characters glow. */
+  sprite(rows: string[], x: number, y: number, glowChars?: string) {
+    const emit = this.emit;
+    rows.forEach((row, j) => {
+      for (let i = 0; i < row.length; i++) {
+        const char = row[i]!;
+        if (char === ".") continue;
+        if (glowChars !== undefined) this.emit = glowChars.includes(char) ? emit || 255 : 0;
+        this.put(x + i, y + j, SPRITE_COLORS[char]!);
+      }
+    });
+    this.emit = emit;
+  }
+}
+
+/** The soft-light layer is drawn at this multiple of the frame's resolution. */
+const GLOW_SCALE = 2;
+/** How a light fades from its centre (0) to its edge (1). */
+const FALLOFF = [0, 0.1, 0.2, 0.3, 0.42, 0.55, 0.7, 0.85, 1].map(
+  (t) => [t, (1 - t * t) ** 2 / (1 + 7 * t * t)] as const,
+);
+
+/** Puts frames on screen: crisp pixels on one canvas, soft light on another above it. */
+export class Display {
+  private pixelContext: CanvasRenderingContext2D;
+  private glowContext: CanvasRenderingContext2D;
+  private shadeCanvas = document.createElement("canvas");
+  private bloomCanvas = document.createElement("canvas");
+  private image = new ImageData(1, 1);
+  private shade = new ImageData(1, 1);
+  private bloom = new ImageData(1, 1);
+
+  constructor(
+    private pixels: HTMLCanvasElement,
+    private glow: HTMLCanvasElement,
+  ) {
+    this.pixelContext = pixels.getContext("2d")!;
+    this.glowContext = glow.getContext("2d")!;
+  }
+
+  /** Size the canvases to the window at a whole-number pixel scale, and the frame to match. */
+  fit(frame: Frame) {
+    const scale = Math.max(2, Math.floor(Math.min(innerWidth / 240, innerHeight / 180)));
+    const width = Math.ceil(innerWidth / scale);
+    const height = Math.ceil(innerHeight / scale);
+    if (width === this.pixels.width && height === this.pixels.height) return;
+    frame.resize(width, height);
+    this.pixels.width = this.shadeCanvas.width = this.bloomCanvas.width = width;
+    this.pixels.height = this.shadeCanvas.height = this.bloomCanvas.height = height;
+    this.glow.width = width * GLOW_SCALE;
+    this.glow.height = height * GLOW_SCALE;
+    for (const canvas of [this.pixels, this.glow]) {
+      canvas.style.width = `${width * scale}px`;
+      canvas.style.height = `${height * scale}px`;
+    }
+    this.image = new ImageData(width, height);
+    this.shade = new ImageData(width, height);
+    this.bloom = new ImageData(width, height);
+  }
+
+  present(frame: Frame, lights: Light[]) {
+    const image = this.image.data;
+    const shade = this.shade.data;
+    const bloom = this.bloom.data;
+    for (let i = 0, o = 0; i < frame.color.length; i++, o += 4) {
+      const rgb = RGB[frame.color[i]!]!;
+      image[o] = rgb[0]!;
+      image[o + 1] = rgb[1]!;
+      image[o + 2] = rgb[2]!;
+      image[o + 3] = 255;
+      shade[o + 3] = frame.shade[i]!;
+      const glowing = frame.glowColor[i]!;
+      if (glowing) {
+        const glow = RGB[glowing - 1]!;
+        bloom[o] = glow[0]!;
+        bloom[o + 1] = glow[1]!;
+        bloom[o + 2] = glow[2]!;
+        bloom[o + 3] = frame.glowStrength[i]!;
+      } else {
+        bloom[o + 3] = 0;
+      }
+    }
+    this.pixelContext.putImageData(this.image, 0, 0);
+    this.shadeCanvas.getContext("2d")!.putImageData(this.shade, 0, 0);
+    this.bloomCanvas.getContext("2d")!.putImageData(this.bloom, 0, 0);
+
+    const g = this.glowContext;
+    const { width, height } = this.glow;
+    g.filter = "none";
+    g.globalAlpha = 1;
+    g.globalCompositeOperation = "source-over";
+    g.fillStyle = "#000";
+    g.fillRect(0, 0, width, height);
+
+    // The lights themselves.
+    g.globalCompositeOperation = "lighter";
+    for (const light of lights) {
+      const x = light.x * GLOW_SCALE;
+      const y = light.y * GLOW_SCALE;
+      const radius = light.radius * GLOW_SCALE;
+      const gradient = g.createRadialGradient(x, y, 0, x, y, radius);
+      for (const [t, falloff] of FALLOFF) {
+        gradient.addColorStop(t, `rgba(${light.rgb.join(",")},${Math.min(1, falloff * light.strength)})`);
+      }
+      g.fillStyle = gradient;
+      g.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+    }
+
+    // Solid things block the light behind them, with crisp pixel edges.
+    g.globalCompositeOperation = "source-over";
+    g.imageSmoothingEnabled = false;
+    g.drawImage(this.shadeCanvas, 0, 0, width, height);
+
+    // Glowing pixels bloom.
+    g.globalCompositeOperation = "lighter";
+    g.imageSmoothingEnabled = true;
+    for (const [blur, alpha] of [[1.25, 0.5], [4, 0.55], [11, 0.4]] as const) {
+      g.filter = `blur(${blur * GLOW_SCALE}px)`;
+      g.globalAlpha = alpha;
+      g.drawImage(this.bloomCanvas, 0, 0, width, height);
+    }
+  }
+}

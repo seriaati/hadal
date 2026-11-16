@@ -1,0 +1,43 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #05060b;
+}
+
+.stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+.stage canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* The game itself: low resolution, scaled up with hard pixel edges. */
+.pixels {
+  image-rendering: pixelated;
+}
+
+/* Soft light, added on top of the pixels. */
+.glow {
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* The invisible text field that receives the typing. */
+.keys {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  font-size: 16px;
+}
