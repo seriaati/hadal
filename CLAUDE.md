@@ -26,11 +26,12 @@ correctly at a chosen rarity, run out of air, end the dive, summon a creature.
 ## Layout
 
 - `src/server/`: `Bun.serve` entry, API routes, pack loading and answer judging, accounts and
-  sessions (`accounts.ts`), the database (`db.ts`; schema changes are numbered files in
+  sessions (`accounts.ts`), players' own packs (`custom.ts`), the database (`db.ts`; schema changes are numbered files in
   `migrations/`, run at start-up, never edited once released)
 - `src/web/`: the game client (served by the same Bun process). `state.ts` holds the rules of
   a run; `sound.ts` makes every sound (there are no sound files); `pixel/` is the renderer
-  (frame buffer and soft light, fonts, the scene, creatures, the settings and account panels);
+  (frame buffer and soft light, the hand-built fonts and the fetched one for other scripts
+  (`other.ts`), the scene, creatures, the settings, account and packs panels);
   `logbook/` draws the hand-drawn summary of a finished dive (`sketch.ts` holds the paint and
   ink tools, `dive.ts` and `entries.ts` are the two pages)
 - `src/shared/`: types and constants used by both sides
