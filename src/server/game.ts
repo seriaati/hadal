@@ -49,10 +49,52 @@ export function nearestAnswer(index: PromptIndex, promptId: string, rarity: numb
   return nearest?.text ?? null;
 }
 
+/** How many typos separate two spellings: a letter added, dropped or changed, or two neighbours swapped. */
+export function typos(a: string, b: string): number {
+  let before: number[] = [];
+  let previous = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const row = [i];
+    for (let j = 1; j <= b.length; j++) {
+      let count = Math.min(previous[j]! + 1, row[j - 1]! + 1, previous[j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1));
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) count = Math.min(count, before[j - 2]! + 1);
+      row.push(count);
+    }
+    before = previous;
+    previous = row;
+  }
+  return previous[b.length]!;
+}
+
+const digits = (text: string) => text.replace(/\P{N}/gu, "");
+
+/**
+ * The answer that `typed` misspells, if there is exactly one nearest. Short answers forgive
+ * nothing ("Iran" is not "Iraq"), and the first letter and any digits must be right: those are
+ * rarely typos and often another word ("Beach" is not "Peach", "Apollo 12" is not "Apollo 11").
+ */
+function misspelled(answers: Map<string, Answer>, typed: string): Answer | undefined {
+  let nearest: Answer | undefined;
+  let fewest = Infinity;
+  let tied = false;
+  for (const [spelling, answer] of answers) {
+    if (spelling[0] !== typed[0] || digits(spelling) !== digits(typed)) continue;
+    const allowed = spelling.length < 5 ? 0 : spelling.length < 9 ? 1 : 2;
+    const count = typos(spelling, typed);
+    if (count > allowed || count > fewest) continue;
+    if (count < fewest) tied = false;
+    else if (answer !== nearest) tied = true;
+    nearest = answer;
+    fewest = count;
+  }
+  return tied ? undefined : nearest;
+}
+
 /** Returns null when the prompt id is unknown. */
 export function judge(index: PromptIndex, promptId: string, input: string): Verdict | null {
   const entry = index.get(promptId);
   if (!entry) return null;
-  const answer = entry.answers.get(normalize(input));
+  const typed = normalize(input);
+  const answer = entry.answers.get(typed) ?? misspelled(entry.answers, typed);
   return answer ? { answer: answer.text, rarity: answer.rarity } : { answer: null, rarity: 0 };
 }
