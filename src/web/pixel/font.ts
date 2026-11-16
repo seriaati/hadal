@@ -59,7 +59,8 @@ const MEDIUM = {
 };
 
 type Glyphs = Record<string, string[]>;
-export type Font = { glyphs: Glyphs; height: number; gap: number; space: number; capitals: boolean };
+/** `scale` is how many times larger than drawn the glyphs are: the large fonts are a smaller one doubled. */
+export type Font = { glyphs: Glyphs; height: number; gap: number; space: number; capitals: boolean; scale: number };
 
 function parse(source: Record<string, string>): Glyphs {
   return Object.fromEntries(Object.entries(source).map(([char, rows]) => [char, rows.split("/")]));
@@ -99,17 +100,70 @@ const medium = parse(MEDIUM);
 const large = doubled(medium);
 
 export const FONTS: Record<"tiny" | "medium" | "large" | "huge", Font> = {
-  tiny: { glyphs: parse(TINY), height: 5, gap: 1, space: 3, capitals: true },
-  medium: { glyphs: medium, height: 7, gap: 1, space: 4, capitals: false },
-  large: { glyphs: large, height: 14, gap: 2, space: 6, capitals: false },
-  huge: { glyphs: doubled(large), height: 28, gap: 4, space: 12, capitals: false },
+  tiny: { glyphs: parse(TINY), height: 5, gap: 1, space: 3, capitals: true, scale: 1 },
+  medium: { glyphs: medium, height: 7, gap: 1, space: 4, capitals: false, scale: 1 },
+  large: { glyphs: large, height: 14, gap: 2, space: 6, capitals: false, scale: 2 },
+  huge: { glyphs: doubled(large), height: 28, gap: 4, space: 12, capitals: false, scale: 4 },
 };
 
-/** Reduce text to what the fonts can draw: no accents, plain quotes and dashes. */
+/**
+ * Where glyphs come from that the fonts above lack: every other script. `other.ts` fills this
+ * in with a ready-made pixel font, fetched when first needed. `glyph` gives the rows of one
+ * letter with its marks, or nothing if it cannot be drawn (yet); `ascent` is how many of
+ * those rows stand above the line the letters sit on; `line` is how many rows a line of them needs.
+ */
+export const other: { glyph: (unit: string) => string[] | undefined; ascent: number; line: number } = {
+  glyph: () => undefined,
+  ascent: 0,
+  line: 0,
+};
+
+/** Whether text holds nothing beyond the plain Latin letters, digits and signs of a keyboard. */
+export const latin = (text: string) => /^[ -~]*$/.test(text);
+
+const letters = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+const segmented = new Map<string, string[]>();
+const enlarged = new Map<string, string[]>();
+
+/**
+ * Text as the pieces that are drawn one at a time: a letter together with any marks it carries.
+ * Finding them is slow outside plain Latin and the same text is drawn every frame, so they are remembered.
+ */
+function pieces(text: string): string[] {
+  if (latin(text)) return text.split("");
+  let parts = segmented.get(text);
+  if (!parts) {
+    if (segmented.size > 2000) segmented.clear();
+    parts = Array.from(letters.segment(text), (piece) => piece.segment);
+    segmented.set(text, parts);
+  }
+  return parts;
+}
+
+const units = (font: Font, text: string) => pieces(font.capitals ? text.toUpperCase() : text);
+
+/** The rows of a unit, and how far above the top of the line they start. */
+function glyphOf(font: Font, unit: string): { rows: string[]; rise: number } | undefined {
+  const own = font.glyphs[unit];
+  if (own) return { rows: own, rise: 0 };
+  let rows = other.glyph(unit);
+  if (!rows) return undefined;
+  for (let scale = font.scale; scale > 1; scale /= 2) {
+    const key = `${scale}${unit}`;
+    rows = enlarged.get(key) ?? enlarged.set(key, double(rows)).get(key)!;
+  }
+  return { rows, rise: other.ascent * font.scale - font.height };
+}
+
+/**
+ * Reduce text to what the fonts can draw: Latin letters without their accents, plain quotes
+ * and dashes. Other scripts keep their marks, which tell their words apart.
+ */
 export function plain(text: string): string {
   return text
     .normalize("NFD")
-    .replace(/\p{M}/gu, "")
+    .replace(/(?<=\p{Script=Latin})\p{M}+/gu, "")
+    .normalize("NFC")
     .replace(/[‘’]/g, "'")
     .replace(/[“”]/g, '"')
     .replace(/[–—]/g, "-");
@@ -119,10 +173,10 @@ const glyphWidth = (rows: string[]) => Math.max(...rows.map((row) => row.length)
 
 export function measure(font: Font, text: string): number {
   let width = 0;
-  for (const char of font.capitals ? text.toUpperCase() : text) {
-    const rows = font.glyphs[char];
-    if (char === " ") width += font.space;
-    else if (rows) width += glyphWidth(rows) + font.gap;
+  for (const unit of units(font, text)) {
+    const glyph = glyphOf(font, unit);
+    if (unit === " ") width += font.space;
+    else if (glyph) width += glyphWidth(glyph.rows) + font.gap;
   }
   return Math.max(0, width - font.gap);
 }
@@ -132,19 +186,19 @@ type TextColor = number | ((row: number) => number);
 /** Draw text with its top-left at (x, y), or its top-right if `right` is set. Returns the x after it. */
 export function drawText(frame: Frame, font: Font, text: string, x: number, y: number, color: TextColor, right = false): number {
   if (right) x -= measure(font, text);
-  for (const char of font.capitals ? text.toUpperCase() : text) {
-    if (char === " ") {
+  for (const unit of units(font, text)) {
+    if (unit === " ") {
       x += font.space;
       continue;
     }
-    const rows = font.glyphs[char];
-    if (!rows) continue;
-    rows.forEach((row, j) => {
+    const glyph = glyphOf(font, unit);
+    if (!glyph) continue;
+    glyph.rows.forEach((row, j) => {
       for (let i = 0; i < row.length; i++) {
-        if (row[i] === "#") frame.put(x + i, y + j, typeof color === "number" ? color : color(j));
+        if (row[i] === "#") frame.put(x + i, y + j - glyph.rise, typeof color === "number" ? color : color(j - glyph.rise));
       }
     });
-    x += glyphWidth(rows) + font.gap;
+    x += glyphWidth(glyph.rows) + font.gap;
   }
   return x;
 }
@@ -161,15 +215,22 @@ export function wrap(font: Font, text: string, width: number): string[] {
     } else {
       line = longer;
     }
-    while (line.length > 1 && measure(font, line) > width) {
-      let cut = line.length - 1;
-      while (cut > 1 && measure(font, line.slice(0, cut)) > width) cut--;
-      lines.push(line.slice(0, cut));
-      line = line.slice(cut);
+    while (measure(font, line) > width) {
+      const parts = pieces(line);
+      if (parts.length < 2) break;
+      let cut = parts.length - 1;
+      while (cut > 1 && measure(font, parts.slice(0, cut).join("")) > width) cut--;
+      lines.push(parts.slice(0, cut).join(""));
+      line = parts.slice(cut).join("");
     }
   }
   if (line) lines.push(line);
   return lines;
+}
+
+/** How far apart lines of this text are set: `usual`, or more when letters of the other font, which stand taller, need it. */
+export function pitch(font: Font, text: string, usual = font.height + 3): number {
+  return latin(text) ? usual : Math.max(usual, other.line * font.scale);
 }
 
 /** The first of `fonts` in which the text fits `width`, or the last one if none does. */

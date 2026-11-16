@@ -5,6 +5,7 @@ import { Logbook } from "./Logbook";
 import { Sound } from "./sound";
 import { createGame, pressEnter, start, tick, type Game as Dive } from "./state";
 import { AccountPanel } from "./pixel/account";
+import { drawable } from "./pixel/other";
 import { Display, Frame } from "./pixel/frame";
 import { PacksPanel } from "./pixel/packs";
 import { Scene } from "./pixel/scene";
@@ -52,6 +53,8 @@ export function Game() {
       .then((config) => config.devMode && setDev({ game, scene, frame }));
 
     const onKey = (event: KeyboardEvent) => {
+      // While a keyboard is still composing a letter (as for Japanese or Chinese), Enter picks the letter; it sends nothing.
+      if (event.isComposing) return;
       if (game.phase === "title" && !settings.open && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
         const line = menu.choice + (event.key === "ArrowUp" ? -1 : 1);
         menu.choice = Math.max(0, Math.min(menu.items.length - 1, line));
@@ -105,7 +108,9 @@ export function Game() {
       last = now;
       if (game.phase === "ask") game.input = input.value;
       else input.value = "";
-      tick(game, dt);
+      // A prompt in another script keeps its air until the font that draws it has arrived.
+      const prompt = game.phase === "ask" && game.prompts[game.round];
+      if (!prompt || drawable(prompt.text)) tick(game, dt);
       if ((game.phase === "ascent" || game.phase === "done") !== ended) {
         ended = !ended;
         setLogged(ended ? game : null);

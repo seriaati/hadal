@@ -2,7 +2,7 @@ import { METERS_PER_POINT } from "../../shared/types";
 import { ZONES, formatMeters, lightOf } from "../depth";
 import { AIR_SECONDS, ascentSeconds, type Game } from "../state";
 import { Ambient } from "./creatures";
-import { FONTS, drawText, fit, measure, plain, wrap, type Font } from "./font";
+import { FONTS, drawText, fit, measure, pitch, plain, wrap, type Font } from "./font";
 import { dither, hash, type Frame, type Light } from "./frame";
 
 const METERS_PER_PIXEL = 5;
@@ -433,7 +433,7 @@ export class Scene {
     const sayWrapped = (font: Font, text: string, ty: number, color: Parameters<typeof drawText>[5]) => {
       let end = x;
       let y = ty;
-      wrap(font, text, room).forEach((line, i) => (end = say(font, line, x, (y = ty + i * (font.height + 3)), color)));
+      wrap(font, text, room).forEach((line, i) => (end = say(font, line, x, (y = ty + i * pitch(font, text)), color)));
       return { end, y };
     };
     const key = (kx: number, ky: number, label: string) => cover(kx, drawKey(frame, kx, ky, label), ky, ky + 8);
@@ -467,7 +467,7 @@ export class Scene {
     const prompt = game.prompts[game.round];
     if (!prompt) return;
     const asking = game.phase === "ask";
-    const promptY = sayWrapped(tiny, `${prompt.pack} ~ ${game.round + 1} of ${game.prompts.length}`, 11, 6).y + 10;
+    const promptY = sayWrapped(tiny, `${plain(prompt.pack)} ~ ${game.round + 1} of ${game.prompts.length}`, 11, 6).y + 10;
     const lines = wrap(medium, plain(prompt.text), room);
     lines.forEach((line, i) => say(medium, line, x, promptY + i * 11, asking ? 7 : 6));
     if (asking) {
