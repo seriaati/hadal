@@ -1,4 +1,4 @@
-import { formatMeters, zoneAt } from "../depth";
+import { formatMeters } from "../depth";
 import type { Game } from "../state";
 import {
   CREAM, DISPLAY, GLAZE, GRAPHITE, INK, PAGE_H, PAGE_W, RED, RUST, YELLOW,
@@ -9,10 +9,8 @@ import {
 const RULER: Pt[] = [[0, 84], [200, 150], [1000, 236], [4000, 424], [6000, 566], [11000, 738]];
 const [Y0, Y200, Y1000, Y4000, Y6000, Y11000] = RULER.map(([, y]) => y) as [number, number, number, number, number, number];
 const LINE_X = 250;
-/** Where each zone's name is written down the margin. */
-const ZONE_NAMES = [["Sunlight", 126], ["Twilight", 200], ["Midnight", 338], ["Abyssal", 516], ["Hadal", 662]] as const;
 /** The baseline of everything written down the margin, from the top. */
-const WRITTEN = [...ZONE_NAMES.map(([, y]) => y), ...RULER.map(([, y]) => y + 6)].sort((a, b) => a - b);
+const WRITTEN = RULER.map(([, y]) => y + 6);
 const PALE_RED = "#f6b09a";
 
 function yAt(depth: number): number {
@@ -175,7 +173,6 @@ export function drawDive(sheet: Sheet, game: Game) {
   txt(dark, 16, 48, "HADAL", { font: DISPLAY, size: 36, ls: 3, jit: 0 });
   pencil(dark, [[12, 20], [150, 19]], { n: 1, opacity: 0.45 });
   pencil(dark, [[12, 51], [156, 50]], { n: 1, opacity: 0.45 });
-  txt(dark, 18, 72, "the Kettle’s diving log", { size: 21, rot: -1 });
   for (const [x, y, s] of [[430, 34, 1], [452, 26, 0.7], [520, 46, 0.8]] as const) {
     ink(dark, [[x - 7 * s, y - 2 * s], [x - 3 * s, y - 5 * s], [x, y], [x + 4 * s, y - 5 * s], [x + 8 * s, y - 1 * s]], { w: 1.1 });
   }
@@ -210,16 +207,6 @@ export function drawDive(sheet: Sheet, game: Game) {
     label(52, y + 6, formatMeters(depth), { size: 19, weight: 700, jit: 0 });
     // Water nobody saw is only ruled off in pencil.
     if (!seen(y) && depth < 11000) pencil(dark, [[120, y], [588, y - 2]], { n: 1, dash: [5, 7], opacity: 0.5 });
-  }
-  const reached = zoneAt(game.depth).replace(" zone", "");
-  for (const [name, y] of ZONE_NAMES) {
-    if (name !== reached) {
-      label(44, y, name.toLowerCase(), { size: 20, weight: 600, ls: 1.5, rot: -2, opacity: 0.85 });
-      continue;
-    }
-    // The deepest zone the diver reached is written large and underlined.
-    label(40, y, name.toUpperCase(), { font: DISPLAY, size: 22, ls: 2, rot: -3, jit: 0 });
-    ink(pale(y) ? light : dark, [[40, y + 5], [90, y + 2], [140, y - 2]], { w: 1.8, color: pale(y) ? YELLOW : RED });
   }
   if (seen(150)) txt(dark, 470, 150, "(not to scale)", { size: 16, fill: "#1f4a5c", opacity: 0.75, rot: -3 });
 

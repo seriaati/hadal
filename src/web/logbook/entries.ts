@@ -1,5 +1,5 @@
 import { METERS_PER_POINT } from "../../shared/types";
-import { formatMeters, lightOf, zoneAt } from "../depth";
+import { formatMeters, zoneAt } from "../depth";
 import type { Game } from "../state";
 import { DISPLAY, GLAZE, GRAPHITE, INK, PAGE_H, PAGE_W, RED, RUST, TYPED, blob, ink, newCanvas, pencil, ring, rnd, speckle, txt, wash, type Sheet } from "./sketch";
 
@@ -9,7 +9,6 @@ const STAMP_RED = "#b03a26";
 export function drawEntries(sheet: Sheet, game: Game) {
   const { paint, dark } = sheet;
   const zone = zoneAt(game.depth).replace(" zone", "");
-  const lit = game.lamps.filter((lamp) => lamp.lit).length;
 
   // A ring where a mug stood.
   paint.save();
@@ -34,7 +33,6 @@ export function drawEntries(sheet: Sheet, game: Game) {
   txt(dark, 40, 160, formatMeters(game.depth), { font: DISPLAY, size: 60, jit: 0 });
   ink(dark, [[40, 172], [150, 170], [300, 173]], { w: 1.8 });
   ink(dark, [[50, 178], [160, 176], [288, 178]], { w: 1.1 });
-  txt(dark, 40, 206, `${lit} of ${game.lamps.length} lamps lit, in the ${zone.toLowerCase()} zone`, { size: 22, fill: GRAPHITE });
 
   // A rubber stamp names the deepest zone reached. It is inked unevenly, so it is worn away on a canvas of its own.
   const stamp = newCanvas();
@@ -70,10 +68,9 @@ export function drawEntries(sheet: Sheet, game: Game) {
   dark.drawImage(stamp.canvas, 0, 0, PAGE_W, PAGE_H);
 
   // ---- one entry for every prompt: what came down the wire, and what was answered
-  txt(dark, 40, 240, "lamp by lamp —", { size: 22 });
   game.prompts.forEach((prompt, i) => {
     const result = game.results[i]!;
-    const top = 246 + i * 41;
+    const top = 194 + i * 48;
     const lamp = [54, top + 22] as const;
     if (result.correct) {
       wash(paint, blob(...lamp, 11, 11), "#fbd266", { ...GLAZE, s: 0.7, v: 0.2, seg: 5, edge: 0.3, layers: 10 });
@@ -85,7 +82,6 @@ export function drawEntries(sheet: Sheet, game: Game) {
     txt(dark, 78, top + 13, `${prompt.pack.toUpperCase()}  ·  ${prompt.text}`, { font: TYPED, size: 11, ls: 0.3, fill: "#6a5a4a", jit: 0 });
     if (result.correct) {
       txt(dark, 78, top + 36, result.answer, { size: 27, weight: 700, jit: 0.6 });
-      txt(dark, 458, top + 35, lightOf(result.rarity).toLowerCase(), { size: 17, anchor: "end", fill: GRAPHITE, jit: 0.4 });
       txt(dark, 558, top + 36, `+${formatMeters(result.rarity * METERS_PER_POINT)}`, { size: 25, weight: 700, anchor: "end", jit: 0 });
     } else {
       txt(dark, 78, top + 36, "out of air", { size: 26, weight: 600, fill: RED });
