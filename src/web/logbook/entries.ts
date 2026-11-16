@@ -5,8 +5,8 @@ import { DISPLAY, GLAZE, GRAPHITE, INK, PAGE_H, PAGE_W, RED, RUST, TYPED, blob, 
 
 const STAMP_RED = "#b03a26";
 
-/** The right page: the written log, with the depth reached and one entry for every prompt. */
-export function drawEntries(sheet: Sheet, game: Game) {
+/** The right page: the written log, with the depth reached and one entry for every prompt. It stops at every `yield`. */
+export function* drawEntries(sheet: Sheet, game: Game) {
   const { paint, dark } = sheet;
   const zone = zoneAt(game.depth).replace(" zone", "");
 
@@ -25,6 +25,7 @@ export function drawEntries(sheet: Sheet, game: Game) {
     paint.stroke();
   }
   paint.restore();
+  yield;
 
   // ---- how the dive ended
   const day = new Date().toLocaleDateString("en-US", { weekday: "long" });
@@ -66,6 +67,7 @@ export function drawEntries(sheet: Sheet, game: Game) {
   stamp.resetTransform();
   speckle(stamp, "destination-out", 0.9, 5);
   dark.drawImage(stamp.canvas, 0, 0, PAGE_W, PAGE_H);
+  yield;
 
   // ---- one entry for every prompt: what came down the wire, and what was answered
   game.prompts.forEach((prompt, i) => {
@@ -89,6 +91,7 @@ export function drawEntries(sheet: Sheet, game: Game) {
     }
     pencil(dark, [[40, top + 43], [560, top + 42]], { n: 1, opacity: 0.3, w: 0.7 });
   });
+  yield;
 
   // ---- and back to the title
   txt(dark, 300, 714, "turn the page", { size: 36, weight: 700, fill: RUST, rot: -3 });

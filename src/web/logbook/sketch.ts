@@ -317,8 +317,8 @@ export function speckle(ctx: CanvasRenderingContext2D, op: GlobalCompositeOperat
   ctx.restore();
 }
 
-/** A fresh sheet of aged paper. */
-export function createSheet(): Sheet {
+/** A fresh sheet of aged paper. It stops at every `yield`. */
+export function* createSheet(): Generator<void, Sheet> {
   const paint = newCanvas();
   paint.fillStyle = PAPER;
   paint.fillRect(0, 0, PAGE_W, PAGE_H);
@@ -326,10 +326,12 @@ export function createSheet(): Sheet {
   for (let i = 0; i < 14; i++) {
     const spot = blob(rnd(PAGE_W), rnd(PAGE_H), rnd(70, 220), rnd(50, 150));
     wash(paint, spot, i % 3 ? "#e6d3a9" : "#f8f0de", { s: 0.16, v: 0.45, seg: 40, edge: 0 });
+    if (i % 2) yield;
   }
   for (const [x, y, w, h] of [[0, 0, PAGE_W, 10], [0, PAGE_H - 10, PAGE_W, 10], [0, 0, 8, PAGE_H], [PAGE_W - 8, 0, 8, PAGE_H]] as const) {
     wash(paint, [[x, y], [x + w, y], [x + w, y + h], [x, y + h]], "#cfb88c", { s: 0.3, v: 0.5, seg: 30, edge: 0 });
   }
+  yield;
   return { paint, dark: newCanvas(), light: newCanvas() };
 }
 

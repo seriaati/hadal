@@ -13,8 +13,9 @@ export function Game() {
   const pixels = useRef<HTMLCanvasElement>(null);
   const glow = useRef<HTMLCanvasElement>(null);
   const keys = useRef<HTMLInputElement>(null);
-  /** The dive the logbook is open on, once one has ended. */
+  /** The dive the logbook is drawn for, from the moment it ends, and whether the diver is back at the surface. */
   const [logged, setLogged] = useState<Dive | null>(null);
+  const [surfaced, setSurfaced] = useState(false);
   /** What the developer menu works on, if this instance is in developer mode. */
   const [dev, setDev] = useState<DevTools | null>(null);
 
@@ -63,6 +64,7 @@ export function Game() {
     canvas.addEventListener("pointerdown", onPointer);
     canvas.addEventListener("pointermove", onPointer);
 
+    let ended = false;
     let done = false;
     let last = performance.now();
     let request = requestAnimationFrame(function loop(now) {
@@ -72,9 +74,13 @@ export function Game() {
       if (game.phase === "ask") game.input = input.value;
       else input.value = "";
       tick(game, dt);
+      if ((game.phase === "ascent" || game.phase === "done") !== ended) {
+        ended = !ended;
+        setLogged(ended ? game : null);
+      }
       if ((game.phase === "done") !== done) {
         done = !done;
-        setLogged(done ? game : null);
+        setSurfaced(done);
       }
       display.fit(frame);
       // Once the logbook has faded in it hides the sea, which need not be drawn.
@@ -100,7 +106,7 @@ export function Game() {
     <main className="stage">
       <canvas ref={pixels} className="pixels" />
       <canvas ref={glow} className="glow" />
-      <Logbook dive={logged} />
+      <Logbook dive={logged} surfaced={surfaced} />
       <input ref={keys} className="keys" aria-label="Your answer" maxLength={40} autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} />
       {dev && <DevMenu {...dev} />}
     </main>

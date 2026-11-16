@@ -4,7 +4,7 @@ import specialElite from "@fontsource/special-elite/files/special-elite-latin-40
 import { useEffect, useRef, useState } from "react";
 import { drawDive } from "./logbook/dive";
 import { drawEntries } from "./logbook/entries";
-import { DISPLAY, HAND, TYPED, createSheet, flatten, reseed, type Sheet } from "./logbook/sketch";
+import { DISPLAY, HAND, TYPED, createSheet, flatten, reseed } from "./logbook/sketch";
 import { pressEnter, type Game } from "./state";
 
 // The book's three faces are fetched as the game starts, because lettering drawn on canvas before
@@ -18,35 +18,53 @@ const fonts = Promise.all(
   }),
 );
 
-/** The summary of a finished dive, as two pages of a hand-drawn logbook laid over the game. */
-export function Logbook({ dive }: { dive: Game | null }) {
+/** Paint both pages. Painting all of it at once would freeze the game for half a second, so it stops at every `yield`. */
+function* paint(dive: Game, pages: HTMLElement[]) {
+  reseed(Math.round(dive.depth));
+  for (const [i, draw] of [drawDive, drawEntries].entries()) {
+    const sheet = yield* createSheet();
+    yield;
+    yield* draw(sheet, dive);
+    yield;
+    pages[i]!.replaceChildren(flatten(sheet));
+    yield;
+  }
+}
+
+/**
+ * The summary of a finished dive, as two pages of a hand-drawn logbook laid over the game.
+ * It is given the dive as soon as that ends, and opens once the diver has `surfaced`.
+ */
+export function Logbook({ dive, surfaced }: { dive: Game | null; surfaced: boolean }) {
   const left = useRef<HTMLDivElement>(null);
   const right = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useState(false);
+  const [ready, setReady] = useState(false);
 
-  // The pages are drawn once when a dive ends, and stay as they are while the book fades out.
-  // The book opens only when both are ready, so that drawing them takes nothing out of the fade.
+  // The pages are painted once, while the diver is hauled up, and stay as they are while the book fades out.
   useEffect(() => {
     if (!dive) return;
     let closed = false;
     void fonts.then(() => {
       if (closed) return;
-      reseed(Math.round(dive.depth));
-      for (const [page, draw] of [[left, drawDive], [right, drawEntries]] as const) {
-        const sheet: Sheet = createSheet();
-        draw(sheet, dive);
-        page.current!.replaceChildren(flatten(sheet));
-      }
-      requestAnimationFrame(() => setOpen(!closed));
+      const steps = paint(dive, [left.current!, right.current!]);
+      const work = () => {
+        if (closed) return;
+        // On the way up, the game draws a frame between every two steps. At the surface nothing is left to keep smooth.
+        do {
+          if (steps.next().done) return setReady(true);
+        } while (dive.phase === "done");
+        requestAnimationFrame(work);
+      };
+      work();
     });
     return () => {
       closed = true;
-      setOpen(false);
+      setReady(false);
     };
   }, [dive]);
 
   return (
-    <div className={open ? "logbook open" : "logbook"} onClick={() => dive && pressEnter(dive)}>
+    <div className={ready && surfaced ? "logbook open" : "logbook"} onClick={() => dive && pressEnter(dive)}>
       <div className="book">
         <div className="page" ref={left} />
         <div className="page" ref={right} />

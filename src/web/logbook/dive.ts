@@ -47,8 +47,8 @@ const BED_RIGHT: Pt[] = [
 const ANGLER = { x: 520, y: 330 };
 const EEL: Pt[] = [[590, 462], [556, 452], [522, 470], [486, 458], [452, 478], [416, 468], [384, 488], [356, 482], [338, 492]];
 
-/** The left page: the dive painted as a cross-section of the sea, as far down as the diver went. */
-export function drawDive(sheet: Sheet, game: Game) {
+/** The left page: the dive painted as a cross-section of the sea, as far down as the diver went. It stops at every `yield`. */
+export function* drawDive(sheet: Sheet, game: Game) {
   const { paint, dark, light } = sheet;
 
   // Where each lamp hangs on the line, starting clear of the tender's hull.
@@ -79,16 +79,27 @@ export function drawDive(sheet: Sheet, game: Game) {
   const sea = newCanvas(1);
   // Each zone is one more glaze laid over everything beneath it.
   wash(sea, seaShape(Y0, 2.5), "#9ad2c2", { s: 0.62, v: 0.16, layers: 26 });
+  yield;
   wash(sea, seaShape(Y0 + 26, 6), "#6fbdb6", { s: 0.35, v: 0.5, edge: 0, layers: 30 });
+  yield;
   wash(sea, seaShape(Y200, 4), "#3f95a6", { s: 0.62, v: 0.24 });
+  yield;
   wash(sea, seaShape(Y200 + 42, 7), "#2f7895", { s: 0.4, v: 0.5, edge: 0, layers: 30 });
+  yield;
   wash(sea, seaShape(Y1000, 4), "#1c4a82", { s: 0.78, v: 0.24 });
+  yield;
   wash(sea, seaShape(Y1000 + 70, 8), "#163a70", { s: 0.55, v: 0.5, edge: 0, layers: 30 });
+  yield;
   wash(sea, seaShape(Y1000 + 130, 8), "#122f62", { s: 0.5, v: 0.5, edge: 0, layers: 30 });
+  yield;
   wash(sea, seaShape(Y4000, 4), "#0f2450", { s: 0.82, v: 0.24, edge: 0.35 });
+  yield;
   wash(sea, seaShape(Y4000 + 70, 8), "#0b1a40", { s: 0.6, v: 0.5, edge: 0, layers: 30 });
+  yield;
   wash(sea, seaShape(Y6000, 5), "#081230", { s: 0.72, v: 0.3 });
+  yield;
   wash(sea, seaShape(Y6000 + 70, 8), "#060c22", { s: 0.62, v: 0.5, edge: 0, layers: 30 });
+  yield;
   // Mottling, backruns, places where the brush ran dry.
   for (let i = 0; i < 34; i++) {
     const [x, y, r] = [rnd(30, 570), rnd(100, 730), rnd(12, 44)];
@@ -98,6 +109,7 @@ export function drawDive(sheet: Sheet, game: Game) {
       wash(sea, blob(x, y, r, r * rnd(0.35, 0.8)), color, { s: rnd(0.08, 0.2), v: 0.3, seg: 12, edge: 0.08, layers: 12 });
     }
   }
+  yield;
   // Specks where the paint missed the paper.
   sea.save();
   sea.globalCompositeOperation = "destination-out";
@@ -112,6 +124,7 @@ export function drawDive(sheet: Sheet, game: Game) {
   for (const [x, w, len] of [[90, 16, 150], [170, 10, 120], [330, 22, 170], [420, 9, 110], [505, 16, 140]] as const) {
     lift(sea, [[x, Y0 + 4], [x + w, Y0 + 4], [x + w + len * 0.34 + w, Y0 + len], [x + len * 0.34, Y0 + len]], 0.2, { v: 0.2, seg: 30 });
   }
+  yield;
   // Something very large, far off in the twilight.
   wash(sea, WHALE, "#1d5270", { s: 0.72, v: 0.12, seg: 9, edge: 0.3 });
   wash(sea, WHALE.slice(9), "#123a56", { s: 0.3, v: 0.2, seg: 9, edge: 0 });
@@ -120,9 +133,11 @@ export function drawDive(sheet: Sheet, game: Game) {
   for (const bed of [BED_LEFT, BED_RIGHT]) {
     lift(sea, bed, 0.5, { v: 0.14, seg: 12 });
     wash(sea, bed, "#6a4530", { s: 0.82, v: 0.14, seg: 12, edge: 0.4, edgeW: 1.6 });
+    yield;
     wash(sea, sink(bed, 26), "#3a2424", { s: 0.45, v: 0.45, seg: 14, edge: 0, layers: 30 });
     wash(sea, sink(bed, 70), "#261a22", { s: 0.45, v: 0.5, seg: 14, edge: 0, layers: 30 });
     wash(sea, sink(bed, 120), "#1a1420", { s: 0.4, v: 0.5, seg: 14, edge: 0, layers: 30 });
+    yield;
   }
   // Lamplight: lift the pigment around every light, leaving the paper to glow through.
   for (const [rx, ry, s] of [[72, 62, 0.18], [56, 49, 0.32], [42, 37, 0.5], [30, 27, 0.6]] as const) {
@@ -137,6 +152,7 @@ export function drawDive(sheet: Sheet, game: Game) {
   lift(sea, helmet, 0.985, { v: 0.03, seg: 6, layers: 10 });
   lift(sea, suit, 0.97, { v: 0.05, seg: 6, layers: 8 });
   lift(sea, lamp, 0.97, { v: 0.05, seg: 6, layers: 8 });
+  yield;
   // The paint runs out where the dive did.
   if (bottom < PAGE_H) {
     const edge: Pt[] = [];
@@ -147,16 +163,19 @@ export function drawDive(sheet: Sheet, game: Game) {
   paint.globalCompositeOperation = "multiply";
   paint.drawImage(sea.canvas, 0, 0, PAGE_W, PAGE_H);
   paint.globalCompositeOperation = "source-over";
+  yield;
 
   // ---- glazes that go on once the sea is dry
   wash(paint, [[14, 18], [300, 10], [588, 22], [590, 80], [300, 84], [12, 82]], "#f6d9a4", { ...GLAZE, s: 0.3, v: 0.5, seg: 36, edge: 0 });
   wash(paint, blob(470, 40, 70, 16), "#f0b98a", { ...GLAZE, s: 0.3, v: 0.5, seg: 16, edge: 0.05 });
+  yield;
   wash(paint, blob(lantern.x, lantern.y, 62, 54, 14), "#fbd67a", { ...GLAZE, s: 0.5, v: 0.3, seg: 16, layers: 30, edge: 0.04 });
   wash(paint, blob(lantern.x, lantern.y, 38, 34, 12), "#f7b450", { ...GLAZE, s: 0.45, v: 0.3, seg: 12, layers: 30, edge: 0.05 });
   game.lamps.forEach((hung, i) => {
     if (hung.lit) wash(paint, blob(LINE_X, marks[i]!, 8, 7), "#fbd266", { ...GLAZE, s: 0.6, v: 0.3, seg: 5, edge: 0, layers: 10 });
   });
   if (seen(ANGLER.y)) wash(paint, blob(ANGLER.x - 34, ANGLER.y - 19, 12, 11), "#fbd266", { ...GLAZE, s: 0.7, v: 0.3, seg: 6, edge: 0 });
+  yield;
   // The diver: a copper helmet, a canvas suit, a lantern.
   wash(paint, helmet, "#cf7a3e", { ...GLAZE, s: 0.82, v: 0.05, seg: 6, edge: 0.35 });
   wash(paint, arc(diver.x - 2, diver.y + 13, 8, 8, 60, 250, 8), "#7c3520", { ...GLAZE, s: 0.5, v: 0.08, seg: 6, edge: 0.1 });
@@ -168,6 +187,7 @@ export function drawDive(sheet: Sheet, game: Game) {
   wash(paint, [[ship.x - 44, ship.y - 13], [ship.x + 40, ship.y - 13], [ship.x + 31, ship.y + 5], [ship.x - 35, ship.y + 5]], RUST, { ...GLAZE, s: 0.82, v: 0.1, seg: 8, edge: 0.3 });
   wash(paint, [[ship.x - 22, ship.y - 28], [ship.x + 4, ship.y - 28], [ship.x + 4, ship.y - 13], [ship.x - 22, ship.y - 13]], "#e9c88a", { ...GLAZE, s: 0.5, v: 0.1, seg: 8 });
   wash(paint, [[ship.x - 14, ship.y - 42], [ship.x - 6, ship.y - 42], [ship.x - 6, ship.y - 28], [ship.x - 14, ship.y - 28]], "#2c3550", { ...GLAZE, s: 0.7, v: 0.1, seg: 6 });
+  yield;
 
   // ---- ink: the title, the sky and the tender
   txt(dark, 16, 48, "HADAL", { font: DISPLAY, size: 36, ls: 3, jit: 0 });
@@ -209,6 +229,7 @@ export function drawDive(sheet: Sheet, game: Game) {
     if (!seen(y) && depth < 11000) pencil(dark, [[120, y], [588, y - 2]], { n: 1, dash: [5, 7], opacity: 0.5 });
   }
   if (seen(150)) txt(dark, 470, 150, "(not to scale)", { size: 16, fill: "#1f4a5c", opacity: 0.75, rot: -3 });
+  yield;
 
   // ---- what was down there
   if (seen(130)) {
@@ -275,6 +296,7 @@ export function drawDive(sheet: Sheet, game: Game) {
     const ruled = RULER.some(([, rule]) => Math.abs(rule - y + 6) < 14);
     txt(dark, 356, ruled ? y + 26 : y, "no light below here", { size: 19, fill: GRAPHITE, rot: -2 });
   }
+  yield;
 
   // ---- the line, and a lamp for every prompt
   const inkEnd = Math.min(diver.y, 250);
