@@ -417,6 +417,13 @@ export class Scene {
       cover(right ? tx - measure(font, text) : tx, right ? tx : end, ty, ty + font.height + 1);
       return end;
     };
+    // Text that may not fit on one line: it runs on to as many as it needs. Returns where the last line is and ends.
+    const sayWrapped = (font: Font, text: string, ty: number, color: Parameters<typeof drawText>[5]) => {
+      let end = x;
+      let y = ty;
+      wrap(font, text, room).forEach((line, i) => (end = say(font, line, x, (y = ty + i * (font.height + 3)), color)));
+      return { end, y };
+    };
     const key = (kx: number, ky: number, label: string) => cover(kx, drawKey(frame, kx, ky, label), ky, ky + 8);
 
     if (game.phase === "title") {
@@ -440,11 +447,11 @@ export class Scene {
     const prompt = game.prompts[game.round];
     if (!prompt) return;
     const asking = game.phase === "ask";
-    say(tiny, `${prompt.pack} ~ ${game.round + 1} of ${game.prompts.length}`, x, 11, 6);
+    const promptY = sayWrapped(tiny, `${prompt.pack} ~ ${game.round + 1} of ${game.prompts.length}`, 11, 6).y + 10;
     const lines = wrap(medium, plain(prompt.text), room);
-    lines.forEach((line, i) => say(medium, line, x, 21 + i * 11, asking ? 7 : 6));
+    lines.forEach((line, i) => say(medium, line, x, promptY + i * 11, asking ? 7 : 6));
     if (asking) {
-      const y = 21 + lines.length * 11 + 4;
+      const y = promptY + lines.length * 11 + 4;
       const low = game.air <= LOW_AIR;
       const left = Math.ceil((game.air / AIR_SECONDS) * 15);
       const blink = Math.floor(time * (low ? 5 : 2)) % 2 === 0;
@@ -466,24 +473,24 @@ export class Scene {
     if (!result) {
       const typed = plain(game.input);
       const font = fit([large, medium, tiny], `${typed}_`, room);
-      const end = say(font, typed, x, answerY, 7);
+      const { end, y } = sayWrapped(font, typed, answerY, 7);
       if (Math.floor(time * 2.5) % 2 === 0) {
         frame.emit = 200;
-        for (let j = 0; j < font.height; j++) for (let i = 0; i < (font === large ? 2 : 1); i++) frame.put(end + i, answerY + j, 16);
+        for (let j = 0; j < font.height; j++) for (let i = 0; i < (font === large ? 2 : 1); i++) frame.put(end + i, y + j, 16);
         frame.emit = 0;
       }
       // A wrong answer is named briefly; the diver can try again while the air lasts.
       const rejected = game.rejected;
       if (rejected && game.phaseTime - rejected.at < 1.6) {
-        say(tiny, `${plain(rejected.text).slice(0, 18)} ~ no light`, x, answerY + font.height + 7, 18);
+        sayWrapped(tiny, `${plain(rejected.text).slice(0, 18)} ~ no light`, y + font.height + 7, 18);
       }
     } else {
       const text = result.correct ? plain(result.answer) : "Out of air";
       const font = fit([large, medium, tiny], text, room);
       const tall = font.height;
       frame.emit = result.correct ? 255 : 0;
-      say(font, text, x, answerY, result.correct ? (row) => (row < tall * 0.22 ? 11 : row < tall * 0.8 ? 10 : 9) : 18);
-      let y = answerY + tall + 7;
+      const last = sayWrapped(font, text, answerY, result.correct ? (row) => (row < tall * 0.22 ? 11 : row < tall * 0.8 ? 10 : 9) : 18);
+      let y = last.y + tall + 7;
       const gain = `+${formatMeters(result.rarity * METERS_PER_POINT)}`;
       const note = result.correct ? `~ ${lightOf(result.rarity)}` : "";
       const end = say(tiny, result.correct ? gain : "No light", x, y, result.correct ? 10 : 18);

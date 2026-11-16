@@ -149,7 +149,7 @@ export function drawText(frame: Frame, font: Font, text: string, x: number, y: n
   return x;
 }
 
-/** Break text into lines no wider than `width`. */
+/** Break text into lines no wider than `width`, between words where it can and inside a word wider than a line. */
 export function wrap(font: Font, text: string, width: number): string[] {
   const lines: string[] = [];
   let line = "";
@@ -160,6 +160,12 @@ export function wrap(font: Font, text: string, width: number): string[] {
       line = word;
     } else {
       line = longer;
+    }
+    while (line.length > 1 && measure(font, line) > width) {
+      let cut = line.length - 1;
+      while (cut > 1 && measure(font, line.slice(0, cut)) > width) cut--;
+      lines.push(line.slice(0, cut));
+      line = line.slice(cut);
     }
   }
   if (line) lines.push(line);
