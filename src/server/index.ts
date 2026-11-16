@@ -1,6 +1,7 @@
 import app from "../web/index.html";
 import type { Config } from "../shared/types";
-import { buildIndex, judge, loadPacks, nearestAnswer, pickPrompts } from "./game";
+import { buildIndex, judge, nearestAnswer, pickPrompts } from "./game";
+import { loadPacks } from "./packs";
 
 const PROMPTS_PER_GAME = 10;
 /**

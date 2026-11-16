@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Config } from "../shared/types";
+import { MAX_ANSWER_LENGTH, type Config } from "../shared/types";
 import { DevMenu, type DevTools } from "./DevMenu";
 import { Logbook } from "./Logbook";
 import { Sound } from "./sound";
@@ -107,7 +107,7 @@ export function Game() {
       <canvas ref={pixels} className="pixels" />
       <canvas ref={glow} className="glow" />
       <Logbook dive={logged} surfaced={surfaced} />
-      <input ref={keys} className="keys" aria-label="Your answer" maxLength={40} autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} />
+      <input ref={keys} className="keys" aria-label="Your answer" maxLength={MAX_ANSWER_LENGTH} autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} />
       {dev && <DevMenu {...dev} />}
     </main>
   );

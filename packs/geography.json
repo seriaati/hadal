@@ -111,7 +111,7 @@
         { "text": "Brunei", "aliases": ["Brunei Darussalam"], "rarity": 80 },
         { "text": "Burkina Faso", "rarity": 85 },
         { "text": "Benin", "rarity": 90 },
-        { "text": "Burundi", "rarity": 95 }
+        { "text": "Burundi", "rarity": 100 }
       ]
     }
   ]

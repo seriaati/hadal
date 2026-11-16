@@ -4,6 +4,9 @@ export type Prompt = { id: string; text: string; answers: Answer[] };
 /** `rarity` runs from 1 (everyone says it) to 100 (almost nobody does). */
 export type Answer = { text: string; aliases?: string[]; rarity: number };
 
+/** The longest answer the game lets a player type, so no spelling in a pack may be longer. */
+export const MAX_ANSWER_LENGTH = 40;
+
 /** A prompt as the browser sees it: no answers. */
 export type GamePrompt = { id: string; text: string; pack: string };
 /** `answer` is the pack's spelling of a correct answer, or null when wrong (rarity 0). */

@@ -1,7 +1,4 @@
-import { join } from "node:path";
 import type { Answer, GamePrompt, Pack, Verdict } from "../shared/types";
-
-const PACKS_DIR = join(import.meta.dir, "../../packs");
 
 export type PromptIndex = Map<string, { prompt: GamePrompt; answers: Map<string, Answer> }>;
 
@@ -17,12 +14,7 @@ export function normalize(text: string): string {
     .replaceAll(" ", "");
 }
 
-export async function loadPacks(dir = PACKS_DIR): Promise<Pack[]> {
-  const files = await Array.fromAsync(new Bun.Glob("*.json").scan({ cwd: dir, absolute: true }));
-  return Promise.all(files.sort().map((file) => Bun.file(file).json()));
-}
-
-/** Index every prompt by "pack/prompt" id, with its answers keyed by normalized spelling. */
+/** Index every prompt by "pack/prompt" id, with its answers keyed by normalized spelling. Expects valid packs. */
 export function buildIndex(packs: Pack[]): PromptIndex {
   const index: PromptIndex = new Map();
   for (const pack of packs) {
@@ -30,14 +22,7 @@ export function buildIndex(packs: Pack[]): PromptIndex {
       const id = `${pack.id}/${prompt.id}`;
       const answers = new Map<string, Answer>();
       for (const answer of prompt.answers) {
-        if (!(answer.rarity >= 1 && answer.rarity <= 100)) {
-          throw new Error(`${id}: "${answer.text}" has a rarity outside 1-100`);
-        }
-        for (const spelling of [answer.text, ...(answer.aliases ?? [])]) {
-          const key = normalize(spelling);
-          if (answers.has(key)) throw new Error(`${id}: duplicate answer "${spelling}"`);
-          answers.set(key, answer);
-        }
+        for (const spelling of [answer.text, ...(answer.aliases ?? [])]) answers.set(normalize(spelling), answer);
       }
       index.set(id, { prompt: { id, text: prompt.text, pack: pack.name }, answers });
     }

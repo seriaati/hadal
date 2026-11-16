@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
-import { buildIndex, judge, loadPacks, nearestAnswer, normalize, pickPrompts } from "./game";
+import { buildIndex, judge, nearestAnswer, normalize, pickPrompts } from "./game";
+import { loadPacks } from "./packs";
 
-// Building the index also validates every built-in pack (rarity range, duplicate answers).
 const index = buildIndex(await loadPacks());
 const ASIA = "geography/asia-countries";
 
@@ -42,12 +42,4 @@ test("pickPrompts returns distinct prompts", () => {
   const prompts = pickPrompts(index, 10);
   expect(prompts).toHaveLength(10);
   expect(new Set(prompts.map((prompt) => prompt.id)).size).toBe(10);
-});
-
-test("buildIndex rejects duplicate answers and out-of-range rarity", () => {
-  const pack = (answers: { text: string; rarity: number }[]) => [
-    { id: "p", name: "P", prompts: [{ id: "q", text: "Q", answers }] },
-  ];
-  expect(() => buildIndex(pack([{ text: "Peru", rarity: 5 }, { text: "peru", rarity: 9 }]))).toThrow("duplicate");
-  expect(() => buildIndex(pack([{ text: "Peru", rarity: 0 }]))).toThrow("rarity");
 });
