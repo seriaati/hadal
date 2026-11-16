@@ -18,6 +18,10 @@ const FLOOR_ROW = 11000 / METERS_PER_PIXEL + 26;
 const PAD = 300;
 const ROWS = PAD + FLOOR_ROW + 300;
 
+/** The title screen's choices, one to a line. Enter acts on the chosen one. */
+export type Menu = { items: string[]; choice: number };
+const MENU_ROW = 13;
+
 const LAMP_LIT = [".rRo.", "rRRRo", ".aca.", ".ccc.", ".aca.", "rRRRo"];
 const LAMP_DEAD = [".555.", "56665", "5...5", "5.x..", "5...5", "56665"];
 const LANTERN = [".rRo.", "rRRRo", ".aca.", "accca", ".aca.", "rRRRo", ".rRo."];
@@ -109,6 +113,9 @@ export class Scene {
   private snow: { x: number; y: number; k: number }[] = [];
   private bubbles: { x: number; y: number; size: number; phase: number }[] = [];
   private nextBubble = 0;
+  /** Where the title menu was last drawn. */
+  private menuLeft = 0;
+  private menuTop = 0;
   /** When each lit lamp was reached, by its index. */
   reached = new Map<number, number>();
   /** How starved of air the diver is, from 0 (fine) to 1 (out). */
@@ -116,7 +123,7 @@ export class Scene {
   pulse = 0;
 
   /** Draw one frame and return the soft lights to lay over it. */
-  draw(frame: Frame, game: Game, dt: number, time: number): Light[] {
+  draw(frame: Frame, game: Game, menu: Menu, dt: number, time: number): Light[] {
     const { width: W, height: H } = frame;
     const gap = game.depth - this.depth;
     if (game.phase === "ascent") {
@@ -389,12 +396,17 @@ export class Scene {
     frame.sprite(LANTERN, DIVER_X + 16, diverY + 17, "ac");
     frame.block = -1;
 
-    this.drawWords(frame, game, time, base, diving);
+    this.drawWords(frame, game, menu, time, base, diving);
     return lights;
   }
 
+  /** Which line of the title menu is at a point of the frame. No line has an index outside the menu. */
+  menuAt(x: number, y: number): number {
+    return x < this.menuLeft - 4 ? -1 : Math.floor((y - this.menuTop + 2) / MENU_ROW);
+  }
+
   /** The few words on screen. They sit in the dark to the right of the diver. */
-  private drawWords(frame: Frame, game: Game, time: number, base: number, diving: boolean) {
+  private drawWords(frame: Frame, game: Game, menu: Menu, time: number, base: number, diving: boolean) {
     const { width: W, height: H } = frame;
     const { tiny, medium, large, huge } = FONTS;
     const wide = W >= 300;
@@ -433,7 +445,15 @@ export class Scene {
       say(font, "HADAL", x, base - 4, amber(tall));
       frame.emit = 0;
       say(tiny, "Rare answers sink deeper", x, base + tall + 2, 6);
-      key(x, base + tall + 14, "Descend");
+      this.menuLeft = x;
+      this.menuTop = base + tall + 14;
+      menu.items.forEach((item, i) => {
+        const y = this.menuTop + i * MENU_ROW;
+        // A long username loses its end on a narrow screen.
+        while (measure(tiny, item) > room - 32) item = item.slice(0, -1);
+        if (i === menu.choice) key(x, y, item);
+        else say(tiny, item, x + 29, y + 2, 6);
+      });
       return;
     }
 

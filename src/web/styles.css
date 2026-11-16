@@ -123,6 +123,22 @@ body {
   font-size: 16px;
 }
 
+/* The account panel's form: invisible, each control laid over where the game draws it. */
+.account {
+  opacity: 0;
+}
+
+.account > * {
+  position: fixed;
+  padding: 0;
+  border: 0;
+  font-size: 16px;
+}
+
+.account button {
+  cursor: pointer;
+}
+
 /* The developer menu: a plain panel over everything, in a corner the game leaves dark. */
 .dev {
   position: fixed;

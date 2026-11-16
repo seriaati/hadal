@@ -12,10 +12,28 @@ const PAD = 7;
 const ROW = 13;
 const TRACK = 60;
 
-/** Where the panel is: in the middle of the frame. `rows` is the top of its first slider's row. */
+/** Where a panel of this size is: in the middle of the frame. */
+export function centre(frame: Frame, width: number, height: number) {
+  return { left: Math.round((frame.width - width) / 2), top: Math.round((frame.height - height) / 2) };
+}
+
+/** Draw an empty panel. The game behind it is dimmed: every other pixel goes dark. */
+export function drawPanel(frame: Frame, width: number, height: number) {
+  const { left, top } = centre(frame, width, height);
+  for (let y = 0; y < frame.height; y++) for (let x = (y & 1) ^ 1; x < frame.width; x += 2) frame.put(x, y, 0);
+  frame.block = 255; // the soft light of the scene stays off the panel
+  for (let y = top; y < top + height; y++) {
+    for (let x = left; x < left + width; x++) {
+      const edge = x === left || x === left + width - 1 || y === top || y === top + height - 1;
+      frame.put(x, y, edge ? 5 : 0);
+    }
+  }
+  frame.block = -1;
+}
+
+/** Where the settings are. `rows` is the top of the first slider's row. */
 function place(frame: Frame) {
-  const left = Math.round((frame.width - WIDTH) / 2);
-  const top = Math.round((frame.height - HEIGHT) / 2);
+  const { left, top } = centre(frame, WIDTH, HEIGHT);
   return { left, top, rows: top + PAD + 12, track: left + WIDTH - PAD - TRACK };
 }
 
@@ -49,18 +67,10 @@ export class Settings {
   }
 
   draw(frame: Frame) {
-    // With the panel open, the game behind it is dimmed: every other pixel goes dark.
-    if (this.open) for (let y = 0; y < frame.height; y++) for (let x = (y & 1) ^ 1; x < frame.width; x += 2) frame.put(x, y, 0);
+    if (this.open) drawPanel(frame, WIDTH, HEIGHT);
     frame.sprite(COG, frame.width - 13, 1);
     if (!this.open) return;
     const { left, top, rows, track } = place(frame);
-    frame.block = 255; // the soft light of the scene stays off the panel
-    for (let y = top; y < top + HEIGHT; y++) {
-      for (let x = left; x < left + WIDTH; x++) {
-        const edge = x === left || x === left + WIDTH - 1 || y === top || y === top + HEIGHT - 1;
-        frame.put(x, y, edge ? 5 : 0);
-      }
-    }
     drawText(frame, FONTS.tiny, "Settings", left + PAD, top + PAD, 7);
     LEVELS.forEach((name, i) => {
       const y = rows + i * ROW;
@@ -69,6 +79,5 @@ export class Settings {
       for (let x = track; x < track + TRACK; x++) frame.put(x, y + 2, x <= knob ? 6 : 4);
       for (let j = -1; j < 6; j++) frame.put(knob, y + j, 7);
     });
-    frame.block = -1;
   }
 }
