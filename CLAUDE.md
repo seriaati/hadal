@@ -12,9 +12,12 @@ Use `bun`, not `npm`/`node`/`vite`.
 ## Commands
 
 - `bun install`: install dependencies
+- `docker compose up -d db`: start Postgres (port 5433 on this machine). The game and the
+  account tests need it; it keeps running until `docker compose stop db`
 - `bun dev`: run the game with hot reload at http://localhost:3000
 - `bun test`: run tests
 - `bun typecheck`: type-check
+- `docker compose up -d --build`: run the database and the game as in production
 
 Developer mode: put `HADAL_DEV_MODE=1` in `.env` (git-ignored, read by Bun at start-up) and
 restart the server. The game then shows a menu of shortcuts (`src/web/DevMenu.tsx`): answer
@@ -22,10 +25,12 @@ correctly at a chosen rarity, run out of air, end the dive, summon a creature.
 
 ## Layout
 
-- `src/server/`: `Bun.serve` entry, API routes, pack loading and answer judging
+- `src/server/`: `Bun.serve` entry, API routes, pack loading and answer judging, accounts and
+  sessions (`accounts.ts`), the database (`db.ts`; schema changes are numbered files in
+  `migrations/`, run at start-up, never edited once released)
 - `src/web/`: the game client (served by the same Bun process). `state.ts` holds the rules of
   a run; `sound.ts` makes every sound (there are no sound files); `pixel/` is the renderer
-  (frame buffer and soft light, fonts, the scene, creatures, the settings panel);
+  (frame buffer and soft light, fonts, the scene, creatures, the settings and account panels);
   `logbook/` draws the hand-drawn summary of a finished dive (`sketch.ts` holds the paint and
   ink tools, `dive.ts` and `entries.ts` are the two pages)
 - `src/shared/`: types and constants used by both sides
