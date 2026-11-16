@@ -3,13 +3,13 @@ import { formatMeters, zoneAt } from "../depth";
 import type { Game } from "../state";
 import {
   DISPLAY, GLAZE, GRAPHITE, INK, RED, RUST, TYPED,
-  blob, createSheet, ink, newCanvas, pencil, ring, rnd, speckle, txt, wash, wrap, type Lettering, type Sheet,
+  blob, createSheet, ink, newCanvas, pencil, ring, rnd, shrunk, speckle, txt, wash, wrap, type Lettering, type Sheet,
 } from "./sketch";
 
 const STAMP_RED = "#b03a26";
 const NARROW_W = 360;
 const NARROW_PROMPT: Lettering = { font: TYPED, size: 14, fill: "#6a5a4a", jit: 0 };
-const NARROW_ANSWER: Lettering = { size: 28, weight: 700, jit: 0.6 };
+const NARROW_ANSWER = { size: 28, weight: 700, jit: 0.6 } satisfies Lettering;
 
 /** A ring where a mug stood. */
 function mugRing(paint: CanvasRenderingContext2D, x: number, y: number) {
@@ -114,7 +114,8 @@ function* wideEntries(game: Game): Generator<void, Sheet> {
     lampMark(sheet, 54, top + 22, i + 1, result.correct);
     txt(dark, 78, top + 13, `${prompt.pack.toUpperCase()}  ·  ${prompt.text}`, { font: TYPED, size: 11, ls: 0.3, fill: "#6a5a4a", jit: 0 });
     if (result.correct) {
-      txt(dark, 78, top + 36, result.answer, { size: 27, weight: 700, jit: 0.6 });
+      // Written as tall as the hand's own capitals and no taller, or it would reach into the prompt above it.
+      txt(dark, 78, top + 36, result.answer, shrunk(dark, result.answer, 19, { size: 27, weight: 700, jit: 0.6 }));
       txt(dark, 558, top + 36, `+${formatMeters(result.rarity * METERS_PER_POINT)}`, { size: 25, weight: 700, anchor: "end", jit: 0 });
     } else {
       txt(dark, 78, top + 36, "out of air", { size: 26, weight: 600, fill: RED });
@@ -136,8 +137,9 @@ function* narrowEntries(game: Game): Generator<void, Sheet> {
   const rows = game.prompts.map((prompt, i) => {
     const result = game.results[i]!;
     const prompts = wrap(pen, prompt.text, right - text, NARROW_PROMPT);
-    const answers = result.correct ? wrap(pen, result.answer, right - text - 100, NARROW_ANSWER) : ["out of air"];
-    return { prompt, result, prompts, answers, height: 91 + (prompts.length - 1) * 18 + (answers.length - 1) * 30 };
+    const hand = shrunk(pen, result.answer, 20, NARROW_ANSWER);
+    const answers = result.correct ? wrap(pen, result.answer, right - text - 100, hand) : ["out of air"];
+    return { prompt, result, prompts, answers, hand, height: 91 + (prompts.length - 1) * 18 + (answers.length - 1) * 30 };
   });
   const foot = 290 + rows.reduce((sum, row) => sum + row.height, 0);
   const sheet = yield* createSheet(NARROW_W, foot + 64);
@@ -159,14 +161,14 @@ function* narrowEntries(game: Game): Generator<void, Sheet> {
 
   // ---- one entry for every prompt
   let top = 240;
-  rows.forEach(({ prompt, result, prompts, answers, height }, i) => {
+  rows.forEach(({ prompt, result, prompts, answers, hand, height }, i) => {
     lampMark(sheet, left + 12, top + 24, i + 1, result.correct);
     txt(dark, text, top + 12, prompt.pack.toUpperCase(), { font: TYPED, size: 11, ls: 1, fill: "#6a5a4a", jit: 0 });
     prompts.forEach((line, k) => txt(dark, text, top + 31 + k * 18, line, NARROW_PROMPT));
     const written = top + height - 26;
     answers.forEach((line, k) => {
       const y = written - (answers.length - 1 - k) * 30;
-      if (result.correct) txt(dark, text, y, line, NARROW_ANSWER);
+      if (result.correct) txt(dark, text, y, line, hand);
       else txt(dark, text, y, line, { size: 27, weight: 600, fill: RED });
     });
     if (result.correct) txt(dark, right, written, `+${formatMeters(result.rarity * METERS_PER_POINT)}`, { size: 25, weight: 700, anchor: "end", jit: 0 });

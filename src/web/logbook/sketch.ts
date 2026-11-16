@@ -271,6 +271,17 @@ function setFace(ctx: CanvasRenderingContext2D, { size = 22, font = HAND, weight
   ctx.letterSpacing = `${ls}px`;
 }
 
+/**
+ * This lettering, made smaller if the words would stand more than `tall` above their line. The
+ * book's own faces are small for their size; a script they lack is written in one of the
+ * device's fonts, which is not. Accents are not counted, so that one does not shrink a whole word.
+ */
+export function shrunk(ctx: CanvasRenderingContext2D, words: string, tall: number, o: Lettering & { size: number }): Lettering {
+  setFace(ctx, o);
+  const rise = ctx.measureText(words.normalize("NFD").replace(/\p{M}/gu, "")).actualBoundingBoxAscent;
+  return rise > tall ? { ...o, size: (o.size * tall) / rise } : o;
+}
+
 /** Break words into lines no wider than `width` when lettered this way. */
 export function wrap(ctx: CanvasRenderingContext2D, words: string, width: number, o: Lettering = {}): string[] {
   setFace(ctx, o);
