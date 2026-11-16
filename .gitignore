@@ -1,0 +1,4 @@
+node_modules/
+
+# Full-size renders of the art-direction mock-ups; regenerate from each index.html
+design/explorations/*/screen.png
