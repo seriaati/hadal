@@ -90,19 +90,24 @@ body {
   transform: scaleX(-1);
 }
 
-/* On an upright screen the pages are stacked and scrolled instead. */
-@media (max-aspect-ratio: 1/1) {
-  .book {
-    flex-direction: column;
-  }
+/* On an upright screen the pages are stacked and scrolled instead, and the written one is as long as its log. */
+.book.narrow {
+  flex-direction: column;
+}
 
-  .page {
-    width: calc(100vw - 16px);
-  }
+.book.narrow .page {
+  width: min(100vw - 16px, 520px);
+  aspect-ratio: auto;
+}
 
-  .page::after {
-    display: none;
-  }
+.book.narrow .page > * {
+  position: static;
+  display: block;
+  height: auto;
+}
+
+.book.narrow .page::after {
+  display: none;
 }
 
 /* The invisible text field that receives the typing. */

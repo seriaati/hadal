@@ -47,10 +47,10 @@ const gauss = () => (random() + random() + random() + random() - 2) / 0.577;
 
 // ---- paint
 
-export function newCanvas(density = DENSITY): CanvasRenderingContext2D {
+export function newCanvas(density = DENSITY, w = PAGE_W, h = PAGE_H): CanvasRenderingContext2D {
   const canvas = document.createElement("canvas");
-  canvas.width = PAGE_W * density;
-  canvas.height = PAGE_H * density;
+  canvas.width = w * density;
+  canvas.height = h * density;
   const context = canvas.getContext("2d")!;
   context.scale(density, density);
   return context;
@@ -266,13 +266,29 @@ export type Lettering = {
   jit?: number;
 };
 
+function setFace(ctx: CanvasRenderingContext2D, { size = 22, font = HAND, weight = 400, ls = 0 }: Lettering) {
+  ctx.font = `${weight} ${size}px "${font}", cursive`;
+  ctx.letterSpacing = `${ls}px`;
+}
+
+/** Break words into lines no wider than `width` when lettered this way. */
+export function wrap(ctx: CanvasRenderingContext2D, words: string, width: number, o: Lettering = {}): string[] {
+  setFace(ctx, o);
+  const lines: string[] = [];
+  for (const word of words.split(" ")) {
+    const longer = lines.length ? `${lines.at(-1)} ${word}` : word;
+    if (lines.length && ctx.measureText(longer).width <= width) lines[lines.length - 1] = longer;
+    else lines.push(word);
+  }
+  return lines;
+}
+
 export function txt(ctx: CanvasRenderingContext2D, x: number, y: number, words: string, o: Lettering = {}) {
-  const { size = 22, font = HAND, fill = INK, rot = 0, anchor = "start", weight = 400, ls = 0, jit = 1, opacity = 1 } = o;
+  const { fill = INK, rot = 0, anchor = "start", jit = 1, opacity = 1 } = o;
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate((rot * Math.PI) / 180);
-  ctx.font = `${weight} ${size}px "${font}", cursive`;
-  ctx.letterSpacing = `${ls}px`;
+  setFace(ctx, o);
   ctx.fillStyle = fill;
   ctx.globalAlpha = opacity;
   const parts = words.split(" ").map((word, i, all) => word + (i < all.length - 1 ? " " : ""));
@@ -290,6 +306,8 @@ export function txt(ctx: CanvasRenderingContext2D, x: number, y: number, words: 
 
 /** One page of the book while it is being drawn: the paint, and the two kinds of line laid over it. */
 export type Sheet = {
+  w: number;
+  h: number;
   paint: CanvasRenderingContext2D;
   /** Dark media (ink, pencil, type, the stamp), which soak into the paint beneath them. */
   dark: CanvasRenderingContext2D;
@@ -300,7 +318,7 @@ export type Sheet = {
 let noise: HTMLCanvasElement | undefined;
 
 /** Speckle a whole canvas with fine random dots, `scale` page units across: to wear ink away, or to dirty paper. */
-export function speckle(ctx: CanvasRenderingContext2D, op: GlobalCompositeOperation, strength: number, scale: number) {
+export function speckle(ctx: CanvasRenderingContext2D, op: GlobalCompositeOperation, strength: number, scale: number, w = PAGE_W, h = PAGE_H) {
   if (!noise) {
     noise = document.createElement("canvas");
     noise.width = noise.height = 256;
@@ -313,36 +331,36 @@ export function speckle(ctx: CanvasRenderingContext2D, op: GlobalCompositeOperat
   ctx.globalAlpha = strength;
   ctx.fillStyle = ctx.createPattern(noise, "repeat")!;
   ctx.scale(scale, scale);
-  ctx.fillRect(0, 0, PAGE_W / scale, PAGE_H / scale);
+  ctx.fillRect(0, 0, w / scale, h / scale);
   ctx.restore();
 }
 
 /** A fresh sheet of aged paper. It stops at every `yield`. */
-export function* createSheet(): Generator<void, Sheet> {
-  const paint = newCanvas();
+export function* createSheet(w = PAGE_W, h = PAGE_H): Generator<void, Sheet> {
+  const paint = newCanvas(DENSITY, w, h);
   paint.fillStyle = PAPER;
-  paint.fillRect(0, 0, PAGE_W, PAGE_H);
+  paint.fillRect(0, 0, w, h);
   // Old paper is not one colour, and it is darkest at the edges.
   for (let i = 0; i < 14; i++) {
-    const spot = blob(rnd(PAGE_W), rnd(PAGE_H), rnd(70, 220), rnd(50, 150));
+    const spot = blob(rnd(w), rnd(h), rnd(70, 220), rnd(50, 150));
     wash(paint, spot, i % 3 ? "#e6d3a9" : "#f8f0de", { s: 0.16, v: 0.45, seg: 40, edge: 0 });
     if (i % 2) yield;
   }
-  for (const [x, y, w, h] of [[0, 0, PAGE_W, 10], [0, PAGE_H - 10, PAGE_W, 10], [0, 0, 8, PAGE_H], [PAGE_W - 8, 0, 8, PAGE_H]] as const) {
-    wash(paint, [[x, y], [x + w, y], [x + w, y + h], [x, y + h]], "#cfb88c", { s: 0.3, v: 0.5, seg: 30, edge: 0 });
+  for (const [x, y, dx, dy] of [[0, 0, w, 10], [0, h - 10, w, 10], [0, 0, 8, h], [w - 8, 0, 8, h]] as const) {
+    wash(paint, [[x, y], [x + dx, y], [x + dx, y + dy], [x, y + dy]], "#cfb88c", { s: 0.3, v: 0.5, seg: 30, edge: 0 });
   }
   yield;
-  return { paint, dark: newCanvas(), light: newCanvas() };
+  return { w, h, paint, dark: newCanvas(DENSITY, w, h), light: newCanvas(DENSITY, w, h) };
 }
 
 /** Press a finished sheet into a single picture. */
-export function flatten({ paint, dark, light }: Sheet): HTMLCanvasElement {
+export function flatten({ w, h, paint, dark, light }: Sheet): HTMLCanvasElement {
   // Ink and pencil skip over the tooth of the paper.
-  speckle(dark, "destination-out", 0.45, 0.5);
+  speckle(dark, "destination-out", 0.45, 0.5, w, h);
   paint.globalCompositeOperation = "multiply";
-  paint.drawImage(dark.canvas, 0, 0, PAGE_W, PAGE_H);
+  paint.drawImage(dark.canvas, 0, 0, w, h);
   paint.globalCompositeOperation = "source-over";
-  paint.drawImage(light.canvas, 0, 0, PAGE_W, PAGE_H);
-  speckle(paint, "source-over", 0.07, 0.5);
+  paint.drawImage(light.canvas, 0, 0, w, h);
+  speckle(paint, "source-over", 0.07, 0.5, w, h);
   return paint.canvas;
 }

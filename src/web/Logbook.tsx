@@ -4,7 +4,7 @@ import specialElite from "@fontsource/special-elite/files/special-elite-latin-40
 import { useEffect, useRef, useState } from "react";
 import { drawDive } from "./logbook/dive";
 import { drawEntries } from "./logbook/entries";
-import { DISPLAY, HAND, TYPED, createSheet, flatten, reseed } from "./logbook/sketch";
+import { DISPLAY, HAND, TYPED, flatten, reseed } from "./logbook/sketch";
 import { pressEnter, type Game } from "./state";
 
 // The book's three faces are fetched as the game starts, because lettering drawn on canvas before
@@ -19,12 +19,10 @@ const fonts = Promise.all(
 );
 
 /** Paint both pages. Painting all of it at once would freeze the game for half a second, so it stops at every `yield`. */
-function* paint(dive: Game, pages: HTMLElement[]) {
+function* paint(dive: Game, pages: HTMLElement[], narrow: boolean) {
   reseed(Math.round(dive.depth));
   for (const [i, draw] of [drawDive, drawEntries].entries()) {
-    const sheet = yield* createSheet();
-    yield;
-    yield* draw(sheet, dive);
+    const sheet = yield* draw(dive, narrow);
     yield;
     pages[i]!.replaceChildren(flatten(sheet));
     yield;
@@ -36,9 +34,12 @@ function* paint(dive: Game, pages: HTMLElement[]) {
  * It is given the dive as soon as that ends, and opens once the diver has `surfaced`.
  */
 export function Logbook({ dive, surfaced }: { dive: Game | null; surfaced: boolean }) {
+  const desk = useRef<HTMLDivElement>(null);
   const left = useRef<HTMLDivElement>(null);
   const right = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
+  /** An upright screen gets a layout of its own: the pages stacked, the writing larger. */
+  const [narrow, setNarrow] = useState(false);
 
   // The pages are painted once, while the diver is hauled up, and stay as they are while the book fades out.
   useEffect(() => {
@@ -46,7 +47,10 @@ export function Logbook({ dive, surfaced }: { dive: Game | null; surfaced: boole
     let closed = false;
     void fonts.then(() => {
       if (closed) return;
-      const steps = paint(dive, [left.current!, right.current!]);
+      const upright = matchMedia("(max-aspect-ratio: 1/1)").matches;
+      setNarrow(upright);
+      desk.current!.scrollTop = 0;
+      const steps = paint(dive, [left.current!, right.current!], upright);
       const work = () => {
         if (closed) return;
         // On the way up, the game draws a frame between every two steps. At the surface nothing is left to keep smooth.
@@ -64,8 +68,8 @@ export function Logbook({ dive, surfaced }: { dive: Game | null; surfaced: boole
   }, [dive]);
 
   return (
-    <div className={ready && surfaced ? "logbook open" : "logbook"} onClick={() => dive && pressEnter(dive)}>
-      <div className="book">
+    <div ref={desk} className={ready && surfaced ? "logbook open" : "logbook"} onClick={() => dive && pressEnter(dive)}>
+      <div className={narrow ? "book narrow" : "book"}>
         <div className="page" ref={left} />
         <div className="page" ref={right} />
       </div>

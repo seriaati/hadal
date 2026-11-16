@@ -2,7 +2,7 @@ import { formatMeters } from "../depth";
 import type { Game } from "../state";
 import {
   CREAM, DISPLAY, GLAZE, GRAPHITE, INK, PAGE_H, PAGE_W, RED, RUST, YELLOW,
-  arc, blob, dot, edges, ink, lift, newCanvas, pencil, ring, rnd, txt, wash, type Pt, type Sheet,
+  arc, blob, createSheet, dot, edges, ink, lift, newCanvas, pencil, ring, rnd, txt, wash, type Pt, type Sheet,
 } from "./sketch";
 
 /** The depth ruler down the page, as [metres, y]. It is not to scale, so every zone gets room. */
@@ -47,9 +47,16 @@ const BED_RIGHT: Pt[] = [
 const ANGLER = { x: 520, y: 330 };
 const EEL: Pt[] = [[590, 462], [556, 452], [522, 470], [486, 458], [452, 478], [416, 468], [384, 488], [356, 482], [338, 492]];
 
-/** The left page: the dive painted as a cross-section of the sea, as far down as the diver went. It stops at every `yield`. */
-export function* drawDive(sheet: Sheet, game: Game) {
+/**
+ * The left page: the dive painted as a cross-section of the sea, as far down as the diver went.
+ * On a `narrow` screen the page is shown small, so everything written on it is larger. It stops at every `yield`.
+ */
+export function* drawDive(game: Game, narrow: boolean): Generator<void, Sheet> {
+  const sheet = yield* createSheet();
   const { paint, dark, light } = sheet;
+  /** How much larger the writing is. */
+  const k = narrow ? 1.45 : 1;
+  yield;
 
   // Where each lamp hangs on the line, starting clear of the tender's hull.
   const marks = game.lamps.map((hung) => Math.max(yAt(hung.depth), Y0 + 12));
@@ -57,7 +64,7 @@ export function* drawDive(sheet: Sheet, game: Game) {
   const runs: { from: number; to: number }[] = [];
   marks.forEach((y, i) => {
     const run = runs.at(-1);
-    if (run && y - marks[run.to]! < 11) run.to = i;
+    if (run && y - marks[run.to]! < 11 * k) run.to = i;
     else runs.push({ from: i, to: i });
   });
   const diver = { x: LINE_X, y: Math.min(706, Math.max(yAt(game.depth), Y0 + 12) + 7) };
@@ -221,14 +228,17 @@ export function* drawDive(sheet: Sheet, game: Game) {
     stroke(y, [[30, y], [30 + rnd(-1, 1), y + 17.2]], 1.2);
     stroke(y, [[26, y], [33, y]], 0.8, 0.7);
   }
-  label(40, Y0 + 17, "0 m", { size: 18, weight: 700, jit: 0 });
+  label(40, Y0 + 11 + 6 * k, "0 m", { size: 18 * k, weight: 700, jit: 0 });
   for (const [depth, y] of RULER.slice(1)) {
     stroke(y, [[22, y], [48, y]], 1.6);
-    label(52, y + 6, formatMeters(depth), { size: 19, weight: 700, jit: 0 });
+    label(52, y + 6 * k, formatMeters(depth), { size: 19 * k, weight: 700, jit: 0 });
     // Water nobody saw is only ruled off in pencil.
     if (!seen(y) && depth < 11000) pencil(dark, [[120, y], [588, y - 2]], { n: 1, dash: [5, 7], opacity: 0.5 });
   }
-  if (seen(150)) txt(dark, 470, 150, "(not to scale)", { size: 16, fill: "#1f4a5c", opacity: 0.75, rot: -3 });
+  // Notes in the right margin. Written larger, they are set against the edge of the page so that they still fit.
+  const note = (ctx: CanvasRenderingContext2D, x: number, y: number, words: string, o: Parameters<typeof txt>[4] = {}) =>
+    txt(ctx, narrow ? 584 : x, y, words, { ...o, size: (o.size ?? 18) * k, anchor: narrow ? "end" : "start" });
+  if (seen(150)) note(dark, 470, 150, "(not to scale)", { size: 16, fill: "#1f4a5c", opacity: 0.75, rot: -3 });
   yield;
 
   // ---- what was down there
@@ -247,7 +257,7 @@ export function* drawDive(sheet: Sheet, game: Game) {
     for (let i = 0; i < 5; i++) ink(light, [[x - 20 + i * 3.2, y + 3], [x - 19 + i * 3.2, y + 8]], { w: 0.9, color: CREAM, min: 0.8 });
     dot(light, x - 8, y - 5, 2, CREAM);
     ink(light, [[x - 6, y - 14], [x - 14, y - 26], [x - 28, y - 24], [x - 33, y - 20]], { w: 1, color: CREAM });
-    txt(light, x - 76, y + 38, "its light came first", { size: 18, fill: CREAM, opacity: 0.85, rot: -3 });
+    note(light, x - 76, y + 38, "its light came first", { fill: CREAM, opacity: 0.85, rot: -3 });
   }
   if (seen(410)) {
     for (const [x, y, gap] of [[452, 396, 9], [506, 408, 7]] as const) {
@@ -256,12 +266,12 @@ export function* drawDive(sheet: Sheet, game: Game) {
         dot(light, x + (side * gap) / 2, y, 0.9, CREAM);
       }
     }
-    txt(light, 436, 434, "something watched", { size: 18, fill: CREAM, opacity: 0.8, rot: -2 });
+    note(light, 436, 434, "something watched", { fill: CREAM, opacity: 0.8, rot: -2 });
   }
   if (seen(500)) {
     ink(light, EEL, { w: 2.6, color: CREAM, opacity: 0.85, taper: 0.5, min: 0.2 });
     dot(light, EEL[8]![0] + 4, EEL[8]![1] - 2.5, 0.9, CREAM);
-    txt(light, 420, 512, "it took a long time to pass", { size: 18, fill: CREAM, opacity: 0.8, rot: -2 });
+    note(light, 420, 512, "it took a long time to pass", { fill: CREAM, opacity: 0.8, rot: -2 });
   }
   // Marine snow.
   for (let i = 0; i < 190; i++) {
@@ -284,17 +294,17 @@ export function* drawDive(sheet: Sheet, game: Game) {
     }
   }
   // A note at the bottom of the trench, unless the diver's tag has come down far enough to cover it.
-  if (diver.y < 620) {
-    label(338, 708, "the bottom: 11,000 m", { size: 20, opacity: 0.9, rot: -2 });
-    label(350, 728, "(nobody we know has been)", { size: 17, opacity: 0.7, rot: -2 });
+  if (diver.y < (narrow ? 590 : 620)) {
+    label(338, narrow ? 700 : 708, "the bottom: 11,000 m", { size: 20 * k, opacity: 0.9, rot: -2 });
+    label(350, narrow ? 730 : 728, "(nobody we know has been)", { size: 17 * k, opacity: 0.7, rot: -2 });
     stroke(726, [[332, 714], [300, 726], [258, 740]], 1.1, 0.8);
     stroke(740, [[267, 731], [257, 740], [270, 744]], 1, 0.8);
   }
   if (bottom < 640) {
     // Kept clear of the pencil rule of a zone, if one runs just here.
-    const y = bottom + 30;
-    const ruled = RULER.some(([, rule]) => Math.abs(rule - y + 6) < 14);
-    txt(dark, 356, ruled ? y + 26 : y, "no light below here", { size: 19, fill: GRAPHITE, rot: -2 });
+    const y = bottom + 22 + 8 * k;
+    const ruled = RULER.some(([, rule]) => Math.abs(rule - y + 6 * k) < 14 * k);
+    txt(dark, 356, ruled ? y + 26 * k : y, "no light below here", { size: 19 * k, fill: GRAPHITE, rot: -2 });
   }
   yield;
 
@@ -319,7 +329,7 @@ export function* drawDive(sheet: Sheet, game: Game) {
     const unlit = game.lamps.slice(from, to + 1).every((hung) => !hung.lit);
     const color = unlit ? (pale(y) ? PALE_RED : RED) : pale(y) ? CREAM : INK;
     const numbers = from === to ? `${from + 1}` : `${from + 1}–${to + 1}`;
-    txt(pale(y) ? light : dark, LINE_X - 11, y + 5, numbers, { size: 17, weight: 700, anchor: "end", fill: color, jit: 0 });
+    txt(pale(y) ? light : dark, LINE_X - 11, y + 5 * k, numbers, { size: 17 * k, weight: 700, anchor: "end", fill: color, jit: 0 });
   }
 
   // ---- the diver
@@ -337,7 +347,7 @@ export function* drawDive(sheet: Sheet, game: Game) {
   }
 
   // ---- a paper tag tied to the diver, with the depth reached
-  const tag = { x: diver.x + 62, y: diver.y - 6, w: 150, h: 52 };
+  const tag = { x: diver.x + 62, y: diver.y + 46 - 52 * k, w: 150 * k, h: 52 * k };
   const hole: Pt = [tag.x + 13, tag.y + tag.h / 2];
   const outline: Pt[] = [[tag.x + 15, tag.y], [tag.x + tag.w, tag.y + 1], [tag.x + tag.w - 1, tag.y + tag.h], [tag.x + 15, tag.y + tag.h - 1], [tag.x, tag.y + tag.h / 2]];
   ink(light, [[diver.x + 10, diver.y + 14], [diver.x + 36, diver.y + 12], hole], { w: 1.2, color: CREAM });
@@ -353,7 +363,8 @@ export function* drawDive(sheet: Sheet, game: Game) {
   }
   edges(light, outline, { w: 1.4, taper: 0.3 });
   dot(light, ...hole, 3, "#22345a");
-  txt(light, tag.x + 27, tag.y + 16, "depth reached", { size: 17, fill: GRAPHITE, jit: 0 });
-  txt(light, tag.x + 25, tag.y + 45, formatMeters(game.depth), { font: DISPLAY, size: 31, jit: 0 });
+  txt(light, tag.x + 27, tag.y + 16 * k, "depth reached", { size: 17 * k, fill: GRAPHITE, jit: 0 });
+  txt(light, tag.x + 25, tag.y + 45 * k, formatMeters(game.depth), { font: DISPLAY, size: 31 * k, jit: 0 });
   light.restore();
+  return sheet;
 }
