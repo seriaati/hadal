@@ -110,10 +110,10 @@ export class Scene {
   private bubbles: { x: number; y: number; size: number; phase: number }[] = [];
   private nextBubble = 0;
   /** When each lit lamp was reached, by its index. */
-  private reached = new Map<number, number>();
+  reached = new Map<number, number>();
   /** How starved of air the diver is, from 0 (fine) to 1 (out). */
-  private panic = 0;
-  private pulse = 0;
+  panic = 0;
+  pulse = 0;
 
   /** Draw one frame and return the soft lights to lay over it. */
   draw(frame: Frame, game: Game, dt: number, time: number): Light[] {

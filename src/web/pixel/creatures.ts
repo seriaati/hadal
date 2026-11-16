@@ -14,7 +14,7 @@ const PARALLAX = { eyes: 0.6, serpent: 0.35, angler: 0.5 };
 const HOME = { angler: 1000, eyes: 1500, serpent: 2500 };
 
 export class Ambient {
-  private creatures: Creature[] = [];
+  creatures: Creature[] = [];
   private wait = 6;
 
   clear() {

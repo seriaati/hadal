@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Config } from "../shared/types";
 import { DevMenu, type DevTools } from "./DevMenu";
 import { Logbook } from "./Logbook";
+import { Sound } from "./sound";
 import { createGame, pressEnter, tick, type Game as Dive } from "./state";
 import { Display, Frame } from "./pixel/frame";
 import { Scene } from "./pixel/scene";
@@ -22,8 +23,9 @@ export function Game() {
     const scene = new Scene();
     const frame = new Frame();
     const display = new Display(pixels.current!, glow.current!);
+    const sound = new Sound();
     // In development, let the browser console (and test scripts) reach the game.
-    if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game, scene, frame, display } });
+    if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game, scene, frame, display, sound } });
 
     void fetch("/api/config")
       .then((res) => res.json() as Promise<Config>)
@@ -60,12 +62,14 @@ export function Game() {
       display.fit(frame);
       // Once the logbook has faded in it hides the sea, which need not be drawn.
       if (!done || game.phaseTime < 1) display.present(frame, scene.draw(frame, game, dt, now / 1000));
+      sound.update(game, scene, dt);
     });
 
     return () => {
       cancelAnimationFrame(request);
       input.removeEventListener("keydown", onKey);
       removeEventListener("mousedown", keepFocus);
+      sound.close();
     };
   }, []);
 
