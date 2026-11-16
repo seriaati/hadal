@@ -10,6 +10,12 @@ test("normalize ignores case, accents, punctuation, spaces and a leading 'the'",
   expect(normalize("TIMOR LESTE")).toBe(normalize("Timor-Leste"));
 });
 
+test("normalize keeps other scripts, and the marks that tell their words apart", () => {
+  expect(normalize("Ελλάδα")).toBe("ελλάδα".normalize("NFD"));
+  expect(normalize("かぎ")).not.toBe(normalize("かき"));
+  expect(normalize("東京!")).toBe("東京");
+});
+
 test("a correct answer returns the pack's spelling and its rarity", () => {
   const verdict = judge(index, ASIA, "  taiwan ");
   expect(verdict?.answer).toBe("Taiwan");

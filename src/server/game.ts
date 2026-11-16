@@ -2,13 +2,16 @@ import type { Answer, GamePrompt, Pack, Verdict } from "../shared/types";
 
 export type PromptIndex = Map<string, { prompt: GamePrompt; answers: Map<string, Answer> }>;
 
-/** Reduce an answer to a comparison key: no case, accents, punctuation, spaces or leading "the". */
+/**
+ * Reduce an answer to a comparison key: no case, accents, punctuation, spaces or leading "the".
+ * Only Latin letters lose their accents: in other scripts the marks tell words apart.
+ */
 export function normalize(text: string): string {
   return text
     .normalize("NFD")
-    .replace(/\p{M}/gu, "")
+    .replace(/(?<=\p{Script=Latin})\p{M}+/gu, "")
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/[^\p{L}\p{N}\p{M}]+/gu, " ")
     .trim()
     .replace(/^the /, "")
     .replaceAll(" ", "");
