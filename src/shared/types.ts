@@ -7,6 +7,11 @@ export type Answer = { text: string; aliases?: string[]; rarity: number };
 /** The longest answer the game lets a player type, so no spelling in a pack may be longer. */
 export const MAX_ANSWER_LENGTH = 40;
 
+/** The largest pack file a player may upload. The largest built-in pack is about 7 KB. */
+export const MAX_PACK_BYTES = 200_000;
+/** One of a player's own packs, as the browser sees it: no prompts or answers. */
+export type PackSummary = { id: string; name: string; prompts: number };
+
 /** A prompt as the browser sees it: no answers. */
 export type GamePrompt = { id: string; text: string; pack: string };
 /** `answer` is the pack's spelling of a correct answer, or null when wrong (rarity 0). */

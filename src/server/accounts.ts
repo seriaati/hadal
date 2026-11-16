@@ -47,6 +47,13 @@ export async function accountOf(token: string | null): Promise<Account | null> {
   return row ? { username: row.username } : null;
 }
 
+/** The id of the signed-in account, for the tables that hang off it. It never goes to the browser. */
+export async function accountIdOf(token: string | null): Promise<string | null> {
+  if (!token) return null;
+  const [row] = await sql`select account_id from sessions where token_hash = ${hashToken(token)} and expires_at > now()`;
+  return row?.account_id ?? null;
+}
+
 export async function signOut(token: string) {
   await sql`delete from sessions where token_hash = ${hashToken(token)}`;
 }

@@ -17,12 +17,15 @@ export function normalize(text: string): string {
     .replaceAll(" ", "");
 }
 
-/** Index every prompt by "pack/prompt" id, with its answers keyed by normalized spelling. Expects valid packs. */
-export function buildIndex(packs: Pack[]): PromptIndex {
+/**
+ * Index every prompt by "pack/prompt" id, with its answers keyed by normalized spelling. Expects
+ * valid packs. `prefix` goes before each id, to keep a player's own packs apart from the built-in ones.
+ */
+export function buildIndex(packs: Pack[], prefix = ""): PromptIndex {
   const index: PromptIndex = new Map();
   for (const pack of packs) {
     for (const prompt of pack.prompts) {
-      const id = `${pack.id}/${prompt.id}`;
+      const id = `${prefix}${pack.id}/${prompt.id}`;
       const answers = new Map<string, Answer>();
       for (const answer of prompt.answers) {
         for (const spelling of [answer.text, ...(answer.aliases ?? [])]) answers.set(normalize(spelling), answer);
