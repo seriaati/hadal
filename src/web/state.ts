@@ -18,8 +18,8 @@ export type Game = {
   round: number;
   input: string;
   air: number;
-  /** True while an answer is with the server. */
-  judging: boolean;
+  /** The answer that is with the server, while one is. */
+  judging: string | null;
   /** The latest wrong answer to this prompt, and the `phaseTime` at which it was rejected. */
   rejected: { text: string; at: number } | null;
   /** Depth in metres. */
@@ -34,7 +34,7 @@ export type Game = {
 export function createGame(): Game {
   return {
     phase: "title", phaseTime: 0, prompts: [], round: 0, input: "", air: AIR_SECONDS,
-    judging: false, rejected: null, depth: 0, lamps: [], result: null, results: [],
+    judging: null, rejected: null, depth: 0, lamps: [], result: null, results: [],
   };
 }
 
@@ -74,7 +74,7 @@ async function attempt(game: Game) {
   const prompt = game.prompts[game.round]!;
   const typed = game.input.trim();
   game.input = "";
-  game.judging = true;
+  game.judging = typed;
   const res = await fetch("/api/answer", {
     method: "POST",
     body: JSON.stringify({ promptId: prompt.id, answer: typed }),
@@ -82,7 +82,7 @@ async function attempt(game: Game) {
   const verdict = (await res.json()) as Verdict;
   // The dive was left while the answer was with the server: it counts for nothing.
   if (game.prompts[game.round] !== prompt) return;
-  game.judging = false;
+  game.judging = null;
   if (verdict.answer !== null) {
     game.depth += verdict.rarity * METERS_PER_POINT;
     game.lamps.push({ depth: game.depth, lit: true });
@@ -103,9 +103,10 @@ export function leave(game: Game) {
 export function tick(game: Game, dt: number) {
   game.phaseTime += dt;
   if (game.phase === "ascent" && game.phaseTime >= ascentSeconds(game.depth)) enter(game, "done");
-  if (game.phase !== "ask") return;
+  // No air is used while an answer is being judged: that wait is not the diver's doing.
+  if (game.phase !== "ask" || game.judging) return;
   game.air = Math.max(0, game.air - dt);
-  if (game.air > 0 || game.judging) return;
+  if (game.air > 0) return;
   if (game.input.trim()) void attempt(game);
   else fail(game);
 }

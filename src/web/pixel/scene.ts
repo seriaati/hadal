@@ -517,9 +517,11 @@ export class Scene {
         for (let j = 0; j < font.height; j++) for (let i = 0; i < (font === large ? 2 : 1); i++) frame.put(end + i, y + j, 16);
         frame.emit = 0;
       }
-      // A wrong answer is named briefly; the diver can try again while the air lasts.
+      // An answer with the judge is named while it is there, a wrong one briefly after; the diver can try again while the air lasts.
       const rejected = game.rejected;
-      if (rejected && game.phaseTime - rejected.at < 1.6) {
+      if (game.judging) {
+        sayWrapped(tiny, `${plain(game.judging).slice(0, 18)} ~ ${".".repeat(1 + (Math.floor(time * 3) % 3))}`, y + font.height + 7, 6);
+      } else if (rejected && game.phaseTime - rejected.at < 1.6) {
         sayWrapped(tiny, `${plain(rejected.text).slice(0, 18)} ~ no light`, y + font.height + 7, 18);
       }
     } else {

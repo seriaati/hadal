@@ -56,3 +56,26 @@ test("a dive that is left leads straight back to the title, and an answer still 
   await Bun.sleep(10);
   expect(game).toEqual(createGame());
 });
+
+test("no air is used while an answer is being judged", async () => {
+  const prompts = [{ id: "p/a", text: "A", pack: "P" }];
+  globalThis.fetch = (async (url: string) => {
+    if (url !== "/api/game") await Bun.sleep(5);
+    return Response.json(url === "/api/game" ? { prompts } : { answer: null, rarity: 0 });
+  }) as unknown as typeof fetch;
+
+  const game = createGame();
+  pressEnter(game);
+  await Bun.sleep(1);
+  tick(game, 2);
+  game.input = "lima";
+  pressEnter(game);
+  expect(game.judging).toBe("lima");
+  tick(game, 60);
+  expect(game.air).toBe(16);
+  await Bun.sleep(10);
+  expect(game.judging).toBeNull();
+  expect(game.rejected?.text).toBe("lima");
+  tick(game, 1);
+  expect(game.air).toBe(15);
+});
