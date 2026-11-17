@@ -50,7 +50,7 @@ const account = async (key = true) => {
   const entry = await signUp(name, "correct horse");
   if ("error" in entry) throw new Error(entry.error);
   const id = (await accountIdOf(entry.token))!;
-  if (key) await saveKey(id, KEY);
+  if (key) await saveKey(id, "anthropic", KEY);
   return id;
 };
 

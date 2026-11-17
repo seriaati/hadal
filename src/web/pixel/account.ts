@@ -1,9 +1,15 @@
-import { MAX_KEY_LENGTH, PASSWORD_MAX, USERNAME_MAX, type Account } from "../../shared/types";
+import { MAX_KEY_LENGTH, PASSWORD_MAX, PROVIDERS, USERNAME_MAX, type Account, type Provider } from "../../shared/types";
 import type { Part, Step, Ui } from "./ui";
+
+/** What each key is called, and what keeping one is good for. */
+const KEYS: Record<Provider, { name: string; use: string }> = {
+  anthropic: { name: "Anthropic key", use: "An Anthropic key lets Claude write packs, and judge answers the packs miss" },
+  jev: { name: "Jev key", use: "A Jev key lets Jev judge answers the packs miss" },
+};
 
 /**
  * The panel for signing in, creating an account and signing out, opened from the title menu.
- * Signed in, it also takes the player's API key.
+ * Signed in, it also takes the player's API keys, each in a step of its own.
  */
 export class AccountPanel {
   /** Who is signed in, once the server has said. */
@@ -25,29 +31,52 @@ export class AccountPanel {
       });
   }
 
-  /** Open the panel: on the account if signed in, otherwise to sign in or to create an account. */
-  show(focus = "") {
+  /** Open the panel: on the account if signed in (or on one of its keys), otherwise to sign in or to create an account. */
+  show(key?: Provider) {
     this.creating = false;
     this.error = "";
-    this.ui.go(this.step, focus);
+    this.ui.go(key && this.account ? this.keys[key] : this.step);
   }
+
+  private keyStep(provider: Provider): Step {
+    const kept = this.account?.keys[provider];
+    const field = `${provider}-key`;
+    const about = kept ? "A key is kept. Type a new one to replace it" : KEYS[provider].use;
+    return {
+      title: KEYS[provider].name,
+      busy: this.busy,
+      rows: [
+        // Not a password field, or the browser would offer the account's password for it. It is drawn as dots anyway.
+        { kind: "field", id: field, label: "API key", max: MAX_KEY_LENGTH, dots: true, autocomplete: "off" },
+        { kind: "note", text: this.error || about, bad: this.error !== "" },
+        [
+          { kind: "press", id: "keep", label: "Keep key", press: () => void this.setKey(provider, { method: "PUT", body: JSON.stringify({ key: this.ui.value(field) }) }) },
+          ...(kept ? [{ kind: "press", id: "forget", label: "Forget key", press: () => void this.setKey(provider, { method: "DELETE" }) } as Part] : []),
+        ],
+      ],
+    };
+  }
+
+  private keys: Record<Provider, () => Step> = { anthropic: () => this.keyStep("anthropic"), jev: () => this.keyStep("jev") };
 
   private step = (): Step => {
     const account = this.account;
     const refusal: Part[] = this.error ? [{ kind: "note", text: this.error, bad: true }] : [];
     if (account) {
-      const about = account.key ? "A key is kept. Type a new one to replace it" : "An Anthropic key lets Claude write packs for you";
       return {
         title: account.username,
         busy: this.busy,
         rows: [
-          // Not a password field, or the browser would offer the account's password for it. It is drawn as dots anyway.
-          { kind: "field", id: "key", label: "API key", max: MAX_KEY_LENGTH, dots: true, autocomplete: "off" },
-          ...(refusal.length ? refusal : [{ kind: "note", text: about } as Part]),
-          [
-            { kind: "press", id: "keep", label: "Keep key", press: () => void this.setKey({ method: "PUT", body: JSON.stringify({ key: this.ui.value("key") }) }) },
-            ...(account.key ? [{ kind: "press", id: "forget", label: "Forget key", press: () => void this.setKey({ method: "DELETE" }) } as Part] : []),
-          ],
+          ...PROVIDERS.map((provider): Part => ({
+            kind: "press",
+            id: provider,
+            label: `${KEYS[provider].name}${account.keys[provider] ? " ~ kept" : ""}`,
+            press: () => {
+              this.error = "";
+              this.ui.go(this.keys[provider]);
+            },
+          })),
+          ...refusal,
           { kind: "gap" },
           { kind: "press", id: "leave", label: "Sign out", press: () => void this.send() },
         ],
@@ -86,12 +115,12 @@ export class AccountPanel {
   }
 
   /** Keep the key that was typed, or forget the one that is kept. */
-  private async setKey(request: RequestInit) {
-    const res = await this.ask("key", request);
+  private async setKey(provider: Provider, request: RequestInit) {
+    const res = await this.ask(`key/${provider}`, request);
     if (!res) return;
     this.account = (await res.json()) as Account;
-    this.ui.clear("key");
-    this.ui.focus("key");
+    this.ui.clear(`${provider}-key`);
+    this.ui.focus(`${provider}-key`);
     this.changed();
   }
 

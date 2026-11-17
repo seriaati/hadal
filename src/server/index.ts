@@ -1,6 +1,6 @@
 import app from "../web/index.html";
 import type { BunRequest } from "bun";
-import { MAX_PACK_BYTES, type Config } from "../shared/types";
+import { MAX_PACK_BYTES, PROVIDERS, type Config, type Provider } from "../shared/types";
 import { SESSION_DAYS, accountIdOf, accountOf, signIn, signOut, signUp } from "./accounts";
 import { listPacks, loadPack, removePack, savePack } from "./custom";
 import { migrate } from "./db";
@@ -55,12 +55,14 @@ async function packs(req: BunRequest, change?: (accountId: string) => Promise<st
   return Response.json(await listPacks(accountId));
 }
 
-/** Answer with the signed-in account as it stands after a change to its API key, or say why the change was refused. */
-async function key(req: BunRequest, change: (accountId: string) => Promise<string | null | void>) {
+/** Answer with the signed-in account as it stands after a change to one of its API keys, or say why the change was refused. */
+async function key(req: BunRequest<"/api/account/key/:provider">, change: (accountId: string, provider: Provider) => Promise<string | null | void>) {
+  const provider = PROVIDERS.find((known) => known === req.params.provider);
+  if (!provider) return new Response("Unknown provider", { status: 404 });
   const token = req.cookies.get(SESSION);
   const accountId = await accountIdOf(token);
   if (!accountId) return Response.json({ error: "Sign in first" }, { status: 401 });
-  const error = await change(accountId);
+  const error = await change(accountId, provider);
   if (error) return Response.json({ error }, { status: 400 });
   return Response.json(await accountOf(token));
 }
@@ -103,8 +105,8 @@ const server = Bun.serve({
         return new Response(null, { status: 204 });
       },
     },
-    "/api/account/key": {
-      PUT: (req) => key(req, async (accountId) => saveKey(accountId, String(((await req.json()) as { key: string }).key ?? ""))),
+    "/api/account/key/:provider": {
+      PUT: (req) => key(req, async (accountId, provider) => saveKey(accountId, provider, String(((await req.json()) as { key: string }).key ?? ""))),
       DELETE: (req) => key(req, removeKey),
     },
     "/api/packs": {

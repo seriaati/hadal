@@ -23,8 +23,11 @@ export type Config = { devMode: boolean };
 /** A correct answer scores its rarity in points; each point is this many metres. */
 export const METERS_PER_POINT = 11;
 
-/** A signed-in player, as the browser sees them. `key` is whether an API key of theirs is kept: the key itself stays on the server. */
-export type Account = { username: string; key: boolean };
+/** Whose API keys a player may keep: Anthropic's (Claude writes packs and judges answers) and TypeSafe's (Jev judges answers). */
+export const PROVIDERS = ["anthropic", "jev"] as const;
+export type Provider = (typeof PROVIDERS)[number];
+/** A signed-in player, as the browser sees them. `keys` is which API keys of theirs are kept: the keys themselves stay on the server. */
+export type Account = { username: string; keys: Record<Provider, boolean> };
 export const MAX_KEY_LENGTH = 300;
 /** What a player may ask a pack to be written about. */
 export const MAX_TOPIC_LENGTH = 60;

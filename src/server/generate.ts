@@ -168,7 +168,7 @@ export async function writePack(accountId: string, topic: string, progress?: (pr
   // Checked first, so that nobody pays for a pack that cannot be kept.
   const packs = await listPacks(accountId);
   if (packs.length >= MAX_PACKS) return [`an account keeps at most ${MAX_PACKS} packs: remove one first`];
-  const apiKey = await loadKey(accountId);
+  const apiKey = await loadKey(accountId, "anthropic");
   if (!apiKey) return ["writing a pack takes an Anthropic API key of your own: keep one under your name in the menu"];
   try {
     const written = await draft(apiKey, topic, progress, signal);

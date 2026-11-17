@@ -138,13 +138,13 @@ export class PacksPanel {
         ],
       };
     }
-    if (!this.account.account?.key) {
+    if (!this.account.account?.keys.anthropic) {
       return {
         title,
         rows: [
           { kind: "note", text: "Writing a pack takes an Anthropic API key of your own" },
           { kind: "gap" },
-          { kind: "press", id: "key", label: "Add a key", press: () => this.account.show("key") },
+          { kind: "press", id: "key", label: "Add a key", press: () => this.account.show("anthropic") },
         ],
       };
     }
