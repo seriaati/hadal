@@ -3,14 +3,14 @@ import { MAX_ANSWER_LENGTH, type Config } from "../shared/types";
 import { DevMenu, type DevTools } from "./DevMenu";
 import { Logbook } from "./Logbook";
 import { Sound } from "./sound";
-import { createGame, pressEnter, start, tick, type Game as Dive } from "./state";
+import { createGame, leave, pressEnter, start, tick, type Game as Dive } from "./state";
 import { AccountPanel } from "./pixel/account";
 import { drawable } from "./pixel/other";
 import { Display, Frame } from "./pixel/frame";
 import { PacksPanel } from "./pixel/packs";
 import { Scene } from "./pixel/scene";
 import { drawCog, overCog, settingsStep } from "./pixel/settings";
-import { Ui } from "./pixel/ui";
+import { Ui, type Part, type Step } from "./pixel/ui";
 
 /** The whole game is drawn on canvas. A hidden text field takes the typing, so phones get a keyboard. */
 export function Game() {
@@ -43,9 +43,29 @@ export function Game() {
       else if (line === 1) packs.show();
       else account.show();
     };
-    /** The settings can be opened at the title and in a dive, not while the diver is hauled up or the logbook is open. */
-    const openSettings = () => {
-      if (game.phase !== "ascent" && game.phase !== "done") ui.go(settings);
+    /** Whether the step about leaving the dive was opened with Escape: it then says what a second Escape does. */
+    let byEscape = false;
+    const leaveDive = () => {
+      ui.close();
+      leave(game);
+      input.value = "";
+    };
+    /** In a dive, Escape or the cog asks whether to leave it. The settings are a line of this step. */
+    const leaving = (): Step => ({
+      title: "Leave the dive?",
+      escape: leaveDive,
+      rows: [
+        ...(byEscape ? [{ kind: "note", text: "Esc again leaves the dive. It is not logged" } as Part] : []),
+        { kind: "press", id: "stay", label: "Keep diving", press: () => ui.back() },
+        { kind: "press", id: "settings", label: "Settings", press: () => ui.go(settings) },
+        { kind: "press", id: "leave", label: "Leave the dive", press: leaveDive },
+      ],
+    });
+    /** What Escape and the cog open when nothing is open: the settings at the title, the way out of a dive in a dive. */
+    const openMenu = (escape: boolean) => {
+      byEscape = escape;
+      if (game.phase === "title") ui.go(settings);
+      else if (game.phase === "ask" || game.phase === "verdict") ui.go(leaving);
     };
     // In development, let the browser console (and test scripts) reach the game.
     if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game, scene, frame, display, sound, ui, account, packs } });
@@ -64,7 +84,7 @@ export function Game() {
       }
       if (event.key !== "Enter" && event.key !== "Escape") return;
       event.preventDefault();
-      if (event.key === "Escape") return openSettings();
+      if (event.key === "Escape") return event.repeat ? undefined : openMenu(true);
       if (game.phase === "title") return choose(menu.choice);
       if (game.phase === "ask") game.input = input.value; // include keys typed since the last frame
       pressEnter(game);
@@ -89,8 +109,8 @@ export function Game() {
         // Moving the pointer over a line of the menu chooses it, as moving it over a control of a panel gives that the focus.
         if (line >= 0 && event.pointerType === "mouse" && (event.movementX || event.movementY)) menu.choice = line;
       } else if (cog) {
-        if (ui.top === settings) ui.back();
-        else openSettings();
+        if (ui.top === settings || ui.top === leaving) ui.back();
+        else openMenu(false);
       } else if (ui.open) ui.press(x, y);
       else if (line >= 0) choose(line);
     };

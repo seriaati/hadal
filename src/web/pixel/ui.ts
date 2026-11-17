@@ -29,8 +29,11 @@ export type Note = { kind: "note"; text: string; bad?: boolean };
 export type Wait = { kind: "wait"; text: string; done: number; of: number };
 export type Part = Press | Field | Slider | Note | Wait | { kind: "gap" };
 type Control = Press | Field | Slider;
-/** One screen of a panel: its name, and its rows from the top. While `busy`, presses wait. */
-export type Step = { title: string; rows: (Part | Part[])[]; busy?: boolean };
+/**
+ * One screen of a panel: its name, and its rows from the top. While `busy`, presses wait.
+ * `escape` is what Escape does here, where that is not to go one step back.
+ */
+export type Step = { title: string; rows: (Part | Part[])[]; busy?: boolean; escape?: () => void };
 
 /** Where a part is, from the top left of its step. */
 export type Placed = { part: Part; row: number; x: number; y: number; w: number; h: number; lines: string[] };
@@ -282,7 +285,9 @@ export class Ui {
     if (event.isComposing) return;
     if (event.key === "Escape") {
       event.preventDefault();
-      return this.back();
+      // A key that is held down acts once: the second Escape of a pair must be meant.
+      if (event.repeat) return;
+      return this.step.escape ? this.step.escape() : this.back();
     }
     const here = this.placed.find((spot) => isControl(spot.part) && this.controls.get(spot.part.id) === document.activeElement);
     if (!here) return;
@@ -294,7 +299,14 @@ export class Ui {
     if (event.key === "Tab") go(event.shiftKey ? "previous" : "next");
     else if (event.key === "ArrowUp") go("up");
     else if (event.key === "ArrowDown") go("down");
-    else if (here.part.kind === "press" && event.key === "ArrowLeft") go("left");
+    else if (here.part.kind === "press" && event.key === "ArrowLeft") {
+      // Left from the leftmost thing of a row goes one step back.
+      if (move(this.placed, here, "left")) go("left");
+      else {
+        event.preventDefault();
+        this.back();
+      }
+    }
     else if (here.part.kind === "press" && event.key === "ArrowRight") go("right");
     else if (here.part.kind === "field" && event.key === "Enter") {
       // Enter in a field goes on to the next field, or after the last one presses what follows.

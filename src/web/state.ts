@@ -80,6 +80,8 @@ async function attempt(game: Game) {
     body: JSON.stringify({ promptId: prompt.id, answer: typed }),
   });
   const verdict = (await res.json()) as Verdict;
+  // The dive was left while the answer was with the server: it counts for nothing.
+  if (game.prompts[game.round] !== prompt) return;
   game.judging = false;
   if (verdict.answer !== null) {
     game.depth += verdict.rarity * METERS_PER_POINT;
@@ -90,6 +92,11 @@ async function attempt(game: Game) {
   } else {
     game.rejected = { text: typed, at: game.phaseTime };
   }
+}
+
+/** Leave the dive where it is and go back to the title. Nothing of it is kept, so no logbook opens. */
+export function leave(game: Game) {
+  Object.assign(game, createGame());
 }
 
 /** Advance the clocks. When the air runs out, whatever is typed gets one last chance. */

@@ -1,5 +1,5 @@
 import { afterAll, expect, test } from "bun:test";
-import { createGame, pressEnter, tick } from "./state";
+import { createGame, leave, pressEnter, tick } from "./state";
 
 // Every test file runs in one process: the server's tests need the real `fetch` back.
 const realFetch = globalThis.fetch;
@@ -38,4 +38,21 @@ test("a finished dive keeps how every round ended, then leads back to the title"
   pressEnter(game);
   expect(game.phase).toBe("title");
   expect(game.results).toEqual([]);
+});
+
+test("a dive that is left leads straight back to the title, and an answer still on its way counts for nothing", async () => {
+  const prompts = [{ id: "p/a", text: "A", pack: "P" }];
+  globalThis.fetch = (async (url: string) => {
+    if (url !== "/api/game") await Bun.sleep(5);
+    return Response.json(url === "/api/game" ? { prompts } : { answer: "Peru", rarity: 40 });
+  }) as unknown as typeof fetch;
+
+  const game = createGame();
+  pressEnter(game);
+  await Bun.sleep(1);
+  game.input = "peru";
+  pressEnter(game);
+  leave(game);
+  await Bun.sleep(10);
+  expect(game).toEqual(createGame());
 });
