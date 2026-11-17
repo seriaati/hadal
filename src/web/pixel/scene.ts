@@ -454,9 +454,11 @@ export class Scene {
       frame.emit = 110;
       say(font, "HADAL", x, base - 4, amber(tall));
       frame.emit = 0;
-      say(tiny, "Rare answers sink deeper", x, base + tall + 2, 6);
+      // On a narrow screen the line under the title runs on to a second one.
+      const under = wrap(tiny, "Rare answers sink deeper", room);
+      under.forEach((line, i) => say(tiny, line, x, base + tall + 2 + i * 8, 6));
       this.menuLeft = x;
-      this.menuTop = base + tall + 14;
+      this.menuTop = base + tall + 6 + under.length * 8;
       menu.items.forEach((item, i) => {
         const y = this.menuTop + i * MENU_ROW;
         const chosen = i === menu.choice;
