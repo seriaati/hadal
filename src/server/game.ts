@@ -1,6 +1,7 @@
 import type { Answer, GamePrompt, Pack, Verdict } from "../shared/types";
 
-export type PromptIndex = Map<string, { prompt: GamePrompt; answers: Map<string, Answer> }>;
+export type PromptEntry = { prompt: GamePrompt; answers: Map<string, Answer> };
+export type PromptIndex = Map<string, PromptEntry>;
 
 /**
  * Reduce an answer to a comparison key: no case, accents, punctuation, spaces or leading "the".

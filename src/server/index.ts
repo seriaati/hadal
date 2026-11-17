@@ -7,6 +7,7 @@ import { migrate } from "./db";
 import { buildIndex, judge, nearestAnswer, pickPrompts, type PromptIndex } from "./game";
 import { writePack } from "./generate";
 import { removeKey, saveKey } from "./keys";
+import { judgeLive } from "./live";
 import { loadPacks } from "./packs";
 
 const PROMPTS_PER_GAME = 10;
@@ -86,10 +87,16 @@ const server = Bun.serve({
       },
     },
     "/api/answer": {
-      POST: async (req) => {
+      POST: async (req, server) => {
+        // Two judges may be asked one after the other, and Bun closes a request that is silent for ten seconds.
+        server.timeout(req, 20);
         const { promptId, answer } = (await req.json()) as { promptId: string; answer: string };
-        const verdict = judge(await indexOf(req, String(promptId)), promptId, String(answer ?? ""));
-        return verdict ? Response.json(verdict) : new Response("Unknown prompt", { status: 404 });
+        const index = await indexOf(req, String(promptId));
+        const verdict = judge(index, promptId, String(answer ?? ""));
+        if (!verdict) return new Response("Unknown prompt", { status: 404 });
+        if (verdict.answer !== null) return Response.json(verdict);
+        // Not in the pack: the live judge may know it all the same.
+        return Response.json(await judgeLive(index.get(promptId)!, String(answer ?? ""), await accountIdOf(req.cookies.get(SESSION))));
       },
     },
     "/api/account": {

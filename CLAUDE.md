@@ -32,7 +32,8 @@ correctly at a chosen rarity, run out of air, end the dive, summon a creature.
 
 - `src/server/`: `Bun.serve` entry, API routes, pack loading and answer judging, accounts and
   sessions (`accounts.ts`), players' own packs (`custom.ts`), their API keys (`keys.ts`), packs
-  written by Claude (`generate.ts`), the database (`db.ts`; schema changes are numbered files in
+  written by Claude (`generate.ts`), the live judge for answers a pack does not list
+  (`live.ts`), the database (`db.ts`; schema changes are numbered files in
   `migrations/`, run at start-up, never edited once released)
 - `src/web/`: the game client (served by the same Bun process). `state.ts` holds the rules of
   a run; `sound.ts` makes every sound (there are no sound files); `pixel/` is the renderer
