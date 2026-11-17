@@ -1,0 +1,122 @@
+# Hadal: the interface
+
+How the panels look and how the game is controlled. Agreed with the owner on 2026-11-17 from
+the mock-ups in `design/interface/index.html` (direction 1, "open water"). The code is
+`src/web/pixel/ui.ts`; a panel only lists what it holds.
+
+## The idea
+
+There is no panel. The words stand in the water where the title menu stands, in the same
+letters, and the water behind them goes two shades darker with a soft edge so the small
+letters read. Nothing is framed and the sea is not dimmed: the game goes on in full view.
+
+- On a wide screen (300 game pixels or more) the words take the column to the right of the
+  diver. On a narrow one they lie under the diver, across the whole width.
+- The words never cover the diver or the lantern. Only a list too long for the screen may
+  climb over them.
+- While a panel is open the title's own words are not drawn, and in a dive the answer being
+  typed is not drawn. The prompt, the air and the depth stay.
+
+## Parts
+
+Every panel is built from these, and each has one look.
+
+| Part | What it is | Look |
+|---|---|---|
+| Step | One screen of a panel | Its name at the top in dim letters, with a `‹` before it |
+| Line | Anything pressed: a row of a list, a button, a link | Pale words. A lesser line beside another ("Remove") is dim |
+| Field | A line of typing | Its label in dim letters, the typing under it, a rule under that |
+| Slider | A level from 0 to 1 | Its label, and 20 pips at the right of the line, like the air gauge |
+| Message | Words that are only read | Dim words, wrapped |
+| Wait | Something that takes long | Words, then one pip per piece of the work, then "prompt 4 of 10" |
+
+A password or a key is typed as dots. A field always sits alone on its line. Lines may share
+a row.
+
+## States
+
+| State | Shown as |
+|---|---|
+| At rest | As above |
+| In focus | An amber mark `▸` before it, and its words turn cream and glow a little. A field's rule turns amber and its caret blinks. A slider's lit pips turn amber |
+| Under the pointer | The same as in focus: moving the pointer over a thing gives it the focus, so there is never a second highlight |
+| Pressed | Nothing of its own: a press acts at once |
+| Busy | The mark blinks, and presses wait until the answer has come |
+| About to destroy | The line's words turn rose and ask "Sure?" |
+| Refused | A message in rose, where the thing was tried, saying what happened and what to do |
+
+Something always has the focus while a panel is open, and it is always shown this one way:
+by a shape and by a change of light, never by colour alone.
+
+## Control
+
+The same in every panel.
+
+| Input | Does |
+|---|---|
+| Up, Down | Move to the row above or below, to the thing nearest in line. From the last row Down goes to the first |
+| Left, Right | Move between things on one row. From the leftmost line of a row, Left goes one step back. On a slider, change it one step (5%). In a field, move the caret |
+| Tab, Shift+Tab | The next or the previous thing in reading order, round and round inside the panel |
+| Enter | Press what has the focus. In a field: go to the next field, or press the first line after the last one |
+| Escape | One step back. With nothing open: at the title it opens the settings, in a dive it asks whether to leave the dive |
+| Pointer | Moving over a thing gives it the focus; a click presses it. A click outside the words, or on the `‹`, goes one step back |
+| Touch | A tap presses. The `‹` goes back |
+
+- **Back** is always one step: from "Write a pack" to the list, from the list to the title.
+  Escape, Left from the leftmost line, the `‹` and a click outside the words all mean it.
+  No panel has a "Back" button. The one exception is a message with nothing else to press,
+  because the focus must rest somewhere.
+- **Leaving a dive** (owner, 2026-11-17). In a dive, Escape or the cog opens the step "Leave
+  the dive?" with three lines: "Keep diving" (in focus), "Settings", "Leave the dive". A
+  second Escape leaves the dive, as does pressing the last line; opened with Escape, the step
+  says so. This is the one step where Escape does not mean back, so everything else that
+  means back (Left, the `‹`, a click outside, the cog again) keeps the dive. A dive that is
+  left goes straight to the title: it is not logged and no logbook opens. A key held down
+  counts once, so holding Escape cannot leave a dive.
+- **Where the focus lands.** When a step opens, on its first thing. Coming back from a step,
+  on the line that opened it. After something is added, on the new thing. After something is
+  removed, on what took its place.
+- **Fields and arrows.** Because a field is alone on its row, Up and Down always leave it and
+  Left and Right always belong to its caret. There is no editing mode.
+- **Removing** takes two presses: "Remove" turns into "Sure?", and moving the focus away
+  takes the question back. There is never a hold.
+- **The cursor is a hand** over everything that can be pressed: the title menu's lines, the
+  cog, and every line, field and slider of a panel.
+- **No key hints are drawn.** The keys are the ones every game uses.
+- **Nothing waits for an animation.** A panel is there on the frame its key is pressed.
+
+## Sizes
+
+- A line is 12 game pixels tall, or as many as it takes to be 40 screen pixels tall (20 on a
+  phone, where one game pixel is two screen pixels): room for a fingertip. If a step does
+  not fit the screen at that height, it falls back to 12.
+- 12 pixels is also what a line in another script needs (the bundled font is 10 tall).
+- A slider's track is 60 pixels: 20 pips of 2, a pixel apart.
+- Text is the 3 by 5 capitals throughout; a long name loses its end.
+
+## Colours (palette indices)
+
+Step name 6, line 7, lesser line 6, message 6, in focus 16 with the mark in 15, rose 18,
+field rule 4 (15 in focus), caret 16, pips 6 on and 4 off (15 on in focus), wait pips 10.
+
+## The world
+
+- Sound and light answer for the interface where they can: a slider's step is heard at its
+  new level, and a pack that has been written rings like a lit lamp (a dull knock if it could
+  not be written), whether or not the panel is still open.
+- Writing a pack counts the prompts as Claude writes them, and can be stopped. Escape leaves
+  the step and the writing goes on.
+
+## Wording
+
+- A line says what pressing it does, as a verb: "Add a pack", "Keep key", "Sign out". A row
+  of a list is the thing's own name.
+- A message is one plain sentence without a full stop. A refusal says what happened and, if
+  there is one, the way out ("an account keeps at most 10 packs: remove one first").
+- The same thing has the same name everywhere: a pack, a key, a name, a password.
+
+## For the browser
+
+Every line, field and slider is a real HTML control, invisible and laid exactly over its
+drawing. That keeps what browsers do for forms: saved passwords, Tab, a phone's keyboard, a
+file chooser, screen readers. The focus the game draws is the browser's own focus.
