@@ -8,12 +8,12 @@ export type Entry = { account: Account; token: string } | { error: string };
 
 const hashToken = (token: string) => new Bun.CryptoHasher("sha256").update(token).digest("hex");
 
-async function openSession(accountId: string, username: string): Promise<Entry> {
+async function openSession(accountId: string): Promise<Entry> {
   const token = Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString("base64url");
   await sql`
     insert into sessions (token_hash, account_id, expires_at)
     values (${hashToken(token)}, ${accountId}, now() + ${SESSION_DAYS} * interval '1 day')`;
-  return { account: { username }, token };
+  return { account: (await accountOf(token))!, token };
 }
 
 export async function signUp(username: string, password: string): Promise<Entry> {
@@ -26,7 +26,7 @@ export async function signUp(username: string, password: string): Promise<Entry>
     values (${username}, ${await Bun.password.hash(password)})
     on conflict (username) do nothing
     returning id`;
-  return row ? openSession(row.id, username) : { error: "That name is taken" };
+  return row ? openSession(row.id) : { error: "That name is taken" };
 }
 
 /** The same refusal for an unknown name and a wrong password, so neither tells who has an account. */
@@ -36,15 +36,16 @@ export async function signIn(username: string, password: string): Promise<Entry>
   const known = row && password.length <= PASSWORD_MAX && (await Bun.password.verify(password, row.password_hash));
   if (!known) return { error: "Wrong name or password" };
   await sql`delete from sessions where expires_at < now()`;
-  return openSession(row.id, username);
+  return openSession(row.id);
 }
 
 export async function accountOf(token: string | null): Promise<Account | null> {
   if (!token) return null;
   const [row] = await sql`
-    select username from sessions join accounts on accounts.id = account_id
+    select username, exists (select from keys where keys.account_id = accounts.id) as key
+    from sessions join accounts on accounts.id = account_id
     where token_hash = ${hashToken(token)} and expires_at > now()`;
-  return row ? { username: row.username } : null;
+  return row ? { username: row.username, key: row.key } : null;
 }
 
 /** The id of the signed-in account, for the tables that hang off it. It never goes to the browser. */

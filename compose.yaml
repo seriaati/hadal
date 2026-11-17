@@ -1,5 +1,5 @@
 # Development: `docker compose up -d db` starts only the database; the game runs with `bun dev`.
-# Production: set POSTGRES_PASSWORD, then `docker compose up -d --build` runs both.
+# Production: set POSTGRES_PASSWORD and HADAL_SECRET, then `docker compose up -d --build` runs both.
 services:
   db:
     image: postgres:18
@@ -24,6 +24,9 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: postgres://hadal:${POSTGRES_PASSWORD:-hadal}@db:5432/hadal
+      # Seals the API keys players store: 32 characters or more, e.g. from `openssl rand -base64 32`.
+      # Without it the game runs but keeps no keys. Changing it makes every stored key unreadable.
+      HADAL_SECRET: ${HADAL_SECRET:-}
     ports:
       - "${PORT:-3000}:3000"
     depends_on:

@@ -20,8 +20,8 @@ test("signing up opens a session that names the account", async () => {
   const name = fresh();
   const entry = await signUp(name, PASSWORD);
   if ("error" in entry) throw new Error(entry.error);
-  expect(entry.account).toEqual({ username: name });
-  expect(await accountOf(entry.token)).toEqual({ username: name });
+  expect(entry.account).toEqual({ username: name, key: false });
+  expect(await accountOf(entry.token)).toEqual({ username: name, key: false });
 });
 
 test("the password is stored as a hash, and the session token is not stored at all", async () => {
@@ -65,7 +65,7 @@ test("signing out ends that session and no other", async () => {
   if ("error" in first || "error" in second) throw new Error("could not sign in");
   await signOut(first.token);
   expect(await accountOf(first.token)).toBeNull();
-  expect(await accountOf(second.token)).toEqual({ username: name });
+  expect(await accountOf(second.token)).toEqual({ username: name, key: false });
 });
 
 test("an expired or unknown session names nobody", async () => {

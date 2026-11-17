@@ -5,6 +5,8 @@ import { SESSION_DAYS, accountIdOf, accountOf, signIn, signOut, signUp } from ".
 import { listPacks, loadPack, removePack, savePack } from "./custom";
 import { migrate } from "./db";
 import { buildIndex, judge, nearestAnswer, pickPrompts, type PromptIndex } from "./game";
+import { writePack } from "./generate";
+import { removeKey, saveKey } from "./keys";
 import { loadPacks } from "./packs";
 
 const PROMPTS_PER_GAME = 10;
@@ -53,6 +55,16 @@ async function packs(req: BunRequest, change?: (accountId: string) => Promise<st
   return Response.json(await listPacks(accountId));
 }
 
+/** Answer with the signed-in account as it stands after a change to its API key, or say why the change was refused. */
+async function key(req: BunRequest, change: (accountId: string) => Promise<string | null | void>) {
+  const token = req.cookies.get(SESSION);
+  const accountId = await accountIdOf(token);
+  if (!accountId) return Response.json({ error: "Sign in first" }, { status: 401 });
+  const error = await change(accountId);
+  if (error) return Response.json({ error }, { status: 400 });
+  return Response.json(await accountOf(token));
+}
+
 const server = Bun.serve({
   development: !PRODUCTION,
   // Nothing sent to the server is larger than a pack file.
@@ -91,12 +103,23 @@ const server = Bun.serve({
         return new Response(null, { status: 204 });
       },
     },
+    "/api/account/key": {
+      PUT: (req) => key(req, async (accountId) => saveKey(accountId, String(((await req.json()) as { key: string }).key ?? ""))),
+      DELETE: (req) => key(req, removeKey),
+    },
     "/api/packs": {
       GET: (req) => packs(req),
       POST: (req) => packs(req, async (accountId) => savePack(accountId, await req.text())),
     },
     "/api/packs/:id": {
       DELETE: (req) => packs(req, (accountId) => removePack(accountId, req.params.id)),
+    },
+    "/api/write": {
+      POST: (req, server) => {
+        // Writing a pack takes a minute or so, and Bun closes a request that is silent for ten seconds unless told otherwise.
+        server.timeout(req, 0);
+        return packs(req, async (accountId) => writePack(accountId, String(((await req.json()) as { topic: string }).topic ?? "")));
+      },
     },
     "/api/dev/answer": {
       GET: async (req) => {

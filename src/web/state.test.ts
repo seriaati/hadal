@@ -1,5 +1,11 @@
-import { expect, test } from "bun:test";
+import { afterAll, expect, test } from "bun:test";
 import { createGame, pressEnter, tick } from "./state";
+
+// Every test file runs in one process: the server's tests need the real `fetch` back.
+const realFetch = globalThis.fetch;
+afterAll(() => {
+  globalThis.fetch = realFetch;
+});
 
 test("a finished dive keeps how every round ended, then leads back to the title", async () => {
   const prompts = [{ id: "p/a", text: "A", pack: "P" }, { id: "p/b", text: "B", pack: "P" }];

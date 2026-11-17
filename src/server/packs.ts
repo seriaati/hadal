@@ -6,8 +6,8 @@ const PACKS_DIR = join(import.meta.dir, "../../packs");
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const MAX_ID_LENGTH = 40;
 // The pack's name shares one line of the screen with the round count.
-const MAX_NAME_LENGTH = 24;
-const MAX_PROMPT_LENGTH = 80;
+export const MAX_NAME_LENGTH = 24;
+export const MAX_PROMPT_LENGTH = 80;
 
 /** Everything wrong with a pack, in words its author can act on. An empty list means the pack is valid. */
 export function validatePack(data: unknown): string[] {
