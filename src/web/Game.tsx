@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MAX_ANSWER_LENGTH, PASSWORD_MAX, USERNAME_MAX, type Config } from "../shared/types";
+import { MAX_ANSWER_LENGTH, type Config } from "../shared/types";
 import { DevMenu, type DevTools } from "./DevMenu";
 import { Logbook } from "./Logbook";
 import { Sound } from "./sound";
@@ -9,7 +9,8 @@ import { drawable } from "./pixel/other";
 import { Display, Frame } from "./pixel/frame";
 import { PacksPanel } from "./pixel/packs";
 import { Scene } from "./pixel/scene";
-import { Settings } from "./pixel/settings";
+import { drawCog, overCog, settingsStep } from "./pixel/settings";
+import { Ui } from "./pixel/ui";
 
 /** The whole game is drawn on canvas. A hidden text field takes the typing, so phones get a keyboard. */
 export function Game() {
@@ -17,7 +18,6 @@ export function Game() {
   const glow = useRef<HTMLCanvasElement>(null);
   const keys = useRef<HTMLInputElement>(null);
   const form = useRef<HTMLFormElement>(null);
-  const packsForm = useRef<HTMLFormElement>(null);
   /** The dive the logbook is drawn for, from the moment it ends, and whether the diver is back at the surface. */
   const [logged, setLogged] = useState<Dive | null>(null);
   const [surfaced, setSurfaced] = useState(false);
@@ -32,21 +32,23 @@ export function Game() {
     const frame = new Frame();
     const display = new Display(canvas, glow.current!);
     const sound = new Sound();
-    const settings = new Settings(sound);
-    const account = new AccountPanel(form.current!, input);
+    const ui = new Ui(form.current!, input);
+    const settings = () => settingsStep(sound);
+    const account: AccountPanel = new AccountPanel(ui, () => void packs.load());
+    const packs = new PacksPanel(ui, account, sound, (pack) => void start(game, pack));
     /** The title menu: its lines, and the one Enter acts on. */
     const menu = { items: ["Descend", "Packs", "Sign in"], choice: 0 };
-    const packs = new PacksPanel(packsForm.current!, input, {
-      dive: (pack) => void start(game, pack),
-      signIn: () => account.show(),
-    });
     const choose = (line: number) => {
       if (line === 0) pressEnter(game);
-      else if (line === 1) packs.show(account.account !== null);
+      else if (line === 1) packs.show();
       else account.show();
     };
+    /** The settings can be opened at the title and in a dive, not while the diver is hauled up or the logbook is open. */
+    const openSettings = () => {
+      if (game.phase !== "ascent" && game.phase !== "done") ui.go(settings);
+    };
     // In development, let the browser console (and test scripts) reach the game.
-    if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game, scene, frame, display, sound, settings, account, packs } });
+    if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game, scene, frame, display, sound, ui, account, packs } });
 
     void fetch("/api/config")
       .then((res) => res.json() as Promise<Config>)
@@ -55,17 +57,14 @@ export function Game() {
     const onKey = (event: KeyboardEvent) => {
       // While a keyboard is still composing a letter (as for Japanese or Chinese), Enter picks the letter; it sends nothing.
       if (event.isComposing) return;
-      if (game.phase === "title" && !settings.open && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
-        const line = menu.choice + (event.key === "ArrowUp" ? -1 : 1);
-        menu.choice = Math.max(0, Math.min(menu.items.length - 1, line));
+      // These keys come here only while no panel is open: an open panel has the focus and its own keys.
+      if (game.phase === "title" && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
+        // From the last line Down goes to the first, as in every list of the game.
+        menu.choice = (menu.choice + (event.key === "ArrowUp" ? -1 : 1) + menu.items.length) % menu.items.length;
       }
       if (event.key !== "Enter" && event.key !== "Escape") return;
       event.preventDefault();
-      if (settings.open) {
-        settings.open = false; // with the settings open, either key only closes them
-        return;
-      }
-      if (event.key !== "Enter") return;
+      if (event.key === "Escape") return openSettings();
       if (game.phase === "title") return choose(menu.choice);
       if (game.phase === "ask") game.input = input.value; // include keys typed since the last frame
       pressEnter(game);
@@ -73,26 +72,27 @@ export function Game() {
     };
     // Keep the typing focus wherever the player clicks or taps.
     const keepFocus = (event: MouseEvent) => {
-      // The controls of the account and packs panels take the focus themselves.
-      if (form.current!.contains(event.target as Node) || packsForm.current!.contains(event.target as Node)) return;
+      // The controls of an open panel take the focus themselves.
+      if (form.current!.contains(event.target as Node)) return;
       if (event.target !== input) event.preventDefault();
-      if (!account.open && !packs.open) input.focus();
+      if (!ui.open) input.focus();
     };
-    // A press that takes hold of a slider in the settings keeps it until the pointer lifts.
+    // The pointer on the game itself: the cog and the title menu, which are drawn and are no controls of the page.
     const onPointer = (event: PointerEvent) => {
       const scale = canvas.clientWidth / frame.width;
       const x = event.clientX / scale;
       const y = event.clientY / scale;
-      if (event.type === "pointerdown") {
-        const line = scene.menuAt(x, y);
-        // A press that opens or closes the settings does nothing else.
-        const settingsWereOpen = settings.open;
-        if (account.open) account.press(frame, x, y);
-        else if (packs.open) packs.press(frame, x, y);
-        else if (settings.press(frame, x, y)) canvas.setPointerCapture(event.pointerId);
-        else if (game.phase === "title" && !settingsWereOpen && !settings.open && menu.items[line]) choose(line);
-      }
-      if (canvas.hasPointerCapture(event.pointerId)) settings.drag(frame, x);
+      const cog = overCog(frame, x, y);
+      const line = game.phase === "title" && !ui.open && menu.items[scene.menuAt(x, y)] ? scene.menuAt(x, y) : -1;
+      canvas.style.cursor = cog || line >= 0 ? "pointer" : "";
+      if (event.type === "pointermove") {
+        // Moving the pointer over a line of the menu chooses it, as moving it over a control of a panel gives that the focus.
+        if (line >= 0 && event.pointerType === "mouse" && (event.movementX || event.movementY)) menu.choice = line;
+      } else if (cog) {
+        if (ui.top === settings) ui.back();
+        else openSettings();
+      } else if (ui.open) ui.press(x, y);
+      else if (line >= 0) choose(line);
     };
     input.addEventListener("keydown", onKey);
     addEventListener("mousedown", keepFocus);
@@ -114,6 +114,7 @@ export function Game() {
       if ((game.phase === "ascent" || game.phase === "done") !== ended) {
         ended = !ended;
         setLogged(ended ? game : null);
+        if (ended) ui.close(); // the settings, if the dive ended while they were open
       }
       if ((game.phase === "done") !== done) {
         done = !done;
@@ -123,10 +124,9 @@ export function Game() {
       // Once the logbook has faded in it hides the sea, which need not be drawn.
       if (!done || game.phaseTime < 1) {
         menu.items[2] = account.account?.username ?? "Sign in";
-        const lights = scene.draw(frame, game, menu, dt, now / 1000);
-        settings.draw(frame);
-        account.draw(frame, canvas.clientWidth / frame.width, now / 1000);
-        packs.draw(frame, canvas.clientWidth / frame.width);
+        const lights = scene.draw(frame, game, menu, dt, now / 1000, ui.open);
+        drawCog(frame);
+        ui.draw(frame, scene, canvas.clientWidth / frame.width, now / 1000, game.phase !== "title");
         display.present(frame, lights);
       }
       sound.update(game, scene, dt);
@@ -148,16 +148,8 @@ export function Game() {
       <canvas ref={glow} className="glow" />
       <Logbook dive={logged} surfaced={surfaced} />
       <input ref={keys} className="keys" aria-label="Your answer" maxLength={MAX_ANSWER_LENGTH} autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} />
-      <form ref={form} className="panel" aria-label="Account" hidden>
-        <input name="username" aria-label="Name" autoComplete="username" maxLength={USERNAME_MAX} autoCapitalize="off" spellCheck={false} />
-        <input name="password" type="password" aria-label="Password" maxLength={PASSWORD_MAX} />
-        <button name="send" />
-        <button name="other" type="button" />
-      </form>
-      <form ref={packsForm} className="panel" aria-label="Packs" hidden>
-        <input name="file" type="file" accept=".json,application/json" aria-label="Add a pack" />
-        <button name="button" type="button" />
-      </form>
+      {/* Whatever panel is open: `Ui` fills it with the controls of the step on screen. */}
+      <form ref={form} className="panel" aria-label="Menu" hidden />
       {dev && <DevMenu {...dev} />}
     </main>
   );

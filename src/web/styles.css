@@ -21,7 +21,7 @@ body {
 /* The game itself: low resolution, scaled up with hard pixel edges. */
 .pixels {
   image-rendering: pixelated;
-  touch-action: none; /* so a finger can drag a slider in the settings */
+  touch-action: none; /* a touch on the game is a press, never a scroll or a zoom */
 }
 
 /* Soft light, added on top of the pixels. */
@@ -123,21 +123,35 @@ body {
   font-size: 16px;
 }
 
-/* The form of the account panel or the packs panel: invisible, each control laid over where the game draws it. */
+/* The form of whatever panel is open: invisible, each control laid over where the game draws it. */
 .panel {
   opacity: 0;
 }
 
 .panel > * {
   position: fixed;
+  margin: 0;
   padding: 0;
   border: 0;
   font-size: 16px;
+  cursor: pointer;
 }
 
-.panel button,
-.panel [type="file"] {
-  cursor: pointer;
+/* A slider's knob is a hair wide, so that a press on a pip of the drawing sets the level to that pip. */
+.panel [type="range"] {
+  appearance: none;
+  touch-action: none;
+}
+
+.panel [type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 1px;
+  height: 100%;
+}
+
+.panel [type="range"]::-moz-range-thumb {
+  width: 1px;
+  border: 0;
 }
 
 /* The developer menu: a plain panel over everything, in a corner the game leaves dark. */

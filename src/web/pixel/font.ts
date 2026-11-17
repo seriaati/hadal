@@ -2,7 +2,7 @@ import type { Frame } from "./frame";
 
 // Glyphs are rows of "#" and "." separated by "/". Rows past the usual height are descenders.
 
-/** 3x5 capitals for labels. "~" is a centred dot, used as a separator. */
+/** 3x5 capitals for labels. "~" is a centred dot, used as a separator; "‹" is the mark that leads one step back. */
 const TINY = {
   A: ".#./#.#/###/#.#/#.#", B: "##./#.#/##./#.#/##.", C: ".##/#../#../#../.##", D: "##./#.#/#.#/#.#/##.",
   E: "###/#../##./#../###", F: "###/#../##./#../#..", G: ".##/#../#.#/#.#/.##", H: "#.#/#.#/###/#.#/#.#",
@@ -17,6 +17,7 @@ const TINY = {
   ".": "././././#", ",": "././././#/#", "+": ".../.#./###/.#./...", "-": ".../.../###/.../...",
   "/": "..#/..#/.#./#../#..", ":": "./#/./#/.", "~": "././#/./.", "?": "##./..#/.#./.../.#.", "!": "#/#/#/./#",
   "'": "#/#/././.", '"': "#.#/#.#/.../.../...", "(": ".#/#./#./#./.#", ")": "#./.#/.#/.#/#.", "&": ".#./#.#/.#./#.#/.##",
+  "‹": "../.#/#./.#/..",
 };
 
 /** 5x7 mixed case for prompts. */

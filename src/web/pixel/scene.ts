@@ -4,6 +4,7 @@ import { AIR_SECONDS, ascentSeconds, type Game } from "../state";
 import { Ambient } from "./creatures";
 import { FONTS, drawText, fit, measure, pitch, plain, wrap, type Font } from "./font";
 import { dither, hash, type Frame, type Light } from "./frame";
+import { drawMark } from "./ui";
 
 const METERS_PER_PIXEL = 5;
 const CHAIN_X = 84;
@@ -18,7 +19,7 @@ const FLOOR_ROW = 11000 / METERS_PER_PIXEL + 26;
 const PAD = 300;
 const ROWS = PAD + FLOOR_ROW + 300;
 
-/** The title screen's choices, one to a line. Enter acts on the chosen one. */
+/** The title screen's choices, one to a line. Enter acts on the chosen one, which carries the mark of the focus. */
 export type Menu = { items: string[]; choice: number };
 const MENU_ROW = 13;
 
@@ -116,14 +117,19 @@ export class Scene {
   /** Where the title menu was last drawn. */
   private menuLeft = 0;
   private menuTop = 0;
+  /** The screen row the diver hangs at, and the row under the prompt and the air: a panel is set out from these. */
+  base = 0;
+  hudBottom = 0;
+  /** The screen rows a panel lies over, where it lies over the rock: no zone is named there. */
+  hush: [top: number, bottom: number] | null = null;
   /** When each lit lamp was reached, by its index. */
   reached = new Map<number, number>();
   /** How starved of air the diver is, from 0 (fine) to 1 (out). */
   panic = 0;
   pulse = 0;
 
-  /** Draw one frame and return the soft lights to lay over it. */
-  draw(frame: Frame, game: Game, menu: Menu, dt: number, time: number): Light[] {
+  /** Draw one frame and return the soft lights to lay over it. While a panel is open (`covered`), the words it takes the place of are left out. */
+  draw(frame: Frame, game: Game, menu: Menu, dt: number, time: number, covered: boolean): Light[] {
     const { width: W, height: H } = frame;
     const gap = game.depth - this.depth;
     if (game.phase === "ascent") {
@@ -143,7 +149,7 @@ export class Scene {
     const scroll = camera - this.camera;
     this.camera = camera;
 
-    const base = Math.round(H * 0.36); // screen row of the diver's world row
+    const base = (this.base = Math.round(H * 0.36)); // screen row of the diver's world row
     const rowAt = (y: number) => camera + y - base;
     const screenY = (row: number) => row - camera + base;
     const diverY = base + (diving ? 0 : Math.round(Math.sin(time * 1.3)));
@@ -333,6 +339,7 @@ export class Scene {
     // Each zone is named on the rock where it begins, like a depth mark.
     frame.block = -1;
     for (const zone of boundaries) {
+      if (this.hush && zone.y + 18 > this.hush[0] && zone.y + 4 < this.hush[1]) continue;
       drawText(frame, FONTS.tiny, zone.name.replace(" zone", ""), 4, zone.y + 4, 6);
       drawText(frame, FONTS.tiny, formatMeters(zone.from), 4, zone.y + 12, 5);
     }
@@ -396,17 +403,25 @@ export class Scene {
     frame.sprite(LANTERN, DIVER_X + 16, diverY + 17, "ac");
     frame.block = -1;
 
-    this.drawWords(frame, game, menu, time, base, diving);
+    this.drawWords(frame, game, menu, time, base, diving, covered);
     return lights;
   }
 
   /** Which line of the title menu is at a point of the frame. No line has an index outside the menu. */
   menuAt(x: number, y: number): number {
-    return x < this.menuLeft - 4 ? -1 : Math.floor((y - this.menuTop + 2) / MENU_ROW);
+    return x < this.menuLeft - 8 ? -1 : Math.floor((y - this.menuTop + 2) / MENU_ROW);
+  }
+
+  /** Remember where words are, with a little room around them, so that the lines in the water break behind them. */
+  cover(from: number, to: number, top: number, bottom: number) {
+    for (let y = Math.max(0, top - 2); y <= Math.min(this.wordsFrom.length - 1, bottom + 2); y++) {
+      this.wordsFrom[y] = Math.min(this.wordsFrom[y]!, from - 4);
+      this.wordsTo[y] = Math.max(this.wordsTo[y]!, to + 3);
+    }
   }
 
   /** The few words on screen. They sit in the dark to the right of the diver. */
-  private drawWords(frame: Frame, game: Game, menu: Menu, time: number, base: number, diving: boolean) {
+  private drawWords(frame: Frame, game: Game, menu: Menu, time: number, base: number, diving: boolean, covered: boolean) {
     const { width: W, height: H } = frame;
     const { tiny, medium, large, huge } = FONTS;
     const wide = W >= 300;
@@ -415,15 +430,9 @@ export class Scene {
     const answerY = base + (wide ? 10 : 52);
     const amber = (tall: number) => (row: number) => (row < tall * 0.3 ? 16 : row < tall * 0.8 ? 15 : 14);
 
-    // Remember where the words are, with a little room around them.
     this.wordsFrom.fill(W);
     this.wordsTo.fill(-1);
-    const cover = (from: number, to: number, top: number, bottom: number) => {
-      for (let y = Math.max(0, top - 2); y <= Math.min(H - 1, bottom + 2); y++) {
-        this.wordsFrom[y] = Math.min(this.wordsFrom[y]!, from - 4);
-        this.wordsTo[y] = Math.max(this.wordsTo[y]!, to + 3);
-      }
-    };
+    const cover = this.cover.bind(this);
     const say = (font: Font, text: string, tx: number, ty: number, color: Parameters<typeof drawText>[5], right = false) => {
       const end = drawText(frame, font, text, tx, ty, color, right);
       cover(right ? tx - measure(font, text) : tx, right ? tx : end, ty, ty + font.height + 1);
@@ -439,6 +448,7 @@ export class Scene {
     const key = (kx: number, ky: number, label: string) => cover(kx, drawKey(frame, kx, ky, label), ky, ky + 8);
 
     if (game.phase === "title") {
+      if (covered) return;
       const font = fit([huge, large], "HADAL", room);
       const tall = font.height;
       frame.emit = 110;
@@ -449,10 +459,14 @@ export class Scene {
       this.menuTop = base + tall + 14;
       menu.items.forEach((item, i) => {
         const y = this.menuTop + i * MENU_ROW;
+        const chosen = i === menu.choice;
         // A long username loses its end on a narrow screen.
-        while (measure(tiny, item) > room - 32) item = item.slice(0, -1);
-        if (i === menu.choice) key(x, y, item);
-        else say(tiny, item, x + 29, y + 2, 6);
+        while (measure(tiny, item) > room) item = item.slice(0, -1);
+        if (chosen) drawMark(frame, x - 6, y + 2);
+        frame.emit = chosen ? 70 : 0;
+        say(tiny, item, x, y + 2, chosen ? 16 : 7);
+        frame.emit = 0;
+        cover(x - 6, x, y + 2, y + 7);
       });
       return;
     }
@@ -470,6 +484,7 @@ export class Scene {
     const promptY = sayWrapped(tiny, `${plain(prompt.pack)} ~ ${game.round + 1} of ${game.prompts.length}`, 11, 6).y + 10;
     const lines = wrap(medium, plain(prompt.text), room);
     lines.forEach((line, i) => say(medium, line, x, promptY + i * 11, asking ? 7 : 6));
+    this.hudBottom = promptY + lines.length * 11 + (asking ? 10 : 0);
     if (asking) {
       const y = promptY + lines.length * 11 + 4;
       const low = game.air <= LOW_AIR;
@@ -488,6 +503,7 @@ export class Scene {
       frame.emit = 0;
     }
 
+    if (covered) return;
     // The answer: typed in pale steel, then mint if it lit the lamp or rose if it did not.
     const result = game.result;
     if (!result) {

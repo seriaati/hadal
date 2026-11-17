@@ -105,6 +105,18 @@ export class Sound {
     this.apply();
   }
 
+  /** A step of a slider in the settings: a tick, heard at the new level. */
+  tick() {
+    if (this.rig) this.burst("bandpass", 2000, 0.3, 0.06);
+  }
+
+  /** A pack has been written, and a lamp rings; or it could not be: a dull knock. */
+  written(pack: boolean) {
+    if (!this.rig) return;
+    if (pack) this.bell(pitch(CHIME[3]!), 0.22, 2.5);
+    else this.note("effects", "triangle", 320, 110, 0.35, 0.25);
+  }
+
   /** Ears hear loudness in ratios, so a slider's value is squared. */
   private apply() {
     const rig = this.rig;

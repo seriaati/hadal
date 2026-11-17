@@ -1,98 +1,35 @@
-import { LEVELS, type Level, type Sound } from "../sound";
-import { FONTS, drawText, measure } from "./font";
+import { LEVELS, type Sound } from "../sound";
 import type { Frame } from "./frame";
+import type { Part, Step } from "./ui";
 
 const COG = [
   "....66....", ".66.66.66.", ".66666666.", "..666666..", "6666..6666",
   "6666..6666", "..666666..", ".66666666.", ".66.66.66.", "....66....",
 ];
-const WIDTH = 112;
-const HEIGHT = 70;
-const PAD = 7;
-const ROW = 13;
-const TRACK = 60;
 
-/** Where a panel of this size is: in the middle of the frame. */
-export function centre(frame: Frame, width: number, height: number) {
-  return { left: Math.round((frame.width - width) / 2), top: Math.round((frame.height - height) / 2) };
+/** The only control on screen: a cog in the top right corner, which opens the settings. Escape opens them too. */
+export function drawCog(frame: Frame) {
+  frame.sprite(COG, frame.width - 13, 1);
 }
 
-/** Draw an empty panel. The game behind it is dimmed: every other pixel goes dark. */
-export function drawPanel(frame: Frame, width: number, height: number) {
-  const { left, top } = centre(frame, width, height);
-  for (let y = 0; y < frame.height; y++) for (let x = (y & 1) ^ 1; x < frame.width; x += 2) frame.put(x, y, 0);
-  frame.block = 255; // the soft light of the scene stays off the panel
-  for (let y = top; y < top + height; y++) {
-    for (let x = left; x < left + width; x++) {
-      const edge = x === left || x === left + width - 1 || y === top || y === top + height - 1;
-      frame.put(x, y, edge ? 5 : 0);
-    }
-  }
-  frame.block = -1;
+/** Whether a point of the frame is on the cog, with room around it for a fingertip. */
+export function overCog(frame: Frame, x: number, y: number): boolean {
+  return x >= frame.width - 18 && y < 15;
 }
 
-/** A button: its label in a box, brighter when it has the focus (`on`). Returns how wide the box is. */
-export function drawButton(frame: Frame, x: number, y: number, label: string, on = false): number {
-  const wide = measure(FONTS.tiny, label) + 7;
-  for (let i = 1; i < wide; i++) {
-    frame.put(x + i, y, on ? 7 : 6);
-    frame.put(x + i, y + 8, on ? 6 : 5);
-  }
-  for (let j = 1; j < 8; j++) {
-    frame.put(x, y + j, on ? 7 : 6);
-    frame.put(x + wide, y + j, on ? 6 : 5);
-  }
-  drawText(frame, FONTS.tiny, label, x + 4, y + 2, 7);
-  return wide;
-}
-
-/** Where the settings are. `rows` is the top of the first slider's row. */
-function place(frame: Frame) {
-  const { left, top } = centre(frame, WIDTH, HEIGHT);
-  return { left, top, rows: top + PAD + 12, track: left + WIDTH - PAD - TRACK };
-}
-
-/**
- * The only controls on screen: a cog in the top right corner, which opens a panel in the
- * middle of the screen with a slider for each sound level. The game goes on behind it.
- */
-export class Settings {
-  open = false;
-  private held: Level = "master";
-
-  constructor(private sound: Sound) {}
-
-  /** A press at a point of the frame. True if it took hold of a slider, which then follows the pointer. */
-  press(frame: Frame, x: number, y: number): boolean {
-    const { left, top, rows, track } = place(frame);
-    if (x >= frame.width - 18 && y < 15) {
-      this.open = !this.open; // the cog, with room around it for a fingertip
-    } else if (this.open && x >= left && x < left + WIDTH && y >= top && y < top + HEIGHT) {
-      const row = Math.floor((y - rows + 4) / ROW);
-      this.held = LEVELS[Math.max(0, Math.min(LEVELS.length - 1, row))]!;
-      return x >= track - 4;
-    } else {
-      this.open = false;
-    }
-    return false;
-  }
-
-  drag(frame: Frame, x: number) {
-    this.sound.setLevel(this.held, Math.max(0, Math.min(1, (x - place(frame).track) / (TRACK - 1))));
-  }
-
-  draw(frame: Frame) {
-    if (this.open) drawPanel(frame, WIDTH, HEIGHT);
-    frame.sprite(COG, frame.width - 13, 1);
-    if (!this.open) return;
-    const { left, top, rows, track } = place(frame);
-    drawText(frame, FONTS.tiny, "Settings", left + PAD, top + PAD, 7);
-    LEVELS.forEach((name, i) => {
-      const y = rows + i * ROW;
-      const knob = track + Math.round(this.sound.levels[name] * (TRACK - 1));
-      drawText(frame, FONTS.tiny, name, left + PAD, y, 6);
-      for (let x = track; x < track + TRACK; x++) frame.put(x, y + 2, x <= knob ? 6 : 4);
-      for (let j = -1; j < 6; j++) frame.put(knob, y + j, 7);
-    });
-  }
+/** The settings: a slider for each sound level. The game goes on behind them. */
+export function settingsStep(sound: Sound): Step {
+  return {
+    title: "Settings",
+    rows: LEVELS.map((name): Part => ({
+      kind: "slider",
+      id: name,
+      label: name,
+      value: sound.levels[name],
+      set: (value) => {
+        sound.setLevel(name, value);
+        sound.tick();
+      },
+    })),
+  };
 }
