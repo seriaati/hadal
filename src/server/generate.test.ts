@@ -2,7 +2,7 @@ import { afterAll, beforeEach, expect, test } from "bun:test";
 import { accountIdOf, signUp } from "./accounts";
 import { listPacks, loadPack } from "./custom";
 import { migrate, sql } from "./db";
-import { tidy, writePack } from "./generate";
+import { promptsBegun, tidy, writePack } from "./generate";
 import { saveKey } from "./keys";
 import { validatePack } from "./packs";
 
@@ -72,6 +72,23 @@ test("a written pack is kept among the player's packs, paid for with their key",
   expect(asked[0]!.key).toBe(`Bearer ${KEY}`);
   expect(asked[0]!.body.model).toBe("claude-opus-5-5");
   expect(asked[0]!.body.messages[0]!.content).toBe("Topic: rivers");
+});
+
+test("the prompts that are finished are counted while the pack is written", async () => {
+  const counts: number[] = [];
+  expect(await writePack(await account(), "rivers", (prompts) => counts.push(prompts))).toEqual([]);
+  expect(counts).toEqual([1]);
+  expect(promptsBegun('{"name":"Rivers","prompts":[{"text":"Name a river","answers":[{"text":"Nile"')).toBe(1);
+  expect(promptsBegun('{"prompts":[{"text":"Which word comes after \\"answers\\": in a pack?","answers" : [')).toBe(1);
+  expect(promptsBegun('{"name":"Riv')).toBe(0);
+});
+
+test("writing that is stopped keeps no pack", async () => {
+  const id = await account();
+  const stop = new AbortController();
+  stop.abort();
+  expect(await writePack(id, "rivers", undefined, stop.signal)).toEqual([expect.stringContaining("stopped")]);
+  expect(await listPacks(id)).toEqual([]);
 });
 
 test("a second pack of the same name does not replace the first", async () => {

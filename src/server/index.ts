@@ -115,10 +115,29 @@ const server = Bun.serve({
       DELETE: (req) => packs(req, (accountId) => removePack(accountId, req.params.id)),
     },
     "/api/write": {
-      POST: (req, server) => {
+      // The answer is a line of JSON at a time: `{"prompts": n}` each time another prompt is written, then the
+      // player's packs (`{"packs": [...]}`) or why none was written (`{"problems": [...]}`).
+      POST: async (req, server) => {
         // Writing a pack takes a minute or so, and Bun closes a request that is silent for ten seconds unless told otherwise.
         server.timeout(req, 0);
-        return packs(req, async (accountId) => writePack(accountId, String(((await req.json()) as { topic: string }).topic ?? "")));
+        const accountId = await accountIdOf(req.cookies.get(SESSION));
+        const topic = String(((await req.json()) as { topic: string }).topic ?? "");
+        // If the player stops the writing, or leaves, the request to Anthropic is ended too.
+        const stop = new AbortController();
+        req.signal.addEventListener("abort", () => stop.abort());
+        const encoder = new TextEncoder();
+        const lines = new ReadableStream({
+          async start(controller) {
+            const say = (line: object) => {
+              if (!stop.signal.aborted) controller.enqueue(encoder.encode(`${JSON.stringify(line)}\n`));
+            };
+            const problems = accountId ? await writePack(accountId, topic, (prompts) => say({ prompts }), stop.signal) : ["sign in first"];
+            say(problems.length || !accountId ? { problems } : { packs: await listPacks(accountId) });
+            if (!stop.signal.aborted) controller.close();
+          },
+          cancel: () => stop.abort(),
+        });
+        return new Response(lines, { headers: { "content-type": "application/x-ndjson" } });
       },
     },
     "/api/dev/answer": {

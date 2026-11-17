@@ -1,13 +1,11 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { MAX_ANSWER_LENGTH, MAX_TOPIC_LENGTH, type Answer, type Pack } from "../shared/types";
+import { MAX_ANSWER_LENGTH, MAX_TOPIC_LENGTH, WRITTEN_PROMPTS as PROMPTS, type Answer, type Pack } from "../shared/types";
 import { MAX_PACKS, listPacks, savePack } from "./custom";
 import { normalize } from "./game";
 import { loadKey } from "./keys";
 import { MAX_NAME_LENGTH, MAX_PROMPT_LENGTH } from "./packs";
 
 const MODEL = "claude-opus-5-5";
-/** As many prompts as one dive asks. */
-const PROMPTS = 10;
 
 const SYSTEM = `You write trivia packs for Hadal, a deep-sea diving game.
 
@@ -64,24 +62,42 @@ type Draft = { name: string; prompts: { text: string; answers: { text: string; a
 class Refused extends Error {}
 const UNUSABLE = "the pack that came back could not be used: try again";
 
-/** Have the model write a pack about a topic, paid for with the player's own key. */
-async function draft(apiKey: string, topic: string): Promise<Draft> {
+/** How many prompts of a pack that is still being written have been begun: the answers of each open with this key. */
+export function promptsBegun(written: string): number {
+  return written.match(/"answers"\s*:/g)?.length ?? 0;
+}
+
+/**
+ * Have the model write a pack about a topic, paid for with the player's own key. `progress`
+ * hears how many prompts are finished whenever that changes, and `signal` stops the writing.
+ */
+async function draft(apiKey: string, topic: string, progress?: (prompts: number) => void, signal?: AbortSignal): Promise<Draft> {
   let message: Anthropic.Beta.BetaMessage;
+  let finished = 0;
   try {
     // Streamed, because the answer takes a minute or so: a connection that carries nothing for that long may be dropped.
     message = await new Anthropic({ apiKey }).beta.messages
-      .stream({
-        model: MODEL,
-        max_tokens: 32000,
-        // If the model declines the topic on policy grounds, Anthropic tries again on the model it recommends instead.
-        betas: ["server-side-fallback-2026-07-01"],
-        fallbacks: "default",
-        output_config: { effort: "high", format: { type: "json_schema", schema: SCHEMA } },
-        system: SYSTEM,
-        messages: [{ role: "user", content: `Topic: ${topic}` }],
+      .stream(
+        {
+          model: MODEL,
+          max_tokens: 32000,
+          // If the model declines the topic on policy grounds, Anthropic tries again on the model it recommends instead.
+          betas: ["server-side-fallback-2026-07-01"],
+          fallbacks: "default",
+          output_config: { effort: "high", format: { type: "json_schema", schema: SCHEMA } },
+          system: SYSTEM,
+          messages: [{ role: "user", content: `Topic: ${topic}` }],
+        },
+        { signal },
+      )
+      // A prompt is finished once the next one has begun.
+      .on("text", (_, written) => {
+        const now = Math.max(0, promptsBegun(written) - 1);
+        if (now !== finished) progress?.((finished = now));
       })
       .finalMessage();
   } catch (error) {
+    if (error instanceof Anthropic.APIUserAbortError) throw new Refused("the writing was stopped");
     if (error instanceof Anthropic.AuthenticationError || error instanceof Anthropic.PermissionDeniedError) {
       throw new Refused("Anthropic did not accept your API key");
     }
@@ -146,7 +162,7 @@ function freeId(name: string, taken: string[]): string {
 }
 
 /** Write a pack about a topic with the player's own API key and keep it among their packs, or say why not. */
-export async function writePack(accountId: string, topic: string): Promise<string[]> {
+export async function writePack(accountId: string, topic: string, progress?: (prompts: number) => void, signal?: AbortSignal): Promise<string[]> {
   topic = topic.trim();
   if (!topic || topic.length > MAX_TOPIC_LENGTH) return [`a topic is 1 to ${MAX_TOPIC_LENGTH} characters`];
   // Checked first, so that nobody pays for a pack that cannot be kept.
@@ -155,7 +171,7 @@ export async function writePack(accountId: string, topic: string): Promise<strin
   const apiKey = await loadKey(accountId);
   if (!apiKey) return ["writing a pack takes an Anthropic API key of your own: keep one under your name in the menu"];
   try {
-    const written = await draft(apiKey, topic);
+    const written = await draft(apiKey, topic, progress, signal);
     const pack = tidy(written, freeId(written.name, packs.map((pack) => pack.id)));
     const problems = await savePack(accountId, JSON.stringify(pack));
     if (problems.length) {

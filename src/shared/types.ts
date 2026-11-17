@@ -28,6 +28,8 @@ export type Account = { username: string; key: boolean };
 export const MAX_KEY_LENGTH = 300;
 /** What a player may ask a pack to be written about. */
 export const MAX_TOPIC_LENGTH = 60;
+/** How many prompts a written pack is asked to have: as many as one dive asks. */
+export const WRITTEN_PROMPTS = 10;
 /** A username is 3 to 16 letters or digits, kept in lower case: what the pixel fonts can draw. */
 export const USERNAME = /^[a-z0-9]{3,16}$/;
 export const USERNAME_MAX = 16;
