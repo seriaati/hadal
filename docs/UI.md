@@ -41,7 +41,7 @@ a row.
 |---|---|
 | At rest | As above |
 | In focus | An amber mark `▸` before it, and its words turn cream and glow a little. A field's rule turns amber and its caret blinks. A slider's lit pips turn amber |
-| Under the pointer | The same as in focus: moving the pointer over a thing gives it the focus, so there is never a second highlight |
+| Under the pointer | The same as in focus: moving the pointer over a thing gives it the focus, so there is never a second highlight. A field is the one exception: it takes the focus, and its caret, only when it is clicked or reached by the keys (owner, 2026-11-18, after play) |
 | Pressed | Nothing of its own: a press acts at once |
 | Busy | The mark blinks, and presses wait until the answer has come |
 | About to destroy | The line's words turn rose and ask "Sure?" |

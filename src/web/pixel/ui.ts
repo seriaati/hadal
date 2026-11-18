@@ -301,7 +301,8 @@ export class Ui {
       control.value = this.kept.get(id) ?? part.start ?? "";
       this.kept.delete(id);
     }
-    hover(control);
+    // A field takes the focus only when it is clicked (or reached by the keys): typing must be asked for (owner, after play).
+    if (kind !== "field") hover(control);
     control.addEventListener("blur", () => {
       const now = this.parts.get(id);
       if (now?.kind === "press") now.left?.();
