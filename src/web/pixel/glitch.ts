@@ -1,3 +1,4 @@
+import { t } from "../language";
 import type { Game } from "../state";
 import { FONTS, drawText, measure, wrap } from "./font";
 import { hash, type Frame } from "./frame";
@@ -20,29 +21,6 @@ const speck = () => {
   return r < 0.55 ? 0 : r < 0.8 ? 3 : r < 0.94 ? 5 : 6;
 };
 
-/** A line that `scares` ends with the eyes bursting out of the dark. */
-export const LAST_WORDS: { text: string; scares?: boolean }[] = [
-  { text: "the sea is still watching you" },
-  { text: "the sea stares back at you" },
-  { text: "a little too confident, huh?", scares: true },
-  { text: "nobody is coming for you" },
-  { text: "you were never alone down here" },
-  { text: "did you hear that?", scares: true },
-  { text: "the lamps go out one by one" },
-  { text: "it knows your name now" },
-  { text: "the dark was patient" },
-  { text: "something kept your lantern" },
-  { text: "you will come back. they always do" },
-  { text: "the line is cut. no one is pulling" },
-  { text: "down here, nobody hears the bell" },
-  { text: "it was waiting at this depth" },
-  { text: "your air was never yours" },
-  { text: "look behind you", scares: true },
-  { text: "it was right next to you", scares: true },
-  { text: "you should not have looked down", scares: true },
-  { text: "hold your breath", scares: true },
-  { text: "it's still here", scares: true },
-];
 /**
  * A lost dive, in seconds from the air running out: the static rises, the set switches off, the screen is dark, the last
  * words are typed, and for some of them, after a moment's silence once the last letter is down, the eyes come. The
@@ -87,7 +65,7 @@ export class Glitch {
   /** Seconds since a chaos dive was lost, or -1 while it is not. */
   lostFor = -1;
   /** In a lost dive: its last words, how many of their letters are typed so far, and whether the eyes have come. */
-  words: (typeof LAST_WORDS)[number] = LAST_WORDS[0]!;
+  words = { text: "", scares: false };
   typed = 0;
   scared = false;
   private faults: Fault[] = [];
@@ -116,10 +94,14 @@ export class Glitch {
     this.level = level;
     this.tape = level > 0 ? this.tape + dt : 0;
     const lostFor = game.chaos && game.phase === "lost" ? game.phaseTime : -1;
-    if (lostFor >= 0 && this.lostFor < 0) this.words = LAST_WORDS[Math.floor(Math.random() * LAST_WORDS.length)]!;
+    if (lostFor >= 0 && this.lostFor < 0) {
+      const { calm, scary } = t().lastWords;
+      const pick = Math.floor(Math.random() * (calm.length + scary.length));
+      this.words = pick < calm.length ? { text: calm[pick]!, scares: false } : { text: scary[pick - calm.length]!, scares: true };
+    }
     this.lostFor = lostFor;
     this.typed = lostFor < WORDS_AT ? 0 : Math.min(this.words.text.length, Math.floor((lostFor - WORDS_AT) * LETTERS_PER_SECOND));
-    this.scared = !!this.words.scares && lostFor >= scareAt(this.words.text) && lostFor < scareAt(this.words.text) + SCARE_FOR;
+    this.scared = this.words.scares && lostFor >= scareAt(this.words.text) && lostFor < scareAt(this.words.text) + SCARE_FOR;
     for (const fault of this.faults) fault.age += dt;
     this.faults = this.faults.filter((fault) => fault.age < fault.life);
     this.lost = Math.max(0, this.lost - dt);

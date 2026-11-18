@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MAX_ANSWER_LENGTH, type Config } from "../shared/types";
 import { DevMenu, type DevTools } from "./DevMenu";
+import { t } from "./language";
 import { Sound } from "./sound";
 import { AIR_SECONDS, CHAOS_AIR_SECONDS, createGame, leave, lostDive, pressEnter, start, tick, type Phase } from "./state";
 import { AccountPanel } from "./pixel/account";
@@ -53,22 +54,26 @@ export function Game() {
       void start(game, undefined, chaos);
     };
     const single = (): Step => ({
-      title: "Single player",
+      title: t().title.single,
       rows: [
-        { kind: "press", id: "mode:descend", label: "Descend", press: () => dive(false) },
-        { kind: "note", text: `10 prompts with ${AIR_SECONDS} s of air each: rarer answers go deeper, and an empty tank only loses that prompt` },
-        { kind: "press", id: "mode:chaos", label: "Chaos", press: () => dive(true) },
-        { kind: "note", text: `10 prompts with ${CHAOS_AIR_SECONDS} s of air each: rarer answers go deeper, and the first empty tank ends the dive` },
+        { kind: "press", id: "mode:descend", label: t().single.descend, press: () => dive(false) },
+        { kind: "note", text: t().single.descendHow(AIR_SECONDS) },
+        { kind: "press", id: "mode:chaos", label: t().single.chaos, press: () => dive(true) },
+        { kind: "note", text: t().single.chaosHow(CHAOS_AIR_SECONDS) },
       ],
     });
     const about = (): Step => ({
-      title: "About",
+      title: t().title.about,
       rows: [
-        { kind: "note", text: "Hadal is made by seria" },
-        { kind: "press", id: "source", label: "github.com/seriaati/hadal", says: "Open the source code on GitHub", press: () => open(REPO, "_blank", "noopener") },
+        { kind: "note", text: t().about.madeBy },
+        { kind: "press", id: "source", label: "github.com/seriaati/hadal", says: t().about.source, press: () => open(REPO, "_blank", "noopener") },
       ],
     });
-    const menu: Menu = { items: ["Single player", "Multiplayer", "Packs", "Sign in", "About"], choice: 0 };
+    const menuItems = () => {
+      const words = t().title;
+      return [words.single, words.multiplayer, words.packs, account.account ? words.account : words.signIn, words.about];
+    };
+    const menu: Menu = { items: menuItems(), choice: 0 };
     const choose = (line: number) => {
       if (line === 0) ui.go(single);
       else if (line === 1) multiplayer.show();
@@ -85,13 +90,13 @@ export function Game() {
       input.value = "";
     };
     const leaving = (): Step => ({
-      title: "Leave the dive?",
+      title: t().leaving.title,
       escape: leaveDive,
       rows: [
-        ...(byEscape ? [{ kind: "note", text: multiplayer.diving ? "Esc again leaves the dive and the room" : "Esc again leaves the dive. It is not logged" } as Part] : []),
-        { kind: "press", id: "stay", label: "Keep diving", press: () => ui.back() },
-        { kind: "press", id: "settings", label: "Settings", press: () => ui.go(settings) },
-        { kind: "press", id: "leave", label: "Leave the dive", press: leaveDive },
+        ...(byEscape ? [{ kind: "note", text: multiplayer.diving ? t().leaving.escapeRoom : t().leaving.escape } as Part] : []),
+        { kind: "press", id: "stay", label: t().leaving.stay, press: () => ui.back() },
+        { kind: "press", id: "settings", label: t().settings.title, press: () => ui.go(settings) },
+        { kind: "press", id: "leave", label: t().leaving.leave, press: leaveDive },
       ],
     });
     const openMenu = (escape: boolean) => {
@@ -196,7 +201,9 @@ export function Game() {
         doneAt = now / 1000;
       }
       display.fit(frame);
-      menu.items[3] = account.account ? "Account" : "Sign in";
+      menu.items = menuItems();
+      input.ariaLabel = t().page.answer;
+      form.current!.ariaLabel = t().page.menu;
       menu.note = account.trouble();
       multiplayer.update();
       shown = multiplayer.game(now / 1000) ?? game;
@@ -247,9 +254,9 @@ export function Game() {
     <main className="stage">
       <canvas ref={pixels} className="pixels" />
       <canvas ref={glow} className="glow" />
-      <input ref={keys} className="keys" aria-label="Your answer" maxLength={MAX_ANSWER_LENGTH} autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} />
+      <input ref={keys} className="keys" maxLength={MAX_ANSWER_LENGTH} autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} />
       {/* Whatever panel is open: `Ui` fills it with the controls of the step on screen. */}
-      <form ref={form} className="panel" aria-label="Menu" hidden />
+      <form ref={form} className="panel" hidden />
       {dev && <DevMenu {...dev} />}
     </main>
   );

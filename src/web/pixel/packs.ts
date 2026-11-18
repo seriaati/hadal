@@ -1,4 +1,5 @@
 import { MAX_PACK_BYTES, MAX_TOPIC_LENGTH, WRITTEN_PROMPTS, type PackSummary } from "../../shared/types";
+import { t } from "../language";
 import type { Sound } from "../sound";
 import type { AccountPanel } from "./account";
 import { FONTS, plain, wrap } from "./font";
@@ -15,7 +16,7 @@ function report(problems: string[]): string[] {
   for (const [i, problem] of problems.entries()) {
     const more = wrap(FONTS.tiny, plain(`- ${problem}`), COLUMN).length;
     if (lines + more > MAX_LINES - (i === problems.length - 1 ? 0 : 1)) {
-      shown.push(`and ${problems.length - i} more`);
+      shown.push(t().packs.more(problems.length - i));
       break;
     }
     shown.push(`- ${problem}`);
@@ -59,13 +60,14 @@ export class PacksPanel {
   }
 
   private list = (): Step => {
+    const words = t().packs;
     if (!this.account.account) {
       return {
-        title: "Packs",
+        title: words.title,
         rows: [
-          { kind: "note", text: "Sign in to keep packs of your own" },
+          { kind: "note", text: words.signInToKeep },
           { kind: "gap" },
-          { kind: "press", id: "signin", label: "Sign in", press: () => this.account.show() },
+          { kind: "press", id: "signin", label: t().account.signIn, press: () => this.account.show() },
         ],
       };
     }
@@ -74,7 +76,7 @@ export class PacksPanel {
         kind: "press",
         id: `dive:${pack.id}`,
         label: pack.name,
-        says: `Dive in ${pack.name}`,
+        says: words.diveIn(pack.name),
         press: () => {
           this.ui.close();
           this.dive(pack.id);
@@ -83,8 +85,8 @@ export class PacksPanel {
       {
         kind: "press",
         id: `download:${pack.id}`,
-        label: "Download",
-        says: `Download ${pack.name}`,
+        label: words.download,
+        says: words.downloadPack(pack.name),
         right: true,
         quiet: true,
         press: () => Object.assign(document.createElement("a"), { href: `/api/packs/${pack.id}`, download: `${pack.id}.json` }).click(),
@@ -92,8 +94,8 @@ export class PacksPanel {
       {
         kind: "press",
         id: `remove:${pack.id}`,
-        label: this.doomed === pack.id ? "Sure?" : "Remove",
-        says: `Remove ${pack.name}`,
+        label: this.doomed === pack.id ? words.sure : words.remove,
+        says: words.removePack(pack.name),
         right: true,
         quiet: true,
         danger: this.doomed === pack.id,
@@ -102,41 +104,42 @@ export class PacksPanel {
       },
     ]);
     return {
-      title: "Packs",
+      title: words.title,
       busy: this.busy,
       rows: [
-        ...(rows.length ? rows : [{ kind: "note", text: "No packs yet" } as Part]),
+        ...(rows.length ? rows : [{ kind: "note", text: words.none } as Part]),
         { kind: "gap" },
         [
-          { kind: "press", id: "add", label: "Add a pack", file: (file) => void this.add(file) },
-          { kind: "press", id: "write", label: "Write a pack", press: () => this.ui.go(this.write) },
+          { kind: "press", id: "add", label: words.add, file: (file) => void this.add(file) },
+          { kind: "press", id: "write", label: words.write, press: () => this.ui.go(this.write) },
         ],
       ],
     };
   };
 
   private refusal = (): Step => ({
-    title: "Packs",
+    title: t().packs.title,
     rows: [
       { kind: "note", text: this.refused[0] ?? "", bad: true },
       ...this.refused.slice(1).map((text): Part => ({ kind: "note", text })),
       { kind: "gap" },
       this.refusedFile
-        ? { kind: "press", id: "again", label: "Choose another file", file: (file) => void this.add(file) }
-        : { kind: "press", id: "again", label: "Back to packs", press: () => this.ui.back() },
+        ? { kind: "press", id: "again", label: t().packs.anotherFile, file: (file) => void this.add(file) }
+        : { kind: "press", id: "again", label: t().packs.backToPacks, press: () => this.ui.back() },
     ],
   });
 
   private write = (): Step => {
-    const title = "Write a pack";
+    const words = t().packs;
+    const title = words.write;
     const writing = this.writing;
     if (writing) {
       return {
         title,
         rows: [
-          { kind: "wait", text: `Claude is writing a pack about ${writing.topic}`, done: writing.done, of: WRITTEN_PROMPTS },
+          { kind: "wait", text: words.writing(writing.topic), done: writing.done, of: WRITTEN_PROMPTS },
           { kind: "gap" },
-          { kind: "press", id: "stop", label: "Stop writing", press: () => writing.stop.abort() },
+          { kind: "press", id: "stop", label: words.stop, press: () => writing.stop.abort() },
         ],
       };
     }
@@ -144,21 +147,21 @@ export class PacksPanel {
       return {
         title,
         rows: [
-          { kind: "note", text: "Writing a pack takes an Anthropic API key of your own" },
+          { kind: "note", text: words.needsKey },
           { kind: "gap" },
-          { kind: "press", id: "key", label: "Add a key", press: () => this.account.show("anthropic") },
+          { kind: "press", id: "key", label: words.addKey, press: () => this.account.show("anthropic") },
         ],
       };
     }
     return {
       title,
       rows: [
-        { kind: "field", id: "topic", label: "A pack about", max: MAX_TOPIC_LENGTH, autocomplete: "off" },
+        { kind: "field", id: "topic", label: words.topic, max: MAX_TOPIC_LENGTH, autocomplete: "off" },
         this.unwritten
-          ? { kind: "note", text: `No pack was written: ${this.unwritten}`, bad: true }
-          : { kind: "note", text: "Claude writes it with your key. It takes a minute or so" },
+          ? { kind: "note", text: words.unwritten(this.unwritten), bad: true }
+          : { kind: "note", text: words.how },
         { kind: "gap" },
-        { kind: "press", id: "send", label: "Write it", press: () => void this.begin() },
+        { kind: "press", id: "send", label: words.send, press: () => void this.begin() },
       ],
     };
   };
@@ -171,7 +174,7 @@ export class PacksPanel {
     try {
       body = (await (await request).json()) as typeof body;
     } catch {
-      body = { problems: ["no answer came from the server: try again"] };
+      body = { problems: [t().noAnswer] };
     }
     this.busy = false;
     if (Array.isArray(body)) {
@@ -189,8 +192,8 @@ export class PacksPanel {
   }
 
   private async add(file: File) {
-    const tried = `${file.name} was not added`;
-    if (file.size > MAX_PACK_BYTES) return this.refuse(tried, [`a pack file is at most ${MAX_PACK_BYTES / 1000} KB`], true);
+    const tried = t().packs.notAdded(file.name);
+    if (file.size > MAX_PACK_BYTES) return this.refuse(tried, [t().packs.tooBig(MAX_PACK_BYTES / 1000)], true);
     const added = await this.change(fetch("/api/packs", { method: "POST", body: file }), tried, true);
     if (added) this.ui.focus(`dive:${added.id}`);
   }
@@ -202,7 +205,7 @@ export class PacksPanel {
       return;
     }
     const at = this.packs.indexOf(pack);
-    await this.change(fetch(`/api/packs/${pack.id}`, { method: "DELETE" }), `${pack.name} was not removed`);
+    await this.change(fetch(`/api/packs/${pack.id}`, { method: "DELETE" }), t().packs.notRemoved(pack.name));
     // The focus goes to what took the pack's place.
     const next = this.packs[Math.min(at, this.packs.length - 1)];
     this.ui.focus(next ? `remove:${next.id}` : "add");
@@ -215,7 +218,7 @@ export class PacksPanel {
     const had = new Set(this.packs.map((pack) => pack.id));
     const stop = new AbortController();
     const writing = (this.writing = { topic, done: 0, stop });
-    let problems = ["no answer came from the server: try again"];
+    let problems = [t().noAnswer];
     try {
       const res = await fetch("/api/write", { method: "POST", body: JSON.stringify({ topic }), signal: stop.signal });
       // The answer comes a line at a time: how many prompts are written so far, and at the end the packs or what went wrong.

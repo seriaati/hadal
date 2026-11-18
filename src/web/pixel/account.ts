@@ -1,17 +1,6 @@
-import { MAX_KEY_LENGTH, PASSWORD_MAX, PROVIDERS, USERNAME_MAX, type Account, type KeyFailure, type Provider } from "../../shared/types";
+import { MAX_KEY_LENGTH, PASSWORD_MAX, PROVIDERS, USERNAME_MAX, type Account, type Provider } from "../../shared/types";
+import { t } from "../language";
 import type { Part, Step, Ui } from "./ui";
-
-const KEYS: Record<Provider, { name: string; use: string }> = {
-  anthropic: { name: "Anthropic key", use: "An Anthropic key lets Claude write packs, and judge answers the packs miss" },
-  jev: { name: "Jev key", use: "A Jev key lets Jev judge answers the packs miss" },
-};
-
-/** How a key's last failure is told: after its line, in its step, and at the title. */
-const FAILURES: Record<KeyFailure, { short: string; what: string; fix: string }> = {
-  refused: { short: "refused", what: "was refused", fix: "check it, or type a new one" },
-  limited: { short: "at its limit", what: "hit its limit", fix: "check its credit and rate limit" },
-  unanswered: { short: "no answer", what: "got no answer", fix: "the service may have been down" },
-};
 
 export class AccountPanel {
   account: Account | null = null;
@@ -48,7 +37,7 @@ export class AccountPanel {
   /** What the title menu says when keys failed the last time they were used. Short, to fit under the menu on a low screen. */
   trouble(): string | undefined {
     const failed = PROVIDERS.filter((provider) => this.account?.failed[provider]).length;
-    if (failed) return `Your ${failed > 1 ? "keys" : "key"} failed: see Account`;
+    if (failed) return t().account.trouble(failed);
   }
 
   show(key?: Provider) {
@@ -61,18 +50,19 @@ export class AccountPanel {
     const kept = this.account?.keys[provider];
     const failed = this.account?.failed[provider];
     const field = `${provider}-key`;
-    const trouble = failed && `It ${FAILURES[failed].what} when it last judged an answer: ${FAILURES[failed].fix}`;
-    const about = kept ? "A key is kept. Type a new one to replace it" : KEYS[provider].use;
+    const words = t().account;
+    const trouble = failed && words.failed(words.failures[failed].what, words.failures[failed].fix);
+    const about = kept ? words.kept : words.keys[provider].use;
     return {
-      title: KEYS[provider].name,
+      title: words.keys[provider].name,
       busy: this.busy,
       rows: [
         // Not a password field, or the browser would offer the account's password for it. It is drawn as dots anyway.
-        { kind: "field", id: field, label: "API key", max: MAX_KEY_LENGTH, dots: true, autocomplete: "off" },
+        { kind: "field", id: field, label: words.apiKey, max: MAX_KEY_LENGTH, dots: true, autocomplete: "off" },
         { kind: "note", text: this.error || trouble || about, bad: this.error !== "" || !!trouble },
         [
-          { kind: "press", id: "keep", label: "Keep key", press: () => void this.setKey(provider, { method: "PUT", body: JSON.stringify({ key: this.ui.value(field) }) }) },
-          ...(kept ? [{ kind: "press", id: "forget", label: "Forget key", press: () => void this.setKey(provider, { method: "DELETE" }) } as Part] : []),
+          { kind: "press", id: "keep", label: words.keep, press: () => void this.setKey(provider, { method: "PUT", body: JSON.stringify({ key: this.ui.value(field) }) }) },
+          ...(kept ? [{ kind: "press", id: "forget", label: words.forget, press: () => void this.setKey(provider, { method: "DELETE" }) } as Part] : []),
         ],
       ],
     };
@@ -82,6 +72,7 @@ export class AccountPanel {
 
   private step = (): Step => {
     const account = this.account;
+    const words = t().account;
     const refusal: Part[] = this.error ? [{ kind: "note", text: this.error, bad: true }] : [];
     if (account) {
       return {
@@ -91,7 +82,7 @@ export class AccountPanel {
           ...PROVIDERS.map((provider): Part => ({
             kind: "press",
             id: provider,
-            label: `${KEYS[provider].name}${account.failed[provider] ? ` ~ ${FAILURES[account.failed[provider]].short}` : account.keys[provider] ? " ~ kept" : ""}`,
+            label: `${words.keys[provider].name}${account.failed[provider] ? ` ~ ${words.failures[account.failed[provider]].short}` : account.keys[provider] ? ` ~ ${words.keptShort}` : ""}`,
             press: () => {
               this.error = "";
               this.ui.go(this.keys[provider]);
@@ -99,23 +90,23 @@ export class AccountPanel {
           })),
           ...refusal,
           { kind: "gap" },
-          { kind: "press", id: "leave", label: "Sign out", press: () => void this.send() },
+          { kind: "press", id: "leave", label: words.signOut, press: () => void this.send() },
         ],
       };
     }
     return {
-      title: this.creating ? "New account" : "Sign in",
+      title: this.creating ? words.newAccount : words.signIn,
       busy: this.busy,
       rows: [
-        { kind: "field", id: "username", label: "Name", max: USERNAME_MAX, autocomplete: "username" },
-        { kind: "field", id: "password", label: "Password", max: PASSWORD_MAX, dots: true, password: true, autocomplete: this.creating ? "new-password" : "current-password" },
+        { kind: "field", id: "username", label: words.name, max: USERNAME_MAX, autocomplete: "username" },
+        { kind: "field", id: "password", label: words.password, max: PASSWORD_MAX, dots: true, password: true, autocomplete: this.creating ? "new-password" : "current-password" },
         ...refusal,
         { kind: "gap" },
-        { kind: "press", id: "send", label: this.creating ? "Create account" : "Sign in", submit: true, press: () => void this.send() },
+        { kind: "press", id: "send", label: this.creating ? words.create : words.signIn, submit: true, press: () => void this.send() },
         {
           kind: "press",
           id: "other",
-          label: this.creating ? "Have an account? Sign in" : "New here? Create an account",
+          label: this.creating ? words.haveOne : words.newHere,
           press: () => {
             this.creating = !this.creating;
             this.error = "";

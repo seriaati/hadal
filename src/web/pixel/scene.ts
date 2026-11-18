@@ -1,9 +1,10 @@
 import { BAR_FULL, MAX_HEARTS, START_HEARTS } from "../../shared/room";
 import { METERS_PER_POINT } from "../../shared/types";
 import { ZONES, formatMeters, lightOf } from "../depth";
+import { t } from "../language";
 import { ascentSeconds, fullAir, type Game, type Lamp } from "../state";
 import { Ambient } from "./creatures";
-import { FONTS, drawText, fit, measure, pitch, plain, wrap, type Font } from "./font";
+import { FONTS, drawText, fit, measure, pitch, plain, rise, wrap, type Font } from "./font";
 import { dither, hash, type Frame, type Light } from "./frame";
 import { drawMark } from "./ui";
 
@@ -468,7 +469,7 @@ export class Scene {
       frame.put(x, y, tint || (flake.k < 0.22 ? 4 : 3));
     }
 
-    const boundaries = ZONES.slice(1).map((zone) => ({ ...zone, y: screenY(zone.from / METERS_PER_PIXEL) }));
+    const boundaries = ZONES.map((from, i) => ({ from, name: t().dive.zones[i]!.short, y: screenY(from / METERS_PER_PIXEL) })).slice(1);
     for (const { y } of boundaries) {
       if (y < 0 || y >= H) continue;
       for (let x = 0; x < W; x++) if (x % 5 !== 2 && x % 5 !== 4 && !behindWords(x, y)) frame.put(x, y, x % 5 < 2 ? 5 : 3);
@@ -540,7 +541,7 @@ export class Scene {
 
     for (const zone of boundaries) {
       if (this.hush && zone.y + 18 > this.hush[0] && zone.y + 4 < this.hush[1]) continue;
-      drawText(frame, FONTS.tiny, zone.name.replace(" zone", ""), 4 + shift, zone.y + 4, 6);
+      drawText(frame, FONTS.tiny, zone.name, 4 + shift, zone.y + 4, 6);
       drawText(frame, FONTS.tiny, formatMeters(zone.from), 4 + shift, zone.y + 12, 5);
     }
 
@@ -637,7 +638,7 @@ export class Scene {
     const { tiny, large } = FONTS;
     const right = wide ? 180 : W - 2;
     // Where the depth at the bottom right begins: a name at the bottom edge goes above it rather than into it.
-    const depthLeft = game.phase === "title" ? W : W - 17 - measure(large, formatMeters(this.reading).toUpperCase()) - measure(tiny, "Depth");
+    const depthLeft = game.phase === "title" ? W : W - 17 - measure(large, formatMeters(this.reading).toUpperCase()) - measure(tiny, t().dive.depth);
     // And where the player's own hearts at the bottom left end.
     const heartsRight = this.turn?.hearts == null ? 0 : 8 + this.ownWidth(W);
     for (const line of lines) {
@@ -767,10 +768,13 @@ export class Scene {
       say(font, "HADAL", x, base - 4, amber(tall));
       frame.emit = 0;
       // On a narrow screen the line under the title runs on to a second one.
-      const under = wrap(tiny, menu.note ?? "Rare answers sink deeper", room);
-      under.forEach((line, i) => say(tiny, line, x, base + tall + 2 + i * 8, menu.note ? 18 : 6));
+      const note = menu.note ?? t().title.tagline;
+      const under = wrap(tiny, note, room);
+      const gap = pitch(tiny, note, 8);
+      const top = base + tall + 2 + rise(tiny, note);
+      under.forEach((line, i) => say(tiny, line, x, top + i * gap, menu.note ? 18 : 6));
       this.menuLeft = x;
-      this.menuTop = base + tall + 6 + under.length * 8;
+      this.menuTop = top + 4 + under.length * gap;
       menu.items.forEach((item, i) => {
         const y = this.menuTop + i * MENU_ROW;
         const chosen = i === menu.choice;
@@ -789,7 +793,7 @@ export class Scene {
     frame.emit = 255;
     say(large, depth, W - 8, H - 22, amber(14), true);
     frame.emit = 0;
-    say(tiny, "Depth", W - 8 - measure(large, depth) - 5, H - 13, 6, true);
+    say(tiny, t().dive.depth, W - 8 - measure(large, depth) - 5, H - 13, 6, true);
     // In "longest" the player's own hearts, then the bar that wins one more (none with the most hearts), opposite the depth.
     const hearts = this.turn?.hearts;
     if (hearts != null) drawHearts(frame, hearts, 8, H - 13);
@@ -810,8 +814,8 @@ export class Scene {
     // While the submarine lets the diver go, the first prompt is not yet asked.
     if (!prompt || game.phase === "drop") return;
     const asking = game.phase === "ask";
-    const head = `${plain(prompt.pack)} ~ ${game.round + 1} of ${game.prompts.length}`;
-    const watching = this.turn?.watching ? `${this.turn.watching} watching` : "";
+    const head = `${plain(prompt.pack)} ~ ${t().count(game.round + 1, game.prompts.length)}`;
+    const watching = this.turn?.watching ? t().dive.watching(this.turn.watching) : "";
     // The count of those watching keeps together: when it does not fit after the number, it takes a line of its own.
     const together = watching && measure(tiny, `${head} ~ ${watching}`) <= room;
     let headY = sayWrapped(tiny, together ? `${head} ~ ${watching}` : head, 11, 6).y;
@@ -822,14 +826,14 @@ export class Scene {
     const turn = this.turn;
     // In a room the row of the air is kept when there is no air to show, so that the answers taken under it stay put.
     this.hudBottom = promptY + lines.length * 11 + (asking || turn ? 10 : 0);
-    if (turn?.taken.length) this.hudBottom = sayWrapped(tiny, `Taken ~ ${turn.taken.map(plain).join(", ")}`, this.hudBottom + 4, 6).y + 10;
+    if (turn?.taken.length) this.hudBottom = sayWrapped(tiny, t().dive.taken(turn.taken.map(plain).join(", ")), this.hudBottom + 4, 6).y + 10;
     if (asking) {
       const y = promptY + lines.length * 11 + 4;
       const low = game.air <= this.full(game) / 3;
       const left = Math.ceil((game.air / this.full(game)) * 15);
       const blink = Math.floor(time * (low ? 5 : 2)) % 2 === 0;
       const pitch = room >= 100 ? 4 : 3;
-      const start = say(tiny, "Air", x, y, low ? 18 : 6) + 4;
+      const start = say(tiny, t().dive.air, x, y, low ? 18 : 6) + 4;
       for (let i = 0; i < 15; i++) {
         // Spent pips go dark. The last one left blinks, so the count is seen to be running.
         const color = i >= left ? 3 : low ? (blink ? 18 : 12) : i === left - 1 && !blink ? 8 : 9;
@@ -850,9 +854,9 @@ export class Scene {
       const font = fit([large, medium, tiny], `${typed}_`, room);
       // In a room everyone sees what the diver whose turn it is types; only the diver has the caret.
       const yours = !turn || turn.yours;
-      if (turn?.yours) say(tiny, "Your turn", x, typingY - 9, 15);
+      if (turn?.yours) say(tiny, t().dive.yourTurn, x, typingY - 9, 15);
       // One who joined during the dive only watches it, and is told so where a diver is told their turn has come.
-      else if (turn?.watcher) say(tiny, "Watching", x, typingY - 9, 6);
+      else if (turn?.watcher) say(tiny, t().dive.watcher, x, typingY - 9, 6);
       const { end, y } = sayWrapped(font, typed, typingY, yours ? 7 : 6);
       if (yours && Math.floor(time * 2.5) % 2 === 0) {
         frame.emit = 200;
@@ -864,24 +868,24 @@ export class Scene {
       if (game.judging) {
         sayWrapped(tiny, `${plain(game.judging).slice(0, 18)} ~ ${".".repeat(1 + (Math.floor(time * 3) % 3))}`, y + font.height + 7, 6);
       } else if (rejected && game.phaseTime - rejected.at < 1.6) {
-        sayWrapped(tiny, `${plain(rejected.text).slice(0, 18)} ~ ${turn?.refusedTaken ? "taken" : "no light"}`, y + font.height + 7, 18);
+        sayWrapped(tiny, `${plain(rejected.text).slice(0, 18)} ~ ${turn?.refusedTaken ? t().dive.takenAnswer : t().dive.noLight}`, y + font.height + 7, 18);
       }
     } else {
-      const text = result.correct ? plain(result.answer) : "Out of air";
+      const text = result.correct ? plain(result.answer) : t().dive.outOfAir;
       const font = fit([large, medium, tiny], text, room);
       const tall = font.height;
       frame.emit = result.correct ? 255 : 0;
       const last = sayWrapped(font, text, typingY, result.correct ? (row) => (row < tall * 0.22 ? 11 : row < tall * 0.8 ? 10 : 9) : 18);
-      let y = last.y + tall + 7;
       const gain = `+${formatMeters(result.rarity * METERS_PER_POINT)}`;
       const note = result.correct ? `~ ${lightOf(result.rarity)}` : "";
-      const end = say(tiny, result.correct ? gain : "No light", x, y, result.correct ? 10 : 18);
+      let y = last.y + tall + 7 + rise(tiny, result.correct ? note : t().dive.noLight);
+      const end = say(tiny, result.correct ? gain : t().dive.noLight, x, y, result.correct ? 10 : 18);
       frame.emit = 0;
-      if (end + 3 + measure(tiny, note) > W - 4) say(tiny, note, x, (y += 8), result.correct ? 9 : 5);
+      if (end + 3 + measure(tiny, note) > W - 4) say(tiny, note, x, (y += 8 + rise(tiny, note)), result.correct ? 9 : 5);
       else say(tiny, note, end + 3, y, result.correct ? 9 : 5);
       // In a room the next turn comes by itself.
       if (!turn && !diving && game.phase === "verdict" && game.phaseTime > 0.6) {
-        key(x, y + 12, game.round + 1 === game.prompts.length ? "End the dive" : "Keep going");
+        key(x, y + 12, game.round + 1 === game.prompts.length ? t().dive.endDive : t().dive.keepGoing);
       }
     }
   }

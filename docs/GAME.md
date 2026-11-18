@@ -16,6 +16,10 @@ mode or in chaos mode (less air, and the first empty tank ends the dive). Multip
 private rooms joined by a code or a link. Players can also add packs of their own, have
 Claude write one, and have answers a pack does not list judged live with their own API key.
 
+The game speaks English and Simplified Chinese. It starts in the browser's language, and the
+settings change it; Claude writes a player's packs in their language. The built-in packs are
+in English for now.
+
 ## The look
 
 - **Dark pixel art.** A lone hard-hat diver descends a line down a trench wall, hanging a lamp

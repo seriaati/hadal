@@ -1,8 +1,9 @@
 import type { Finish, Mode } from "../../shared/room";
 import { METERS_PER_POINT } from "../../shared/types";
 import { formatMeters, lightOf, zoneAt } from "../depth";
-import { lostDive, type Game } from "../state";
-import { FONTS, drawText, fit, measure, plain, wrap, type Font } from "./font";
+import { t } from "../language";
+import { CHAOS_AIR_SECONDS, lostDive, type Game } from "../state";
+import { FONTS, drawText, fit, measure, pitch, plain, rise, wrap, type Font } from "./font";
 import { dither, hash, type Frame, type Light } from "./frame";
 import { FRY, LAMP_DEAD, LAMP_LIT, SUIT_COLORS } from "./scene";
 import { drawMark } from "./ui";
@@ -177,8 +178,7 @@ export class Ending {
   private winnerWords(): string {
     if (!isRoom(this.log)) return "";
     const won = this.divers.filter((diver) => diver.won).map((diver) => plain(diver.name));
-    const names = won.length < 2 ? won.join("") : `${won.slice(0, -1).join(", ")} and ${won.at(-1)}`;
-    return `${names} ${this.log.mode === "deepest" ? "went deepest" : "lasted longest"}`;
+    return t().ending.won(t().list(won), this.log.mode === "deepest");
   }
 
   /**
@@ -299,7 +299,7 @@ export class Ending {
     this.drawHead(frame);
     this.drawDetails(frame);
     const backY = H - (wide ? 14 : 22);
-    const back = isRoom(this.log) ? "Back to the room" : "Back to the title";
+    const back = isRoom(this.log) ? t().ending.backToRoom : t().ending.backToTitle;
     const on = this.focus === "back";
     const bx = (W >> 1) - (measure(tiny, back) >> 1);
     if (on) drawMark(frame, bx - 6, backY);
@@ -343,10 +343,10 @@ export class Ending {
   }
 
   /** Returns the y under the last line. */
-  private centred(frame: Frame, font: Font, text: string, y: number, color: number | ((row: number) => number), glow = 0, pitch = font.height + 4): number {
+  private centred(frame: Frame, font: Font, text: string, y: number, color: number | ((row: number) => number), glow = 0, gap = font.height + 4): number {
     for (const line of wrap(font, text, frame.width - 16)) {
       this.say(frame, font, line, frame.width >> 1, y, color, true, glow);
-      y += pitch;
+      y += pitch(font, text, gap);
     }
     return y;
   }
@@ -358,14 +358,15 @@ export class Ending {
       const y = this.centred(frame, medium, this.winnerWords(), 6, 16, 70, 11);
       const deepest = Math.max(0, ...this.divers.filter((diver) => diver.won).map((diver) => diver.depth));
       const under = this.centred(frame, tiny, `${formatMeters(deepest)} ~ ${zoneAt(deepest)}`, y + 1, 6);
-      if (log.mode === "chaos") this.centred(frame, tiny, "Chaos ~ one empty tank and out", under - 1, 18);
+      if (log.mode === "chaos") this.centred(frame, tiny, t().ending.chaosRoom, under - 1 + rise(tiny, t().ending.chaosRoom), 18);
       return;
     }
     const top = W >= 300 ? 10 : 40;
     const lamps = this.lines[0]!;
     this.say(frame, large, formatMeters(log.depth).toUpperCase(), W >> 1, top, amber(14), true, 255);
-    this.centred(frame, tiny, `${zoneAt(log.depth)} ~ ${lamps.filter((hung) => hung.answer).length} of ${lamps.length} lamps lit`, top + 18, 6);
-    if (log.chaos) this.centred(frame, tiny, lostDive(log) ? "Chaos ~ signal lost" : "Chaos ~ 8 seconds of air", top + 26, 18);
+    const lit = this.centred(frame, tiny, t().ending.lampsLit(zoneAt(log.depth), lamps.filter((hung) => hung.answer).length, lamps.length), top + 18, 6);
+    const chaos = lostDive(log) ? t().ending.signalLost : t().ending.chaosAir(CHAOS_AIR_SECONDS);
+    if (log.chaos) this.centred(frame, tiny, chaos, lit - 1 + rise(tiny, chaos), 18);
   }
 
   /** In a room, the name at the head of each row: in the colour of their suit, amber for the winner, cream while in focus. */
@@ -387,23 +388,23 @@ export class Ending {
     let y = this.detailsTop(frame);
     if (this.divers.length) {
       const diver = this.divers[this.focus.line]!;
-      const out = isRoom(this.log) && this.log.mode !== "deepest" ? (diver.out === null ? " ~ still in" : ` ~ out at prompt ${diver.out}`) : "";
-      y = this.centred(frame, tiny, `${plain(diver.name)} ~ ${formatMeters(diver.depth)} ~ ${diver.points} points${out}`, y, 6);
+      const out = isRoom(this.log) && this.log.mode !== "deepest" ? (diver.out === null ? t().ending.stillIn : t().ending.outAt(diver.out)) : "";
+      y = this.centred(frame, tiny, [plain(diver.name), formatMeters(diver.depth), t().ending.points(diver.points), out].filter(Boolean).join(" ~ "), y, 6);
     } else {
-      y = this.centred(frame, tiny, `${plain(hung.pack ?? "")} ~ ${this.focus.lamp + 1} of ${this.lines[0]!.length}`, y, 6);
+      y = this.centred(frame, tiny, `${plain(hung.pack ?? "")} ~ ${t().count(this.focus.lamp + 1, this.lines[0]!.length)}`, y, 6);
     }
     y = this.centred(frame, medium, plain(hung.prompt), y + 2, 7, 0, 11) + 3;
-    const answer = hung.answer ? plain(hung.answer) : "Out of air";
+    const answer = hung.answer ? plain(hung.answer) : t().dive.outOfAir;
     const font = fit([large, medium, tiny], answer, W - 16);
     this.say(frame, font, answer, W >> 1, y, hung.answer ? mint(font.height) : 18, true, hung.answer ? 255 : 0);
-    y += font.height + 5;
-    if (!hung.answer) {
-      this.centred(frame, tiny, "No light", y, 18);
-      return;
-    }
     const gain = `+${formatMeters(hung.rarity * METERS_PER_POINT)}`;
     const note = `${gain} ~ ${lightOf(hung.rarity)}`;
+    y += font.height + 5 + rise(tiny, hung.answer ? note : t().dive.noLight);
+    if (!hung.answer) {
+      this.centred(frame, tiny, t().dive.noLight, y, 18);
+      return;
+    }
     if (measure(tiny, note) <= W - 16) this.centred(frame, tiny, note, y, 10);
-    else this.centred(frame, tiny, lightOf(hung.rarity), this.centred(frame, tiny, gain, y, 10), 9);
+    else this.centred(frame, tiny, lightOf(hung.rarity), this.centred(frame, tiny, gain, y, 10) + rise(tiny, lightOf(hung.rarity)), 9);
   }
 }

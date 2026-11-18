@@ -1,4 +1,6 @@
 import { afterAll, beforeEach, expect, test } from "bun:test";
+import { wordsIn } from "../shared/language";
+import { MAX_TOPIC_LENGTH } from "../shared/types";
 import { accountIdOf, signUp } from "./accounts";
 import { listPacks, loadPack } from "./custom";
 import { migrate, sql } from "./db";
@@ -71,7 +73,7 @@ test("a written pack is kept among the player's packs, paid for with their key",
   expect(asked).toHaveLength(1);
   expect(asked[0]!.key).toBe(`Bearer ${KEY}`);
   expect(asked[0]!.body.model).toBe("claude-opus-5-5");
-  expect(asked[0]!.body.messages[0]!.content).toBe("Topic: rivers");
+  expect(asked[0]!.body.messages[0]!.content).toBe("Topic: rivers\nLanguage: English");
 });
 
 test("the prompts that are finished are counted while the pack is written", async () => {
@@ -103,6 +105,13 @@ test("a pack named in another script still gets an id", async () => {
   reply = { text: JSON.stringify({ ...DRAFT, name: "河流" }) };
   expect(await writePack(id, "河流")).toEqual([]);
   expect(await listPacks(id)).toEqual([{ id: "pack", name: "河流", prompts: 2 }]);
+});
+
+test("Claude is told the player's language, and a refusal comes back in it", async () => {
+  const id = await account();
+  expect(await writePack(id, "rivers", undefined, undefined, "zh-CN")).toEqual([]);
+  expect(asked[0]!.body.messages[0]!.content).toBe("Topic: rivers\nLanguage: Simplified Chinese");
+  expect(await writePack(id, "  ", undefined, undefined, "zh-CN")).toEqual([wordsIn("zh-CN").packs.badTopic(MAX_TOPIC_LENGTH)]);
 });
 
 test("without a key, or a topic, nothing is asked of Anthropic", async () => {

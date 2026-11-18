@@ -248,6 +248,11 @@ export function wrap(font: Font, text: string, width: number): string[] {
   return lines;
 }
 
+/** How far the letters of the other font stand above the top of a line of this text, which the line before must leave room for. */
+export function rise(font: Font, text: string): number {
+  return latin(text) ? 0 : Math.max(0, other.ascent * font.scale - font.height);
+}
+
 /** How far apart lines of this text are set: `usual`, or more when letters of the other font, which stand taller, need it. */
 export function pitch(font: Font, text: string, usual = font.height + 3): number {
   return latin(text) ? usual : Math.max(usual, other.line * font.scale);

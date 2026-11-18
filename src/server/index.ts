@@ -1,6 +1,8 @@
 import app from "../web/index.html";
 import type { BunRequest, Server } from "bun";
+import { LANGUAGE_COOKIE, isLanguage, wordsIn, type Language } from "../shared/language";
 import { MAX_PACK_BYTES, PROVIDERS, type Config, type PackSummary, type Provider } from "../shared/types";
+import type { Words } from "../shared/words/en";
 import { SESSION_DAYS, accountIdOf, accountOf, signInFrom, signOut, signUp, type Entry } from "./accounts";
 import { listPacks, loadPack, removePack, savePack } from "./custom";
 import { migrate } from "./db";
@@ -25,10 +27,18 @@ const prompts = buildIndex(builtIn);
 usePrompts(prompts);
 await migrate();
 
+/** The language the player plays in, which the browser keeps in a cookie. */
+function languageOf(req: BunRequest): Language {
+  const language = req.cookies.get(LANGUAGE_COOKIE);
+  return isLanguage(language) ? language : "en";
+}
+
+const wordsOf = (req: BunRequest) => wordsIn(languageOf(req));
+
 /** Sign up or sign in. httpOnly keeps the token out of reach of scripts in the page. */
-async function enter(req: BunRequest, entry: (username: string, password: string) => Promise<Entry>) {
+async function enter(req: BunRequest, entry: (username: string, password: string, words: Words) => Promise<Entry>) {
   const { username, password } = (await req.json()) as { username: string; password: string };
-  const result = await entry(String(username ?? ""), String(password ?? ""));
+  const result = await entry(String(username ?? ""), String(password ?? ""), wordsOf(req));
   if ("error" in result) return Response.json({ error: result.error }, { status: 400 });
   req.cookies.set(SESSION, result.token, {
     httpOnly: true, sameSite: "lax", secure: PRODUCTION, path: "/", maxAge: SESSION_DAYS * 24 * 60 * 60,
@@ -56,19 +66,19 @@ async function indexOf(req: BunRequest, promptId: string): Promise<PromptIndex> 
 
 async function packs(req: BunRequest, change?: (accountId: string) => Promise<string[] | void>) {
   const accountId = await accountIdOf(req.cookies.get(SESSION));
-  if (!accountId) return Response.json({ problems: ["sign in first"] }, { status: 401 });
+  if (!accountId) return Response.json({ problems: [wordsOf(req).packs.signInFirst] }, { status: 401 });
   const problems = (await change?.(accountId)) ?? [];
   if (problems.length) return Response.json({ problems }, { status: 400 });
   return Response.json(await listPacks(accountId));
 }
 
-async function key(req: BunRequest<"/api/account/key/:provider">, change: (accountId: string, provider: Provider) => Promise<string | null | void>) {
+async function key(req: BunRequest<"/api/account/key/:provider">, change: (accountId: string, provider: Provider, words: Words) => Promise<string | null | void>) {
   const provider = PROVIDERS.find((known) => known === req.params.provider);
   if (!provider) return new Response("Unknown provider", { status: 404 });
   const token = req.cookies.get(SESSION);
   const accountId = await accountIdOf(token);
-  if (!accountId) return Response.json({ error: "Sign in first" }, { status: 401 });
-  const error = await change(accountId, provider);
+  if (!accountId) return Response.json({ error: wordsOf(req).account.signInFirst }, { status: 401 });
+  const error = await change(accountId, provider, wordsOf(req));
   if (error) return Response.json({ error }, { status: 400 });
   return Response.json(await accountOf(token));
 }
@@ -112,7 +122,7 @@ const server = Bun.serve({
     },
     "/api/account/signup": { POST: (req) => enter(req, signUp) },
     "/api/account/signin": {
-      POST: (req, server) => enter(req, (username, password) => signInFrom(addressOf(req, server), username, password)),
+      POST: (req, server) => enter(req, (username, password, words) => signInFrom(addressOf(req, server), username, password, words)),
     },
     "/api/account/signout": {
       POST: async (req) => {
@@ -123,12 +133,12 @@ const server = Bun.serve({
       },
     },
     "/api/account/key/:provider": {
-      PUT: (req) => key(req, async (accountId, provider) => saveKey(accountId, provider, String(((await req.json()) as { key: string }).key ?? ""))),
+      PUT: (req) => key(req, async (accountId, provider, words) => saveKey(accountId, provider, String(((await req.json()) as { key: string }).key ?? ""), words)),
       DELETE: (req) => key(req, removeKey),
     },
     "/api/packs": {
       GET: (req) => packs(req),
-      POST: (req) => packs(req, async (accountId) => savePack(accountId, await req.text())),
+      POST: (req) => packs(req, async (accountId) => savePack(accountId, await req.text(), wordsOf(req))),
     },
     "/api/packs/:id": {
       GET: async (req) => {
@@ -158,7 +168,9 @@ const server = Bun.serve({
             const say = (line: object) => {
               if (!stop.signal.aborted) controller.enqueue(encoder.encode(`${JSON.stringify(line)}\n`));
             };
-            const problems = accountId ? await writePack(accountId, topic, (prompts) => say({ prompts }), stop.signal) : ["sign in first"];
+            const problems = accountId
+              ? await writePack(accountId, topic, (prompts) => say({ prompts }), stop.signal, languageOf(req))
+              : [wordsOf(req).packs.signInFirst];
             say(problems.length || !accountId ? { problems } : { packs: await listPacks(accountId) });
             if (!stop.signal.aborted) controller.close();
           },

@@ -1,3 +1,5 @@
+import { LANGUAGES, wordsIn } from "../../shared/language";
+import { currentLanguage, setLanguage, t } from "../language";
 import { LEVELS, type Sound } from "../sound";
 import type { Frame } from "./frame";
 import type { Part, Step } from "./ui";
@@ -17,17 +19,22 @@ export function overCog(frame: Frame, x: number, y: number): boolean {
 }
 
 export function settingsStep(sound: Sound): Step {
+  const shift = (way: -1 | 1) => setLanguage(LANGUAGES[(LANGUAGES.indexOf(currentLanguage()) + way + LANGUAGES.length) % LANGUAGES.length]!);
   return {
-    title: "Settings",
-    rows: LEVELS.map((name): Part => ({
-      kind: "slider",
-      id: name,
-      label: name,
-      value: sound.levels[name],
-      set: (value) => {
-        sound.setLevel(name, value);
-        sound.tick();
-      },
-    })),
+    title: t().settings.title,
+    rows: [
+      // Each language is named in its own words, so it can be found by someone who cannot read the others.
+      { kind: "press", id: "language", label: t().settings.language, value: wordsIn(currentLanguage()).name, press: () => shift(1), shift },
+      ...LEVELS.map((name): Part => ({
+        kind: "slider",
+        id: name,
+        label: t().settings.levels[name],
+        value: sound.levels[name],
+        set: (value) => {
+          sound.setLevel(name, value);
+          sound.tick();
+        },
+      })),
+    ],
   };
 }

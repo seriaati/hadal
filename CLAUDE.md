@@ -43,7 +43,8 @@ dive, summon a creature. Its "Hide" button folds it away, and the browser rememb
   (`other.ts`), the scene, creatures, the parts and keys every panel shares (`ui.ts`), and
   the settings, account and packs panels, which only list what they hold, and the screen that
   ends a dive, `ending.ts`)
-- `src/shared/`: types and constants used by both sides
+- `src/shared/`: types and constants used by both sides, and every word the game says, one
+  table per language in `words/` (`en.ts` is the model; the compiler holds the others to it)
 - `packs/`: built-in packs, one JSON file each, in the format described under "Pack format" in
   `docs/GAME.md` and checked by `validatePack` in `src/server/packs.ts`
 - `design/brand/`: the logo (the diver's helmet) and the link preview; `bun design/brand/render.ts`

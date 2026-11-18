@@ -1,6 +1,7 @@
-import { AIR_MAX, AIR_MIN, MAX_PLAYERS, MODES, ROOM_CODE_LENGTH, SUITS, type Mode, type Refusal, type RoomPlayer, type RoomSettings, type RoomView } from "../../shared/room";
+import { AIR_MAX, AIR_MIN, MODES, ROOM_CODE_LENGTH, SUITS, type Refusal, type RoomPlayer, type RoomSettings, type RoomView } from "../../shared/room";
 import { USERNAME_MAX, type PackSummary } from "../../shared/types";
 import { formatMeters } from "../depth";
+import { t } from "../language";
 import type { RoomLog } from "./ending";
 import { RoomClient, type Heard } from "../room";
 import { RoomDive } from "../roomdive";
@@ -12,23 +13,17 @@ import type { Part, Step, Ui } from "./ui";
 
 /** Where in the panel a refusal is said: under the field it is about, before the last line, in the room's set-up, under "Copy the link" or under "Start the dive". */
 type Where = "code" | "name" | "end" | "settings" | "copy" | "start";
-const REFUSALS: Record<Refusal, [Where, string]> = {
-  "no-room": ["code", "no room has that code"],
-  full: ["code", `that room is full: a room holds ${MAX_PLAYERS} divers`],
-  "name-taken": ["name", "someone in that room has that name: choose another"],
-  "bad-name": ["name", `a name is 3 to ${USERNAME_MAX} letters or digits`],
-  "bad-suit": ["end", "that suit is not one of the six"],
-  "not-host": ["settings", "only the host sets up the room"],
-  "bad-settings": ["settings", "the room cannot be set up that way"],
-  "not-ready": ["start", "everyone has to be ready first"],
-  "no-packs": ["start", "no pack is chosen: choose some in the set-up"],
-  "no-prompts": ["start", "these packs have no prompt with an answer for everyone: choose others"],
-};
-/** [name, how it is played] */
-const MODE_WORDS: Record<Mode, [string, string]> = {
-  deepest: ["Deepest", "10 prompts answered in turns, and the diver who goes deepest wins"],
-  longest: ["Longest", "two hearts each: an empty tank costs one, rare answers win more, and the last diver in wins"],
-  chaos: ["Chaos", "little air: one empty tank puts a diver out, and the last diver in wins"],
+const REFUSALS: Record<Refusal, Where> = {
+  "no-room": "code",
+  full: "code",
+  "name-taken": "name",
+  "bad-name": "name",
+  "bad-suit": "end",
+  "not-host": "settings",
+  "bad-settings": "settings",
+  "not-ready": "start",
+  "no-packs": "start",
+  "no-prompts": "start",
 };
 
 /** The air is set in steps of this many seconds. */
@@ -37,15 +32,10 @@ const AIR_STEP = 5;
 /** How long "Copy the link" says the link was copied, in milliseconds. */
 const COPIED_FOR = 2000;
 
-/** "ben", "ben and cal", "ana, ben and cal". */
-const names = (list: string[]) => (list.length < 2 ? list.join("") : `${list.slice(0, -1).join(", ")} and ${list.at(-1)}`);
-
 /** Which packs a room plays, out of `all` built-in ones: in a few words for the host's set-up, or in full for the others. */
 function packsOf({ builtIn: { length: built }, ownPacks: { length: own } }: RoomSettings, all: number, full: boolean): string {
-  const some = built === all ? "" : `${built} `;
-  if (!full) return built ? (own ? `${some}built-in + ${own}` : `${some}built-in`) : own ? `${own} of yours` : "none";
-  const parts = [built ? `${some}built-in ${built === 1 ? "pack" : "packs"}` : "", own ? `${own} of the host's ${own === 1 ? "pack" : "packs"}` : ""];
-  return parts.filter(Boolean).join(" + ") || "no packs";
+  const some = built && built === all ? "all" : built;
+  return full ? t().rooms.packsFull(some, own) : t().rooms.packsShort(some, own);
 }
 
 export class MultiplayerPanel {
@@ -283,17 +273,17 @@ export class MultiplayerPanel {
       this.ui.go(this.room);
     } else if (message.type === "refused") {
       this.air = null;
-      this.refused = REFUSALS[message.reason];
-      const [where] = this.refused;
+      const where = REFUSALS[message.reason];
+      this.refused = [where, t().rooms.refusals[message.reason]];
       if (where === "code" || where === "name") this.ui.focus(where);
     } else if (entering) {
-      this.refused = ["end", "no answer came from the server: try again"];
+      this.refused = ["end", t().noAnswer];
     } else if (this.ending) {
       // The end screen stays open; closing it leads out of the room that is gone.
-      this.note = message.type === "closed" ? "the room closed: its host left" : "the connection to the server was lost";
+      this.note = message.type === "closed" ? t().rooms.closed : t().rooms.lost;
       this.gone = true;
     } else if (this.diving || this.ui.holds(this.room)) {
-      this.note = message.type === "closed" ? "the room closed: its host left" : "the connection to the server was lost";
+      this.note = message.type === "closed" ? t().rooms.closed : t().rooms.lost;
       if (this.diving) {
         this.diving = false;
         this.ui.close();
@@ -347,7 +337,7 @@ export class MultiplayerPanel {
     this.refused = null;
     const link = this.link(code);
     const done = () => (this.copiedAt = performance.now());
-    const failed = () => (this.refused = ["copy", `the browser would not copy it: the code is ${code}`]);
+    const failed = () => (this.refused = ["copy", t().rooms.copyFailed(code)]);
     if (navigator.clipboard) return void navigator.clipboard.writeText(link).then(done, failed);
     const focused = document.activeElement as HTMLElement | null;
     const text = Object.assign(document.createElement("textarea"), { value: link });
@@ -371,43 +361,44 @@ export class MultiplayerPanel {
   }
 
   private first = (): Step => ({
-    title: "Multiplayer",
+    title: t().rooms.title,
     rows: [
-      { kind: "press", id: "create", label: "Create a room", press: () => this.open(this.create) },
-      { kind: "press", id: "join", label: "Join a room", press: () => this.open(this.join) },
+      { kind: "press", id: "create", label: t().rooms.create, press: () => this.open(this.create) },
+      { kind: "press", id: "join", label: t().rooms.join, press: () => this.open(this.join) },
       ...(this.note ? [{ kind: "note", text: this.note } as Part] : []),
     ],
   });
 
   private you(): Part[] {
     return [
-      { kind: "field", id: "name", label: "Name", max: USERNAME_MAX, autocomplete: "nickname", start: this.account.account?.username },
+      { kind: "field", id: "name", label: t().rooms.name, max: USERNAME_MAX, autocomplete: "nickname", start: this.account.account?.username },
       ...this.refusal("name"),
-      { kind: "slider", id: "suit", label: "Suit", value: this.suit / (SUITS - 1), steps: SUITS - 1, colors: SUIT_COLORS, set: (value) => (this.suit = Math.round(value * (SUITS - 1))) },
+      { kind: "slider", id: "suit", label: t().rooms.suit, value: this.suit / (SUITS - 1), steps: SUITS - 1, colors: SUIT_COLORS, set: (value) => (this.suit = Math.round(value * (SUITS - 1))) },
       ...this.refusal("end"),
     ];
   }
 
   private create = (): Step => ({
-    title: "Create a room",
+    title: t().rooms.create,
     busy: this.busy,
-    rows: [...this.you(), { kind: "press", id: "enter", label: "Create the room", press: () => this.enter("create") }],
+    rows: [...this.you(), { kind: "press", id: "enter", label: t().rooms.createIt, press: () => this.enter("create") }],
   });
 
   private join = (): Step => ({
-    title: "Join a room",
+    title: t().rooms.join,
     busy: this.busy,
     rows: [
-      { kind: "field", id: "code", label: "Room code", max: ROOM_CODE_LENGTH, autocomplete: "off", start: this.linked },
+      { kind: "field", id: "code", label: t().rooms.code, max: ROOM_CODE_LENGTH, autocomplete: "off", start: this.linked },
       ...this.refusal("code"),
       ...this.you(),
-      { kind: "press", id: "enter", label: "Join the room", press: () => this.enter("join") },
+      { kind: "press", id: "enter", label: t().rooms.joinIt, press: () => this.enter("join") },
     ],
   });
 
   private room = (): Step => {
     const view = this.client.view;
-    if (!view) return { title: "Room", rows: [] };
+    const words = t().rooms;
+    if (!view) return { title: words.room, rows: [] };
     const you = view.players.find((player) => player.id === view.you)!;
     const waiting = view.players.filter((player) => !player.host && !player.ready).map((player) => player.nickname);
     const depthOf = (id: number) => view.last?.divers.find((diver) => diver.id === id)?.depth;
@@ -417,60 +408,61 @@ export class MultiplayerPanel {
         kind: "player",
         name: player.nickname,
         color: SUIT_COLORS[player.suit]!,
-        note: [player.host ? "host" : player.ready ? "ready" : "", depth === undefined ? "" : formatMeters(depth)].filter(Boolean).join(" ~ "),
+        note: [player.host ? words.host : player.ready ? words.ready : "", depth === undefined ? "" : formatMeters(depth)].filter(Boolean).join(" ~ "),
       };
     });
     const winners = view.players.filter((player) => view.last?.divers.some((diver) => diver.id === player.id && diver.won)).map((player) => player.nickname);
-    if (view.last && winners.length) rows.push({ kind: "note", text: `${names(winners)} ${view.last.mode === "deepest" ? "went deepest" : "lasted longest"}` });
+    if (view.last && winners.length) rows.push({ kind: "note", text: t().ending.won(t().list(winners), view.last.mode === "deepest") });
     rows.push({ kind: "gap" });
     if (you.host) {
-      rows.push({ kind: "press", id: "start", label: "Start the dive", press: () => this.start() });
+      rows.push({ kind: "press", id: "start", label: words.start, press: () => this.start() });
       const refused = this.refused?.[0] === "start" ? this.refused[1] : "";
       // Not ready is said for as long as somebody is not.
-      const early = refused === REFUSALS["not-ready"][1];
-      if (refused && (!early || waiting.length)) rows.push({ kind: "note", text: early ? `${refused}: waiting for ${names(waiting)}` : refused, bad: true });
-      rows.push({ kind: "press", id: "setup", label: "Set up the room", press: () => this.open(this.setup) });
+      const early = refused === words.refusals["not-ready"];
+      if (refused && (!early || waiting.length)) rows.push({ kind: "note", text: early ? words.waitingFor(refused, t().list(waiting)) : refused, bad: true });
+      rows.push({ kind: "press", id: "setup", label: words.setUp, press: () => this.open(this.setup) });
     } else {
       const { mode, air, judging } = view.settings;
       rows.push(
         {
           kind: "press",
           id: "ready",
-          label: you.ready ? "Put it out" : "Light the lantern",
-          says: you.ready ? "Put the lantern out: not ready" : "Light the lantern: ready",
+          label: you.ready ? words.putOut : words.light,
+          says: you.ready ? words.putOutSays : words.lightSays,
           press: () => this.client.send({ type: "ready", ready: !you.ready }),
         },
-        { kind: "note", text: `${mode} ~ ${air} s of air ~ ${packsOf(view.settings, this.builtIn.length, true)}${judging ? " ~ live judging" : ""}` },
+        { kind: "note", text: [words.modes[mode][0], words.air(air), packsOf(view.settings, this.builtIn.length, true), judging ? words.liveJudging : ""].filter(Boolean).join(" ~ ") },
       );
     }
     const copy = () => this.copy(view.code);
     const copied = performance.now() - this.copiedAt < COPIED_FOR;
     rows.push(
-      { kind: "press", id: "copy", label: copied ? "Link copied" : "Copy the link", says: `Copy the link to room ${view.code}`, press: copy },
+      { kind: "press", id: "copy", label: copied ? words.copied : words.copy, says: t().page.copyLink(view.code), press: copy },
       ...this.refusal("copy"),
-      { kind: "press", id: "leave", label: "Leave the room", press: () => this.ui.back() },
+      { kind: "press", id: "leave", label: words.leave, press: () => this.ui.back() },
     );
-    return { title: "Room", code: { text: view.code, copy }, rows };
+    return { title: words.room, code: { text: view.code, copy }, rows };
   };
 
   private setup = (): Step => {
     const settings = this.client.view?.settings;
-    if (!settings) return { title: "Set up the room", rows: [] };
+    const words = t().rooms;
+    if (!settings) return { title: words.setUp, rows: [] };
     const air = this.air ?? settings.air;
     const keyed = this.account.account?.keys.anthropic || this.account.account?.keys.jev;
     const shift = (way: -1 | 1) => this.change({ mode: MODES[(MODES.indexOf(settings.mode) + way + MODES.length) % MODES.length] });
     const judging = () => this.change({ judging: !settings.judging });
     return {
-      title: "Set up the room",
+      title: words.setUp,
       rows: [
-        { kind: "press", id: "mode", label: "Mode", value: MODE_WORDS[settings.mode][0], press: () => this.open(this.modeStep), shift },
+        { kind: "press", id: "mode", label: words.mode, value: words.modes[settings.mode][0], press: () => this.open(this.modeStep), shift },
         {
           kind: "slider",
           id: "air",
-          label: "Air",
+          label: words.airLabel,
           value: air / AIR_MAX,
           steps: AIR_MAX / AIR_STEP,
-          text: `${air} s`,
+          text: words.seconds(air),
           set: (value) => {
             const next = Math.max(AIR_MIN, Math.round((value * AIR_MAX) / AIR_STEP) * AIR_STEP);
             if (next === air) return;
@@ -481,7 +473,7 @@ export class MultiplayerPanel {
         {
           kind: "press",
           id: "packs",
-          label: "Packs",
+          label: words.packs,
           value: packsOf(settings, this.builtIn.length, false),
           press: () => {
             if (this.account.account) void fetch("/api/packs").then(async (res) => res.ok && (this.packs = (await res.json()) as PackSummary[]));
@@ -489,9 +481,9 @@ export class MultiplayerPanel {
           },
         },
         keyed
-          ? { kind: "press", id: "judging", label: "Live judging", value: settings.judging ? "on" : "off", on: settings.judging, press: judging, shift: judging }
-          : { kind: "press", id: "judging", label: "Live judging", value: "off", on: false, quiet: true },
-        ...(keyed ? [] : [{ kind: "note", text: "keep a key to judge unlisted answers" } as Part]),
+          ? { kind: "press", id: "judging", label: words.liveJudging, value: settings.judging ? words.on : words.off, on: settings.judging, press: judging, shift: judging }
+          : { kind: "press", id: "judging", label: words.liveJudging, value: words.off, on: false, quiet: true },
+        ...(keyed ? [] : [{ kind: "note", text: words.keepAKey } as Part]),
         ...this.refusal("settings"),
       ],
     };
@@ -499,18 +491,19 @@ export class MultiplayerPanel {
 
   private modeStep = (): Step => {
     const settings = this.client.view?.settings;
-    if (!settings) return { title: "Mode", rows: [] };
+    const words = t().rooms;
+    if (!settings) return { title: words.mode, rows: [] };
     return {
-      title: "Mode",
+      title: words.mode,
       rows: MODES.flatMap((mode): Part[] => {
-        const [name, how] = MODE_WORDS[mode];
+        const [name, how] = words.modes[mode];
         const chosen = settings.mode === mode;
         const choose = () => {
           if (!chosen) this.change({ mode });
           this.ui.back();
         };
         return [
-          { kind: "press", id: `mode:${mode}`, label: name, value: chosen ? "chosen" : undefined, on: chosen ? true : undefined, press: choose },
+          { kind: "press", id: `mode:${mode}`, label: name, value: chosen ? words.chosen : undefined, on: chosen ? true : undefined, press: choose },
           { kind: "note", text: how },
         ];
       }),
@@ -519,20 +512,21 @@ export class MultiplayerPanel {
 
   private packsStep = (): Step => {
     const settings = this.client.view?.settings;
-    if (!settings) return { title: "Packs", rows: [] };
+    const words = t().rooms;
+    if (!settings) return { title: words.packs, rows: [] };
     const own = settings.ownPacks;
     const built = settings.builtIn.length;
     const all = this.builtIn.length;
     // Left and Right turn them all on, or all off.
     const flip = () => this.change({ builtIn: built === all ? [] : this.builtIn.map((pack) => pack.id) });
     return {
-      title: "Packs",
+      title: words.packs,
       rows: [
         {
           kind: "press",
           id: "builtin",
-          label: "Built-in packs",
-          value: built === all ? "all" : built ? `${built} of ${all}` : "none",
+          label: words.builtIn,
+          value: built === all ? words.all : built ? t().count(built, all) : words.none,
           on: built > 0,
           press: () => this.open(this.builtInStep),
           shift: flip,
@@ -543,12 +537,12 @@ export class MultiplayerPanel {
             kind: "press",
             id: `pack:${pack.id}`,
             label: pack.name,
-            value: on ? "on" : "off",
+            value: on ? words.on : words.off,
             on,
             press: () => this.change({ ownPacks: on ? own.filter((id) => id !== pack.id) : [...own, pack.id] }),
           };
         }),
-        ...(this.account.account ? [] : [{ kind: "note", text: "sign in to play packs of your own" } as Part]),
+        ...(this.account.account ? [] : [{ kind: "note", text: words.signInForOwn } as Part]),
         ...this.refusal("settings"),
       ],
     };
@@ -556,20 +550,21 @@ export class MultiplayerPanel {
 
   private builtInStep = (): Step => {
     const settings = this.client.view?.settings;
-    if (!settings) return { title: "Built-in packs", rows: [] };
+    const words = t().rooms;
+    if (!settings) return { title: words.builtIn, rows: [] };
     const chosen = settings.builtIn;
     const all = chosen.length === this.builtIn.length;
     return {
-      title: "Built-in packs",
+      title: words.builtIn,
       rows: [
-        { kind: "press", id: "builtin:all", label: "All", value: all ? "on" : "off", on: all, press: () => this.change({ builtIn: all ? [] : this.builtIn.map((pack) => pack.id) }) },
+        { kind: "press", id: "builtin:all", label: words.allLine, value: all ? words.on : words.off, on: all, press: () => this.change({ builtIn: all ? [] : this.builtIn.map((pack) => pack.id) }) },
         ...this.builtIn.map((pack): Part => {
           const on = chosen.includes(pack.id);
           return {
             kind: "press",
             id: `builtin:${pack.id}`,
             label: pack.name,
-            value: on ? "on" : "off",
+            value: on ? words.on : words.off,
             on,
             press: () => this.change({ builtIn: on ? chosen.filter((id) => id !== pack.id) : [...chosen, pack.id] }),
           };

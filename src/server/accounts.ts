@@ -1,4 +1,5 @@
 import { PASSWORD_MAX, PASSWORD_MIN, USERNAME, type Account } from "../shared/types";
+import { en, type Words } from "../shared/words/en";
 import { sql } from "./db";
 
 export const SESSION_DAYS = 30;
@@ -15,25 +16,25 @@ async function openSession(accountId: string): Promise<Entry> {
   return { account: (await accountOf(token))!, token };
 }
 
-export async function signUp(username: string, password: string): Promise<Entry> {
+export async function signUp(username: string, password: string, words: Words = en): Promise<Entry> {
   username = username.trim().toLowerCase();
-  if (!USERNAME.test(username)) return { error: "A name is 3 to 16 letters or digits" };
-  if (password.length < PASSWORD_MIN) return { error: `A password is at least ${PASSWORD_MIN} characters` };
-  if (password.length > PASSWORD_MAX) return { error: `A password is at most ${PASSWORD_MAX} characters` };
+  if (!USERNAME.test(username)) return { error: words.account.badName };
+  if (password.length < PASSWORD_MIN) return { error: words.account.shortPassword(PASSWORD_MIN) };
+  if (password.length > PASSWORD_MAX) return { error: words.account.longPassword(PASSWORD_MAX) };
   const [row] = await sql`
     insert into accounts (username, password_hash)
     values (${username}, ${await Bun.password.hash(password)})
     on conflict (username) do nothing
     returning id`;
-  return row ? openSession(row.id) : { error: "That name is taken" };
+  return row ? openSession(row.id) : { error: words.account.nameTaken };
 }
 
 /** The same refusal for an unknown name and a wrong password, so neither tells who has an account. */
-export async function signIn(username: string, password: string): Promise<Entry> {
+export async function signIn(username: string, password: string, words: Words = en): Promise<Entry> {
   username = username.trim().toLowerCase();
   const [row] = await sql`select id, password_hash from accounts where username = ${username}`;
   const known = row && password.length <= PASSWORD_MAX && (await Bun.password.verify(password, row.password_hash));
-  if (!known) return { error: "Wrong name or password" };
+  if (!known) return { error: words.account.wrong };
   await sql`delete from sessions where expires_at < now()`;
   return openSession(row.id);
 }
@@ -43,18 +44,18 @@ const SIGN_IN_MINUTES = 15;
 /** Failed sign-ins per address, each count kept for SIGN_IN_MINUTES from the first. Lost on restart. */
 const tries = new Map<string, { failed: number; since: number }>();
 
-export async function signInFrom(address: string, username: string, password: string): Promise<Entry> {
+export async function signInFrom(address: string, username: string, password: string, words: Words = en): Promise<Entry> {
   const now = Date.now();
   for (const [key, entry] of tries) if (now - entry.since > SIGN_IN_MINUTES * 60_000) tries.delete(key);
   const counted = tries.get(address) ?? { failed: 0, since: now };
   if (counted.failed >= SIGN_IN_TRIES) {
     const minutes = Math.ceil((counted.since + SIGN_IN_MINUTES * 60_000 - now) / 60_000);
-    return { error: `Too many wrong tries. Wait ${minutes} min` };
+    return { error: words.account.tooManyTries(minutes) };
   }
   // Counted before the password is checked, so tries sent all at once cannot slip past the limit.
   counted.failed++;
   tries.set(address, counted);
-  const entry = await signIn(username, password);
+  const entry = await signIn(username, password, words);
   if (!("error" in entry)) counted.failed--;
   return entry;
 }

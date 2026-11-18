@@ -1,4 +1,5 @@
 import { MAX_KEY_LENGTH, type KeyFailure, type Provider } from "../shared/types";
+import { en, type Words } from "../shared/words/en";
 import { sql } from "./db";
 
 const MIN_SECRET_LENGTH = 32;
@@ -18,11 +19,11 @@ const cipher = (accountId: string, provider: Provider, iv: Uint8Array<ArrayBuffe
 });
 
 /** Returns why the key was not kept, or null when it was. */
-export async function saveKey(accountId: string, provider: Provider, key: string): Promise<string | null> {
+export async function saveKey(accountId: string, provider: Provider, key: string, words: Words = en): Promise<string | null> {
   key = key.trim();
-  if (!key || key.length > MAX_KEY_LENGTH || /\s/.test(key)) return "That does not look like an API key";
+  if (!key || key.length > MAX_KEY_LENGTH || /\s/.test(key)) return words.account.notKey;
   const secret = await seal();
-  if (!secret) return "This server cannot keep keys: its owner has not set HADAL_SECRET";
+  if (!secret) return words.account.noSecret;
   // GCM must never use the same iv twice with one key: a fresh random one is stored in front of each sealed key.
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const sealed = await crypto.subtle.encrypt(cipher(accountId, provider, iv), secret, new TextEncoder().encode(key));

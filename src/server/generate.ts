@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { LANGUAGE_NAMES, wordsIn, type Language } from "../shared/language";
 import { MAX_ANSWER_LENGTH, MAX_TOPIC_LENGTH, WRITTEN_PROMPTS as PROMPTS, type Answer, type Pack } from "../shared/types";
 import { MAX_PACKS, listPacks, savePack } from "./custom";
 import { normalize } from "./game";
@@ -11,7 +12,7 @@ const SYSTEM = `You write trivia packs for Hadal, a deep-sea diving game.
 
 How the game works: the player is shown a prompt such as "Name a country that borders Germany" and types one answer. A correct answer scores its rarity: the answers few players think of take the diver deepest. An answer that is not in your list counts as wrong, so a list with gaps punishes exactly the well-informed players the game is meant to reward.
 
-Write a pack of ${PROMPTS} prompts on the topic the player gives, in the language the topic is written in.
+Write a pack of ${PROMPTS} prompts on the topic the player gives, in the language the player plays the game in.
 
 Prompts
 - Each asks for one item of a well-defined set and can be judged as plainly right or wrong: "Name a moon of Jupiter", not "Name a good film".
@@ -60,7 +61,6 @@ type Draft = { name: string; prompts: { text: string; answers: { text: string; a
 
 /** Thrown with words for the player when no pack could be written. */
 class Refused extends Error {}
-const UNUSABLE = "the pack that came back could not be used: try again";
 
 /** How many prompts of a pack that is still being written have been begun: the answers of each open with this key. */
 export function promptsBegun(written: string): number {
@@ -68,7 +68,8 @@ export function promptsBegun(written: string): number {
 }
 
 /** `progress` hears how many prompts are finished whenever that changes. */
-async function draft(apiKey: string, topic: string, progress?: (prompts: number) => void, signal?: AbortSignal): Promise<Draft> {
+async function draft(apiKey: string, topic: string, language: Language, progress?: (prompts: number) => void, signal?: AbortSignal): Promise<Draft> {
+  const words = wordsIn(language).packs;
   let message: Anthropic.Beta.BetaMessage;
   let finished = 0;
   try {
@@ -83,7 +84,7 @@ async function draft(apiKey: string, topic: string, progress?: (prompts: number)
           fallbacks: "default",
           output_config: { effort: "high", format: { type: "json_schema", schema: SCHEMA } },
           system: SYSTEM,
-          messages: [{ role: "user", content: `Topic: ${topic}` }],
+          messages: [{ role: "user", content: `Topic: ${topic}\nLanguage: ${LANGUAGE_NAMES[language]}` }],
         },
         { signal },
       )
@@ -94,25 +95,23 @@ async function draft(apiKey: string, topic: string, progress?: (prompts: number)
       })
       .finalMessage();
   } catch (error) {
-    if (error instanceof Anthropic.APIUserAbortError) throw new Refused("the writing was stopped");
-    if (error instanceof Anthropic.AuthenticationError || error instanceof Anthropic.PermissionDeniedError) {
-      throw new Refused("Anthropic did not accept your API key");
-    }
-    if (error instanceof Anthropic.RateLimitError) throw new Refused("your API key has reached its rate limit: try again in a minute");
-    if (error instanceof Anthropic.APIConnectionError) throw new Refused("Anthropic could not be reached: try again");
+    if (error instanceof Anthropic.APIUserAbortError) throw new Refused(words.stopped);
+    if (error instanceof Anthropic.AuthenticationError || error instanceof Anthropic.PermissionDeniedError) throw new Refused(words.keyRefused);
+    if (error instanceof Anthropic.RateLimitError) throw new Refused(words.rateLimit);
+    if (error instanceof Anthropic.APIConnectionError) throw new Refused(words.unreachable);
     if (error instanceof Anthropic.APIError) {
-      if (error.type === "billing_error") throw new Refused("the Anthropic account behind your API key is out of credit");
-      throw new Refused(`Anthropic answered with an error (${error.status}): try again later`);
+      if (error.type === "billing_error") throw new Refused(words.noCredit);
+      throw new Refused(words.apiError(error.status));
     }
     throw error;
   }
-  if (message.stop_reason === "refusal") throw new Refused("Claude declined to write a pack about that");
-  if (message.stop_reason === "max_tokens") throw new Refused("the pack came out too long: try a narrower topic");
+  if (message.stop_reason === "refusal") throw new Refused(words.declined);
+  if (message.stop_reason === "max_tokens") throw new Refused(words.tooLong);
   const written = message.content.find((block) => block.type === "text");
   try {
     return JSON.parse(written?.text ?? "") as Draft;
   } catch {
-    throw new Refused(UNUSABLE);
+    throw new Refused(words.unusable);
   }
 }
 
@@ -158,21 +157,28 @@ function freeId(name: string, taken: string[]): string {
 }
 
 /** Returns why no pack was kept, or nothing when one was. */
-export async function writePack(accountId: string, topic: string, progress?: (prompts: number) => void, signal?: AbortSignal): Promise<string[]> {
+export async function writePack(
+  accountId: string,
+  topic: string,
+  progress?: (prompts: number) => void,
+  signal?: AbortSignal,
+  language: Language = "en",
+): Promise<string[]> {
+  const words = wordsIn(language);
   topic = topic.trim();
-  if (!topic || topic.length > MAX_TOPIC_LENGTH) return [`a topic is 1 to ${MAX_TOPIC_LENGTH} characters`];
+  if (!topic || topic.length > MAX_TOPIC_LENGTH) return [words.packs.badTopic(MAX_TOPIC_LENGTH)];
   // Checked first, so that nobody pays for a pack that cannot be kept.
   const packs = await listPacks(accountId);
-  if (packs.length >= MAX_PACKS) return [`an account keeps at most ${MAX_PACKS} packs: remove one first`];
+  if (packs.length >= MAX_PACKS) return [words.packs.tooMany(MAX_PACKS)];
   const apiKey = await loadKey(accountId, "anthropic");
-  if (!apiKey) return ["writing a pack takes an Anthropic API key of your own: keep one under your name in the menu"];
+  if (!apiKey) return [words.packs.keyNeeded];
   try {
-    const written = await draft(apiKey, topic, progress, signal);
+    const written = await draft(apiKey, topic, language, progress, signal);
     const pack = tidy(written, freeId(written.name, packs.map((pack) => pack.id)));
     const problems = await savePack(accountId, JSON.stringify(pack));
     if (problems.length) {
       console.error(`A pack written about "${topic}" was not valid:\n- ${problems.join("\n- ")}`);
-      return [UNUSABLE];
+      return [words.packs.unusable];
     }
     return [];
   } catch (error) {

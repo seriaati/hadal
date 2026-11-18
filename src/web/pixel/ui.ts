@@ -1,5 +1,6 @@
 import { FONTS, drawText, measure, pitch, plain, wrap } from "./font";
 import { dither, type Frame } from "./frame";
+import { t } from "../language";
 import type { Scene } from "./scene";
 
 // The parts every panel is built from and the one way of controlling them: see docs/UI.md.
@@ -141,7 +142,7 @@ export class Ui {
     private form: HTMLFormElement,
     private typing: HTMLElement,
   ) {
-    Object.assign(this.leave, { type: "button", tabIndex: -1, ariaLabel: "Back" });
+    Object.assign(this.leave, { type: "button", tabIndex: -1 });
     Object.assign(this.copier, { type: "button", tabIndex: -1 });
     this.leave.addEventListener("click", () => {
       // The focus goes to the step it leads back to, not to the name of that step.
@@ -232,7 +233,8 @@ export class Ui {
     const parts = this.step.rows.flat().filter(isControl);
     this.parts = new Map(parts.map((part) => [part.id, part]));
     this.copier.hidden = !this.step.code;
-    this.copier.ariaLabel = `Copy the link to room ${this.step.code?.text ?? ""}`;
+    this.leave.ariaLabel = t().page.back;
+    this.copier.ariaLabel = t().page.copyLink(this.step.code?.text ?? "");
     for (const [id, control] of this.controls) {
       const part = this.parts.get(id);
       if (part && kindOf(part) === control.dataset.kind) continue;
@@ -532,7 +534,7 @@ export class Ui {
           for (let j = 0; j < 12; j++) frame.put(tx + i * 6 + (j & 3), pips + (j >> 2), color);
         }
         frame.emit = 0;
-        say(`prompt ${Math.min(part.of, part.done + 1)} of ${part.of}`, tx + part.of * 6 + 4, pips - 1, 6);
+        say(t().packs.progress(Math.min(part.of, part.done + 1), part.of), tx + part.of * 6 + 4, pips - 1, 6);
       }
     }
   }
