@@ -39,6 +39,12 @@ export function Game() {
     const account: AccountPanel = new AccountPanel(ui, () => void packs.load());
     const packs = new PacksPanel(ui, account, sound, (pack) => void start(game, pack));
     const multiplayer = new MultiplayerPanel(ui, account, sound);
+    // A room's link opens the way into it, once the name of whoever is signed in is known to fill in.
+    const linked = new URLSearchParams(location.search).get("room");
+    if (linked) {
+      history.replaceState(null, "", location.pathname);
+      void account.loaded.finally(() => multiplayer.joinByLink(linked));
+    }
     /** The screen that ends the dive on screen (the player's own, or the room's), from the moment it ends. */
     let ending: Ending | null = null;
     // A room's end screen leads back to the room; a single player's, to the title.

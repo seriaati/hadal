@@ -243,7 +243,7 @@ export class Ui {
     const parts = this.step.rows.flat().filter(isControl);
     this.parts = new Map(parts.map((part) => [part.id, part]));
     this.copier.hidden = !this.step.code;
-    this.copier.ariaLabel = `Copy the room code ${this.step.code?.text ?? ""}`;
+    this.copier.ariaLabel = `Copy the link to room ${this.step.code?.text ?? ""}`;
     for (const [id, control] of this.controls) {
       const part = this.parts.get(id);
       if (part && kindOf(part) === control.dataset.kind) continue;

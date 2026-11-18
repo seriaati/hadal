@@ -14,6 +14,8 @@ const KEYS: Record<Provider, { name: string; use: string }> = {
 export class AccountPanel {
   /** Who is signed in, once the server has said. */
   account: Account | null = null;
+  /** Settled once the server has said who is signed in. */
+  loaded: Promise<void>;
   private creating = false;
   private error = "";
   private busy = false;
@@ -23,7 +25,7 @@ export class AccountPanel {
     private ui: Ui,
     private changed: () => void,
   ) {
-    void fetch("/api/account")
+    this.loaded = fetch("/api/account")
       .then((res) => res.json() as Promise<Account | null>)
       .then((account) => {
         this.account = account;

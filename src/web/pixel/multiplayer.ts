@@ -10,7 +10,7 @@ import type { AccountPanel } from "./account";
 import { SUIT_COLORS, type Crew, type Turn } from "./scene";
 import type { Part, Step, Ui } from "./ui";
 
-/** Where in the panel a refusal is said: under the field it is about, before the last line, in the room's set-up, under "Copy the code" or under "Start the dive". */
+/** Where in the panel a refusal is said: under the field it is about, before the last line, in the room's set-up, under "Copy the link" or under "Start the dive". */
 type Where = "code" | "name" | "end" | "settings" | "copy" | "start";
 const REFUSALS: Record<Refusal, [Where, string]> = {
   "no-room": ["code", "no room has that code"],
@@ -26,7 +26,7 @@ const REFUSALS: Record<Refusal, [Where, string]> = {
 /** The air is set in steps of this many seconds. */
 const AIR_STEP = 5;
 
-/** How long "Copy the code" says the code was copied, in milliseconds. */
+/** How long "Copy the link" says the link was copied, in milliseconds. */
 const COPIED_FOR = 2000;
 
 /** "ben", "ben and cal", "ana, ben and cal". */
@@ -61,6 +61,8 @@ export class MultiplayerPanel {
   private air: number | null = null;
   private packs: PackSummary[] = [];
   private copiedAt = -Infinity;
+  /** The code of the room whose link opened the game, until it is joined. */
+  private linked = "";
   /** Each diver's hearts in the dive, as the server last said. */
   private hearts = new Map<number, number>();
   /** Who was ready, by room code and id, as the server last said. */
@@ -82,6 +84,18 @@ export class MultiplayerPanel {
   show() {
     this.note = "";
     this.ui.go(this.first);
+  }
+
+  /** Opened from a room's link: the way into that room, its code filled in. */
+  joinByLink(code: string) {
+    this.show();
+    this.linked = code;
+    this.ui.go(this.join, "name");
+  }
+
+  /** The address that opens the way into a room. */
+  private link(code: string): string {
+    return `${location.origin}/?room=${code}`;
   }
 
   /** Called every frame: leaving the room's step leaves the room, and leaving multiplayer ends the connection. */
@@ -238,6 +252,7 @@ export class MultiplayerPanel {
       if (!entering) return;
       // The room is made or joined: it takes the place of the step that asked for it.
       this.refused = null;
+      this.linked = "";
       this.ui.back();
       this.ui.go(this.room);
     } else if (message.type === "refused") {
@@ -299,14 +314,15 @@ export class MultiplayerPanel {
     this.client.send(how === "create" ? { type: "create", ...you } : { type: "join", code: this.ui.value("code"), ...you });
   }
 
-  /** Put the room's code on the clipboard. Without a secure page (plain http to another machine) browsers keep the newer way closed. */
+  /** Put the room's link on the clipboard. Without a secure page (plain http to another machine) browsers keep the newer way closed. */
   private copy(code: string) {
     this.refused = null;
+    const link = this.link(code);
     const done = () => (this.copiedAt = performance.now());
     const failed = () => (this.refused = ["copy", `the browser would not copy it: the code is ${code}`]);
-    if (navigator.clipboard) return void navigator.clipboard.writeText(code).then(done, failed);
+    if (navigator.clipboard) return void navigator.clipboard.writeText(link).then(done, failed);
     const focused = document.activeElement as HTMLElement | null;
-    const text = Object.assign(document.createElement("textarea"), { value: code });
+    const text = Object.assign(document.createElement("textarea"), { value: link });
     document.body.append(text);
     text.select();
     const copied = document.execCommand("copy");
@@ -355,7 +371,7 @@ export class MultiplayerPanel {
     title: "Join a room",
     busy: this.busy,
     rows: [
-      { kind: "field", id: "code", label: "Room code", max: ROOM_CODE_LENGTH, autocomplete: "off" },
+      { kind: "field", id: "code", label: "Room code", max: ROOM_CODE_LENGTH, autocomplete: "off", start: this.linked },
       ...this.refusal("code"),
       ...this.you(),
       { kind: "press", id: "enter", label: "Join the room", press: () => this.enter("join") },
@@ -404,7 +420,7 @@ export class MultiplayerPanel {
     const copy = () => this.copy(view.code);
     const copied = performance.now() - this.copiedAt < COPIED_FOR;
     rows.push(
-      { kind: "press", id: "copy", label: copied ? "Code copied" : "Copy the code", says: `Copy the room code ${view.code}`, press: copy },
+      { kind: "press", id: "copy", label: copied ? "Link copied" : "Copy the link", says: `Copy the link to room ${view.code}`, press: copy },
       ...this.refusal("copy"),
       { kind: "press", id: "leave", label: "Leave the room", press: () => this.ui.back() },
     );
