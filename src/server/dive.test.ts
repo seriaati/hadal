@@ -243,25 +243,27 @@ test("in longest, a turn lost costs a heart, and one with none left is out and s
   expect(view().turn).not.toBe(1);
 });
 
+/** Diver 1 answers first on every prompt (flag, then sky, over and over): green (60) to the flag, azure (100) to the sky. */
+async function rare(d: Dive, clock: ReturnType<typeof handClock>, prompts: number) {
+  for (let i = 0; i < prompts; i++) {
+    await d.answer(1, i % 2 ? "azure" : "green");
+    await clock.pass(PAUSE_SECONDS);
+    await d.answer(2, i % 2 ? "grey" : "red");
+    await clock.pass(PAUSE_SECONDS);
+  }
+}
+
 test("in longest, rarity fills the bar, and a full bar is one more heart, with what is over carried on", async () => {
-  const { dive: d, clock, view } = dive([1, 2], WRONG, "longest", MANY);
-  await d.answer(1, "green");
-  await clock.pass(PAUSE_SECONDS);
-  await d.answer(2, "red");
-  await clock.pass(PAUSE_SECONDS);
-  expect(view().divers[0]).toMatchObject({ hearts: 2, bar: 60 });
-  await d.answer(1, "azure");
-  expect(view().divers[0]).toMatchObject({ hearts: 3, bar: 60 });
+  const { dive: d, clock, view } = dive([1, 2], WRONG, "longest", [...MANY, ...MANY]);
+  await rare(d, clock, 4);
+  expect(view().divers[0]).toMatchObject({ hearts: 2, bar: 320 });
+  await rare(d, clock, 2);
+  expect(view().divers[0]).toMatchObject({ hearts: 3, bar: 80 });
 });
 
 test("in longest, a diver has at most five hearts, and with five the bar stays empty", async () => {
-  const { dive: d, clock, view } = dive([1, 2], WRONG, "longest", [...MANY, ...MANY]);
-  for (const [mine, theirs] of [["green", "red"], ["azure", "grey"], ["green", "red"], ["azure", "grey"]]) {
-    await d.answer(1, mine!);
-    await clock.pass(PAUSE_SECONDS);
-    await d.answer(2, theirs!);
-    await clock.pass(PAUSE_SECONDS);
-  }
+  const { dive: d, clock, view } = dive([1, 2], WRONG, "longest", Array.from({ length: 10 }, () => MANY).flat());
+  await rare(d, clock, 16);
   expect(view().divers[0]).toMatchObject({ hearts: 5, bar: 0 });
   await d.answer(1, "green");
   expect(view().divers[0]).toMatchObject({ hearts: 5, bar: 0 });

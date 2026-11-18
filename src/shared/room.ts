@@ -22,7 +22,8 @@ export const PAUSE_SECONDS = 2.5;
 /** In "longest", the hearts a diver starts with, the most they can have, and the points of rarity that fill the bar and give one more. */
 export const START_HEARTS = 2;
 export const MAX_HEARTS = 5;
-export const BAR_FULL = 100;
+/** As much rarity as the rarest answer to four prompts: one rare answer alone is not a heart. */
+export const BAR_FULL = 400;
 
 export type RoomPlayer = { id: number; nickname: string; suit: number; ready: boolean; host: boolean };
 /**
