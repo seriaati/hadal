@@ -1,8 +1,7 @@
 # Hadal: the interface
 
-How the panels look and how the game is controlled. Agreed with the owner on 2026-11-17 from
-the mock-ups in `design/interface/index.html` (direction 1, "open water"). The code is
-`src/web/pixel/ui.ts`; a panel only lists what it holds.
+How the panels look and how the game is controlled. The code is `src/web/pixel/ui.ts`; a panel
+only lists what it holds.
 
 ## The idea
 
@@ -121,9 +120,9 @@ The same in every panel.
 
 ## The end of a dive
 
-Agreed with the owner on 2026-11-18 (`design/ending/`, direction 3). The screen that ends a
-dive is not a panel: once the diver is back at the surface the sea fades to black and the lamps
-of the dive rise into a row on a line, each as bright as its answer was rare.
+The screen that ends a dive is not a panel: once the diver is back at the surface the sea
+fades to black and the lamps of the dive rise into a row on a line, each as bright as its
+answer was rare.
 
 - The focus rests on a lamp or on the line back ("Back to the title", or "Back to the room").
   It is shown as everywhere: the amber mark (before a lamp's number, or under a small lamp of a
@@ -137,7 +136,7 @@ of the dive rise into a row on a line, each as bright as its answer was rare.
 - In a room every diver has a row, in place order, named at the left in their suit's colour,
   the winner in amber.
 - A chaos dive's end stays on the failing tape, with bloodshot eyes that follow
-  the focus, and for a lost dive a cut line (`docs/PLAN.md`, stage 10).
+  the focus, and for a lost dive a cut line.
 
 ## Sizes
 

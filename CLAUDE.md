@@ -1,8 +1,8 @@
 # Hadal
 
 Sea-themed web trivia game: rarer correct answers score higher and take the player deeper.
-Read `docs/PLAN.md` first. It holds the game concept, the decisions made so far, the staged
-roadmap and the open questions. Keep it up to date when a decision changes or a stage ends.
+Read `docs/GAME.md` first. It holds the game's idea, its look and the pack format. Keep it up
+to date when one of those changes.
 `docs/UI.md` is the design system of the interface: the parts a panel is built from, their
 states, and what every key does. Read it before touching a panel.
 
@@ -45,18 +45,9 @@ dive, summon a creature. Its "Hide" button folds it away, and the browser rememb
   ends a dive, `ending.ts`)
 - `src/shared/`: types and constants used by both sides
 - `packs/`: built-in packs, one JSON file each, in the format described under "Pack format" in
-  `docs/PLAN.md` and checked by `validatePack` in `src/server/packs.ts`
-- `design/interface/`: the playable mock-ups of four directions for the panels; "open water"
-  was chosen
-- `design/multiplayer/`: still mock-ups of multiplayer, drawn with the game's own renderer
-  (`bun design/multiplayer/render.ts` redraws `png/`; needs Google Chrome)
-- `design/ending/`: stills of five directions for the end screen, drawn with the game's
-  renderer (`bun design/ending/render.ts` redraws `png/`; needs Google Chrome); 3, "lamps in
-  the dark", was chosen
+  `docs/GAME.md` and checked by `validatePack` in `src/server/packs.ts`
 - `design/brand/`: the logo (the diver's helmet) and the link preview; `bun design/brand/render.ts`
   draws the icons and `og.png` into `src/web/` (the preview needs Google Chrome)
-- `design/explorations/`: the eight art-direction mock-ups; 01 is the chosen style (02, the
-  hand-drawn logbook, was the end screen until stage 10)
 
 ## Rules
 

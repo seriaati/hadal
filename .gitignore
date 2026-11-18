@@ -1,17 +1,7 @@
 node_modules/
 
-# Full-size renders of the art-direction mock-ups; regenerate from each index.html
-design/explorations/*/screen.png
-
 # Settings for this machine only, such as HADAL_DEV_MODE
 .env
-
-# The bundled page the multiplayer mock-ups are drawn from
-design/multiplayer/out/
-design/ending/out/
-
-# The bundled page the chaos mock-up runs
-design/chaos/out/
 
 # The bundled page the link preview is drawn from
 design/brand/out/
