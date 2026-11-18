@@ -52,3 +52,22 @@ test("Tab goes through everything in reading order, round and round", () => {
   expect(from("write", "next")).toBe("rivers");
   expect(from("rivers", "previous")).toBe("write");
 });
+
+test("the people of a room are read, not reached: the focus passes over them", () => {
+  const room: Step = {
+    title: "Room",
+    code: { text: "KXWRT", copy: () => {} },
+    rows: [
+      { kind: "player", name: "ana", color: 5, note: "host" },
+      { kind: "player", name: "ben", color: 9, note: "" },
+      { kind: "gap" },
+      press("start"),
+      press("leave"),
+    ],
+  };
+  const laid = lay(room, 140, 12).placed;
+  const spot = (id: string) => laid.find((placed) => "id" in placed.part && placed.part.id === id)!;
+  expect(laid[1]!.y - laid[0]!.y).toBe(9);
+  expect((move(laid, spot("start"), "up")?.part as { id: string }).id).toBe("leave");
+  expect((move(laid, spot("leave"), "down")?.part as { id: string }).id).toBe("start");
+});

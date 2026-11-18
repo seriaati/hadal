@@ -22,18 +22,31 @@ export type Press = {
   right?: boolean;
   /** Called when the focus leaves it. */
   left?: () => void;
+  /** A setting it stands for, shown at the right of the line; `on`, if given, puts a pip before it. */
+  value?: string;
+  on?: boolean;
+  /** Left and Right change the setting, as on a slider. */
+  shift?: (way: -1 | 1) => void;
 };
-export type Field = { kind: "field"; id: string; label: string; max: number; dots?: boolean; password?: boolean; autocomplete: string };
-export type Slider = { kind: "slider"; id: string; label: string; value: number; set: (value: number) => void };
+/** `start` is what the field holds when it is first made. */
+export type Field = { kind: "field"; id: string; label: string; max: number; dots?: boolean; password?: boolean; autocomplete: string; start?: string };
+/**
+ * A level from 0 to 1 in `steps` steps (20 if not given). With `colors` it is a choice among
+ * them, one pip of each colour; otherwise a track of pips, with `text` at its right if given.
+ */
+export type Slider = { kind: "slider"; id: string; label: string; value: number; set: (value: number) => void; steps?: number; colors?: number[]; text?: string };
 export type Note = { kind: "note"; text: string; bad?: boolean };
 export type Wait = { kind: "wait"; text: string; done: number; of: number };
-export type Part = Press | Field | Slider | Note | Wait | { kind: "gap" };
+/** One of the people in a room: a pip of their colour, their name, and a word about them. */
+export type Player = { kind: "player"; name: string; color: number; note: string };
+export type Part = Press | Field | Slider | Note | Wait | Player | { kind: "gap" };
 type Control = Press | Field | Slider;
 /**
  * One screen of a panel: its name, and its rows from the top. While `busy`, presses wait.
- * `escape` is what Escape does here, where that is not to go one step back.
+ * `escape` is what Escape does here, where that is not to go one step back. `code` follows
+ * the name in pale letters: a room's code, which has to be read out, and which a press copies.
  */
-export type Step = { title: string; rows: (Part | Part[])[]; busy?: boolean; escape?: () => void };
+export type Step = { title: string; code?: { text: string; copy: () => void }; rows: (Part | Part[])[]; busy?: boolean; escape?: () => void };
 
 /** Where a part is, from the top left of its step. */
 export type Placed = { part: Part; row: number; x: number; y: number; w: number; h: number; lines: string[] };
@@ -45,7 +58,6 @@ const HEAD = 14;
 /** Room before the words of a line for the mark of the focus. */
 const INDENT = 7;
 const STEPS = 20;
-const TRACK = STEPS * 3;
 const MARK = ["a..", "aa.", "aaa", "aa.", "a.."];
 
 const isControl = (part: Part): part is Control => part.kind === "press" || part.kind === "field" || part.kind === "slider";
@@ -71,6 +83,7 @@ export function lay(step: Step, width: number, line: number): { placed: Placed[]
       let lines: string[] = [];
       let h = line;
       if (part.kind === "gap") h = 8;
+      else if (part.kind === "player") h = 9;
       else if (part.kind === "field") h = line + 10;
       else if (part.kind === "note" || part.kind === "wait") {
         const text = plain(part.text);
@@ -124,7 +137,9 @@ export class Ui {
   private box = { x: 0, y: 0, w: 0, h: 0 };
   /** The control to give the focus as soon as it exists. */
   private wanted = "";
+  /** The step's name, which goes back, and the code after it, which copies it. */
   private leave = document.createElement("button");
+  private copier = document.createElement("button");
 
   /** `typing` is what takes the keys while no panel is open. */
   constructor(
@@ -132,8 +147,19 @@ export class Ui {
     private typing: HTMLElement,
   ) {
     Object.assign(this.leave, { type: "button", tabIndex: -1, ariaLabel: "Back" });
-    this.leave.addEventListener("click", () => this.back());
-    form.append(this.leave);
+    Object.assign(this.copier, { type: "button", tabIndex: -1 });
+    this.leave.addEventListener("click", () => {
+      // The focus goes to the step it leads back to, not to the name of that step.
+      this.leave.blur();
+      this.back();
+    });
+    this.copier.addEventListener("click", () => {
+      this.copier.focus();
+      this.step.code?.copy();
+      this.sync();
+    });
+    for (const control of [this.leave, this.copier]) hover(control);
+    form.append(this.leave, this.copier);
     form.addEventListener("keydown", (event) => this.key(event));
     form.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -148,6 +174,11 @@ export class Ui {
   /** The step on screen, as the function that was given for it. */
   get top(): (() => Step) | undefined {
     return this.steps.at(-1)?.build;
+  }
+
+  /** Whether a step is open, on screen or under others. */
+  holds(build: () => Step): boolean {
+    return this.steps.some((step) => step.build === build);
   }
 
   /** Go one step in, with the focus on its first control or on the one named. */
@@ -211,6 +242,8 @@ export class Ui {
     this.step = top?.build() ?? { title: "", rows: [] };
     const parts = this.step.rows.flat().filter(isControl);
     this.parts = new Map(parts.map((part) => [part.id, part]));
+    this.copier.hidden = !this.step.code;
+    this.copier.ariaLabel = `Copy the room code ${this.step.code?.text ?? ""}`;
     for (const [id, control] of this.controls) {
       const part = this.parts.get(id);
       if (part && kindOf(part) === control.dataset.kind) continue;
@@ -218,7 +251,7 @@ export class Ui {
       control.remove();
       this.controls.delete(id);
     }
-    let before: Element = this.leave;
+    let before: Element = this.copier;
     for (const part of parts) {
       const control = this.controls.get(part.id) ?? this.make(part);
       control.ariaLabel = part.kind === "press" ? (part.says ?? part.label) : part.label;
@@ -232,7 +265,7 @@ export class Ui {
     this.wanted = "";
     const active = document.activeElement;
     if (wanted) wanted.focus();
-    else if (top && (active?.parentElement !== this.form || active === this.leave)) this.controls.get(parts[0]?.id ?? "")?.focus();
+    else if (top && active?.parentElement !== this.form) this.controls.get(parts[0]?.id ?? "")?.focus();
   }
 
   private make(part: Control) {
@@ -258,20 +291,17 @@ export class Ui {
         this.sync();
       });
     } else if (part.kind === "slider") {
-      Object.assign(control, { type: "range", min: "0", max: "1", step: String(1 / STEPS) });
+      Object.assign(control, { type: "range", min: "0", max: "1", step: String(1 / (part.steps ?? STEPS)) });
       control.addEventListener("input", () => {
         const now = this.parts.get(id);
         if (now?.kind === "slider") now.set(Number(control.value));
       });
     } else {
       Object.assign(control, { type: part.password ? "password" : "text", maxLength: part.max, autocapitalize: "off", spellcheck: false });
-      control.value = this.kept.get(id) ?? "";
+      control.value = this.kept.get(id) ?? part.start ?? "";
       this.kept.delete(id);
     }
-    // Moving the pointer over a control gives it the focus. A pointer that only rests there does not take it back from the keys.
-    (control as HTMLElement).addEventListener("pointermove", (event) => {
-      if (event.pointerType === "mouse" && (event.movementX || event.movementY) && document.activeElement !== control) control.focus();
-    });
+    hover(control);
     control.addEventListener("blur", () => {
       const now = this.parts.get(id);
       if (now?.kind === "press") now.left?.();
@@ -289,6 +319,8 @@ export class Ui {
       if (event.repeat) return;
       return this.step.escape ? this.step.escape() : this.back();
     }
+    const head = [this.leave, this.copier].indexOf(document.activeElement as HTMLButtonElement);
+    if (head >= 0) return this.headKey(event, head === 1);
     const here = this.placed.find((spot) => isControl(spot.part) && this.controls.get(spot.part.id) === document.activeElement);
     if (!here) return;
     const go = (way: Move) => {
@@ -299,6 +331,11 @@ export class Ui {
     if (event.key === "Tab") go(event.shiftKey ? "previous" : "next");
     else if (event.key === "ArrowUp") go("up");
     else if (event.key === "ArrowDown") go("down");
+    else if (here.part.kind === "press" && here.part.shift && (event.key === "ArrowLeft" || event.key === "ArrowRight")) {
+      event.preventDefault();
+      if (!this.step.busy) here.part.shift(event.key === "ArrowLeft" ? -1 : 1);
+      this.sync();
+    }
     else if (here.part.kind === "press" && event.key === "ArrowLeft") {
       // Left from the leftmost thing of a row goes one step back.
       if (move(this.placed, here, "left")) go("left");
@@ -319,6 +356,24 @@ export class Ui {
     }
   }
 
+  /** The keys on the step's name (`code` false) or on its code. Enter presses them as it does any button. */
+  private headKey(event: KeyboardEvent, code: boolean) {
+    const controls = this.placed.map((spot) => spot.part).filter(isControl);
+    const to =
+      event.key === "ArrowDown" || (event.key === "Tab" && !event.shiftKey) ? this.controls.get(controls[0]?.id ?? "")
+      : event.key === "ArrowUp" || event.key === "Tab" ? this.controls.get(controls.at(-1)?.id ?? "")
+      : event.key === "ArrowRight" && !code && this.step.code ? this.copier
+      : event.key === "ArrowLeft" && code ? this.leave
+      : undefined;
+    if (to) {
+      event.preventDefault();
+      to.focus();
+    } else if (event.key === "ArrowLeft" && !code) {
+      event.preventDefault();
+      this.back();
+    }
+  }
+
   /** Draw the step on screen and lay each control over its drawing. `scale` is how many screen pixels a pixel of the frame takes. */
   draw(frame: Frame, scene: Scene, scale: number, time: number, dive: boolean) {
     scene.hush = null;
@@ -326,9 +381,9 @@ export class Ui {
     this.sync();
     const { tiny } = FONTS;
     const { width: W, height: H } = frame;
-    // On a wide screen the words take the column to the right of the diver, on a narrow one the room below.
+    // On a wide screen the words take the column to the right of the diver (of the divers of a room), on a narrow one the room below.
     const wide = W >= 300;
-    const left = wide ? 170 : 10;
+    const left = wide ? (scene.crew ? 184 : 170) : 10;
     const width = W - left - (wide ? 8 : 10);
     const bottom = H - (dive ? 28 : 8);
     // A line is tall enough for a fingertip (40 screen pixels) wherever the step then still fits the screen.
@@ -363,8 +418,19 @@ export class Ui {
       Object.assign(control.style, { left: `${x * scale}px`, top: `${y * scale}px`, width: `${w * scale}px`, height: `${h * scale}px` });
     const blink = Math.floor(time * 2.5) % 2 === 0;
 
-    say("‹", left + 1, top + 1, 6);
-    cover(this.leave, left - 3, top - 3, say(plain(this.step.title), left + INDENT, top + 1, 6) - left + 8, 13);
+    // The step's name and its code light up like any line when they have the focus.
+    const back = this.leave === document.activeElement;
+    frame.emit = back ? 70 : 0;
+    say("‹", left + 1, top + 1, back ? 16 : 6);
+    const named = say(plain(this.step.title), left + INDENT, top + 1, back ? 16 : 6);
+    cover(this.leave, left - 3, top - 3, named - left + 5, 13);
+    if (this.step.code) {
+      const copying = this.copier === document.activeElement;
+      frame.emit = copying ? 70 : 0;
+      const end = say(this.step.code.text, named + 3, top + 1, copying ? 16 : 7);
+      cover(this.copier, named + 2, top - 3, end - named + 3, 13);
+    }
+    frame.emit = 0;
 
     for (const { part, x, y, w, h, lines } of laid.placed) {
       const px = left + x;
@@ -381,11 +447,26 @@ export class Ui {
         frame.emit = 0;
       };
       if (part.kind === "press") {
+        const value = plain(part.value ?? "");
+        // The setting stands against the right edge, after its pip.
+        const room = value ? measure(tiny, value) + (part.on === undefined ? 0 : 5) + 8 : 0;
         let label = plain(part.label);
-        while (label.length > 1 && measure(tiny, label) > w - INDENT) label = label.slice(0, -1);
+        while (label.length > 1 && measure(tiny, label) > w - INDENT - room) label = label.slice(0, -1);
         mark(ty);
         if (part.danger) say(label, tx, ty, 18);
         else lit(label, part.quiet ? 6 : 7);
+        if (value) {
+          const end = px + w;
+          const from = end - measure(tiny, value);
+          const pale = part.on !== false && !part.quiet;
+          frame.emit = on && pale ? 70 : 0;
+          say(value, from, ty, pale ? (on ? 16 : 7) : 6);
+          if (part.on !== undefined) {
+            frame.emit = on && part.on ? 150 : 0;
+            for (let j = 0; j < 6; j++) frame.put(from - 5 + (j & 1), ty + 1 + (j >> 1), part.on ? (on ? 15 : 6) : 4);
+          }
+          frame.emit = 0;
+        }
         cover(control!, px, py, w, h);
       } else if (part.kind === "field") {
         const value = plain(control!.value);
@@ -414,17 +495,45 @@ export class Ui {
         frame.emit = 0;
         cover(control!, px, py, w, h);
       } else if (part.kind === "slider") {
-        const track = px + w - TRACK;
-        const tall = h > LINE ? 5 : 3;
+        const steps = part.steps ?? STEPS;
+        const chosen = Math.round(part.value * steps);
         mark(ty);
         lit(part.label, 7);
-        for (let i = 0; i < STEPS; i++) {
-          const full = i < Math.round(part.value * STEPS);
+        if (part.colors) {
+          // One pip of each colour; the chosen one stands in a frame, amber while the row has the focus.
+          const track = px + w - part.colors.length * 9 + 2;
+          part.colors.forEach((color, i) => {
+            const x = track + i * 9;
+            for (let j = 0; j < 25; j++) frame.put(x + (j % 5), ty + Math.floor(j / 5), color);
+            if (i !== chosen) return;
+            frame.emit = on ? 150 : 0;
+            for (let k = -2; k < 7; k++) for (const j of [-2, 6]) frame.put(x + k, ty + j, on ? 15 : 7), frame.put(x + j, ty + k, on ? 15 : 7);
+            frame.emit = 0;
+          });
+          cover(control!, track - 2, py, part.colors.length * 9, h);
+          continue;
+        }
+        const text = plain(part.text ?? "");
+        let end = px + w;
+        if (text) {
+          frame.emit = on ? 70 : 0;
+          say(text, end - measure(tiny, text), ty, on ? 16 : 7);
+          frame.emit = 0;
+          end -= measure(tiny, text) + 5;
+        }
+        const track = end - steps * 3;
+        const tall = h > LINE ? 5 : 3;
+        for (let i = 0; i < steps; i++) {
+          const full = i < chosen;
           frame.emit = on && full ? 150 : 0;
           for (let j = 0; j < tall * 2; j++) frame.put(track + i * 3 + (j & 1), py + ((h - tall) >> 1) + (j >> 1), full ? (on ? 15 : 6) : 4);
         }
         frame.emit = 0;
-        cover(control!, track, py, TRACK - 1, h);
+        cover(control!, track, py, end - track - 1, h);
+      } else if (part.kind === "player") {
+        for (let j = 0; j < 15; j++) frame.put(tx + (j % 3), py + 2 + Math.floor(j / 3), part.color);
+        const name = plain(part.name);
+        say(plain(part.note), say(name, tx + 6, py + 2, 7) + 4, py + 2, 6);
       } else if (part.kind === "note" || part.kind === "wait") {
         const gap = pitch(tiny, plain(part.text), 8);
         lines.forEach((line, i) => say(line, tx, py + 1 + i * gap, part.kind === "wait" ? 7 : part.bad ? 18 : 6));
@@ -441,4 +550,11 @@ export class Ui {
       }
     }
   }
+}
+
+/** Moving the pointer over a control gives it the focus. A pointer that only rests there does not take it back from the keys. */
+function hover(control: HTMLElement) {
+  control.addEventListener("pointermove", (event) => {
+    if (event.pointerType === "mouse" && (event.movementX || event.movementY) && document.activeElement !== control) control.focus();
+  });
 }

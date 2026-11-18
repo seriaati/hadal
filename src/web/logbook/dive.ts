@@ -1,8 +1,9 @@
 import { formatMeters } from "../depth";
-import type { Game } from "../state";
+import type { Lamp } from "../state";
+import { SUIT_WASH, isRoom, type Log } from "./log";
 import {
   CREAM, DISPLAY, GLAZE, GRAPHITE, INK, PAGE_H, PAGE_W, RED, RUST, YELLOW,
-  arc, blob, createSheet, dot, edges, ink, lift, newCanvas, pencil, ring, rnd, txt, wash, type Pt, type Sheet,
+  arc, blob, createSheet, dot, edges, fitted, ink, lift, newCanvas, pencil, ring, rnd, txt, wash, widthOf, type Pt, type Sheet,
 } from "./sketch";
 
 /** The depth ruler down the page, as [metres, y]. It is not to scale, so every zone gets room. */
@@ -48,39 +49,63 @@ const ANGLER = { x: 520, y: 330 };
 const EEL: Pt[] = [[590, 462], [556, 452], [522, 470], [486, 458], [452, 478], [416, 468], [384, 488], [356, 482], [338, 492]];
 
 /**
- * The left page: the dive painted as a cross-section of the sea, as far down as the diver went.
- * On a `narrow` screen the page is shown small, so everything written on it is larger. It stops at every `yield`.
+ * One diver's line on the page: where it hangs, how deep they went, their lamps, and in a room their name, suit,
+ * whether they won, and whether they went `out` (in "longest"): then they were hauled up, and only their line is left.
  */
-export function* drawDive(game: Game, narrow: boolean): Generator<void, Sheet> {
+type Line = { x: number; depth: number; lamps: Lamp[]; name?: string; suit?: number; won?: boolean; out?: boolean };
+
+/** The lines of a dive: a single player's one, or a room's side by side in the dive's order, spread over the open water. */
+function linesOf(log: Log): Line[] {
+  if (!isRoom(log)) return [{ x: LINE_X, depth: log.depth, lamps: log.lamps }];
+  const gap = Math.min(80, 380 / Math.max(1, log.divers.length - 1));
+  const first = 345 - (gap * (log.divers.length - 1)) / 2;
+  return log.divers.map((diver, i) => ({ x: first + i * gap, depth: diver.depth, lamps: diver.lamps, name: diver.name, suit: diver.suit, won: diver.won, out: diver.out !== null }));
+}
+
+/**
+ * The left page: the dive painted as a cross-section of the sea, as far down as the diver went (in a room, every
+ * diver on a line of their own). On a `narrow` screen the page is shown small, so everything written on it is larger.
+ * It stops at every `yield`.
+ */
+export function* drawDive(log: Log, narrow: boolean): Generator<void, Sheet> {
   const sheet = yield* createSheet();
   const { paint, dark, light } = sheet;
   /** How much larger the writing is. */
   const k = narrow ? 1.45 : 1;
+  const room = isRoom(log);
   yield;
 
-  // Where each lamp hangs on the line, starting clear of the tender's hull.
-  const marks = game.lamps.map((hung) => Math.max(yAt(hung.depth), Y0 + 12));
-  // Lamps hung too close together to number apart share one label.
-  const runs: { from: number; to: number }[] = [];
-  marks.forEach((y, i) => {
-    const run = runs.at(-1);
-    if (run && y - marks[run.to]! < 11 * k) run.to = i;
-    else runs.push({ from: i, to: i });
+  const divers = linesOf(log).map((line) => {
+    // Where each lamp hangs on the line, starting clear of the tender's hull.
+    const marks = line.lamps.map((hung) => Math.max(yAt(hung.depth), Y0 + 12));
+    // In a room a diver's name and depth are written under them, so they stop higher on the page. One who went out left their line at its last lamp.
+    const diver = { x: line.x, y: line.out ? Math.max(Y0 + 12, ...marks) : Math.min(room ? 640 : 706, Math.max(yAt(line.depth), Y0 + 12) + 7) };
+    const lantern = { x: diver.x + 19, y: diver.y + 33 };
+    const helmet = arc(diver.x, diver.y + 11, 10, 10, 0, 340, 14);
+    const suit: Pt[] = [[diver.x - 10, diver.y + 21], [diver.x + 10, diver.y + 21], [diver.x + 8, diver.y + 38], [diver.x - 8, diver.y + 38]];
+    const lamp: Pt[] = [[diver.x + 15, diver.y + 28], [diver.x + 23, diver.y + 29], [diver.x + 22, diver.y + 39], [diver.x + 14, diver.y + 38]];
+    return { line, marks, diver, lantern, helmet, suit, lamp };
   });
-  const diver = { x: LINE_X, y: Math.min(706, Math.max(yAt(game.depth), Y0 + 12) + 7) };
-  const lantern = { x: diver.x + 19, y: diver.y + 33 };
-  /** The paint stops a little below where the dive did: nothing further down was seen. */
-  let bottom = diver.y + 96;
+  // In a single player's dive the lamps are numbered; lamps hung too close together to number apart share one label.
+  const runs: { from: number; to: number }[] = [];
+  if (!room) {
+    divers[0]!.marks.forEach((y, i) => {
+      const run = runs.at(-1);
+      if (run && y - divers[0]!.marks[run.to]! < 11 * k) run.to = i;
+      else runs.push({ from: i, to: i });
+    });
+  }
+  const deepest = Math.max(...divers.map(({ diver }) => diver.y));
+  /** The divers drawn at the end of their lines: all but those hauled up when they went out. */
+  const drawn = divers.filter(({ line }) => !line.out);
+  /** The paint stops a little below where the dive did: nothing further down was seen. In a room, below the names under the deepest diver. */
+  let bottom = deepest + (room ? 96 + 34 * k : 96);
   // It never stops halfway through something written in the margin, and if it nearly fills the page, it does.
   for (const y of WRITTEN) if (bottom > y - 20 && bottom < y + 24) bottom = y + 24;
   if (bottom > 700) bottom = PAGE_H;
   const seen = (y: number) => y < bottom - 12;
   /** Below the sunlit water the paint is dark, and has to be drawn on in something light. */
   const pale = (y: number) => y > 190 && seen(y);
-
-  const helmet = arc(diver.x, diver.y + 11, 10, 10, 0, 340, 14);
-  const suit: Pt[] = [[diver.x - 10, diver.y + 21], [diver.x + 10, diver.y + 21], [diver.x + 8, diver.y + 38], [diver.x - 8, diver.y + 38]];
-  const lamp: Pt[] = [[diver.x + 15, diver.y + 28], [diver.x + 23, diver.y + 29], [diver.x + 22, diver.y + 39], [diver.x + 14, diver.y + 38]];
 
   // ---- the sea, painted on its own sheet so that pigment can be lifted back out of it
   const sea = newCanvas(1);
@@ -147,18 +172,24 @@ export function* drawDive(game: Game, narrow: boolean): Generator<void, Sheet> {
     yield;
   }
   // Lamplight: lift the pigment around every light, leaving the paper to glow through.
-  for (const [rx, ry, s] of [[72, 62, 0.18], [56, 49, 0.32], [42, 37, 0.5], [30, 27, 0.6]] as const) {
-    lift(sea, blob(lantern.x, lantern.y, rx, ry, 14), s, { v: 0.3, seg: 16, layers: 30 });
+  for (const { lantern } of drawn) {
+    for (const [rx, ry, s] of [[72, 62, 0.18], [56, 49, 0.32], [42, 37, 0.5], [30, 27, 0.6]] as const) {
+      lift(sea, blob(lantern.x, lantern.y, rx, ry, 14), s, { v: 0.3, seg: 16, layers: 30 });
+    }
   }
-  game.lamps.forEach((hung, i) => {
-    if (hung.lit) lift(sea, blob(LINE_X, marks[i]!, 11, 10), 0.5, { v: 0.3, seg: 6, layers: 10 });
-  });
+  for (const { line, marks } of divers) {
+    line.lamps.forEach((hung, i) => {
+      if (hung.lit) lift(sea, blob(line.x, marks[i]!, 11, 10), 0.5, { v: 0.3, seg: 6, layers: 10 });
+    });
+  }
   lift(sea, blob(ANGLER.x - 34, ANGLER.y - 19, 17, 15), 0.5, { v: 0.4, seg: 8 });
   lift(sea, blob(ANGLER.x - 34, ANGLER.y - 19, 6, 6), 0.9, { v: 0.2, seg: 4 });
-  // The diver is masked out, so that the copper sits on clean paper.
-  lift(sea, helmet, 0.985, { v: 0.03, seg: 6, layers: 10 });
-  lift(sea, suit, 0.97, { v: 0.05, seg: 6, layers: 8 });
-  lift(sea, lamp, 0.97, { v: 0.05, seg: 6, layers: 8 });
+  // The divers are masked out, so that the copper sits on clean paper.
+  for (const { helmet, suit, lamp } of drawn) {
+    lift(sea, helmet, 0.985, { v: 0.03, seg: 6, layers: 10 });
+    lift(sea, suit, 0.97, { v: 0.05, seg: 6, layers: 8 });
+    lift(sea, lamp, 0.97, { v: 0.05, seg: 6, layers: 8 });
+  }
   yield;
   // The paint runs out where the dive did.
   if (bottom < PAGE_H) {
@@ -176,22 +207,30 @@ export function* drawDive(game: Game, narrow: boolean): Generator<void, Sheet> {
   wash(paint, [[14, 18], [300, 10], [588, 22], [590, 80], [300, 84], [12, 82]], "#f6d9a4", { ...GLAZE, s: 0.3, v: 0.5, seg: 36, edge: 0 });
   wash(paint, blob(470, 40, 70, 16), "#f0b98a", { ...GLAZE, s: 0.3, v: 0.5, seg: 16, edge: 0.05 });
   yield;
-  wash(paint, blob(lantern.x, lantern.y, 62, 54, 14), "#fbd67a", { ...GLAZE, s: 0.5, v: 0.3, seg: 16, layers: 30, edge: 0.04 });
-  wash(paint, blob(lantern.x, lantern.y, 38, 34, 12), "#f7b450", { ...GLAZE, s: 0.45, v: 0.3, seg: 12, layers: 30, edge: 0.05 });
-  game.lamps.forEach((hung, i) => {
-    if (hung.lit) wash(paint, blob(LINE_X, marks[i]!, 8, 7), "#fbd266", { ...GLAZE, s: 0.6, v: 0.3, seg: 5, edge: 0, layers: 10 });
-  });
+  for (const { lantern } of drawn) {
+    wash(paint, blob(lantern.x, lantern.y, 62, 54, 14), "#fbd67a", { ...GLAZE, s: 0.5, v: 0.3, seg: 16, layers: 30, edge: 0.04 });
+    wash(paint, blob(lantern.x, lantern.y, 38, 34, 12), "#f7b450", { ...GLAZE, s: 0.45, v: 0.3, seg: 12, layers: 30, edge: 0.05 });
+  }
+  for (const { line, marks } of divers) {
+    line.lamps.forEach((hung, i) => {
+      if (hung.lit) wash(paint, blob(line.x, marks[i]!, 8, 7), "#fbd266", { ...GLAZE, s: 0.6, v: 0.3, seg: 5, edge: 0, layers: 10 });
+    });
+  }
   if (seen(ANGLER.y)) wash(paint, blob(ANGLER.x - 34, ANGLER.y - 19, 12, 11), "#fbd266", { ...GLAZE, s: 0.7, v: 0.3, seg: 6, edge: 0 });
   yield;
-  // The diver: a copper helmet, a canvas suit, a lantern.
-  wash(paint, helmet, "#cf7a3e", { ...GLAZE, s: 0.82, v: 0.05, seg: 6, edge: 0.35 });
-  wash(paint, arc(diver.x - 2, diver.y + 13, 8, 8, 60, 250, 8), "#7c3520", { ...GLAZE, s: 0.5, v: 0.08, seg: 6, edge: 0.1 });
-  wash(paint, arc(diver.x + 2, diver.y + 11, 4.5, 4.5, 0, 340, 10), "#ffd257", { s: 0.9, v: 0.04, seg: 4, edge: 0, layers: 8 });
-  wash(paint, suit, "#5d6f86", { ...GLAZE, s: 0.75, v: 0.08, seg: 6, edge: 0.3 });
-  wash(paint, lamp, "#f6c152", { ...GLAZE, s: 0.8, v: 0.08, seg: 5 });
-  // The tender, up top.
-  const ship = { x: LINE_X, y: Y0 };
-  wash(paint, [[ship.x - 44, ship.y - 13], [ship.x + 40, ship.y - 13], [ship.x + 31, ship.y + 5], [ship.x - 35, ship.y + 5]], RUST, { ...GLAZE, s: 0.82, v: 0.1, seg: 8, edge: 0.3 });
+  // The divers: a copper helmet, a canvas suit (in a room, the colour of theirs), a lantern.
+  for (const { line, diver, helmet, suit, lamp } of drawn) {
+    wash(paint, helmet, "#cf7a3e", { ...GLAZE, s: 0.82, v: 0.05, seg: 6, edge: 0.35 });
+    wash(paint, arc(diver.x - 2, diver.y + 13, 8, 8, 60, 250, 8), "#7c3520", { ...GLAZE, s: 0.5, v: 0.08, seg: 6, edge: 0.1 });
+    wash(paint, arc(diver.x + 2, diver.y + 11, 4.5, 4.5, 0, 340, 10), "#ffd257", { s: 0.9, v: 0.04, seg: 4, edge: 0, layers: 8 });
+    wash(paint, suit, SUIT_WASH[line.suit ?? 0]!, { ...GLAZE, s: 0.75, v: 0.08, seg: 6, edge: 0.3 });
+    wash(paint, lamp, "#f6c152", { ...GLAZE, s: 0.8, v: 0.08, seg: 5 });
+  }
+  // The tender, up top: in a room its hull is long enough for every line to hang from it.
+  const ship = { x: room ? (divers[0]!.diver.x + divers.at(-1)!.diver.x) / 2 : LINE_X, y: Y0 };
+  const hull = room ? [divers[0]!.diver.x - 44, divers.at(-1)!.diver.x + 40] : [ship.x - 44, ship.x + 40];
+  const [stern, bow] = hull as [number, number];
+  wash(paint, [[stern, ship.y - 13], [bow, ship.y - 13], [bow - 9, ship.y + 5], [stern + 9, ship.y + 5]], RUST, { ...GLAZE, s: 0.82, v: 0.1, seg: 8, edge: 0.3 });
   wash(paint, [[ship.x - 22, ship.y - 28], [ship.x + 4, ship.y - 28], [ship.x + 4, ship.y - 13], [ship.x - 22, ship.y - 13]], "#e9c88a", { ...GLAZE, s: 0.5, v: 0.1, seg: 8 });
   wash(paint, [[ship.x - 14, ship.y - 42], [ship.x - 6, ship.y - 42], [ship.x - 6, ship.y - 28], [ship.x - 14, ship.y - 28]], "#2c3550", { ...GLAZE, s: 0.7, v: 0.1, seg: 6 });
   yield;
@@ -203,7 +242,7 @@ export function* drawDive(game: Game, narrow: boolean): Generator<void, Sheet> {
   for (const [x, y, s] of [[430, 34, 1], [452, 26, 0.7], [520, 46, 0.8]] as const) {
     ink(dark, [[x - 7 * s, y - 2 * s], [x - 3 * s, y - 5 * s], [x, y], [x + 4 * s, y - 5 * s], [x + 8 * s, y - 1 * s]], { w: 1.1 });
   }
-  edges(dark, [[ship.x - 45, ship.y - 13], [ship.x + 41, ship.y - 14], [ship.x + 31, ship.y + 5], [ship.x - 35, ship.y + 5]], { w: 1.6, taper: 0.3 });
+  edges(dark, [[stern - 1, ship.y - 13], [bow + 1, ship.y - 14], [bow - 9, ship.y + 5], [stern + 9, ship.y + 5]], { w: 1.6, taper: 0.3 });
   ink(dark, [[ship.x - 22, ship.y - 13], [ship.x - 22, ship.y - 28], [ship.x + 4, ship.y - 28], [ship.x + 4, ship.y - 13]], { w: 1.3 });
   ink(dark, [[ship.x - 14, ship.y - 28], [ship.x - 14, ship.y - 42], [ship.x - 6, ship.y - 42], [ship.x - 6, ship.y - 28]], { w: 1.2 });
   ink(dark, ring(ship.x - 13, ship.y - 21, 2.4, 2.4, { n: 8 }), { w: 0.9 });
@@ -212,11 +251,21 @@ export function* drawDive(game: Game, narrow: boolean): Generator<void, Sheet> {
   ink(dark, [[ship.x + 30, ship.y - 13], [ship.x + 14, ship.y - 44], [ship.x, ship.y - 36]], { w: 1.4 });
   ink(dark, [[ship.x + 14, ship.y - 44], [ship.x + 18, ship.y - 13]], { w: 1 });
   ink(dark, ring(ship.x + 24, ship.y - 18, 4.5, 4.5, { n: 8 }), { w: 1.2 });
-  // The waterline.
-  ink(dark, [[8, Y0 + 1], [40, Y0 - 2], [80, Y0 + 1], [120, Y0 - 2], [165, Y0 + 1], [205, Y0 - 1]], { w: 1.4 });
-  ink(dark, [[296, Y0 - 1], [340, Y0 + 1], [385, Y0 - 2], [430, Y0 + 1], [480, Y0 - 2], [530, Y0 + 1], [592, Y0 - 1]], { w: 1.4 });
+  // The waterline, on either side of the hull.
+  const waterline = (from: number, to: number) => {
+    const steps = Math.max(1, Math.round((to - from) / 42));
+    const xs = Array.from({ length: steps + 1 }, (_, i) => from + ((to - from) * i) / steps);
+    ink(dark, xs.map((x, i): Pt => [x, Y0 + (i % 2 ? -2 : 1)]), { w: 1.4 });
+  };
+  if (room) {
+    if (stern > 30) waterline(8, stern - 1);
+    if (bow < 570) waterline(bow + 6, 592);
+  } else {
+    ink(dark, [[8, Y0 + 1], [40, Y0 - 2], [80, Y0 + 1], [120, Y0 - 2], [165, Y0 + 1], [205, Y0 - 1]], { w: 1.4 });
+    ink(dark, [[296, Y0 - 1], [340, Y0 + 1], [385, Y0 - 2], [430, Y0 + 1], [480, Y0 - 2], [530, Y0 + 1], [592, Y0 - 1]], { w: 1.4 });
+  }
   for (const [x, y] of [[60, Y0 + 9], [150, Y0 + 12], [360, Y0 + 10], [455, Y0 + 13], [548, Y0 + 9]] as const) {
-    ink(dark, [[x, y], [x + 7, y - 2], [x + 14, y], [x + 21, y - 2]], { w: 0.9, opacity: 0.6 });
+    if (x + 21 < stern || x > bow) ink(dark, [[x, y], [x + 7, y - 2], [x + 14, y], [x + 21, y - 2]], { w: 0.9, opacity: 0.6 });
   }
 
   // ---- the depth ruler down the left edge, drawn the whole way whether or not the dive got there
@@ -257,7 +306,8 @@ export function* drawDive(game: Game, narrow: boolean): Generator<void, Sheet> {
     for (let i = 0; i < 5; i++) ink(light, [[x - 20 + i * 3.2, y + 3], [x - 19 + i * 3.2, y + 8]], { w: 0.9, color: CREAM, min: 0.8 });
     dot(light, x - 8, y - 5, 2, CREAM);
     ink(light, [[x - 6, y - 14], [x - 14, y - 26], [x - 28, y - 24], [x - 33, y - 20]], { w: 1, color: CREAM });
-    note(light, x - 76, y + 38, "its light came first", { fill: CREAM, opacity: 0.85, rot: -3 });
+    // In a room the divers' names are written down here, and the notes would run into them.
+    if (!room) note(light, x - 76, y + 38, "its light came first", { fill: CREAM, opacity: 0.85, rot: -3 });
   }
   if (seen(410)) {
     for (const [x, y, gap] of [[452, 396, 9], [506, 408, 7]] as const) {
@@ -266,18 +316,18 @@ export function* drawDive(game: Game, narrow: boolean): Generator<void, Sheet> {
         dot(light, x + (side * gap) / 2, y, 0.9, CREAM);
       }
     }
-    note(light, 436, 434, "something watched", { fill: CREAM, opacity: 0.8, rot: -2 });
+    if (!room) note(light, 436, 434, "something watched", { fill: CREAM, opacity: 0.8, rot: -2 });
   }
   if (seen(500)) {
     ink(light, EEL, { w: 2.6, color: CREAM, opacity: 0.85, taper: 0.5, min: 0.2 });
     dot(light, EEL[8]![0] + 4, EEL[8]![1] - 2.5, 0.9, CREAM);
-    note(light, 420, 512, "it took a long time to pass", { fill: CREAM, opacity: 0.8, rot: -2 });
+    if (!room) note(light, 420, 512, "it took a long time to pass", { fill: CREAM, opacity: 0.8, rot: -2 });
   }
   // Marine snow.
   for (let i = 0; i < 190; i++) {
     const x = rnd(40, 584);
     const y = Y200 + Math.pow(rnd(), 0.7) * (Y11000 - Y200);
-    if (seen(y + 4) && Math.hypot(x - lantern.x, y - lantern.y) > 50) dot(light, x, y, rnd(0.5, 1.5), CREAM, rnd(0.25, 0.8));
+    if (seen(y + 4) && drawn.every(({ lantern }) => Math.hypot(x - lantern.x, y - lantern.y) > 50)) dot(light, x, y, rnd(0.5, 1.5), CREAM, rnd(0.25, 0.8));
   }
   // The sea floor: a line of ink along it, and hatching down the trench walls.
   if (seen(600)) {
@@ -294,7 +344,7 @@ export function* drawDive(game: Game, narrow: boolean): Generator<void, Sheet> {
     }
   }
   // A note at the bottom of the trench, unless the diver's tag has come down far enough to cover it.
-  if (diver.y < (narrow ? 590 : 620)) {
+  if (deepest < (narrow ? 590 : 620)) {
     label(338, narrow ? 700 : 708, "the bottom: 11,000 m", { size: 20 * k, opacity: 0.9, rot: -2 });
     label(350, narrow ? 730 : 728, "(nobody we know has been)", { size: 17 * k, opacity: 0.7, rot: -2 });
     stroke(726, [[332, 714], [300, 726], [258, 740]], 1.1, 0.8);
@@ -308,45 +358,71 @@ export function* drawDive(game: Game, narrow: boolean): Generator<void, Sheet> {
   }
   yield;
 
-  // ---- the line, and a lamp for every prompt
-  const inkEnd = Math.min(diver.y, 250);
-  ink(dark, [[LINE_X + 1, Y0 - 37], [LINE_X + 2, (Y0 - 37 + inkEnd) / 2], [LINE_X, inkEnd]], { w: 1.3, wob: 0.3 });
-  if (diver.y > 200) ink(light, [[LINE_X + 1, 200], [LINE_X - 1, (200 + diver.y) / 2], [LINE_X, diver.y]], { w: 1.2, wob: 0.35, color: CREAM, opacity: 0.85 });
-  // A lit lamp is a light on the line; a dead one is crossed off beside it.
-  game.lamps.forEach((hung, i) => {
-    const y = marks[i]!;
-    if (hung.lit) {
-      dot(light, LINE_X, y, 2.8, YELLOW);
-      ink(pale(y) ? light : dark, ring(LINE_X, y, 4.4, 4.4, { n: 8, over: 20 }), { w: 0.9, color: pale(y) ? CREAM : INK });
-    } else {
-      for (const side of [-1, 1]) {
-        ink(pale(y) ? light : dark, [[LINE_X + 11 - 4 * side, y - 4], [LINE_X + 11 + 4 * side, y + 4]], { w: 1.8, color: pale(y) ? PALE_RED : RED, min: 0.6 });
+  // ---- the lines, and a lamp for every prompt. In a room they hang from the hull; a single diver's from the crane.
+  const top = room ? Y0 + 5 : Y0 - 37;
+  for (const { line, marks, diver } of divers) {
+    const x = line.x;
+    const inkEnd = Math.min(diver.y, 250);
+    ink(dark, [[x + 1, top], [x + 2, (top + inkEnd) / 2], [x, inkEnd]], { w: 1.3, wob: 0.3 });
+    if (diver.y > 200) ink(light, [[x + 1, 200], [x - 1, (200 + diver.y) / 2], [x, diver.y]], { w: 1.2, wob: 0.35, color: CREAM, opacity: 0.85 });
+    // A lit lamp is a light on the line; a dead one is crossed off beside it.
+    line.lamps.forEach((hung, i) => {
+      const y = marks[i]!;
+      if (hung.lit) {
+        dot(light, x, y, 2.8, YELLOW);
+        ink(pale(y) ? light : dark, ring(x, y, 4.4, 4.4, { n: 8, over: 20 }), { w: 0.9, color: pale(y) ? CREAM : INK });
+      } else {
+        for (const side of [-1, 1]) {
+          ink(pale(y) ? light : dark, [[x + 11 - 4 * side, y - 4], [x + 11 + 4 * side, y + 4]], { w: 1.8, color: pale(y) ? PALE_RED : RED, min: 0.6 });
+        }
       }
-    }
-  });
+    });
+  }
   for (const { from, to } of runs) {
+    const { line, marks } = divers[0]!;
     const y = (marks[from]! + marks[to]!) / 2;
-    const unlit = game.lamps.slice(from, to + 1).every((hung) => !hung.lit);
+    const unlit = line.lamps.slice(from, to + 1).every((hung) => !hung.lit);
     const color = unlit ? (pale(y) ? PALE_RED : RED) : pale(y) ? CREAM : INK;
     const numbers = from === to ? `${from + 1}` : `${from + 1}–${to + 1}`;
     txt(pale(y) ? light : dark, LINE_X - 11, y + 5 * k, numbers, { size: 17 * k, weight: 700, anchor: "end", fill: color, jit: 0 });
   }
 
-  // ---- the diver
-  ink(dark, ring(diver.x, diver.y + 11, 10, 10, { n: 14, over: 30, j: 0.012, drift: 0.02 }), { w: 1.8 });
-  ink(dark, ring(diver.x + 2, diver.y + 11, 4.5, 4.5, { n: 10, over: 25 }), { w: 1.2 });
-  edges(dark, suit, { w: 1.4, taper: 0.3, over: 1 });
-  ink(dark, [[diver.x - 4, diver.y + 38], [diver.x - 5, diver.y + 47], [diver.x - 10, diver.y + 48]], { w: 1.7 });
-  ink(dark, [[diver.x + 4, diver.y + 38], [diver.x + 5, diver.y + 47], [diver.x + 10, diver.y + 48]], { w: 1.7 });
-  ink(dark, [[diver.x - 9, diver.y + 24], [diver.x - 14, diver.y + 32]], { w: 1.5 });
-  ink(dark, [[diver.x + 9, diver.y + 24], [diver.x + 14, diver.y + 27], [diver.x + 18, diver.y + 29]], { w: 1.5 });
-  edges(dark, lamp, { w: 1.2, taper: 0.3, over: 1 });
-  ink(light, arc(diver.x, diver.y + 11, 7, 7, 205, 255, 5), { w: 1.6, color: CREAM, opacity: 0.9 });
-  for (const [x, y, r] of [[-9, -6, 2], [-13, -19, 3], [-7, -33, 1.8]] as const) {
-    ink(light, ring(diver.x + x, diver.y + y, r, r, { n: 8, over: 15 }), { w: 0.9, color: CREAM, opacity: 0.8 });
+  // ---- the divers
+  for (const { diver, suit, lamp } of drawn) {
+    ink(dark, ring(diver.x, diver.y + 11, 10, 10, { n: 14, over: 30, j: 0.012, drift: 0.02 }), { w: 1.8 });
+    ink(dark, ring(diver.x + 2, diver.y + 11, 4.5, 4.5, { n: 10, over: 25 }), { w: 1.2 });
+    edges(dark, suit, { w: 1.4, taper: 0.3, over: 1 });
+    ink(dark, [[diver.x - 4, diver.y + 38], [diver.x - 5, diver.y + 47], [diver.x - 10, diver.y + 48]], { w: 1.7 });
+    ink(dark, [[diver.x + 4, diver.y + 38], [diver.x + 5, diver.y + 47], [diver.x + 10, diver.y + 48]], { w: 1.7 });
+    ink(dark, [[diver.x - 9, diver.y + 24], [diver.x - 14, diver.y + 32]], { w: 1.5 });
+    ink(dark, [[diver.x + 9, diver.y + 24], [diver.x + 14, diver.y + 27], [diver.x + 18, diver.y + 29]], { w: 1.5 });
+    edges(dark, lamp, { w: 1.2, taper: 0.3, over: 1 });
+    ink(light, arc(diver.x, diver.y + 11, 7, 7, 205, 255, 5), { w: 1.6, color: CREAM, opacity: 0.9 });
+    for (const [x, y, r] of [[-9, -6, 2], [-13, -19, 3], [-7, -33, 1.8]] as const) {
+      ink(light, ring(diver.x + x, diver.y + y, r, r, { n: 8, over: 15 }), { w: 0.9, color: CREAM, opacity: 0.8 });
+    }
+  }
+
+  if (room) {
+    // ---- under every diver, their name and the depth they reached; the winner's name is ringed
+    const width = Math.min(80, 380 / Math.max(1, divers.length - 1)) - 6;
+    for (const { line, diver } of divers) {
+      const y = line.out ? diver.y + 26 * k : diver.y + 66 + 4 * k;
+      const ctx = pale(y) ? light : dark;
+      const fill = pale(y) ? CREAM : INK;
+      const name = fitted(ctx, line.name!, width, { size: 20 * k, weight: 700, anchor: "middle", fill, jit: 0 });
+      txt(ctx, line.x + 4, y, line.name!, name);
+      txt(ctx, line.x + 4, y + 20 * k, formatMeters(line.depth), { size: 17 * k, anchor: "middle", fill, opacity: 0.85, jit: 0 });
+      if (line.won) {
+        const w = widthOf(ctx, line.name!, name) / 2 + 9;
+        ink(ctx, ring(line.x + 4, y - name.size! * 0.32, w, name.size! * 0.62, { n: 14, over: 40, j: 0.02 }), { w: 1.8, color: pale(y) ? YELLOW : RUST });
+      }
+    }
+    return sheet;
   }
 
   // ---- a paper tag tied to the diver, with the depth reached
+  const { diver } = divers[0]!;
   const tag = { x: diver.x + 62, y: diver.y + 46 - 52 * k, w: 150 * k, h: 52 * k };
   const hole: Pt = [tag.x + 13, tag.y + tag.h / 2];
   const outline: Pt[] = [[tag.x + 15, tag.y], [tag.x + tag.w, tag.y + 1], [tag.x + tag.w - 1, tag.y + tag.h], [tag.x + 15, tag.y + tag.h - 1], [tag.x, tag.y + tag.h / 2]];
@@ -364,7 +440,7 @@ export function* drawDive(game: Game, narrow: boolean): Generator<void, Sheet> {
   edges(light, outline, { w: 1.4, taper: 0.3 });
   dot(light, ...hole, 3, "#22345a");
   txt(light, tag.x + 27, tag.y + 16 * k, "depth reached", { size: 17 * k, fill: GRAPHITE, jit: 0 });
-  txt(light, tag.x + 25, tag.y + 45 * k, formatMeters(game.depth), { font: DISPLAY, size: 31 * k, jit: 0 });
+  txt(light, tag.x + 25, tag.y + 45 * k, formatMeters(divers[0]!.line.depth), { font: DISPLAY, size: 31 * k, jit: 0 });
   light.restore();
   return sheet;
 }

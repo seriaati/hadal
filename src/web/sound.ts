@@ -117,6 +117,25 @@ export class Sound {
     else this.note("effects", "triangle", 320, 110, 0.35, 0.25);
   }
 
+  /** A diver of the room lights their lantern (ready): a strike and a warm note rising. Or puts it out: a soft puff, falling. */
+  lantern(lit: boolean) {
+    if (!this.rig) return;
+    if (lit) {
+      this.burst("bandpass", 3200, 0.2, 0.08);
+      this.note("effects", "sine", 392, 587, 0.12, 0.7, 0.03);
+    } else {
+      this.burst("lowpass", 700, 0.3, 0.3);
+      this.note("effects", "sine", 440, 220, 0.08, 0.5, 0.01);
+    }
+  }
+
+  /** A heart won: two high bell notes, a moment after the lamp's own. */
+  heart() {
+    if (!this.rig) return;
+    this.note("effects", "sine", pitch(CHIME[5]!) * 2, pitch(CHIME[5]!) * 2, 0.1, 1.2, 0.005, 0.35);
+    this.note("effects", "sine", pitch(CHIME[5]!) * 3, pitch(CHIME[5]!) * 3, 0.06, 1, 0.005, 0.5);
+  }
+
   /** Ears hear loudness in ratios, so a slider's value is squared. */
   private apply() {
     const rig = this.rig;
@@ -175,16 +194,16 @@ export class Sound {
     this.results = game.results.length;
 
     // A lamp rings as it is lit: a higher note, and for longer, the rarer the answer.
-    if (scene.reached.size > this.lit) {
+    if (scene.lit > this.lit) {
       const rarity = game.results.findLast((result) => result.correct)?.rarity ?? 0;
       this.bell(pitch(CHIME[Math.round(rarity / 20)]!), 0.22, 1.5 + rarity / 50);
     }
-    this.lit = scene.reached.size;
+    this.lit = scene.lit;
 
     // Low on air: a heartbeat, in step with the red pulse on screen.
     const beat = Math.floor((scene.pulse - 0.6) / (Math.PI * 2));
-    if (beat !== this.beat && scene.panic > 0.05) {
-      const level = 0.25 + 0.35 * scene.panic;
+    if (beat !== this.beat && scene.alarm > 0.05) {
+      const level = 0.25 + 0.35 * scene.alarm;
       this.note("effects", "triangle", 120, 55, level, 0.2);
       this.note("effects", "triangle", 100, 50, level * 0.6, 0.18, 0.005, 0.13);
     }

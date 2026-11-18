@@ -282,6 +282,18 @@ export function shrunk(ctx: CanvasRenderingContext2D, words: string, tall: numbe
   return rise > tall ? { ...o, size: (o.size * tall) / rise } : o;
 }
 
+/** How wide words are when lettered this way. */
+export function widthOf(ctx: CanvasRenderingContext2D, words: string, o: Lettering = {}): number {
+  setFace(ctx, o);
+  return ctx.measureText(words).width;
+}
+
+/** This lettering, made smaller if the words would be wider than `width`. */
+export function fitted(ctx: CanvasRenderingContext2D, words: string, width: number, o: Lettering & { size: number }): Lettering & { size: number } {
+  const wide = widthOf(ctx, words, o);
+  return wide > width ? { ...o, size: (o.size * width) / wide } : o;
+}
+
 /** Break words into lines no wider than `width` when lettered this way. */
 export function wrap(ctx: CanvasRenderingContext2D, words: string, width: number, o: Lettering = {}): string[] {
   setFace(ctx, o);

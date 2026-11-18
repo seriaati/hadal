@@ -1,9 +1,10 @@
 import { METERS_PER_POINT } from "../../shared/types";
 import { formatMeters, zoneAt } from "../depth";
 import type { Game } from "../state";
+import { SUIT_WASH, isRoom, type Log, type RoomLog } from "./log";
 import {
   DISPLAY, GLAZE, GRAPHITE, INK, RED, RUST, TYPED,
-  blob, createSheet, ink, newCanvas, pencil, ring, rnd, shrunk, speckle, txt, wash, wrap, type Lettering, type Sheet,
+  blob, createSheet, fitted, ink, newCanvas, pencil, ring, rnd, shrunk, speckle, txt, wash, widthOf, wrap, type Lettering, type Sheet,
 } from "./sketch";
 
 const STAMP_RED = "#b03a26";
@@ -85,9 +86,13 @@ function turnThePage(dark: CanvasRenderingContext2D, x: number, y: number, how: 
   ink(dark, [[x + 247, y + 12], [x + 262, y + 13], [x + 262, y - 2]], { w: 2.2, color: RUST });
 }
 
-/** The right page: the written log, with the depth reached and one entry for every prompt. It stops at every `yield`. */
-export function* drawEntries(game: Game, narrow: boolean): Generator<void, Sheet> {
-  return yield* (narrow ? narrowEntries(game) : wideEntries(game));
+/**
+ * The right page: the written log, with the depth reached and one entry for every prompt; in a room, who won and
+ * one entry for every diver. It stops at every `yield`.
+ */
+export function* drawEntries(log: Log, narrow: boolean): Generator<void, Sheet> {
+  if (isRoom(log)) return yield* roomEntries(log, narrow);
+  return yield* (narrow ? narrowEntries(log) : wideEntries(log));
 }
 
 function* wideEntries(game: Game): Generator<void, Sheet> {
@@ -179,5 +184,97 @@ function* narrowEntries(game: Game): Generator<void, Sheet> {
   yield;
 
   turnThePage(dark, 30, foot, "tap anywhere");
+  return sheet;
+}
+
+const TYPED_SMALL: Lettering = { font: TYPED, size: 11, ls: 0.3, fill: "#6a5a4a", jit: 0 };
+
+/** One diver's entry in a room's log: what is written of them, worked out once for either width of page. */
+function entryOf(log: RoomLog, diver: RoomLog["divers"][number]) {
+  const lit = diver.said.filter((said) => said.answer !== null);
+  const rarest = lit.reduce<(typeof lit)[number] | null>((best, said) => (best && best.rarity >= said.rarity ? best : said), null);
+  const lasted = log.mode === "longest" ? (diver.out === null ? "still in" : `out at prompt ${diver.out}`) : "";
+  // Each fact keeps its words together (no-break spaces) when the line wraps on a narrow page.
+  const facts = [`${diver.points} points`, `${lit.length} of ${diver.said.length} lamps lit`, lasted].filter(Boolean).map((fact) => fact.replaceAll(" ", "\u00a0")).join("  ·  ");
+  return { diver, rarest, facts };
+}
+
+/** Words cut short, with an ellipsis, until they are no wider than `width`. */
+function cut(ctx: CanvasRenderingContext2D, words: string, width: number, o: Lettering): string {
+  if (widthOf(ctx, words, o) <= width) return words;
+  while (words.length > 1 && widthOf(ctx, `${words}…`, o) > width) words = words.slice(0, -1);
+  return `${words.trimEnd()}…`;
+}
+
+/** Who won, in the mode's words: "ana went deepest", "ana and ben lasted longest". */
+function winnersOf(log: RoomLog): { names: string; words: string; depth: number } {
+  const won = log.divers.filter((diver) => diver.won);
+  const list = won.map((diver) => diver.name);
+  const names = list.length < 2 ? list.join("") : `${list.slice(0, -1).join(", ")} and ${list.at(-1)}`;
+  return { names, words: log.mode === "deepest" ? "went deepest" : "lasted longest", depth: Math.max(0, ...won.map((diver) => diver.depth)) };
+}
+
+/** A room's log: who won, with the zone the winner reached, and one entry for every diver in the order they finished. */
+function* roomEntries(log: RoomLog, narrow: boolean): Generator<void, Sheet> {
+  const entries = log.divers.toSorted((a, b) => a.place - b.place).map((diver) => entryOf(log, diver));
+  const { names, words, depth } = winnersOf(log);
+  const [left, right] = narrow ? [22, NARROW_W - 22] : [40, 560];
+  const text = left + 38;
+  const row = narrow ? 128 : 84;
+  const head = narrow ? 236 : 196;
+  const foot = head + entries.length * row + (narrow ? 30 : 0);
+  const sheet = yield* createSheet(narrow ? NARROW_W : undefined, narrow ? foot + 64 : undefined);
+  const { paint, dark } = sheet;
+  yield;
+  if (narrow) mugRing(paint, 300, foot - 4);
+  else mugRing(paint, 92, 704);
+  yield;
+
+  // ---- who won
+  const day = new Date().toLocaleDateString("en-US", { weekday: "long" });
+  if (narrow) {
+    txt(dark, left, 50, `${day},`, { size: 25 });
+    txt(dark, left, 78, "aboard the Kettle", { size: 25 });
+    stampZone(dark, 268, 78, zoneAt(depth).replace(" zone", ""));
+  } else {
+    txt(dark, left, 52, `${day}, aboard the Kettle`, { size: 25 });
+    stampZone(dark, 478, 112, zoneAt(depth).replace(" zone", ""));
+  }
+  const at = narrow ? 138 : 100;
+  txt(dark, left, at, words, { size: 24 });
+  const name = fitted(dark, names, narrow ? 300 : 360, { font: DISPLAY, size: narrow ? 50 : 54, jit: 0 });
+  txt(dark, left, at + 56, names, name);
+  ink(dark, [[left, at + 68], [left + 110, at + 66], [left + 260, at + 69]], { w: 1.8 });
+  ink(dark, [[left + 10, at + 74], [left + 120, at + 72], [left + 248, at + 74]], { w: 1.1 });
+  yield;
+
+  // ---- one entry for every diver: their place, name and depth, what they scored, and their rarest light
+  entries.forEach(({ diver, rarest, facts }, i) => {
+    const top = head + i * row;
+    lampMark(sheet, left + 14, top + 24, diver.place, diver.won);
+    wash(paint, blob(text + 5, top + 21, 5, 5), SUIT_WASH[diver.suit]!, { ...GLAZE, s: 0.75, v: 0.1, seg: 5, edge: 0.3 });
+    const hand = shrunk(dark, diver.name, 19, { size: 27, weight: 700, jit: 0.6 });
+    txt(dark, text + 16, top + 30, diver.name, hand);
+    txt(dark, right, top + 30, formatMeters(diver.depth), { size: 25, weight: 700, anchor: "end", jit: 0 });
+    const lines = narrow ? wrap(dark, facts, right - text, TYPED_SMALL) : [facts];
+    lines.forEach((line, k) => txt(dark, text, top + 48 + k * 15, line, TYPED_SMALL));
+    const y = top + 48 + lines.length * 15 + 8;
+    if (rarest) {
+      txt(dark, text, y, "RAREST", { ...TYPED_SMALL, size: 9, ls: 1 });
+      const answer = fitted(dark, rarest.answer!, right - text - 42, { size: 21, weight: 700, jit: 0.4 });
+      const after = text + 46 + widthOf(dark, rarest.answer!, answer);
+      txt(dark, text + 42, y + 1, rarest.answer!, answer);
+      // Beside the answer on a wide page; on a narrow one, on a line of its own under it.
+      if (narrow) txt(dark, text, y + 18, cut(dark, rarest.prompt, right - text, TYPED_SMALL), TYPED_SMALL);
+      else if (after + 40 < right) txt(dark, after + 8, y, cut(dark, rarest.prompt, right - after - 8, TYPED_SMALL), TYPED_SMALL);
+    } else {
+      txt(dark, text, y + 1, "no lamp lit", { size: 21, weight: 600, fill: RED });
+    }
+    pencil(dark, [[left, top + row - 6], [right, top + row - 7]], { n: 1, opacity: 0.3, w: 0.7 });
+  });
+  yield;
+
+  if (narrow) turnThePage(dark, 30, foot, "tap anywhere");
+  else turnThePage(dark, 300, 734, "click, or press Enter");
   return sheet;
 }
