@@ -3,7 +3,7 @@ import { LOST_SECONDS } from "../state";
 import { FONTS } from "./font";
 import { LAST_WORDS, SCARE_FOR, scareAt } from "./glitch";
 
-test("the eyes after every line that scares are over before the logbook opens", () => {
+test("the eyes after every line that scares are over before the end screen opens", () => {
   for (const { text } of LAST_WORDS.filter((words) => words.scares)) expect(scareAt(text) + SCARE_FOR).toBeLessThan(LOST_SECONDS);
 });
 

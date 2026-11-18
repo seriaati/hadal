@@ -1,7 +1,7 @@
 import { AIR_MAX, AIR_MIN, MAX_PLAYERS, ROOM_CODE_LENGTH, SUITS, type Refusal, type RoomPlayer, type RoomSettings, type RoomView } from "../../shared/room";
 import { USERNAME_MAX, type PackSummary } from "../../shared/types";
 import { formatMeters } from "../depth";
-import type { RoomLog } from "../logbook/log";
+import type { RoomLog } from "./ending";
 import { RoomClient, type Heard } from "../room";
 import { RoomDive } from "../roomdive";
 import type { Sound } from "../sound";
@@ -67,10 +67,10 @@ export class MultiplayerPanel {
   private ready = new Map<string, boolean>();
   /**
    * The room's dive that has just ended: its log, the diver the camera follows up, and when it ended and how long
-   * the haul up takes, in seconds. At the surface the logbook opens; closing it goes back to the room.
+   * the haul up takes, in seconds. At the surface the end screen opens; closing it goes back to the room.
    */
   ending: { log: RoomLog; follow: number; you: number; at: number; rise: number } | null = null;
-  /** The room closed, or the connection was lost, while the logbook was open: closing it goes back to the first step. */
+  /** The room closed, or the connection was lost, while the end screen was open: closing it goes back to the first step. */
   private gone = false;
 
   constructor(
@@ -136,13 +136,13 @@ export class MultiplayerPanel {
     return t * t * (3 - 2 * t);
   }
 
-  /** Whether the divers are back at the surface after a dive, so that the logbook opens. */
+  /** Whether the divers are back at the surface after a dive, so that the end screen opens. */
   get surfaced(): boolean {
     return !!this.ending && this.risen() === 1;
   }
 
-  /** Close the logbook that ends a dive, once it is open, and go back to the room, or out of it if it is gone. */
-  closeBook() {
+  /** Close the end screen of a dive, once it is open, and go back to the room, or out of it if it is gone. */
+  closeEnding() {
     if (!this.ending || performance.now() / 1000 - this.ending.at < this.ending.rise + 1) return;
     this.ending = null;
     this.ui.go(this.first);
@@ -248,7 +248,7 @@ export class MultiplayerPanel {
     } else if (entering) {
       this.refused = ["end", "no answer came from the server: try again"];
     } else if (this.ending) {
-      // The logbook stays open; closing it leads out of the room that is gone.
+      // The end screen stays open; closing it leads out of the room that is gone.
       this.note = message.type === "closed" ? "the room closed: its host left" : "the connection to the server was lost";
       this.gone = true;
     } else if (this.diving || this.ui.holds(this.room)) {
@@ -262,7 +262,7 @@ export class MultiplayerPanel {
     }
   }
 
-  /** The end of the room's dive, as the logbook tells it. The camera follows the player's own diver up, or the winner for one who only watched. */
+  /** The end of the room's dive, as its end screen tells it. The camera follows the player's own diver up, or the winner for one who only watched. */
   private endingOf({ last, players, you }: RoomView): NonNullable<MultiplayerPanel["ending"]> {
     const divers = last!.divers.map((diver) => {
       const player = players.find((one) => one.id === diver.id);

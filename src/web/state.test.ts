@@ -25,7 +25,7 @@ test("a finished dive keeps how every round ended, then leads back to the title"
   tick(game, 1);
   pressEnter(game);
 
-  // The diver is hauled up before the logbook opens, and Enter does not cut that short.
+  // The diver is hauled up before the end screen opens, and Enter does not cut that short.
   expect(game.phase).toBe("ascent");
   pressEnter(game);
   tick(game, 5);

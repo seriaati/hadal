@@ -45,7 +45,7 @@ export class Dive {
   private present: number[];
   /** The prompt on which each diver who is out went out. */
   private outAt = new Map<number, number>();
-  /** Every answer each diver gave, for the logbook at the end. */
+  /** Every answer each diver gave, for the end screen. */
   private said = new Map<number, Said[]>();
   /** Who is still to answer this prompt; the diver whose turn it is comes first. */
   private queue: number[] = [];

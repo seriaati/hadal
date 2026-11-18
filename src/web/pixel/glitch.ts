@@ -51,7 +51,7 @@ export const LAST_WORDS: { text: string; scares?: boolean }[] = [
 /**
  * A lost dive, in seconds from the air running out: the static rises, the set switches off, the screen is dark, the last
  * words are typed, and for some of them, after a moment's silence once the last letter is down, the eyes come. The
- * logbook follows at `LOST_SECONDS` (7.5), time enough for the longest line that scares.
+ * end screen follows at `LOST_SECONDS` (7.5), time enough for the longest line that scares.
  */
 const STATIC_AT = 0.8;
 export const OFF_AT = 2.1;
@@ -69,12 +69,16 @@ type Fault = { kind: Kind; top: number; rows: number; left: number; width: numbe
 type Point = { x: number; y: number };
 type Layers = [Uint8Array, Uint8Array, Uint8Array, Uint8Array];
 
+/** How badly the tape fails under the screen that ends a chaos dive: it plays on, with small faults, and now and then loses its signal. */
+const AT_THE_END = 0.3;
+
 /**
  * How badly a chaos dive is failing, from 0 to 1: noticeably from the start, more the deeper the diver is (`depth` in
  * metres, as shown) and the shorter of air (`panic`, from 0 to 1), and all the way once the dive is lost.
  */
 export function strength(game: Game, depth: number, panic: number): number {
-  if (!game.chaos || game.phase === "title" || game.phase === "done") return 0;
+  if (!game.chaos || game.phase === "title") return 0;
+  if (game.phase === "done") return AT_THE_END;
   if (game.phase === "lost") return 1;
   return Math.min(1, 0.25 + 0.4 * Math.min(1, depth / 9000) + 0.45 * panic);
 }
@@ -180,8 +184,11 @@ export class Glitch {
     this.count++;
   }
 
-  /** Lay the tape over the frame. `wordsFrom` and `wordsTo` give, for each row, the span the words take, which stays readable. */
-  apply(frame: Frame, wordsFrom: Int16Array, wordsTo: Int16Array, time: number, focus: Point) {
+  /**
+   * Lay the tape over the frame. `wordsFrom` and `wordsTo` give, for each row, the span the words take, which stays
+   * readable. Without `caption` the corner says nothing (the end screen).
+   */
+  apply(frame: Frame, wordsFrom: Int16Array, wordsTo: Int16Array, time: number, focus: Point, caption = true) {
     if (this.level <= 0) return;
     const { width: W, height: H } = frame;
     const free = (x: number, y: number) => x < wordsFrom[y]! || x > wordsTo[y]!;
@@ -316,7 +323,7 @@ export class Glitch {
     }
 
     // ---- what the camera writes in the corner
-    if (at < OFF_AT) this.caption(frame, time);
+    if (caption && at < OFF_AT) this.caption(frame, time);
 
     // ---- a lost dive: the set switches off, the picture squeezed to a line, then to nothing
     if (at >= OFF_AT && at < DARK_AT) {

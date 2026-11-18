@@ -34,7 +34,7 @@ async function answer({ game, multiplayer }: DevTools, rarity: number) {
   pressEnter(game);
 }
 
-/** End the dive here. The logbook then holds only the prompts that were finished. */
+/** End the dive here. The end screen then holds only the prompts that were finished. */
 function endDive(game: Game) {
   const diving = game.phase === "ask" || game.phase === "verdict";
   if (!diving || game.judging) return;

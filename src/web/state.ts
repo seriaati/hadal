@@ -5,7 +5,7 @@ export const AIR_SECONDS = 18;
 export const CHAOS_AIR_SECONDS = 8;
 /** How long the submarine of a chaos dive takes to let the diver go, before the first prompt. */
 export const DROP_SECONDS = 4;
-/** How long a lost chaos dive takes to die (its signal, then its last words), before the logbook. */
+/** How long a lost chaos dive takes to die (its signal, then its last words), before the end screen. */
 export const LOST_SECONDS = 7.5;
 
 /** A lamp hung on the line: lit by a correct answer, dead when the air ran out first. */
@@ -13,8 +13,8 @@ export type Lamp = { depth: number; lit: boolean };
 export type Result = { answer: string; rarity: number; correct: boolean };
 /**
  * A chaos dive opens with the diver being dropped off ("drop"). After the last verdict the diver is hauled up ("ascent");
- * at the surface the logbook opens ("done"). A chaos dive ends at the first prompt whose air runs out: the signal is
- * "lost", and then the logbook opens.
+ * at the surface the end screen opens ("done"). A chaos dive ends at the first prompt whose air runs out: the signal is
+ * "lost", and then the end screen opens.
  */
 export type Phase = "title" | "drop" | "ask" | "verdict" | "ascent" | "lost" | "done";
 
@@ -109,7 +109,7 @@ async function attempt(game: Game) {
   }
 }
 
-/** Leave the dive where it is and go back to the title. Nothing of it is kept, so no logbook opens. */
+/** Leave the dive where it is and go back to the title. Nothing of it is kept, so no end screen opens. */
 export function leave(game: Game) {
   Object.assign(game, createGame());
 }
@@ -133,7 +133,7 @@ export function pressEnter(game: Game) {
   if (game.phase === "title") {
     void start(game);
   } else if (game.phase === "done") {
-    // Closing the logbook leads back to the title. Not at once, in case Enter was pressed during the ascent.
+    // Closing the end screen leads back to the title. Not at once, in case Enter was pressed during the ascent.
     if (game.phaseTime > 1) Object.assign(game, createGame());
   } else if (game.phase === "ask") {
     if (game.input.trim() && !game.judging) void attempt(game);

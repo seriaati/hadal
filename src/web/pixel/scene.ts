@@ -22,12 +22,12 @@ const ROWS = PAD + FLOOR_ROW + 300;
 export type Menu = { items: string[]; choice: number };
 const MENU_ROW = 13;
 
-const LAMP_LIT = [".rRo.", "rRRRo", ".aca.", ".ccc.", ".aca.", "rRRRo"];
-const LAMP_DEAD = [".555.", "56665", "5...5", "5.x..", "5...5", "56665"];
+export const LAMP_LIT = [".rRo.", "rRRRo", ".aca.", ".ccc.", ".aca.", "rRRRo"];
+export const LAMP_DEAD = [".555.", "56665", "5...5", "5.x..", "5...5", "56665"];
 const LANTERN = [".rRo.", "rRRRo", ".aca.", "accca", ".aca.", "rRRRo", ".rRo."];
 const LANTERN_OUT = [".rrR.", "rrrrR", ".434.", "43334", ".434.", "rrrrR", ".rrR."];
 /** A small light that stays with the lamp it woke at. */
-const FRY = [".m.", "mwm", "T.T"];
+export const FRY = [".m.", "mwm", "T.T"];
 const ARROW = ["77777", ".777.", "..7.."];
 /** Beside the name of a diver above or below the view. */
 const UP = ["..6..", ".666.", "66666"];
