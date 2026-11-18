@@ -177,6 +177,10 @@ body {
   cursor: pointer;
 }
 
+.dev .fold {
+  float: right;
+}
+
 .dev button:hover {
   background: #1f3352;
 }

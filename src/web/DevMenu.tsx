@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { CreatureKind } from "./pixel/creatures";
 import type { Frame } from "./pixel/frame";
 import type { MultiplayerPanel } from "./pixel/multiplayer";
@@ -47,10 +48,35 @@ function endDive(game: Game) {
 const CREATURES: [kind: CreatureKind, name: string][] = [["angler", "Anglerfish"], ["eyes", "Eyes"], ["serpent", "Eel"]];
 
 /** Shortcuts for whoever is working on the game. Shown only when the server runs with HADAL_DEV_MODE=1. */
+/** Whether the menu is folded away, kept by the browser between visits. Storage may be closed (a private window): then it starts open. */
+const FOLDED = "hadal.dev.folded";
+function stored(): boolean {
+  try {
+    return localStorage.getItem(FOLDED) === "1";
+  } catch {
+    return false;
+  }
+}
+
 export function DevMenu(tools: DevTools) {
   const { game, scene, frame } = tools;
+  const [folded, setFolded] = useState(stored);
+  const fold = (value: boolean) => {
+    setFolded(value);
+    try {
+      localStorage.setItem(FOLDED, value ? "1" : "0");
+    } catch {}
+  };
+  if (folded) {
+    return (
+      <aside className="dev">
+        <button onClick={() => fold(false)}>Dev</button>
+      </aside>
+    );
+  }
   return (
     <aside className="dev">
+      <button className="fold" onClick={() => fold(true)} aria-label="Hide the developer menu">Hide</button>
       <div>
         Answer with rarity near
         {[1, 25, 50, 75, 100].map((rarity) => (
