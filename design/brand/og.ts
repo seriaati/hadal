@@ -2,6 +2,7 @@ import { createGame } from "../../src/web/state";
 import { FONTS, drawText } from "../../src/web/pixel/font";
 import type { Frame, Light } from "../../src/web/pixel/frame";
 import { Scene } from "../../src/web/pixel/scene";
+import { en } from "../../src/shared/words/en";
 
 export function drawOg(frame: Frame): Light[] {
   const game = createGame();
@@ -18,5 +19,6 @@ export function drawOg(frame: Frame): Light[] {
   frame.emit = 110;
   drawText(frame, FONTS.huge, "HADAL", 114, 43, (row) => (row < 8 ? 16 : row < 22 ? 15 : 14));
   frame.emit = 0;
+  drawText(frame, FONTS.tiny, en.title.tagline, 114, 43 + FONTS.huge.height + 6, 6);
   return lights;
 }
