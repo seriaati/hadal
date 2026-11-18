@@ -271,7 +271,11 @@ export class Sound {
         // A long groan, sliding down.
         this.note("ambient", "triangle", 220, 95, 0.22, 8, 3);
         this.note("ambient", "triangle", 223, 96, 0.22, 8, 3);
-      } else {
+      } else if (kind === "whale") {
+        // A far-off call: a low moan that rises, then falls away.
+        this.note("ambient", "sine", 140, 210, 0.12, 3, 1.5);
+        this.note("ambient", "sine", 210, 110, 0.1, 5, 2, 3);
+      } else if (kind === "eyes") {
         // A thin, high shimmer, at the edge of hearing.
         this.note("ambient", "sine", 1480, 1480, 0.03, 4.5, 1.5);
         this.note("ambient", "sine", 1487, 1487, 0.03, 4.5, 1.5);

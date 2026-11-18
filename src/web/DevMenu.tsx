@@ -45,7 +45,7 @@ function endDive(game: Game) {
   game.phaseTime = 0;
 }
 
-const CREATURES: [kind: CreatureKind, name: string][] = [["angler", "Anglerfish"], ["eyes", "Eyes"], ["serpent", "Eel"]];
+const CREATURES: [kind: CreatureKind, name: string][] = [["angler", "Anglerfish"], ["eyes", "Eyes"], ["serpent", "Eel"], ["whale", "Whale"], ["fish", "Fish"]];
 
 /** Shortcuts for whoever is working on the game. Shown only when the server runs with HADAL_DEV_MODE=1. */
 /** Whether the menu is folded away, kept by the browser between visits. Storage may be closed (a private window): then it starts open. */

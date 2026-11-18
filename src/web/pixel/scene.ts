@@ -143,6 +143,8 @@ export type Turn = {
   bar: number;
 };
 const LINE_GAP = 64;
+/** The rows of the wall where kelp and grass grow: down to 600 m. */
+const KELP_ROWS = 600 / METERS_PER_PIXEL;
 /** How long the camera takes to travel to the next diver, in seconds. */
 const TRAVEL_SECONDS = 0.75;
 
@@ -458,7 +460,7 @@ export class Scene {
 
     // ---- whatever is out there
     this.ambient.chaos = game.chaos;
-    this.ambient.update(dt, this.depth, scroll, W, H);
+    this.ambient.update(dt, this.depth, scroll, W, H, surface + 1);
     this.ambient.draw(frame, water, time, lights);
 
     // ---- marine snow, tinted by whichever light it drifts through
@@ -515,8 +517,39 @@ export class Scene {
       }
     }
 
-    // Each zone is named on the rock where it begins, like a depth mark.
+    // Kelp grows from the ledges of the wall where the sun still reaches, tall near the surface and shorter below; lower
+    // down only tufts of grass, and then nothing. It sways, and a lamp nearby lights it.
     frame.block = -1;
+    for (let y = 0; y < H; y++) {
+      const row = rowAt(y);
+      if (row < 1 || row > KELP_ROWS) continue;
+      const r = row + PAD;
+      const edge = this.rock.edge[r]! + shift;
+      // Only a ledge, where the wall steps out, holds anything: one or two stalks from its outer edge.
+      if (edge <= this.rock.edge[r - 1]! + shift) continue;
+      const deep = row / KELP_ROWS;
+      for (const [k, x] of [edge, edge - 2].entries()) {
+        const chance = hash(row, k * 31 + 5);
+        if (chance > (k ? 0.35 : 0.8) - 0.4 * deep) continue;
+        const kelp = deep < 0.45 && chance < 0.5;
+        const tall = kelp ? Math.round((12 + 24 * hash(row, k + 9)) * (1 - deep)) : 3 + Math.floor(4 * hash(row, k + 17));
+        const sway = Math.sin(time * 0.8 + row * 0.9 + k * 2);
+        for (let h = 1; h <= tall; h++) {
+          const up = h / tall;
+          // It leans out from the wall into the water, more towards its tip, and sways there.
+          const px = Math.round(x + 1 + h * (kelp ? 0.3 : 0.4) + sway * (kelp ? 2.5 : 1) * up ** 1.5);
+          const py = y - h;
+          if (py < 0 || rowAt(py) <= SURFACE_ROW || behindWords(px, py)) continue;
+          if (px <= this.rock.edge[Math.max(1, rowAt(py) + PAD)]! + shift) continue;
+          const lit = rockLight(px, py);
+          frame.put(px, py, lit > 0.29 && up > 0.6 ? 21 : lit > 0.12 ? 20 : 19);
+          // Blades off the stalk, now on one side, now on the other.
+          if (kelp && h % 5 === 3 && h < tall - 1) frame.put(px + (h % 10 === 3 ? 1 : -1), py - 1, lit > 0.12 ? 20 : 19);
+        }
+      }
+    }
+
+    // Each zone is named on the rock where it begins, like a depth mark.
     for (const zone of boundaries) {
       if (this.hush && zone.y + 18 > this.hush[0] && zone.y + 4 < this.hush[1]) continue;
       drawText(frame, FONTS.tiny, zone.name.replace(" zone", ""), 4 + shift, zone.y + 4, 6);
