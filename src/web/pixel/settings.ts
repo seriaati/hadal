@@ -7,17 +7,15 @@ const COG = [
   "6666..6666", "..666666..", ".66666666.", ".66.66.66.", "....66....",
 ];
 
-/** The only control on screen: a cog in the top right corner, which opens the settings. Escape opens them too. */
 export function drawCog(frame: Frame) {
   frame.sprite(COG, frame.width - 13, 1);
 }
 
-/** Whether a point of the frame is on the cog, with room around it for a fingertip. */
+/** With room around the cog for a fingertip. */
 export function overCog(frame: Frame, x: number, y: number): boolean {
   return x >= frame.width - 18 && y < 15;
 }
 
-/** The settings: a slider for each sound level. The game goes on behind them. */
 export function settingsStep(sound: Sound): Step {
   return {
     title: "Settings",

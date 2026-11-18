@@ -4,7 +4,6 @@ import type { Scene } from "./scene";
 
 // The parts every panel is built from and the one way of controlling them: see docs/UI.md.
 
-/** Anything that is pressed: a row of a list, a button, a link. They all look alike. */
 export type Press = {
   kind: "press";
   id: string;
@@ -18,7 +17,6 @@ export type Press = {
   submit?: boolean;
   quiet?: boolean;
   danger?: boolean;
-  /** Set against the right edge of its row. */
   right?: boolean;
   /** Called when the focus leaves it. */
   left?: () => void;
@@ -28,7 +26,6 @@ export type Press = {
   /** Left and Right change the setting, as on a slider. */
   shift?: (way: -1 | 1) => void;
 };
-/** `start` is what the field holds when it is first made. */
 export type Field = { kind: "field"; id: string; label: string; max: number; dots?: boolean; password?: boolean; autocomplete: string; start?: string };
 /**
  * A level from 0 to 1 in `steps` steps (20 if not given). With `colors` it is a choice among
@@ -37,13 +34,11 @@ export type Field = { kind: "field"; id: string; label: string; max: number; dot
 export type Slider = { kind: "slider"; id: string; label: string; value: number; set: (value: number) => void; steps?: number; colors?: number[]; text?: string };
 export type Note = { kind: "note"; text: string; bad?: boolean };
 export type Wait = { kind: "wait"; text: string; done: number; of: number };
-/** One of the people in a room: a pip of their colour, their name, and a word about them. */
 export type Player = { kind: "player"; name: string; color: number; note: string };
 export type Part = Press | Field | Slider | Note | Wait | Player | { kind: "gap" };
 type Control = Press | Field | Slider;
 /**
- * One screen of a panel: its name, and its rows from the top. While `busy`, presses wait.
- * `escape` is what Escape does here, where that is not to go one step back. `code` follows
+ * While `busy`, presses wait. `escape` replaces going one step back on Escape. `code` follows
  * the name in pale letters: a room's code, which has to be read out, and which a press copies.
  */
 export type Step = { title: string; code?: { text: string; copy: () => void }; rows: (Part | Part[])[]; busy?: boolean; escape?: () => void };
@@ -64,14 +59,12 @@ const isControl = (part: Part): part is Control => part.kind === "press" || part
 const kindOf = (part: Control) => (part.kind === "press" ? (part.file ? "file" : part.submit ? "submit" : "press") : part.kind);
 const natural = (part: Part) => INDENT + (part.kind === "press" ? measure(FONTS.tiny, plain(part.label)) : 0) + 2;
 
-/** The mark of the focus: drawn before the line that has it, here and in the title menu. */
 export function drawMark(frame: Frame, x: number, y: number) {
   frame.emit = 220;
   frame.sprite(MARK, x, y);
   frame.emit = 0;
 }
 
-/** Set a step out in a column of a given width, with lines of a given height. */
 export function lay(step: Step, width: number, line: number): { placed: Placed[]; height: number } {
   const placed: Placed[] = [];
   let y = HEAD + ((line - LINE) >> 1);
@@ -173,17 +166,14 @@ export class Ui {
     return this.steps.length > 0;
   }
 
-  /** The step on screen, as the function that was given for it. */
   get top(): (() => Step) | undefined {
     return this.steps.at(-1)?.build;
   }
 
-  /** Whether a step is open, on screen or under others. */
   holds(build: () => Step): boolean {
     return this.steps.some((step) => step.build === build);
   }
 
-  /** Go one step in, with the focus on its first control or on the one named. */
   go(build: () => Step, focus = "") {
     const top = this.steps.at(-1);
     if (top) top.focus = (document.activeElement as HTMLElement | null)?.dataset.id ?? "";
@@ -192,7 +182,6 @@ export class Ui {
     this.sync();
   }
 
-  /** One step back: to the step before, with the focus where it was, or out of the panel. */
   back() {
     this.steps.pop();
     const top = this.steps.at(-1);
@@ -208,12 +197,10 @@ export class Ui {
     this.typing.focus();
   }
 
-  /** Give a control of the step on screen the focus, once it is there. */
   focus(id: string) {
     this.wanted = id;
   }
 
-  /** What is typed in a field. */
   value(id: string): string {
     return this.controls.get(id)?.value ?? this.kept.get(id) ?? "";
   }
@@ -224,7 +211,7 @@ export class Ui {
     if (field) field.value = "";
   }
 
-  /** A press on the game at a point of the frame: outside the words, it goes one step back. */
+  /** A press outside the panel's words goes one step back. */
   press(x: number, y: number) {
     const { x: left, y: top, w, h } = this.box;
     if (x < left - 14 || x >= left + w + 12 || y < top - 10 || y >= top + h + 10) this.back();
@@ -340,7 +327,6 @@ export class Ui {
       this.sync();
     }
     else if (here.part.kind === "press" && event.key === "ArrowLeft") {
-      // Left from the leftmost thing of a row goes one step back.
       if (move(this.placed, here, "left")) go("left");
       else {
         event.preventDefault();
@@ -359,7 +345,7 @@ export class Ui {
     }
   }
 
-  /** The keys on the step's name (`code` false) or on its code. Enter presses them as it does any button. */
+  /** Enter needs no handling here: the name and the code are buttons. */
   private headKey(event: KeyboardEvent, code: boolean) {
     const controls = this.placed.map((spot) => spot.part).filter(isControl);
     const to =
@@ -377,7 +363,7 @@ export class Ui {
     }
   }
 
-  /** Draw the step on screen and lay each control over its drawing. `scale` is how many screen pixels a pixel of the frame takes. */
+  /** `scale` is how many screen pixels a pixel of the frame takes. */
   draw(frame: Frame, scene: Scene, scale: number, time: number, dive: boolean) {
     scene.hush = null;
     if (!this.open) return;
@@ -421,7 +407,6 @@ export class Ui {
       Object.assign(control.style, { left: `${x * scale}px`, top: `${y * scale}px`, width: `${w * scale}px`, height: `${h * scale}px` });
     const blink = Math.floor(time * 2.5) % 2 === 0;
 
-    // The step's name and its code light up like any line when they have the focus.
     const back = this.leave === document.activeElement;
     frame.emit = back ? 70 : 0;
     say("‹", left + 1, top + 1, back ? 16 : 6);
@@ -442,7 +427,6 @@ export class Ui {
       const ty = py + ((h - 5) >> 1);
       const control = isControl(part) ? this.controls.get(part.id) : undefined;
       const on = control !== undefined && control === document.activeElement;
-      // While the panel waits for an answer, the mark blinks.
       const mark = (at: number) => on && (!this.step.busy || blink) && drawMark(frame, px + 1, at);
       const lit = (text: string, color: number) => {
         frame.emit = on ? 70 : 0;
@@ -480,7 +464,6 @@ export class Ui {
         mark(typed);
         say(part.label, tx, py + 2, on ? 7 : 6);
         if (part.dots) {
-          // A password or a key is a row of dots, as many as fit.
           const dots = Math.min(value.length, Math.floor(room / 4));
           for (let i = 0; i < dots; i++) for (let j = 0; j < 4; j++) frame.put(tx + i * 4 + (j & 1), typed + 2 + (j >> 1), 7);
           at += Math.min(caret, dots) * 4;
@@ -555,7 +538,7 @@ export class Ui {
   }
 }
 
-/** Moving the pointer over a control gives it the focus. A pointer that only rests there does not take it back from the keys. */
+/** A pointer that only rests over a control does not take the focus back from the keys. */
 function hover(control: HTMLElement) {
   control.addEventListener("pointermove", (event) => {
     if (event.pointerType === "mouse" && (event.movementX || event.movementY) && document.activeElement !== control) control.focus();

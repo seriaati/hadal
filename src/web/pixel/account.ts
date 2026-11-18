@@ -1,7 +1,6 @@
 import { MAX_KEY_LENGTH, PASSWORD_MAX, PROVIDERS, USERNAME_MAX, type Account, type KeyFailure, type Provider } from "../../shared/types";
 import type { Part, Step, Ui } from "./ui";
 
-/** What each key is called, and what keeping one is good for. */
 const KEYS: Record<Provider, { name: string; use: string }> = {
   anthropic: { name: "Anthropic key", use: "An Anthropic key lets Claude write packs, and judge answers the packs miss" },
   jev: { name: "Jev key", use: "A Jev key lets Jev judge answers the packs miss" },
@@ -14,14 +13,8 @@ const FAILURES: Record<KeyFailure, { short: string; what: string; fix: string }>
   unanswered: { short: "no answer", what: "got no answer", fix: "the service may have been down" },
 };
 
-/**
- * The panel for signing in, creating an account and signing out, opened from the title menu.
- * Signed in, it also takes the player's API keys, each in a step of its own.
- */
 export class AccountPanel {
-  /** Who is signed in, once the server has said. */
   account: Account | null = null;
-  /** Settled once the server has said who is signed in. */
   loaded: Promise<void>;
   private creating = false;
   private error = "";
@@ -40,7 +33,7 @@ export class AccountPanel {
       });
   }
 
-  /** Ask the server again who is signed in and how their keys last went, as after a dive, which may have used them. */
+  /** Called after a dive too, which may have used the keys and changed how they last went. */
   refresh() {
     if (this.busy) return;
     void fetch("/api/account")
@@ -58,7 +51,6 @@ export class AccountPanel {
     if (failed) return `Your ${failed > 1 ? "keys" : "key"} failed: see Account`;
   }
 
-  /** Open the panel: on the account if signed in (or on one of its keys), otherwise to sign in or to create an account. */
   show(key?: Provider) {
     this.creating = false;
     this.error = "";
@@ -133,7 +125,6 @@ export class AccountPanel {
     };
   };
 
-  /** Ask the server for a change to the account. Its refusal, if any, is shown in the panel. */
   private async ask(path: string, request: RequestInit): Promise<Response | null> {
     if (this.busy) return null;
     this.busy = true;
@@ -143,7 +134,6 @@ export class AccountPanel {
     return res.ok ? res : null;
   }
 
-  /** Keep the key that was typed, or forget the one that is kept. */
   private async setKey(provider: Provider, request: RequestInit) {
     const res = await this.ask(`key/${provider}`, request);
     if (!res) return;
@@ -153,7 +143,6 @@ export class AccountPanel {
     this.changed();
   }
 
-  /** Sign in, create the account, or sign out: whichever the panel is showing. */
   private async send() {
     const leaving = this.account !== null;
     const res = await this.ask(leaving ? "signout" : this.creating ? "signup" : "signin", {

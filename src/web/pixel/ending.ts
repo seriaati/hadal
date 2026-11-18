@@ -7,13 +7,11 @@ import { dither, hash, type Frame, type Light } from "./frame";
 import { FRY, LAMP_DEAD, LAMP_LIT, SUIT_COLORS } from "./scene";
 import { drawMark } from "./ui";
 
-/** A room's dive as its end screen tells it: its mode, and every diver, with their name and suit. */
 export type RoomLog = { mode: Mode; divers: (Finish & { name: string; suit: number })[] };
-/** What an end screen is drawn for: a single player's dive, or a room's. */
 export type Log = Game | RoomLog;
 export const isRoom = (log: Log): log is RoomLog => "divers" in log;
 
-/** One lamp: the prompt it was hung at, and what lit it (null when the air ran out first). */
+/** `answer` is null when the air ran out first. */
 export type Hung = { prompt: string; pack: string | null; answer: string | null; rarity: number };
 type Diver = RoomLog["divers"][number];
 /** A string of lamps on screen: `count` lamps of one line from its `from`th, hung on a rope at `y`. */
@@ -88,12 +86,11 @@ export class Ending {
     this.focus = lamps.length ? { line, lamp: rarest } : "back";
   }
 
-  /** The lamp in focus, if one is. */
   get focused(): Hung | null {
     return this.focus === "back" ? null : this.lines[this.focus.line]![this.focus.lamp]!;
   }
 
-  /** Move the focus. Says whether it moved. */
+  /** Says whether the focus moved. */
   move(way: "up" | "down" | "left" | "right", frame: Frame): boolean {
     const rows = this.rows(frame);
     const was = this.focus;
@@ -119,17 +116,15 @@ export class Ending {
     return true;
   }
 
-  /** What is under a point of the frame: a lamp, the line back, or nothing. */
   at(x: number, y: number): Spot | null {
     return this.spots.find((spot) => x >= spot.x && x < spot.x + spot.w && y >= spot.y && y < spot.y + spot.h)?.spot ?? null;
   }
 
-  /** Give the focus to a lamp or the line back. Says whether it moved. */
   choose(spot: Spot) {
     this.focus = spot;
   }
 
-  /** The rows of lamps for a frame of this size. A single player's line breaks into rows of five on a narrow screen; a room has a row for each diver. */
+  /** A single player's line breaks into rows of five on a narrow screen; a room has a row for each diver. */
   private rows(frame: Frame): Row[] {
     const { width: W, height: H } = frame;
     const wide = W >= 300;
@@ -174,7 +169,6 @@ export class Ending {
     return 6 + wrap(medium, this.winnerWords(), W - 16).length * 11 + 8 + (chaos ? 8 : 0);
   }
 
-  /** Where the words about the lamp in focus begin. */
   private detailsTop(frame: Frame): number {
     if (!this.divers.length) return this.rows(frame).at(-1)!.y + 50;
     return this.roomLayout(frame).details;
@@ -348,7 +342,7 @@ export class Ending {
     return end;
   }
 
-  /** Lines of text, each centred. Returns the y under the last. */
+  /** Returns the y under the last line. */
   private centred(frame: Frame, font: Font, text: string, y: number, color: number | ((row: number) => number), glow = 0, pitch = font.height + 4): number {
     for (const line of wrap(font, text, frame.width - 16)) {
       this.say(frame, font, line, frame.width >> 1, y, color, true, glow);
@@ -357,7 +351,6 @@ export class Ending {
     return y;
   }
 
-  /** The depth reached and how the dive went; in a room, who won. */
   private drawHead(frame: Frame) {
     const W = frame.width;
     const log = this.log;
@@ -387,7 +380,6 @@ export class Ending {
     this.say(frame, tiny, name, 10, row.y - 2, on ? 16 : diver.won ? 15 : 7, false, on || diver.won ? 70 : 0);
   }
 
-  /** What lit the lamp in focus: the prompt, the answer as large as when it was given, what it was worth. */
   private drawDetails(frame: Frame) {
     const hung = this.focused;
     if (!hung || this.focus === "back") return;

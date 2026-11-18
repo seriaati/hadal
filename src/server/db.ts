@@ -5,7 +5,6 @@ const MIGRATIONS = `${import.meta.dir}/migrations`;
 /** The default is the `db` service of `compose.yaml`, as reached from this machine. */
 export const sql = new SQL(process.env.DATABASE_URL ?? "postgres://hadal:hadal@localhost:5433/hadal");
 
-/** Bring the database up to date: run, in order, every file in `migrations/` it has not run yet. */
 export async function migrate() {
   await sql`create table if not exists migrations (name text primary key)`;
   const done = new Set((await sql`select name from migrations`).map((row: { name: string }) => row.name));

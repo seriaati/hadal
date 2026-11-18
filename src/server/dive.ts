@@ -18,7 +18,6 @@ export type DiveSetup = {
   mode: Mode;
   index: PromptIndex;
   prompts: GamePrompt[];
-  /** The divers' ids in the order drawn for this dive. */
   order: number[];
   air: number;
   live: Live;
@@ -29,7 +28,7 @@ export type DiveSetup = {
 
 const WRONG: Verdict = { answer: null, rarity: 0 };
 
-/** Only the prompts that list at least as many answers as there are divers, so that nobody is left without one to give. */
+/** Every diver needs an answer of their own to give, so only prompts with at least as many answers as divers will do. */
 export function enoughFor(index: PromptIndex, divers: number): PromptIndex {
   return new Map([...index].filter(([, entry]) => new Set(entry.answers.values()).size >= divers));
 }
@@ -46,7 +45,6 @@ export class Dive {
   private present: number[];
   /** The prompt on which each diver who is out went out. */
   private outAt = new Map<number, number>();
-  /** Every answer each diver gave, for the end screen. */
   private said = new Map<number, Said[]>();
   /** Who is still to answer this prompt; the diver whose turn it is comes first. */
   private queue: number[] = [];
@@ -67,7 +65,6 @@ export class Dive {
   /** Counts the turns, so that a ruling or a timer from a turn that is over does nothing. */
   private turns = 0;
   private over = false;
-  /** While a chaos dive's divers are being dropped off, the moment it ends. */
   private dropEnd: number | null = null;
 
   constructor(private setup: DiveSetup) {
@@ -128,7 +125,7 @@ export class Dive {
     if (typed) await this.attempt(typed);
   }
 
-  /** A diver left. If it was their turn, the turn passes on at once. */
+  /** A diver left the room. */
   drop(id: number) {
     if (this.over || !this.divers.some((diver) => diver.id === id)) return;
     this.divers = this.divers.filter((diver) => diver.id !== id);
@@ -202,7 +199,6 @@ export class Dive {
     this.setup.changed();
   }
 
-  /** The turn is over: a lamp is hung, lit or dead, and everyone sees the verdict for a moment. */
   private end(verdict: Verdict | null) {
     this.stop();
     const diver = this.divers.find((one) => one.id === this.turn)!;
@@ -237,7 +233,6 @@ export class Dive {
     this.setup.changed();
   }
 
-  /** The next turn: of this prompt, or of the next one, or the end of the dive. */
   private proceed() {
     if (this.done()) return this.finish();
     if (!this.queue.length) {
@@ -254,7 +249,6 @@ export class Dive {
     this.begin();
   }
 
-  /** The diver after this one in the order drawn, among those still in the dive. */
   private after(id: number): number {
     const { order } = this.setup;
     const at = order.indexOf(id);

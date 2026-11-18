@@ -52,13 +52,11 @@ type Ruling = { correct: boolean; answer: string; rarity: number };
 
 const listed = (entry: PromptEntry): Answer[] => [...new Set(entry.answers.values())];
 
-/** What Claude is sent about one answer. */
 export function question(entry: PromptEntry, typed: string): string {
   const answers = listed(entry).map((answer) => `- ${[answer.text, ...(answer.aliases ?? [])].join(", also ")} (${answer.rarity})`);
   return `Prompt: ${entry.prompt.text}\n\nListed answers:\n${answers.join("\n")}\n\nThe player's answer: ${typed}`;
 }
 
-/** The verdict a ruling of Claude's comes to. An answer it knows as a listed one scores as that one. */
 export function settle(entry: PromptEntry, typed: string, ruling: Ruling): Verdict {
   if (!ruling.correct) return WRONG;
   const known = entry.answers.get(normalize(ruling.answer));
@@ -82,8 +80,8 @@ async function jev(apiKey: string, state: object, questions: object): Promise<Je
 }
 
 /**
- * Have Jev rule on an answer, paid for with the player's own key. Null when it is not sure, and
- * throws when a request fails. Jev writes nothing, so a correct answer is spelt as the player typed it.
+ * Null when Jev is not sure; throws when a request fails. Jev writes nothing, so a correct answer
+ * is spelt as the player typed it.
  */
 async function askJev(apiKey: string, entry: PromptEntry, typed: string): Promise<Verdict | null> {
   const names = listed(entry).map((answer) => answer.text);
@@ -115,7 +113,7 @@ async function askJev(apiKey: string, entry: PromptEntry, typed: string): Promis
   return right <= SURE_WRONG ? WRONG : null;
 }
 
-/** Have Claude rule on an answer, paid for with the player's own key. Null when it gave no ruling, and throws when the request fails. */
+/** Null when Claude gave no ruling; throws when the request fails. */
 async function askClaude(apiKey: string, entry: PromptEntry, typed: string): Promise<Verdict | null> {
   const message = await new Anthropic({ apiKey, timeout: TIMEOUT_MS, maxRetries: 0 }).messages.create({
     model: MODEL,
@@ -130,7 +128,6 @@ async function askClaude(apiKey: string, entry: PromptEntry, typed: string): Pro
   return settle(entry, typed, JSON.parse(written.text) as Ruling);
 }
 
-/** What the owner of a key is told about a request with it that failed. */
 export function failure(error: unknown): KeyFailure {
   const status = (error as { status?: number }).status;
   if (status === 401 || status === 403) return "refused";
@@ -139,7 +136,6 @@ export function failure(error: unknown): KeyFailure {
   return status === 402 || status === 429 || broke ? "limited" : "unanswered";
 }
 
-/** Ask a judge with the player's key for it, if they keep one, and note on the key whether the request went through. */
 async function ask(accountId: string | null, provider: Provider, judge: (apiKey: string) => Promise<Verdict | null>): Promise<Verdict | null> {
   const apiKey = accountId && (await loadKey(accountId, provider));
   if (!accountId || !apiKey) return null;

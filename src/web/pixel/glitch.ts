@@ -5,7 +5,6 @@ import { hash, type Frame } from "./frame";
 // A chaos dive is seen as if on an old tape that is failing: grain, scanlines, colours that slip off what is bright, a
 // tracking band, and faults that tear, freeze, roll, melt and shatter the picture, worse the deeper and the shorter of air.
 
-/** A palette colour one step darker, by index. */
 const DARKER = [0, 0, 1, 2, 3, 4, 5, 6, 2, 8, 9, 10, 1, 12, 13, 14, 15, 2, 12, 1, 19, 20];
 /** The colours of a band gone wrong: the sea in the reds of a warning lamp. */
 const WRONG = [12, 12, 12, 12, 13, 13, 18, 14, 12, 13, 14, 15, 1, 4, 9, 10, 7, 3, 9, 12, 13, 14];
@@ -16,16 +15,12 @@ const BRIGHT = new Set([7, 10, 11, 14, 15, 16, 18]);
  * on seizures in people prone to them.
  */
 const MOST_PER_SECOND = 3;
-/** Static: mostly black, some dim specks, a few pale ones. */
 const speck = () => {
   const r = Math.random();
   return r < 0.55 ? 0 : r < 0.8 ? 3 : r < 0.94 ? 5 : 6;
 };
 
-/**
- * What the black screen says when a chaos dive is lost, one line picked at random. A line that `scares` ends with the eyes
- * bursting out of the dark.
- */
+/** A line that `scares` ends with the eyes bursting out of the dark. */
 export const LAST_WORDS: { text: string; scares?: boolean }[] = [
   { text: "the sea is still watching you" },
   { text: "the sea stares back at you" },
@@ -61,7 +56,6 @@ const LETTERS_PER_SECOND = 16;
 const SCARE_PAUSE = 1;
 export const SCARE_FOR = 0.7;
 
-/** When the eyes come after a line that scares, in seconds from the dive being lost: once it is typed, and a moment of silence has passed. */
 export const scareAt = (text: string) => WORDS_AT + text.length / LETTERS_PER_SECOND + SCARE_PAUSE;
 
 type Kind = "tear" | "wrong" | "static" | "stick" | "roll" | "melt" | "shatter";
@@ -216,7 +210,6 @@ export class Glitch {
       const left = Math.max(0, fault.kind === "wrong" || fault.kind === "tear" || fault.kind === "roll" ? 0 : fault.left % W);
       const right = Math.min(W, fault.kind === "wrong" || fault.kind === "tear" || fault.kind === "roll" ? W : left + fault.width);
       if (fault.kind === "tear") {
-        // Rows torn sideways, each by a little more or less.
         for (let y = top; y < bottom; y++) {
           const shift = Math.round(fault.shift * (0.6 + 0.4 * hash(y, fault.seed)));
           for (let x = 0; x < W; x++) {
@@ -237,7 +230,6 @@ export class Glitch {
           }
         }
       } else if (fault.kind === "melt") {
-        // The picture runs down like wet paint, each column at its own pace.
         for (let x = left; x < right; x++) {
           const drip = Math.round(hash(x, fault.seed) ** 2 * 50 * Math.sin((Math.PI / 2) * Math.min(1, t * 1.6)));
           for (let y = bottom - 1; y >= top; y--) {
@@ -290,9 +282,8 @@ export class Glitch {
       if (this.apparition) this.stare(frame, free, time, focus, false);
     }
 
-    // ---- the tape itself, all along
     const level = this.level;
-    // Its colours slip off whatever is bright: red to the left, teal to the right.
+    // The tape's colours slip off whatever is bright: red to the left, teal to the right.
     const slip = level > 0.55 ? 2 : 1;
     for (let y = 0; y < H; y++) {
       for (let x = slip; x < W - slip; x++) {
@@ -301,14 +292,12 @@ export class Glitch {
         if (frame.color[y * W + x + slip]! <= 4) frame.color[y * W + x + slip] = 8;
       }
     }
-    // Scanlines, and grain that never sits still.
     for (let y = 1; y < H; y += 2) for (let x = 0; x < W; x++) if (free(x, y)) frame.color[y * W + x] = DARKER[frame.color[y * W + x]!]!;
     for (let n = Math.round(W * H * 0.004 * (0.5 + level)); n > 0; n--) {
       const x = Math.floor(Math.random() * W);
       const y = Math.floor(Math.random() * H);
       if (free(x, y)) frame.color[y * W + x] = 3 + Math.floor(Math.random() * 4);
     }
-    // A tracking band near the foot of the screen: rows that jitter sideways, streaked with noise.
     const bandRows = Math.round(4 + 14 * level);
     const bandTop = Math.round(H - 14 - bandRows - 10 * Math.sin(time * 0.37));
     for (let y = Math.max(0, bandTop); y < Math.min(H, bandTop + bandRows); y++) {
@@ -322,7 +311,6 @@ export class Glitch {
       }
     }
 
-    // ---- what the camera writes in the corner
     if (caption && at < OFF_AT) this.caption(frame, time);
 
     // ---- a lost dive: the set switches off, the picture squeezed to a line, then to nothing
@@ -340,7 +328,6 @@ export class Glitch {
       }
       frame.glowStrength.fill(0);
     }
-    // ---- then the dark, and the last words typed into it
     if (at >= DARK_AT) {
       for (let i = 0; i < W * H; i++) blank(i);
       frame.glowStrength.fill(0);
@@ -349,7 +336,6 @@ export class Glitch {
     }
   }
 
-  /** The last words of a lost dive, typed a letter at a time in the middle of the dark, trembling now and then. */
   private lastWords(frame: Frame, time: number) {
     const { width: W, height: H } = frame;
     const { medium } = FONTS;
@@ -361,7 +347,6 @@ export class Glitch {
     });
   }
 
-  /** "PLAY" and the tape's running time, as a camcorder writes them, or "TRACKING" while the signal is lost. */
   private caption(frame: Frame, time: number) {
     const { tiny } = FONTS;
     if (this.lost > 0) {
@@ -401,7 +386,6 @@ export class Glitch {
           frame.glowStrength[i] = frame.color[i] === 18 ? 60 : 0;
         }
       }
-      // A tear of blood runs from each.
       const run = Math.round(r * 0.8 + ((time * 6) % (r * 2)));
       for (let j = 0; j < run; j++) {
         const x = Math.round(ex + side * r * 0.4);

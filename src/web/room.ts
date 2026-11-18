@@ -1,12 +1,10 @@
 import type { ClientMessage, RoomView, ServerMessage } from "../shared/room";
 
-/** What the connection hears: what the server says, or that the connection was lost. */
 export type Heard = ServerMessage | { type: "lost" };
 
 /**
- * The connection to the server's rooms, and the room the player is in. It opens when a
- * message is first sent; closing it takes the player out of their room. The server reads who
- * is signed in once, as it opens, so it is opened afresh each time the player comes to multiplayer.
+ * Opens when a message is first sent; closing it takes the player out of their room. The server
+ * reads who is signed in once, as it opens, so it is opened afresh each time the player comes to multiplayer.
  */
 export class RoomClient {
   view: RoomView | null = null;

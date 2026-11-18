@@ -23,7 +23,7 @@ const REFUSALS: Record<Refusal, [Where, string]> = {
   "not-ready": ["start", "everyone has to be ready first"],
   "no-prompts": ["start", "these packs have no prompt with an answer for everyone: choose others"],
 };
-/** Each mode as the host chooses it: its name, and how it is played. */
+/** [name, how it is played] */
 const MODE_WORDS: Record<Mode, [string, string]> = {
   deepest: ["Deepest", "10 prompts answered in turns, and the diver who goes deepest wins"],
   longest: ["Longest", "two hearts each: an empty tank costs one, rare answers win more, and the last diver in wins"],
@@ -47,10 +47,6 @@ function packsOf({ builtIn, ownPacks: { length } }: RoomSettings, full: boolean)
   return builtIn ? `built-in packs + ${own}` : own;
 }
 
-/**
- * The multiplayer panel, opened from the title menu: make a room or join one by its code,
- * then wait in it with the others until everyone is ready. The host sets the room up.
- */
 export class MultiplayerPanel {
   client = new RoomClient((message) => this.hear(message));
   private suit = 0;
@@ -58,7 +54,7 @@ export class MultiplayerPanel {
   private refused: [Where, string] | null = null;
   /** Why the player is back at the first step. */
   private note = "";
-  /** Whether the room is diving, and when the server last said how the dive stands, in seconds. */
+  /** `sent` is when the server last said how the dive stands, in seconds. */
   diving = false;
   private sent = 0;
   private dive = new RoomDive();
@@ -98,14 +94,12 @@ export class MultiplayerPanel {
     this.ui.go(this.first);
   }
 
-  /** Opened from a room's link: the way into that room, its code filled in. */
   joinByLink(code: string) {
     this.show();
     this.linked = code;
     this.ui.go(this.join, "name");
   }
 
-  /** The address that opens the way into a room. */
   private link(code: string): string {
     return `${location.origin}/?room=${code}`;
   }
@@ -168,12 +162,10 @@ export class MultiplayerPanel {
     return !!this.lost && performance.now() / 1000 - this.lost.at < LOST_SECONDS;
   }
 
-  /** Whether the divers are back at the surface after a dive, so that the end screen opens. */
   get surfaced(): boolean {
     return !!this.ending && this.risen() === 1;
   }
 
-  /** Close the end screen of a dive, once it is open, and go back to the room, or out of it if it is gone. */
   closeEnding() {
     if (!this.ending || performance.now() / 1000 - this.ending.at < this.ending.rise + 1) return;
     this.ending = null;
@@ -240,7 +232,7 @@ export class MultiplayerPanel {
     this.client.send({ type: "typing", text });
   }
 
-  /** Send an answer to be judged. Says whether it was sent. */
+  /** Says whether it was sent. */
   answer(text: string): boolean {
     if (!this.yours || this.client.view!.dive!.judging || !text.trim()) return false;
     this.client.send({ type: "answer", text });
@@ -248,7 +240,6 @@ export class MultiplayerPanel {
     return true;
   }
 
-  /** Leave the dive, and with it the room. */
   leaveDive() {
     this.diving = false;
     this.lost = null;
@@ -309,7 +300,7 @@ export class MultiplayerPanel {
     }
   }
 
-  /** The end of the room's dive, as its end screen tells it. The camera follows the player's own diver up, or the winner for one who only watched. */
+  /** The camera follows the player's own diver up, or the winner for one who only watched. */
   private endingOf({ last, players, you }: RoomView): NonNullable<MultiplayerPanel["ending"]> {
     const divers = last!.divers.map((diver) => {
       const player = players.find((one) => one.id === diver.id);
@@ -348,7 +339,7 @@ export class MultiplayerPanel {
     this.client.send(how === "create" ? { type: "create", ...you } : { type: "join", code: this.ui.value("code"), ...you });
   }
 
-  /** Put the room's link on the clipboard. Without a secure page (plain http to another machine) browsers keep the newer way closed. */
+  /** Without a secure page (plain http to another machine) browsers keep `navigator.clipboard` closed. */
   private copy(code: string) {
     this.refused = null;
     const link = this.link(code);
@@ -385,7 +376,6 @@ export class MultiplayerPanel {
     ],
   });
 
-  /** The name and the suit, asked both to make a room and to join one. */
   private you(): Part[] {
     return [
       { kind: "field", id: "name", label: "Name", max: USERNAME_MAX, autocomplete: "nickname", start: this.account.account?.username },
@@ -417,7 +407,6 @@ export class MultiplayerPanel {
     if (!view) return { title: "Room", rows: [] };
     const you = view.players.find((player) => player.id === view.you)!;
     const waiting = view.players.filter((player) => !player.host && !player.ready).map((player) => player.nickname);
-    // After a dive, how deep each diver went, and who won it.
     const depthOf = (id: number) => view.last?.divers.find((diver) => diver.id === id)?.depth;
     const rows: Part[] = view.players.map((player) => {
       const depth = depthOf(player.id);
@@ -505,7 +494,6 @@ export class MultiplayerPanel {
     };
   };
 
-  /** The modes, each with how it is played. Choosing one goes back to the set-up. */
   private modeStep = (): Step => {
     const settings = this.client.view?.settings;
     if (!settings) return { title: "Mode", rows: [] };

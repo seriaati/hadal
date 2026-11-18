@@ -94,7 +94,7 @@ export class Frame {
     if (this.block >= 0) this.shade[i] = this.block;
   }
 
-  /** Draw a sprite. If `glowChars` is given, only those characters glow. */
+  /** If `glowChars` is given, only those characters glow. */
   sprite(rows: string[], x: number, y: number, glowChars?: string) {
     const emit = this.emit;
     rows.forEach((row, j) => {
@@ -188,7 +188,6 @@ export class Display {
     g.fillStyle = "#000";
     g.fillRect(0, 0, width, height);
 
-    // The lights themselves.
     g.globalCompositeOperation = "lighter";
     for (const light of lights) {
       const x = light.x * GLOW_SCALE;
@@ -207,7 +206,6 @@ export class Display {
     g.imageSmoothingEnabled = false;
     g.drawImage(this.shadeCanvas, 0, 0, width, height);
 
-    // Glowing pixels bloom.
     g.globalCompositeOperation = "lighter";
     g.imageSmoothingEnabled = true;
     for (const [blur, alpha] of [[1.25, 0.5], [4, 0.55], [11, 0.4]] as const) {

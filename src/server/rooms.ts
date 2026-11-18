@@ -9,7 +9,7 @@ import { OWN, buildIndex, pickPrompts, shuffle, type PromptIndex } from "./game"
 import { loadKey } from "./keys";
 import { judgeLive } from "./live";
 
-/** One connection. `accountId` is who was signed in when it was opened. */
+/** One connection. `accountId` is who was signed in when it was opened, not now. */
 export type Member = { accountId: string | null; send(message: ServerMessage): void };
 
 type Player = RoomPlayer & { member: Member };
@@ -19,7 +19,6 @@ type Room = { code: string; players: Player[]; settings: RoomSettings; nextId: n
 /** Letters the game's small capitals cannot mix up: no I or O (1 and 0), Q (O), B (R), V (U) or X (K). */
 const LETTERS = "ACDEFGHJKLMNPRSTUWYZ";
 const rooms = new Map<string, Room>();
-/** The room each connection is in. */
 const places = new Map<Member, Room>();
 let builtIn: PromptIndex = new Map();
 let clock: Clock = realClock;
@@ -43,7 +42,7 @@ function tell(room: Room) {
   for (const { member, id } of room.players) member.send({ type: "room", room: { code: room.code, you: id, players, settings: room.settings, dive, last: room.last } });
 }
 
-/** Put a connection into a room, or say why not. Without a `code` the room is a new one and the player its host. */
+/** Without a `code` the room is a new one and the player its host. */
 function enter(member: Member, message: { nickname: string; suit: number }, code?: string): Refusal | void {
   const nickname = String(message.nickname ?? "").trim().toLowerCase();
   if (!USERNAME.test(nickname)) return "bad-name";
@@ -136,7 +135,7 @@ async function start(member: Member, room: Room): Promise<Refusal | void> {
   room.dive.start();
 }
 
-/** Take a connection out of its room, if it is in one. When the host goes, so does the room. */
+/** When the host goes, so does the room. */
 export function leave(member: Member) {
   const room = places.get(member);
   if (!room) return;
@@ -156,7 +155,7 @@ export function leave(member: Member) {
   }
 }
 
-/** Act on what a browser sent. A message that makes no sense where it arrives is ignored. */
+/** A message that makes no sense where it arrives is ignored. */
 export async function receive(member: Member, text: string) {
   let message: ClientMessage;
   try {

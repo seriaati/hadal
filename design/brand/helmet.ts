@@ -1,4 +1,4 @@
-/** The logo: the diver's head, a brass helmet with its window lit, in the sprite rows of `Frame.sprite`. */
+/** In the sprite rows of `Frame.sprite`. */
 export const HELMET = [
   ".....000000.....",
   "...00RRoooo00...",

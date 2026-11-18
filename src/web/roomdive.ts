@@ -16,7 +16,6 @@ export class RoomDive {
   /** The turns whose ending has been heard, so the sounds of an ending play once. */
   private ended = new Set<string>();
 
-  /** A new dive begins: nothing of the one before is kept. */
   reset() {
     this.game = createGame();
     this.shown = "";
@@ -24,7 +23,7 @@ export class RoomDive {
     this.ended.clear();
   }
 
-  /** Fold the dive, as last sent at `sent` (seconds, like `now`), into the game. A chaos dive opens with the drop-off. */
+  /** `sent` is when the server sent `dive`, in seconds like `now`. */
   update(dive: DiveView, sent: number, now: number, chaos: boolean): Game {
     const game = this.game;
     game.chaos = chaos;

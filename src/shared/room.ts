@@ -2,17 +2,17 @@ import type { GamePrompt, Verdict } from "./types";
 
 export const MAX_PLAYERS = 6;
 export const ROOM_CODE_LENGTH = 5;
-/** How many colours the diver's suit comes in. A suit is a number from 0 up to this. */
+/** A suit is a colour index below this. */
 export const SUITS = 6;
 
 export type Mode = "deepest" | "longest" | "chaos";
 export const MODES: Mode[] = ["deepest", "longest", "chaos"];
-/** Seconds of air for each turn: the limits the host may set, and where each mode starts. */
+/** Seconds of air for each turn. */
 export const AIR_MIN = 5;
 export const AIR_MAX = 60;
 export const DEFAULT_AIR: Record<Mode, number> = { deepest: 30, longest: 15, chaos: 8 };
 
-/** What the host decides. The prompts come from the built-in packs, from packs of the host's own (`ownPacks` holds their ids), or both. */
+/** `ownPacks` holds the ids of the host's own packs; prompts come from them, the built-in packs, or both. */
 export type RoomSettings = { mode: Mode; air: number; builtIn: boolean; ownPacks: string[]; judging: boolean };
 export const DEFAULT_SETTINGS: RoomSettings = { mode: "deepest", air: DEFAULT_AIR.deepest, builtIn: true, ownPacks: [], judging: false };
 
@@ -20,7 +20,7 @@ export const DEFAULT_SETTINGS: RoomSettings = { mode: "deepest", air: DEFAULT_AI
 export const DIVE_PROMPTS = 10;
 /** Seconds everyone sees a verdict before the next turn. */
 export const PAUSE_SECONDS = 2.5;
-/** How long the submarines of a chaos dive take to let the divers go, before the first turn. */
+/** Seconds the submarines of a chaos dive take to let the divers go, before the first turn. */
 export const DROP_SECONDS = 4;
 /** In "longest", the hearts a diver starts with, the most they can have, and the points of rarity that fill the bar and give one more. In "chaos" a diver has one heart, and wins no more. */
 export const START_HEARTS = 2;
@@ -58,12 +58,11 @@ export type DiveView = {
   divers: DiverView[];
   drop: number;
 };
-/** One answer a diver gave: the prompt it was to, the pack's answer (null when the air ran out) and its rarity. */
+/** `answer` is the pack's answer, null when the air ran out. */
 export type Said = { prompt: string; answer: string | null; rarity: number };
 /**
- * How a dive ended for one diver: how deep they went, whether they won, their place (from 1), their points (the
- * rarities of their lit lamps), their lamps, every answer they gave, and in "longest" and "chaos" the prompt they went out at
- * (counted from 1; null for one still in).
+ * `place` counts from 1. `points` is the sum of the rarities of their lit lamps. `out` is, in "longest" and "chaos",
+ * the prompt they went out at (counted from 1; null for one still in).
  */
 export type Finish = {
   id: number;

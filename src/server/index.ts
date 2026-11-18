@@ -18,13 +18,12 @@ const PROMPTS_PER_GAME = 10;
  */
 const DEV_MODE = process.env.HADAL_DEV_MODE === "1";
 const PRODUCTION = process.env.NODE_ENV === "production";
-/** The cookie that holds a signed-in player's session token. */
 const SESSION = "session";
 const prompts = buildIndex(await loadPacks());
 usePrompts(prompts);
 await migrate();
 
-/** Sign up or sign in. The token goes into a cookie that scripts in the page cannot read. */
+/** Sign up or sign in. httpOnly keeps the token out of reach of scripts in the page. */
 async function enter(req: BunRequest, entry: (username: string, password: string) => Promise<Entry>) {
   const { username, password } = (await req.json()) as { username: string; password: string };
   const result = await entry(String(username ?? ""), String(password ?? ""));
@@ -43,19 +42,16 @@ function addressOf(req: Request, server: Server<Member>) {
   return req.headers.get("cf-connecting-ip") ?? server.requestIP(req)?.address ?? "";
 }
 
-/** The prompts of one of the signed-in player's own packs. Empty if there is no such pack, or nobody is signed in. */
 async function ownIndex(req: BunRequest, packId: string): Promise<PromptIndex> {
   const accountId = await accountIdOf(req.cookies.get(SESSION));
   const pack = accountId && (await loadPack(accountId, packId));
   return pack ? buildIndex([pack], OWN) : new Map();
 }
 
-/** The prompts a prompt id is one of: the built-in ones, or those of the player's own pack it names. */
 async function indexOf(req: BunRequest, promptId: string): Promise<PromptIndex> {
   return promptId.startsWith(OWN) ? ownIndex(req, promptId.slice(OWN.length).split("/")[0]!) : prompts;
 }
 
-/** Answer with the signed-in player's packs, after making `change` to them if there is one. */
 async function packs(req: BunRequest, change?: (accountId: string) => Promise<string[] | void>) {
   const accountId = await accountIdOf(req.cookies.get(SESSION));
   if (!accountId) return Response.json({ problems: ["sign in first"] }, { status: 401 });
@@ -64,7 +60,6 @@ async function packs(req: BunRequest, change?: (accountId: string) => Promise<st
   return Response.json(await listPacks(accountId));
 }
 
-/** Answer with the signed-in account as it stands after a change to one of its API keys, or say why the change was refused. */
 async function key(req: BunRequest<"/api/account/key/:provider">, change: (accountId: string, provider: Provider) => Promise<string | null | void>) {
   const provider = PROVIDERS.find((known) => known === req.params.provider);
   if (!provider) return new Response("Unknown provider", { status: 404 });
@@ -88,7 +83,6 @@ const server = Bun.serve({
       GET: () => Response.json({ devMode: DEV_MODE } satisfies Config),
     },
     "/api/game": {
-      // A dive draws from the built-in packs, or only from the player's own pack that `?pack=` names.
       GET: async (req) => {
         const pack = new URL(req.url).searchParams.get("pack");
         const index = pack === null ? prompts : await ownIndex(req, pack);
@@ -105,7 +99,6 @@ const server = Bun.serve({
         const verdict = judge(index, promptId, String(answer ?? ""));
         if (!verdict) return new Response("Unknown prompt", { status: 404 });
         if (verdict.answer !== null) return Response.json(verdict);
-        // Not in the pack: the live judge may know it all the same.
         return Response.json(await judgeLive(index.get(promptId)!, String(answer ?? ""), await accountIdOf(req.cookies.get(SESSION))));
       },
     },
@@ -133,7 +126,6 @@ const server = Bun.serve({
       POST: (req) => packs(req, async (accountId) => savePack(accountId, await req.text())),
     },
     "/api/packs/:id": {
-      // The pack as a file, to keep or to change and add again.
       GET: async (req) => {
         const accountId = await accountIdOf(req.cookies.get(SESSION));
         const pack = accountId && (await loadPack(accountId, req.params.id));

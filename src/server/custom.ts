@@ -13,10 +13,7 @@ export async function listPacks(accountId: string): Promise<PackSummary[]> {
   return [...rows];
 }
 
-/**
- * Keep an uploaded pack file, or say everything that is wrong with it. A pack with the id of
- * one the account already has takes its place: that is how a pack is edited.
- */
+/** A pack with the id of one the account already has takes its place: that is how a pack is edited. */
 export async function savePack(accountId: string, file: string): Promise<string[]> {
   if (Buffer.byteLength(file) > MAX_PACK_BYTES) return [`a pack file is at most ${MAX_PACK_BYTES / 1000} KB`];
   let pack: unknown;

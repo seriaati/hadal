@@ -3,7 +3,6 @@ import { sql } from "./db";
 
 export const SESSION_DAYS = 30;
 
-/** Signing up or in gives the account and the token for the player's cookie, or says why not. */
 export type Entry = { account: Account; token: string } | { error: string };
 
 const hashToken = (token: string) => new Bun.CryptoHasher("sha256").update(token).digest("hex");
@@ -44,7 +43,6 @@ const SIGN_IN_MINUTES = 15;
 /** Failed sign-ins per address, each count kept for SIGN_IN_MINUTES from the first. Lost on restart. */
 const tries = new Map<string, { failed: number; since: number }>();
 
-/** Sign in, unless the address has given too many wrong passwords lately. */
 export async function signInFrom(address: string, username: string, password: string): Promise<Entry> {
   const now = Date.now();
   for (const [key, entry] of tries) if (now - entry.since > SIGN_IN_MINUTES * 60_000) tries.delete(key);
@@ -75,7 +73,7 @@ export async function accountOf(token: string | null): Promise<Account | null> {
   return { username: row.username, keys: { anthropic: row.anthropic, jev: row.jev }, failed: { anthropic: row.anthropic_failed, jev: row.jev_failed } };
 }
 
-/** The id of the signed-in account, for the tables that hang off it. It never goes to the browser. */
+/** The account's id never goes to the browser. */
 export async function accountIdOf(token: string | null): Promise<string | null> {
   if (!token) return null;
   const [row] = await sql`select account_id from sessions where token_hash = ${hashToken(token)} and expires_at > now()`;

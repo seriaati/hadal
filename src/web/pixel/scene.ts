@@ -18,10 +18,7 @@ const FLOOR_ROW = 11000 / METERS_PER_PIXEL + 26;
 const PAD = 300;
 const ROWS = PAD + FLOOR_ROW + 300;
 
-/**
- * The title screen's choices, one to a line. Enter acts on the chosen one, which carries the mark of the focus.
- * A `note` of something that went wrong is said in place of the line under the title.
- */
+/** A `note` of something that went wrong is said in place of the line under the title. */
 export type Menu = { items: string[]; choice: number; note?: string };
 const MENU_ROW = 13;
 
@@ -64,7 +61,6 @@ const CLAMP_SHUT = ["...66...", "...67...", "67777776", "7......7", "7......7"];
 const CLAMP_OPEN = ["...66...", "...67...", "67777776", ".7....7."];
 /** The buoy the line hangs from in a chaos dive, once the submarine has gone. */
 const BUOY = ["..X..", "..5..", ".rRo.", "rRRRo", ".rrR."];
-/** A palette colour one step further into the dark. */
 const DARKER: Record<string, string> = { "6": "5", "5": "4", "4": "3", "3": "2", "2": "1", "1": "0", x: "r", r: "0", R: "r", o: "R", a: "o", c: "a" };
 /** The drop-off, in seconds from its start: the clamp opens, and the submarine sets off. */
 const RELEASE = 1.4;
@@ -146,9 +142,7 @@ export type Turn = {
   bar: number;
 };
 const LINE_GAP = 64;
-/** The rows of the wall where kelp and grass grow: down to 600 m. */
 const KELP_ROWS = 600 / METERS_PER_PIXEL;
-/** How long the camera takes to travel to the next diver, in seconds. */
 const TRAVEL_SECONDS = 0.75;
 
 /** One step of easing from `from` towards `to`: a share `rate` of the way, but never less than `least`, nor past it. */
@@ -202,7 +196,6 @@ function buildRock() {
   return { edge, far, band, bandTop, bands };
 }
 
-/** Draws the whole game: the trench, what lives in it, the diver and the few words on screen. */
 export class Scene {
   /** The depth on screen, which eases towards the game's real depth. */
   depth = 0;
@@ -218,7 +211,6 @@ export class Scene {
   private nextBubble = 0;
   /** Whether the diver of a chaos dive has been let go, and the bubbles of that have risen. */
   private freed = false;
-  /** Where the title menu was last drawn. */
   private menuLeft = 0;
   private menuTop = 0;
   /** The screen row the diver hangs at, and the row under the prompt and the air: a panel is set out from these. */
@@ -241,7 +233,6 @@ export class Scene {
   private held = 0;
   /** The divers of the room the player is in, or is about to make or join. */
   crew: Crew[] | null = null;
-  /** The turn on screen, in a dive of a room. */
   turn: Turn | null = null;
   /** The middle of the diver in focus, on the frame, as last drawn. */
   focus = { x: 0, y: 0 };
@@ -291,7 +282,6 @@ export class Scene {
     const screenY = (row: number) => row - camera + base;
     const wide = W >= 300;
 
-    // ---- what is lit, and by what
     if (!crew && game.lamps.length === 0 && this.reached.size > 0) {
       this.reached.clear();
       this.ambient.clear();
@@ -405,7 +395,6 @@ export class Scene {
     for (let y = 0; y < H; y++) {
       const row = rowAt(y);
       const depth = row * METERS_PER_PIXEL;
-      // Each stretch of water blends from one colour to the next by dithering.
       const [from, to, mix] =
         row < SURFACE_ROW ? [1, 1, 0]
         : depth < 200 ? [4, 3, depth / 200]
@@ -461,12 +450,10 @@ export class Scene {
       }
     }
 
-    // ---- whatever is out there
     this.ambient.chaos = game.chaos;
     this.ambient.update(dt, this.depth, scroll, W, H, surface + 1);
     this.ambient.draw(frame, water, time, lights, behindWords);
 
-    // ---- marine snow, tinted by whichever light it drifts through
     const flakes = Math.round((W * H) / 250);
     while (this.snow.length < flakes) this.snow.push({ x: Math.random() * W, y: Math.random() * H, k: Math.random() });
     this.snow.length = flakes;
@@ -481,7 +468,6 @@ export class Scene {
       frame.put(x, y, tint || (flake.k < 0.22 ? 4 : 3));
     }
 
-    // ---- zone boundaries: a thin line across the water
     const boundaries = ZONES.slice(1).map((zone) => ({ ...zone, y: screenY(zone.from / METERS_PER_PIXEL) }));
     for (const { y } of boundaries) {
       if (y < 0 || y >= H) continue;
@@ -552,14 +538,12 @@ export class Scene {
       }
     }
 
-    // Each zone is named on the rock where it begins, like a depth mark.
     for (const zone of boundaries) {
       if (this.hush && zone.y + 18 > this.hush[0] && zone.y + 4 < this.hush[1]) continue;
       drawText(frame, FONTS.tiny, zone.name.replace(" zone", ""), 4 + shift, zone.y + 4, 6);
       drawText(frame, FONTS.tiny, formatMeters(zone.from), 4 + shift, zone.y + 12, 5);
     }
 
-    // ---- the lines and the lamps
     frame.block = 166;
     for (const line of lines) {
       const x = line.x;
@@ -591,7 +575,6 @@ export class Scene {
         frame.put(lamp.x + 3, lamp.y + 7, 5);
       }
     }
-    // ---- in a chaos dive, the buoy each line hangs from, and the submarines while they are there
     if (game.chaos) {
       const lit = (rows: string[], name: "x" | "X", on: boolean) => rows.map((row) => row.replaceAll(name, on ? "x" : "r"));
       frame.block = 224;
@@ -750,7 +733,6 @@ export class Scene {
     }
   }
 
-  /** The few words on screen. They sit in the dark to the right of the diver. */
   private drawWords(frame: Frame, game: Game, menu: Menu, time: number, base: number, diving: boolean, covered: boolean) {
     const { width: W, height: H } = frame;
     const { tiny, medium, large, huge } = FONTS;
@@ -862,7 +844,6 @@ export class Scene {
     if (covered) return;
     // In a room the answers taken can reach down to the typing: it then moves down out of their way.
     const typingY = turn ? Math.max(answerY, this.hudBottom + 13) : answerY;
-    // The answer: typed in pale steel, then mint if it lit the lamp or rose if it did not.
     const result = game.result;
     if (!result) {
       const typed = plain(game.input);
@@ -896,7 +877,6 @@ export class Scene {
       const note = result.correct ? `~ ${lightOf(result.rarity)}` : "";
       const end = say(tiny, result.correct ? gain : "No light", x, y, result.correct ? 10 : 18);
       frame.emit = 0;
-      // The note goes beside the gain, or beneath it on a narrow screen.
       if (end + 3 + measure(tiny, note) > W - 4) say(tiny, note, x, (y += 8), result.correct ? 9 : 5);
       else say(tiny, note, end + 3, y, result.correct ? 9 : 5);
       // In a room the next turn comes by itself.

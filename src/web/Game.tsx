@@ -23,7 +23,6 @@ export function Game() {
   const glow = useRef<HTMLCanvasElement>(null);
   const keys = useRef<HTMLInputElement>(null);
   const form = useRef<HTMLFormElement>(null);
-  /** What the developer menu works on, if this instance is in developer mode. */
   const [dev, setDev] = useState<DevTools | null>(null);
 
   useEffect(() => {
@@ -40,23 +39,19 @@ export function Game() {
     const account: AccountPanel = new AccountPanel(ui, () => void packs.load());
     const packs = new PacksPanel(ui, account, sound, (pack) => void start(game, pack));
     const multiplayer = new MultiplayerPanel(ui, account, sound);
-    // A room's link opens the way into it, once the name of whoever is signed in is known to fill in.
+    // Wait for the account so the signed-in name can be filled in.
     const linked = new URLSearchParams(location.search).get("room");
     if (linked) {
       history.replaceState(null, "", location.pathname);
       void account.loaded.finally(() => multiplayer.joinByLink(linked));
     }
-    /** The screen that ends the dive on screen (the player's own, or the room's), from the moment it ends. */
     let ending: Ending | null = null;
-    // A room's end screen leads back to the room; a single player's, to the title.
     const closeEnding = () => (multiplayer.ending ? multiplayer.closeEnding() : pressEnter(game));
-    /** The dive on screen: the player's own, or the room's while the room dives. */
     let shown = game;
     const dive = (chaos: boolean) => {
       ui.close();
       void start(game, undefined, chaos);
     };
-    /** The single player's modes, each with how it is played. Choosing one begins the dive. */
     const single = (): Step => ({
       title: "Single player",
       rows: [
@@ -73,7 +68,6 @@ export function Game() {
         { kind: "press", id: "source", label: "github.com/seriaati/hadal", says: "Open the source code on GitHub", press: () => open(REPO, "_blank", "noopener") },
       ],
     });
-    /** The title menu: its lines, and the one Enter acts on. */
     const menu: Menu = { items: ["Single player", "Multiplayer", "Packs", "Sign in", "About"], choice: 0 };
     const choose = (line: number) => {
       if (line === 0) ui.go(single);
@@ -82,7 +76,7 @@ export function Game() {
       else if (line === 3) account.show();
       else ui.go(about);
     };
-    /** Whether the step about leaving the dive was opened with Escape: it then says what a second Escape does. */
+    /** Opened with Escape, the step says what a second Escape does. */
     let byEscape = false;
     const leaveDive = () => {
       ui.close();
@@ -90,7 +84,6 @@ export function Game() {
       else leave(game);
       input.value = "";
     };
-    /** In a dive, Escape or the cog asks whether to leave it. The settings are a line of this step. */
     const leaving = (): Step => ({
       title: "Leave the dive?",
       escape: leaveDive,
@@ -101,13 +94,11 @@ export function Game() {
         { kind: "press", id: "leave", label: "Leave the dive", press: leaveDive },
       ],
     });
-    /** What Escape and the cog open when nothing is open: the settings at the title, the way out of a dive in a dive. */
     const openMenu = (escape: boolean) => {
       byEscape = escape;
       if (shown.phase === "title") ui.go(settings);
       else if (shown.phase === "drop" || shown.phase === "ask" || shown.phase === "verdict") ui.go(leaving);
     };
-    // In development, let the browser console (and test scripts) reach the game.
     if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game, scene, frame, display, sound, glitch, ui, account, packs, multiplayer, room: multiplayer.client } });
 
     void fetch("/api/config")
@@ -125,7 +116,6 @@ export function Game() {
       }
       // These keys come here only while no panel is open: an open panel has the focus and its own keys.
       if (shown.phase === "title" && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
-        // From the last line Down goes to the first, as in every list of the game.
         menu.choice = (menu.choice + (event.key === "ArrowUp" ? -1 : 1) + menu.items.length) % menu.items.length;
       }
       if (event.key !== "Enter" && event.key !== "Escape") return;
@@ -141,14 +131,13 @@ export function Game() {
       pressEnter(game);
       if (game.phase === "ask") input.value = game.input; // an answer that was sent leaves the field empty
     };
-    // Keep the typing focus wherever the player clicks or taps.
     const keepFocus = (event: MouseEvent) => {
       // The controls of an open panel take the focus themselves.
       if (form.current!.contains(event.target as Node)) return;
       if (event.target !== input) event.preventDefault();
       if (!ui.open) input.focus();
     };
-    // The pointer on the game itself: the cog and the title menu, which are drawn and are no controls of the page.
+    // The cog and the title menu are drawn, not page controls, so the pointer is tested against them here.
     const onPointer = (event: PointerEvent) => {
       const scale = canvas.clientWidth / frame.width;
       const x = event.clientX / scale;
@@ -156,7 +145,7 @@ export function Game() {
       if (ending && done) {
         const spot = ending.at(x, y);
         canvas.style.cursor = spot ? "pointer" : "";
-        // Over a lamp or the line back, the pointer gives it the focus; a press on the line goes back.
+        // As in ui.ts: a pointer that only rests over a lamp does not take the focus back from the keys.
         if (event.type === "pointermove" && !(event.pointerType === "mouse" && (event.movementX || event.movementY))) return;
         if (spot) ending.choose(spot);
         if (event.type === "pointerdown" && spot === "back") closeEnding();
@@ -180,12 +169,10 @@ export function Game() {
     canvas.addEventListener("pointermove", onPointer);
 
     let ended: Log | null = null;
-    /** Whether the divers are back at the surface, where the end screen opens. */
     let done = false;
-    /** When the divers came back to the surface, in seconds. */
+    /** In seconds. */
     let doneAt = 0;
     let last = performance.now();
-    /** The phase of the dive on screen a frame ago: a chaos dive opens with a hard glitch. */
     let phase: Phase = "title";
     let request = requestAnimationFrame(function loop(now) {
       request = requestAnimationFrame(loop);
@@ -229,9 +216,9 @@ export function Game() {
         }
       }
       if (closing) lights = closing.draw(frame, lights, now / 1000 - doneAt, now / 1000);
-      // A chaos dive is seen on a failing tape, its end too; now and then a glitch turns something in the dark into something worse.
+      // A chaos dive opens with a hard glitch.
       if (shown.phase === "drop" && phase !== "drop") glitch.cut(frame.height, scene.focus);
-      // A dive may have used the player's keys: back at the title, the menu tells of any that failed.
+      // A dive may have used the player's keys: refresh so the menu can tell of any that failed.
       if (shown.phase === "title" && phase !== "title") account.refresh();
       phase = shown.phase;
       const focus = closing ? closing.point : scene.focus;

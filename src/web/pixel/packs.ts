@@ -24,11 +24,6 @@ function report(problems: string[]): string[] {
   return shown;
 }
 
-/**
- * The panel for a player's own packs, opened from the title menu. Its first step is the list:
- * dive in a pack, remove one, add one from a file. From there a second step has Claude write
- * a pack, and shows the wait while it does. Signed out, the panel only says to sign in.
- */
 export class PacksPanel {
   private packs: PackSummary[] = [];
   private busy = false;
@@ -38,7 +33,6 @@ export class PacksPanel {
   private refused: string[] = [];
   /** Whether what was refused was a file, so that another can be chosen. */
   private refusedFile = false;
-  /** The pack being written: what about, how many of its prompts are done, and the way to stop. */
   private writing: { topic: string; done: number; stop: AbortController } | null = null;
   /** Why the last pack was not written. */
   private unwritten = "";
@@ -55,7 +49,6 @@ export class PacksPanel {
     this.ui.go(this.list);
   }
 
-  /** Fetch the packs of whoever is signed in. */
   async load() {
     if (!this.account.account) {
       this.packs = [];
@@ -170,7 +163,7 @@ export class PacksPanel {
     };
   };
 
-  /** Take the server's answer to a change of the packs: the list as it now stands, or why not. Returns the pack that is new. */
+  /** The server answers with the packs as they now stand, or the problems. Returns the pack that is new. */
   private async change(request: Promise<Response>, tried: string, file = false): Promise<PackSummary | undefined> {
     const had = new Set(this.packs.map((pack) => pack.id));
     this.busy = true;
@@ -215,7 +208,7 @@ export class PacksPanel {
     this.ui.focus(next ? `remove:${next.id}` : "add");
   }
 
-  /** Have Claude write a pack about the topic that was typed. The panel may be left meanwhile: the writing goes on. */
+  /** The panel may be left meanwhile: the writing goes on. */
   private async begin() {
     const topic = this.ui.value("topic").trim();
     if (!topic) return;
@@ -251,7 +244,6 @@ export class PacksPanel {
     this.sound.written(!this.unwritten);
     if (this.unwritten) return;
     this.ui.clear("topic");
-    // Back to the list, with the focus on the new pack.
     if (this.ui.top !== this.write) return;
     this.ui.back();
     const fresh = this.packs.find((pack) => !had.has(pack.id));

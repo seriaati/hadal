@@ -3,7 +3,6 @@ import { sql } from "./db";
 
 const MIN_SECRET_LENGTH = 32;
 
-/** What seals every stored key: AES-256 with a key made from the server's secret. Null if the secret is not set. */
 async function seal(): Promise<CryptoKey | null> {
   const secret = process.env.HADAL_SECRET ?? "";
   if (secret.length < MIN_SECRET_LENGTH) return null;
@@ -18,7 +17,7 @@ const cipher = (accountId: string, provider: Provider, iv: Uint8Array<ArrayBuffe
   additionalData: new TextEncoder().encode(`${accountId}:${provider}`),
 });
 
-/** Keep a player's API key for a provider, in place of any they had. Says why not, or nothing when it is kept. */
+/** Returns why the key was not kept, or null when it was. */
 export async function saveKey(accountId: string, provider: Provider, key: string): Promise<string | null> {
   key = key.trim();
   if (!key || key.length > MAX_KEY_LENGTH || /\s/.test(key)) return "That does not look like an API key";
@@ -34,7 +33,7 @@ export async function saveKey(accountId: string, provider: Provider, key: string
   return null;
 }
 
-/** A player's API key, for the server's own use: it never goes back to the browser. Null if none is kept, or it can no longer be opened. */
+/** For the server's own use: it never goes back to the browser. Null if none is kept, or it can no longer be opened. */
 export async function loadKey(accountId: string, provider: Provider): Promise<string | null> {
   const [row] = await sql`select sealed from keys where account_id = ${accountId} and provider = ${provider}`;
   const secret = await seal();
@@ -51,7 +50,6 @@ export async function removeKey(accountId: string, provider: Provider) {
   await sql`delete from keys where account_id = ${accountId} and provider = ${provider}`;
 }
 
-/** Note how a request made with a player's key went: why it failed, or null if it worked. */
 export async function noteUse(accountId: string, provider: Provider, failed: KeyFailure | null) {
   await sql`update keys set failed = ${failed} where account_id = ${accountId} and provider = ${provider} and failed is distinct from ${failed}`;
 }

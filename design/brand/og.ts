@@ -3,7 +3,6 @@ import { FONTS, drawText } from "../../src/web/pixel/font";
 import type { Frame, Light } from "../../src/web/pixel/frame";
 import { Scene } from "../../src/web/pixel/scene";
 
-/** The link preview: the diver deep in the trench, and the game's name beside them. */
 export function drawOg(frame: Frame): Light[] {
   const game = createGame();
   game.depth = 1240;

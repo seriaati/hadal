@@ -214,8 +214,6 @@ test("after the last prompt the dive ends with every diver's depth, place, point
   ]);
 });
 
-// ---- "longest"
-
 /** Every prompt of the pack, flag and sky (three answers each) twice over, so that a dive in "longest" lasts. */
 const MANY = [...index.values(), ...index.values()].map((entry) => entry.prompt).filter((prompt) => prompt.id !== "colours/one");
 
@@ -238,7 +236,6 @@ test("in longest, a turn lost costs a heart, and one with none left is out and s
   expect(view().divers[0]).toMatchObject({ hearts: 0, out: true });
   expect(view().order).toEqual([2, 3]);
   await clock.pass(PAUSE_SECONDS);
-  // The line stays, with its dead lamps; the turns go on between the two still in.
   expect(view().divers.map((diver) => diver.id)).toEqual([1, 2, 3]);
   expect(view().turn).not.toBe(1);
 });
@@ -317,14 +314,11 @@ test("in longest, when the prompts run out the deepest of those still in wins", 
     { id: 2, depth: 330 + 880, won: true, place: 1, out: null },
     { id: 3, depth: 110 + 550, won: false, place: 2, out: null },
   ]);
-  // A turn lost is in the log too, with no answer.
   expect(ended[0]![0]!.said).toEqual([
     { prompt: "Name a colour of a flag", answer: null, rarity: 0 },
     { prompt: "Name the colour of the sky", answer: null, rarity: 0 },
   ]);
 });
-
-// ---- "chaos"
 
 test("in chaos, no air runs and nothing is taken while the divers are dropped off", async () => {
   const { dive: d, clock, view } = dive([1, 2], WRONG, "chaos", MANY);

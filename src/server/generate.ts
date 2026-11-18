@@ -67,10 +67,7 @@ export function promptsBegun(written: string): number {
   return written.match(/"answers"\s*:/g)?.length ?? 0;
 }
 
-/**
- * Have the model write a pack about a topic, paid for with the player's own key. `progress`
- * hears how many prompts are finished whenever that changes, and `signal` stops the writing.
- */
+/** `progress` hears how many prompts are finished whenever that changes. */
 async function draft(apiKey: string, topic: string, progress?: (prompts: number) => void, signal?: AbortSignal): Promise<Draft> {
   let message: Anthropic.Beta.BetaMessage;
   let finished = 0;
@@ -152,7 +149,6 @@ export function tidy(written: Draft, id: string): Pack {
   };
 }
 
-/** An id for a new pack, made from its name, that none of the account's packs has. */
 function freeId(name: string, taken: string[]): string {
   const slug = name.normalize("NFD").toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 30).replace(/^-|-$/g, "") || "pack";
   for (let n = 1; ; n++) {
@@ -161,7 +157,7 @@ function freeId(name: string, taken: string[]): string {
   }
 }
 
-/** Write a pack about a topic with the player's own API key and keep it among their packs, or say why not. */
+/** Returns why no pack was kept, or nothing when one was. */
 export async function writePack(accountId: string, topic: string, progress?: (prompts: number) => void, signal?: AbortSignal): Promise<string[]> {
   topic = topic.trim();
   if (!topic || topic.length > MAX_TOPIC_LENGTH) return [`a topic is 1 to ${MAX_TOPIC_LENGTH} characters`];

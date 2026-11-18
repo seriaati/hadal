@@ -7,7 +7,7 @@ import { pressEnter, type Game } from "./state";
 
 export type DevTools = { game: Game; scene: Scene; frame: Frame; multiplayer: MultiplayerPanel };
 
-/** Whether a prompt is waiting for an answer. From a verdict, this first moves on to the next prompt. */
+/** From a verdict, this first moves on to the next prompt. */
 function asking(game: Game): boolean {
   if (game.phase === "verdict") pressEnter(game);
   return game.phase === "ask" && !game.judging;
@@ -19,7 +19,6 @@ async function correct(promptId: string, rarity: number): Promise<string | null>
   return res.ok ? ((await res.json()) as { answer: string }).answer : null;
 }
 
-/** Give a correct answer of about this rarity: in a room's dive on the player's own turn, or in single player. */
 async function answer({ game, multiplayer }: DevTools, rarity: number) {
   if (multiplayer.diving) {
     const prompt = multiplayer.client.view?.dive?.prompt;
@@ -34,7 +33,7 @@ async function answer({ game, multiplayer }: DevTools, rarity: number) {
   pressEnter(game);
 }
 
-/** End the dive here. The end screen then holds only the prompts that were finished. */
+/** The end screen then holds only the prompts that were finished. */
 function endDive(game: Game) {
   const diving = game.phase === "ask" || game.phase === "verdict";
   if (!diving || game.judging) return;
@@ -47,8 +46,7 @@ function endDive(game: Game) {
 
 const CREATURES: [kind: CreatureKind, name: string][] = [["angler", "Anglerfish"], ["eyes", "Eyes"], ["serpent", "Eel"], ["whale", "Whale"], ["fish", "Fish"]];
 
-/** Shortcuts for whoever is working on the game. Shown only when the server runs with HADAL_DEV_MODE=1. */
-/** Whether the menu is folded away, kept by the browser between visits. Storage may be closed (a private window): then it starts open. */
+/** Storage may be closed (a private window): then the menu starts open. */
 const FOLDED = "hadal.dev.folded";
 function stored(): boolean {
   try {

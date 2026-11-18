@@ -20,10 +20,7 @@ export function normalize(text: string): string {
     .replaceAll(" ", "");
 }
 
-/**
- * Index every prompt by "pack/prompt" id, with its answers keyed by normalized spelling. Expects
- * valid packs. `prefix` goes before each id, to keep a player's own packs apart from the built-in ones.
- */
+/** Expects valid packs. `prefix` keeps a player's own packs' ids apart from the built-in ones. */
 export function buildIndex(packs: Pack[], prefix = ""): PromptIndex {
   const index: PromptIndex = new Map();
   for (const pack of packs) {
@@ -39,7 +36,6 @@ export function buildIndex(packs: Pack[], prefix = ""): PromptIndex {
   return index;
 }
 
-/** The same things in a random order. */
 export function shuffle<T>(things: T[]): T[] {
   const shuffled = [...things];
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -53,7 +49,6 @@ export function pickPrompts(index: PromptIndex, count: number): GamePrompt[] {
   return shuffle([...index.values()].map((entry) => entry.prompt)).slice(0, count);
 }
 
-/** The pack's spelling of the answer whose rarity is nearest to `rarity`, or null when the prompt id is unknown. */
 export function nearestAnswer(index: PromptIndex, promptId: string, rarity: number): string | null {
   const answers = [...(index.get(promptId)?.answers.values() ?? [])];
   const nearest = answers.reduce<Answer | null>((best, answer) => (best && Math.abs(best.rarity - rarity) <= Math.abs(answer.rarity - rarity) ? best : answer), null);
@@ -101,7 +96,6 @@ function misspelled(answers: Map<string, Answer>, typed: string): Answer | undef
   return tied ? undefined : nearest;
 }
 
-/** Returns null when the prompt id is unknown. */
 export function judge(index: PromptIndex, promptId: string, input: string): Verdict | null {
   const entry = index.get(promptId);
   if (!entry) return null;

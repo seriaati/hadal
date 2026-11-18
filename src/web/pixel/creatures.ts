@@ -1,15 +1,14 @@
 import { dither, hash, type Frame, type Light } from "./frame";
 
-// The things that live in the dark. They are scenery: they never touch the diver.
+// Creatures are scenery: they never touch the diver.
 
 /** In a chaos dive a glitch can turn a creature into something worse: it flickers between the two (`flick` seconds), then stays `turned`. */
 type Turning = { turned: boolean; flick: number };
 type Eyes = Turning & { kind: "eyes"; x: number; y: number; age: number; life: number; gap: number };
 type Serpent = Turning & { kind: "serpent"; x: number; y: number; age: number; scale: number };
 type Angler = Turning & { kind: "angler"; x: number; y: number; age: number; life: number; scale: number; rest: number };
-/** A shoal of small fish swimming one way (`way` -1 for left), each a little apart from the rest. */
+/** `way` is -1 for left. */
 type Shoal = Turning & { kind: "fish"; x: number; y: number; age: number; way: number; speed: number; fish: { dx: number; dy: number; phase: number }[] };
-/** A whale far off, swimming slowly left past the diver. */
 type Whale = Turning & { kind: "whale"; x: number; y: number; age: number; scale: number };
 type Creature = Eyes | Serpent | Angler | Shoal | Whale;
 export type CreatureKind = Creature["kind"];
@@ -20,14 +19,12 @@ const PARALLAX = { eyes: 0.6, serpent: 0.35, angler: 0.5, fish: 0.8, whale: 0.3 
 const SHALLOW = { fish: 500, whale: 1100 };
 /** The depth in metres below which each kind can appear. */
 const HOME = { angler: 1000, eyes: 1500, serpent: 2500 };
-/** In a chaos dive they come up much nearer the surface. */
 const CHAOS_HOME = { angler: 300, eyes: 0, serpent: 800 };
 /** How much larger a creature grows when it turns. */
 const GROWN = 1.7;
 
 export class Ambient {
   creatures: Creature[] = [];
-  /** Whether this is a chaos dive, and how many creatures have turned in it. */
   chaos = false;
   turns = 0;
   private wait = 6;
@@ -79,7 +76,7 @@ export class Ambient {
     }
   }
 
-  /** Move everything, let the dive scroll it past, and now and then let something new arrive. `top` is the first row of water on screen. */
+  /** `top` is the first row of water on screen. */
   update(dt: number, depth: number, scroll: number, width: number, height: number, top: number) {
     this.top = top;
     for (const creature of this.creatures) {
@@ -107,7 +104,6 @@ export class Ambient {
       return creature.x < width + 8;
     });
 
-    // The upper sea has its own life: shoals of small fish, and now and then a whale far off.
     this.shoalWait -= dt;
     this.whaleWait -= dt;
     const big = this.creatures.some((creature) => creature.kind === "angler" || creature.kind === "serpent" || creature.kind === "whale");
@@ -133,7 +129,6 @@ export class Ambient {
   }
 
   /** `water` is the water colour of each row of the frame. */
-  /** `behindWords` says whether a point lies behind the words on screen. */
   draw(frame: Frame, water: Uint8Array, time: number, lights: Light[], behindWords: (x: number, y: number) => boolean) {
     for (const creature of this.creatures) {
       // While it turns it flickers between what it was and what it is becoming.
@@ -147,7 +142,7 @@ export class Ambient {
   }
 }
 
-/** A small fish facing left, its tail forked; a glint runs along it now and then as it turns in the light. */
+/** Faces left. */
 const FISH = [".bb.b", "ebbbb", ".bb.b"];
 
 function drawShoal(frame: Frame, shoal: Shoal, water: Uint8Array, top: number) {
@@ -195,9 +190,8 @@ const WHALE_BELLY = curve([[0, 20.5], [3, 23.5], [10, 26.5], [22, 28.5], [36, 28
 const WHALE_JAW = curve([[1, 20], [8, 21], [16, 21.6], [22, 21], [25, 20.2]]);
 
 /**
- * A whale, far larger than anything else in the sea: a humpback, with its long pale fins, knobbed head, grooved throat
- * and forked flukes. Its back is darker than the water and its belly lighter, so it stands out. The flukes beat slowly,
- * and the back half of it bends with them.
+ * A humpback seen from the side. Its back is darker than the water and its belly lighter, so it stands out.
+ * The flukes beat slowly, and the back half of it bends with them.
  */
 function drawWhale(frame: Frame, whale: Whale, water: Uint8Array, top: number, behindWords: (x: number, y: number) => boolean) {
   const s = whale.scale;
@@ -254,8 +248,7 @@ function drawWhale(frame: Frame, whale: Whale, water: Uint8Array, top: number, b
         const lower = d >= trail * 0.9 && d <= lead * 0.9;
         if (upper || lower || (k < 0.45 && Math.abs(d) <= 1.4 - k * 2)) color = lower && d > 1.4 ? shade(y, -1) : shade(y, -2);
       }
-      // The long pale fin, a third of the body long, broad at the root and bowed, swept back and down from under the
-      // throat; bumps along its leading edge, and its trailing edge a shade darker.
+      // The long pale fin, swept back and down from under the throat, with bumps along its leading edge.
       const t = (u - 23) / 28;
       if (t >= 0 && t <= 1) {
         const finV = 27 + t * 11 - Math.sin(t * Math.PI) * 1.5 + flap * t ** 1.6 + finRoot - bend(u);
@@ -272,7 +265,6 @@ function drawWhale(frame: Frame, whale: Whale, water: Uint8Array, top: number, b
   }
 }
 
-/** A pair of eyes that opens in the dark, watches, blinks, and closes. */
 function drawEyes(frame: Frame, eyes: Eyes) {
   const open = Math.min(eyes.age / 0.8, (eyes.life - eyes.age) / 0.8, 1);
   const blinking = hash(Math.floor(eyes.age * 2.2), eyes.gap) < 0.12;
@@ -282,7 +274,6 @@ function drawEyes(frame: Frame, eyes: Eyes) {
   frame.put(eyes.x + eyes.gap, eyes.y, color);
 }
 
-/** Eyes as they are once turned: wide, red-veined, with a red ring round a black pupil, and weeping blood. */
 const BLOODY_EYE = [".7x7.", "7x0x7", ".777."];
 function drawBloodyEyes(frame: Frame, eyes: Eyes) {
   const open = Math.min(eyes.age / 0.4, (eyes.life - eyes.age) / 0.8, 1);
@@ -300,7 +291,6 @@ function drawBloodyEyes(frame: Frame, eyes: Eyes) {
   for (let j = 0; j < run; j++) frame.put(left + 1, top + 3 + j, j === run - 1 ? 18 : 12);
 }
 
-/** Something very long, one shade off the water, sliding past with its head leading. */
 function drawSerpent(frame: Frame, serpent: Serpent, water: Uint8Array, time: number, worse: boolean) {
   const s = serpent.scale * (worse ? GROWN : 1);
   const spine: [x: number, y: number, girth: number][] = [];
@@ -329,8 +319,7 @@ function drawSerpent(frame: Frame, serpent: Serpent, water: Uint8Array, time: nu
     const height = (k < 60 ? 3 : 2) * s;
     for (let h = 0; h < height; h++) frame.put(Math.round(x) + h, Math.round(y - girth) - 1 - h, body(x, y));
   }
-  // Photophores down its side.
-  // Turned, they all burn red.
+  // Photophores down its side; turned, they all burn red.
   frame.emit = worse ? 140 : 60;
   for (let k = 22; k < 250; k += 11) {
     const [x, y, girth] = spine[k]!;

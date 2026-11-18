@@ -8,7 +8,7 @@ export { DROP_SECONDS };
 /** How long a lost chaos dive takes to die (its signal, then its last words), before the end screen. */
 export const LOST_SECONDS = 7.5;
 
-/** A lamp hung on the line: lit by a correct answer, dead when the air ran out first. */
+/** Unlit when the air ran out before a correct answer. */
 export type Lamp = { depth: number; lit: boolean };
 export type Result = { answer: string; rarity: number; correct: boolean };
 /**
@@ -24,7 +24,6 @@ export type Game = {
   /** Seconds since the phase began. */
   phaseTime: number;
   prompts: GamePrompt[];
-  /** Index of the current prompt. */
   round: number;
   input: string;
   air: number;
@@ -35,9 +34,7 @@ export type Game = {
   /** Depth in metres. */
   depth: number;
   lamps: Lamp[];
-  /** How the current round ended, once it has. */
   result: Result | null;
-  /** How every finished round ended, in order. */
   results: Result[];
 };
 
@@ -52,7 +49,6 @@ export const fullAir = (game: Game) => (game.chaos ? CHAOS_AIR_SECONDS : AIR_SEC
 /** Whether a chaos dive ended because the air ran out. */
 export const lostDive = (game: Game) => game.chaos && game.results.at(-1)?.correct === false;
 
-/** Seconds the haul back to the surface takes: longer from deeper, but never long. */
 export function ascentSeconds(depth: number): number {
   return 1 + 2 * Math.min(1, depth / 5000);
 }
@@ -68,7 +64,7 @@ function finish(game: Game, result: Result) {
   enter(game, "verdict");
 }
 
-/** Begin a dive: in the built-in packs, or in the one of the player's own packs that `pack` names. */
+/** Without `pack`, the dive draws from the built-in packs. */
 export async function start(game: Game, pack?: string, chaos = false) {
   const res = await fetch(pack ? `/api/game?pack=${pack}` : "/api/game");
   if (!res.ok) return;
@@ -77,14 +73,13 @@ export async function start(game: Game, pack?: string, chaos = false) {
   enter(game, chaos ? "drop" : "ask");
 }
 
-/** The air ran out before a correct answer: the round is lost. */
 function fail(game: Game) {
   game.lamps.push({ depth: game.depth, lit: false });
   finish(game, { answer: "", rarity: 0, correct: false });
   if (game.chaos) enter(game, "lost");
 }
 
-/** Send what has been typed to be judged. A wrong answer only costs the time it took. */
+/** A wrong answer only costs the time it took. */
 async function attempt(game: Game) {
   const prompt = game.prompts[game.round]!;
   const typed = game.input.trim();
@@ -109,12 +104,12 @@ async function attempt(game: Game) {
   }
 }
 
-/** Leave the dive where it is and go back to the title. Nothing of it is kept, so no end screen opens. */
+/** Nothing of the dive is kept, so no end screen opens. */
 export function leave(game: Game) {
   Object.assign(game, createGame());
 }
 
-/** Advance the clocks. When the air runs out, whatever is typed gets one last chance. */
+/** When the air runs out, whatever is typed gets one last chance. */
 export function tick(game: Game, dt: number) {
   game.phaseTime += dt;
   if (game.phase === "ascent" && game.phaseTime >= ascentSeconds(game.depth)) enter(game, "done");
