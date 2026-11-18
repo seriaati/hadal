@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { PAUSE_SECONDS, type Finish, type Mode } from "../shared/room";
+import { DROP_SECONDS, PAUSE_SECONDS, type Finish, type Mode } from "../shared/room";
 import type { Pack, Verdict } from "../shared/types";
 import { Dive, enoughFor, type Clock, type Live } from "./dive";
 import { buildIndex } from "./game";
@@ -322,4 +322,47 @@ test("in longest, when the prompts run out the deepest of those still in wins", 
     { prompt: "Name a colour of a flag", answer: null, rarity: 0 },
     { prompt: "Name the colour of the sky", answer: null, rarity: 0 },
   ]);
+});
+
+// ---- "chaos"
+
+test("in chaos, no air runs and nothing is taken while the divers are dropped off", async () => {
+  const { dive: d, clock, view } = dive([1, 2], WRONG, "chaos", MANY);
+  expect(view()).toMatchObject({ drop: DROP_SECONDS, running: false, air: AIR });
+  await d.answer(1, "red");
+  d.type(1, "re");
+  expect(view()).toMatchObject({ verdict: null, typing: "" });
+  await clock.pass(DROP_SECONDS);
+  expect(view()).toMatchObject({ drop: 0, running: true });
+  await d.answer(1, "red");
+  expect(view().verdict?.answer).toBe("Red");
+});
+
+test("in chaos, one empty tank puts a diver out, and the last one in wins", async () => {
+  const { dive: d, clock, ended, view } = dive([1, 2, 3], WRONG, "chaos", MANY);
+  await clock.pass(DROP_SECONDS);
+  await d.answer(1, "red");
+  await clock.pass(PAUSE_SECONDS);
+  await clock.pass(AIR);
+  expect(view().divers[1]).toMatchObject({ hearts: 0, out: true });
+  expect(view().order).toEqual([1, 3]);
+  await clock.pass(PAUSE_SECONDS);
+  await d.answer(3, "blue");
+  await clock.pass(PAUSE_SECONDS);
+  // Prompt two: 1 goes first, since 3 answered last and nobody answers twice in a row.
+  expect(view().turn).toBe(1);
+  await clock.pass(AIR + PAUSE_SECONDS);
+  expect(ended).toHaveLength(1);
+  expect(ended[0]!.map(({ id, won, place, out }) => ({ id, won, place, out }))).toEqual([
+    { id: 1, won: false, place: 2, out: 2 },
+    { id: 2, won: false, place: 3, out: 1 },
+    { id: 3, won: true, place: 1, out: null },
+  ]);
+});
+
+test("in chaos, a rare answer wins no heart", async () => {
+  const { dive: d, clock, view } = dive([1, 2], WRONG, "chaos", [...MANY, ...MANY]);
+  await clock.pass(DROP_SECONDS);
+  await rare(d, clock, 6);
+  expect(view().divers[0]).toMatchObject({ hearts: 1, bar: 0 });
 });

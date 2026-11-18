@@ -1,10 +1,10 @@
+import { DROP_SECONDS } from "../shared/room";
 import { METERS_PER_POINT, type GamePrompt, type Verdict } from "../shared/types";
 
 /** Seconds of air the diver has for each prompt. Wrong answers can be retried until it runs out. */
 export const AIR_SECONDS = 18;
 export const CHAOS_AIR_SECONDS = 8;
-/** How long the submarine of a chaos dive takes to let the diver go, before the first prompt. */
-export const DROP_SECONDS = 4;
+export { DROP_SECONDS };
 /** How long a lost chaos dive takes to die (its signal, then its last words), before the end screen. */
 export const LOST_SECONDS = 7.5;
 

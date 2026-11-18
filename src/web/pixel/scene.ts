@@ -324,13 +324,13 @@ export class Scene {
         const settled = diver.focus ? !diving : Math.abs(diver.depth - depth) <= 4;
         const x = lineX(diver.slot);
         const marks = crew ? (this.marks.get(diver.name) ?? this.marks.set(diver.name, new Map()).get(diver.name)!) : this.reached;
-        const y = screenY(Math.round(depth / METERS_PER_PIXEL)) + (settled ? Math.round(Math.sin(time * 1.3 + diver.slot * 2)) : 0) - (crew ? 0 : held(game));
+        const y = screenY(Math.round(depth / METERS_PER_PIXEL)) + (settled ? Math.round(Math.sin(time * 1.3 + diver.slot * 2)) : 0) - held(game);
         return { ...diver, x, y, depth, lamps: hang(marks, diver.lamps ?? [], depth, x) };
       });
     const lamps = lines.flatMap((line) => line.lamps);
     const lead = lines.find((line) => line.focus);
     if (lead) this.focus = { x: lead.x + 10, y: lead.y + 12 };
-    const sub = crew ? null : vessel(game);
+    const sub = vessel(game);
 
     // Running low on air: the lantern sputters and the dark begins to pulse red.
     // In the last third of the air, the diver is in trouble and the screen shows it.
@@ -364,10 +364,10 @@ export class Scene {
     const blink = Math.floor(time * 3) % 2 === 0;
     const sunk = (name: "x" | "X", rows: string[], left: number, top: number, fade = 0) =>
       rows.flatMap((row, j) => [...row].flatMap((char, i) => (char === name && fade < 0.85 ? [{ x: left + i + 0.5, y: top + j + 0.5, radius: 20, rgb: [210, 40, 70] as Light["rgb"], strength: 0.55 * (1 - fade) }] : [])));
-    // It holds the diver's helmet in its clamp, CLAMPED rows above their place on the line, and rides the waves with them.
-    const subAt = sub && { x: lineX(0) - 16 + sub.dx, y: screenY(0) - 19 - CLAMPED + sub.dy + (sub.dx ? 0 : Math.round(Math.sin(time * 1.3))) };
-    if (subAt) lights.push(...sunk(blink ? "x" : "X", SUB, subAt.x, subAt.y, sub.fade));
-    if (game.chaos && !crew && !subAt && Math.floor(time * 1.2) % 2 === 0) lights.push(...sunk("X", BUOY, lineX(0) - 2, screenY(SURFACE_ROW) - 3));
+    // Each holds a diver's helmet in its clamp, CLAMPED rows above their place on the line, and rides the waves with them.
+    const subs = sub ? lines.map((line) => ({ x: line.x - 16 + sub.dx, y: screenY(0) - 19 - CLAMPED + sub.dy + (sub.dx ? 0 : Math.round(Math.sin(time * 1.3 + line.slot * 2))) })) : [];
+    if (sub) for (const at of subs) lights.push(...sunk(blink ? "x" : "X", SUB, at.x, at.y, sub.fade));
+    if (game.chaos && !sub && Math.floor(time * 1.2) % 2 === 0) for (const line of lines) lights.push(...sunk("X", BUOY, line.x - 2, screenY(SURFACE_ROW) - 3));
 
     const light = (list: Lit[], x: number, y: number) => {
       let value = 0;
@@ -555,19 +555,21 @@ export class Scene {
         frame.put(lamp.x + 3, lamp.y + 7, 5);
       }
     }
-    // ---- in a chaos dive, the buoy the line hangs from, and the submarine while it is there
-    if (game.chaos && !crew) {
+    // ---- in a chaos dive, the buoy each line hangs from, and the submarines while they are there
+    if (game.chaos) {
       const lit = (rows: string[], name: "x" | "X", on: boolean) => rows.map((row) => row.replaceAll(name, on ? "x" : "r"));
       frame.block = 224;
-      frame.sprite(lit(BUOY, "X", Math.floor(time * 1.2) % 2 === 0), lineX(0) - 2, screenY(SURFACE_ROW) - 3, "x");
-      if (sub && subAt) {
+      for (const line of lines) frame.sprite(lit(BUOY, "X", Math.floor(time * 1.2) % 2 === 0), line.x - 2, screenY(SURFACE_ROW) - 3, "x");
+      if (sub) {
         let rows = lit(lit(SUB, "x", blink), "X", !blink);
         // The screw turns while the submarine moves.
         if (sub.dx && Math.floor(time * 10) % 2) rows = rows.map((row, j) => (j === 11 || j === 13 ? `.${row.slice(1)}` : row));
         for (let k = 0; k < Math.floor(sub.fade * 4); k++) rows = rows.map((row) => row.replace(/[^.]/g, (char) => DARKER[char] ?? char));
-        // Under the waterline it is a step darker.
-        rows = rows.map((row, j) => (subAt.y + j > screenY(SURFACE_ROW) ? row.replace(/[^.x]/g, (char) => DARKER[char] ?? char) : row));
-        frame.sprite(rows, subAt.x, subAt.y, "x");
+        for (const at of subs) {
+          // Under the waterline it is a step darker.
+          const shown = rows.map((row, j) => (at.y + j > screenY(SURFACE_ROW) ? row.replace(/[^.x]/g, (char) => DARKER[char] ?? char) : row));
+          frame.sprite(shown, at.x, at.y, "x");
+        }
       }
     }
     frame.block = -1;
@@ -609,7 +611,7 @@ export class Scene {
       else frame.sprite(LANTERN_OUT, x + 16, y + 17);
     }
     // The clamp holds the helmet from either side, so it is drawn over the diver.
-    if (sub && subAt && sub.fade < 0.5) frame.sprite(sub.open ? CLAMP_OPEN : CLAMP_SHUT, subAt.x + 22, subAt.y + 16);
+    if (sub && sub.fade < 0.5) for (const at of subs) frame.sprite(sub.open ? CLAMP_OPEN : CLAMP_SHUT, at.x + 22, at.y + 16);
     frame.block = -1;
 
     // ---- in a room, their names over them, and over another player's their depth
@@ -637,8 +639,8 @@ export class Scene {
         continue;
       }
       const at = (width: number) => Math.max(2, Math.min(right - width, line.x + 10 - (width >> 1)));
-      // One the top of the screen cuts through is named under the boots.
-      const under = line.y < (tag ? 18 : 10);
+      // One the top of the screen cuts through is named under the boots, as are those still held under a submarine.
+      const under = line.y < (tag ? 18 : 10) || !!sub;
       const y = under ? line.y + 29 : line.y - 9;
       frame.emit = line.lit ? 70 : 0;
       const end = drawText(frame, tiny, line.name, at(measure(tiny, line.name) + hearts), y, line.lit ? 16 : 6);

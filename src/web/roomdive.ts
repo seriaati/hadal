@@ -1,4 +1,4 @@
-import type { DiveView } from "../shared/room";
+import { DROP_SECONDS, type DiveView } from "../shared/room";
 import { createGame, type Game, type Result } from "./state";
 
 /**
@@ -24,11 +24,12 @@ export class RoomDive {
     this.ended.clear();
   }
 
-  /** Fold the dive, as last sent at `sent` (seconds, like `now`), into the game. */
-  update(dive: DiveView, sent: number, now: number): Game {
+  /** Fold the dive, as last sent at `sent` (seconds, like `now`), into the game. A chaos dive opens with the drop-off. */
+  update(dive: DiveView, sent: number, now: number, chaos: boolean): Game {
     const game = this.game;
+    game.chaos = chaos;
     const diver = dive.divers.find((one) => one.id === dive.turn) ?? { depth: 0, lamps: [] };
-    const turn = `${dive.round}:${dive.turn}`;
+    const turn = `${dive.round}:${dive.turn}${dive.drop ? ":drop" : ""}`;
     if (turn !== this.shown) {
       this.shown = turn;
       this.since = now;
@@ -39,8 +40,8 @@ export class RoomDive {
       const result: Result = { answer: dive.verdict.answer ?? "", rarity: dive.verdict.rarity, correct: dive.verdict.answer !== null };
       game.results.push(result);
     }
-    game.phase = dive.verdict ? "verdict" : "ask";
-    game.phaseTime = now - (dive.verdict ? this.verdictAt : this.since);
+    game.phase = dive.drop ? "drop" : dive.verdict ? "verdict" : "ask";
+    game.phaseTime = dive.drop ? DROP_SECONDS - dive.drop + (now - sent) : now - (dive.verdict ? this.verdictAt : this.since);
     game.prompts = Array.from({ length: dive.of }, () => dive.prompt);
     game.round = dive.round;
     game.air = dive.running ? Math.max(0, dive.air - (now - sent)) : dive.air;

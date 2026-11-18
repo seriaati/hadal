@@ -170,7 +170,8 @@ export class Ending {
   }
 
   private headHeight(W: number): number {
-    return 6 + wrap(medium, this.winnerWords(), W - 16).length * 11 + 8;
+    const chaos = isRoom(this.log) && this.log.mode === "chaos";
+    return 6 + wrap(medium, this.winnerWords(), W - 16).length * 11 + 8 + (chaos ? 8 : 0);
   }
 
   /** Where the words about the lamp in focus begin. */
@@ -194,7 +195,7 @@ export class Ending {
     const { width: W, height: H } = frame;
     const wide = W >= 300;
     const log = this.log;
-    const chaos = !isRoom(log) && log.chaos;
+    const chaos = isRoom(log) ? log.mode === "chaos" : log.chaos;
     const lost = !isRoom(log) && lostDive(log);
     if (this.wordsFrom.length !== H) {
       this.wordsFrom = new Int16Array(H);
@@ -363,7 +364,8 @@ export class Ending {
     if (isRoom(log)) {
       const y = this.centred(frame, medium, this.winnerWords(), 6, 16, 70, 11);
       const deepest = Math.max(0, ...this.divers.filter((diver) => diver.won).map((diver) => diver.depth));
-      this.centred(frame, tiny, `${formatMeters(deepest)} ~ ${zoneAt(deepest)}`, y + 1, 6);
+      const under = this.centred(frame, tiny, `${formatMeters(deepest)} ~ ${zoneAt(deepest)}`, y + 1, 6);
+      if (log.mode === "chaos") this.centred(frame, tiny, "Chaos ~ one empty tank and out", under - 1, 18);
       return;
     }
     const top = W >= 300 ? 10 : 40;
@@ -393,7 +395,7 @@ export class Ending {
     let y = this.detailsTop(frame);
     if (this.divers.length) {
       const diver = this.divers[this.focus.line]!;
-      const out = isRoom(this.log) && this.log.mode === "longest" ? (diver.out === null ? " ~ still in" : ` ~ out at prompt ${diver.out}`) : "";
+      const out = isRoom(this.log) && this.log.mode !== "deepest" ? (diver.out === null ? " ~ still in" : ` ~ out at prompt ${diver.out}`) : "";
       y = this.centred(frame, tiny, `${plain(diver.name)} ~ ${formatMeters(diver.depth)} ~ ${diver.points} points${out}`, y, 6);
     } else {
       y = this.centred(frame, tiny, `${plain(hung.pack ?? "")} ~ ${this.focus.lamp + 1} of ${this.lines[0]!.length}`, y, 6);

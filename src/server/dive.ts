@@ -1,4 +1,4 @@
-import { BAR_FULL, MAX_HEARTS, PAUSE_SECONDS, START_HEARTS, type DiveView, type DiverView, type Finish, type Mode, type Said } from "../shared/room";
+import { BAR_FULL, DROP_SECONDS, MAX_HEARTS, PAUSE_SECONDS, START_HEARTS, type DiveView, type DiverView, type Finish, type Mode, type Said } from "../shared/room";
 import { MAX_ANSWER_LENGTH, METERS_PER_POINT, type GamePrompt, type Verdict } from "../shared/types";
 import { judge, type PromptEntry, type PromptIndex } from "./game";
 
@@ -37,7 +37,8 @@ export function enoughFor(index: PromptIndex, divers: number): PromptIndex {
 /**
  * A dive of a room: one prompt for everyone, answered in turns, each turn with its own air.
  * Who answers first moves on by one with each prompt. It keeps the clock and the score. In
- * "longest" a turn lost costs a heart, and a diver with none left is out of the dive.
+ * "longest" a turn lost costs a heart, and a diver with none left is out of the dive. In "chaos"
+ * a diver has one heart, and the dive opens with the divers being dropped off.
  */
 export class Dive {
   private round = 0;
@@ -66,16 +67,24 @@ export class Dive {
   /** Counts the turns, so that a ruling or a timer from a turn that is over does nothing. */
   private turns = 0;
   private over = false;
+  /** While a chaos dive's divers are being dropped off, the moment it ends. */
+  private dropEnd: number | null = null;
 
   constructor(private setup: DiveSetup) {
     this.present = [...setup.order];
-    this.divers = setup.order.map((id) => ({ id, depth: 0, lamps: [], hearts: START_HEARTS, bar: 0, out: false }));
+    const hearts = setup.mode === "chaos" ? 1 : START_HEARTS;
+    this.divers = setup.order.map((id) => ({ id, depth: 0, lamps: [], hearts, bar: 0, out: false }));
   }
 
   start() {
     this.queue = [...this.present];
     this.first = this.queue[0]!;
-    this.begin();
+    if (this.setup.mode !== "chaos") return this.begin();
+    // No air is used while the submarines let the divers go.
+    this.left = this.setup.air;
+    this.dropEnd = this.setup.clock.now() + DROP_SECONDS * 1000;
+    this.cancel = this.setup.clock.after(DROP_SECONDS * 1000, () => this.dropEnd !== null && !this.over && this.begin());
+    this.setup.changed();
   }
 
   /** Stop for good, without an ending: the room is gone. */
@@ -103,17 +112,18 @@ export class Dive {
       refused: this.refused,
       verdict: this.verdict,
       divers: this.divers,
+      drop: this.dropEnd === null ? 0 : Math.max(0, (this.dropEnd - this.setup.clock.now()) / 1000),
     };
   }
 
   type(id: number, text: string) {
-    if (this.over || id !== this.turn || this.verdict) return;
+    if (this.over || this.dropEnd !== null || id !== this.turn || this.verdict) return;
     this.typing = String(text ?? "").slice(0, MAX_ANSWER_LENGTH);
     this.setup.changed();
   }
 
   async answer(id: number, text: string) {
-    if (this.over || id !== this.turn || this.verdict || this.judging !== null) return;
+    if (this.over || this.dropEnd !== null || id !== this.turn || this.verdict || this.judging !== null) return;
     const typed = String(text ?? "").trim().slice(0, MAX_ANSWER_LENGTH);
     if (typed) await this.attempt(typed);
   }
@@ -135,6 +145,7 @@ export class Dive {
   }
 
   private begin() {
+    this.dropEnd = null;
     this.turns++;
     this.typing = "";
     this.judging = null;
@@ -206,7 +217,7 @@ export class Dive {
         diver.hearts++;
       }
       if (diver.hearts === MAX_HEARTS) diver.bar = 0;
-    } else if (longest && !--diver.hearts) {
+    } else if (this.setup.mode !== "deepest" && !--diver.hearts) {
       diver.out = true;
       this.outAt.set(diver.id, this.round);
       this.present = this.present.filter((id) => id !== diver.id);
@@ -254,15 +265,15 @@ export class Dive {
     return id;
   }
 
-  /** Nobody is left to dive, or in "longest" one alone is (unless they were alone from the start). */
+  /** Nobody is left to dive, or in "longest" and "chaos" one alone is (unless they were alone from the start). */
   private done(): boolean {
     const left = this.present.length;
-    return !left || (this.setup.mode === "longest" && left === 1 && this.setup.order.length > 1);
+    return !left || (this.setup.mode !== "deepest" && left === 1 && this.setup.order.length > 1);
   }
 
   /**
-   * The dive is over. In "deepest" the deepest diver wins. In "longest" the deepest of those still in, or, if
-   * nobody is, of those who went out on the last prompt anybody did.
+   * The dive is over. In "deepest" the deepest diver wins. In "longest" and "chaos" the deepest of those still in, or,
+   * if nobody is, of those who went out on the last prompt anybody did.
    */
   private finish() {
     this.over = true;
@@ -275,14 +286,14 @@ export class Dive {
     const deepest = Math.max(...contenders.map((diver) => diver.depth));
     const finish = this.divers.map(({ id, depth, lamps }): Finish => {
       const said = this.said.get(id) ?? [];
-      const out = this.setup.mode === "longest" && this.outAt.has(id) ? this.outAt.get(id)! + 1 : null;
+      const out = this.setup.mode !== "deepest" && this.outAt.has(id) ? this.outAt.get(id)! + 1 : null;
       const won = depth === deepest && contenders.some((diver) => diver.id === id);
       return { id, depth, won, place: 0, points: said.reduce((sum, one) => sum + one.rarity, 0), lamps, said, out };
     });
-    // Deepest first; in "longest" the winners, then those still in, then the others by how long they lasted.
+    // Deepest first; in "longest" and "chaos" the winners, then those still in, then the others by how long they lasted.
     const lasted = (one: Finish) => (one.won ? 2 : one.out === null ? 1 : one.out / (this.setup.prompts.length + 1));
     finish
-      .toSorted((a, b) => (this.setup.mode === "longest" ? lasted(b) - lasted(a) : 0) || b.depth - a.depth)
+      .toSorted((a, b) => (this.setup.mode !== "deepest" ? lasted(b) - lasted(a) : 0) || b.depth - a.depth)
       .forEach((one, i) => (one.place = i + 1));
     this.setup.ended(finish);
   }

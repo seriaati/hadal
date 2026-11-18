@@ -5,11 +5,12 @@ export const ROOM_CODE_LENGTH = 5;
 /** How many colours the diver's suit comes in. A suit is a number from 0 up to this. */
 export const SUITS = 6;
 
-export type Mode = "deepest" | "longest";
+export type Mode = "deepest" | "longest" | "chaos";
+export const MODES: Mode[] = ["deepest", "longest", "chaos"];
 /** Seconds of air for each turn: the limits the host may set, and where each mode starts. */
 export const AIR_MIN = 5;
 export const AIR_MAX = 60;
-export const DEFAULT_AIR: Record<Mode, number> = { deepest: 30, longest: 15 };
+export const DEFAULT_AIR: Record<Mode, number> = { deepest: 30, longest: 15, chaos: 8 };
 
 /** What the host decides. The prompts come from the built-in packs, from packs of the host's own (`ownPacks` holds their ids), or both. */
 export type RoomSettings = { mode: Mode; air: number; builtIn: boolean; ownPacks: string[]; judging: boolean };
@@ -19,7 +20,9 @@ export const DEFAULT_SETTINGS: RoomSettings = { mode: "deepest", air: DEFAULT_AI
 export const DIVE_PROMPTS = 10;
 /** Seconds everyone sees a verdict before the next turn. */
 export const PAUSE_SECONDS = 2.5;
-/** In "longest", the hearts a diver starts with, the most they can have, and the points of rarity that fill the bar and give one more. */
+/** How long the submarines of a chaos dive take to let the divers go, before the first turn. */
+export const DROP_SECONDS = 4;
+/** In "longest", the hearts a diver starts with, the most they can have, and the points of rarity that fill the bar and give one more. In "chaos" a diver has one heart, and wins no more. */
 export const START_HEARTS = 2;
 export const MAX_HEARTS = 5;
 /** As much rarity as the rarest answer to four prompts: one rare answer alone is not a heart. */
@@ -27,8 +30,8 @@ export const BAR_FULL = 400;
 
 export type RoomPlayer = { id: number; nickname: string; suit: number; ready: boolean; host: boolean };
 /**
- * A diver of the dive under way: their depth in metres, and the lamps on their line. In "longest" also their hearts,
- * the points in their bar, and whether they are out of the dive (no hearts left).
+ * A diver of the dive under way: their depth in metres, and the lamps on their line. In "longest" and "chaos" also
+ * their hearts, the points in their bar, and whether they are out of the dive (no hearts left).
  */
 export type DiverView = { id: number; depth: number; lamps: { depth: number; lit: boolean }[]; hearts: number; bar: number; out: boolean };
 /**
@@ -36,7 +39,8 @@ export type DiverView = { id: number; depth: number; lamps: { depth: number; lit
  * the seconds left to the diver whose turn it is, and runs down from the moment of sending
  * while `running`. `refused` is the latest answer of this turn that lit nothing, numbered so
  * that a repeat of the same words is still news. `verdict`, during the pause after a turn, is
- * how it ended: `answer` is null when the air ran out.
+ * how it ended: `answer` is null when the air ran out. `drop` is the seconds left, when it was sent, of a chaos
+ * dive's drop-off, before the first turn's air starts to run.
  */
 export type DiveView = {
   prompt: GamePrompt;
@@ -52,12 +56,13 @@ export type DiveView = {
   refused: { text: string; taken: boolean; count: number } | null;
   verdict: Verdict | null;
   divers: DiverView[];
+  drop: number;
 };
 /** One answer a diver gave: the prompt it was to, the pack's answer (null when the air ran out) and its rarity. */
 export type Said = { prompt: string; answer: string | null; rarity: number };
 /**
  * How a dive ended for one diver: how deep they went, whether they won, their place (from 1), their points (the
- * rarities of their lit lamps), their lamps, every answer they gave, and in "longest" the prompt they went out at
+ * rarities of their lit lamps), their lamps, every answer they gave, and in "longest" and "chaos" the prompt they went out at
  * (counted from 1; null for one still in).
  */
 export type Finish = {

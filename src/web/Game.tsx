@@ -163,7 +163,7 @@ export function Game() {
     /** When the divers came back to the surface, in seconds. */
     let doneAt = 0;
     let last = performance.now();
-    /** The phase of the player's own dive a frame ago: a chaos dive opens with a hard glitch. */
+    /** The phase of the dive on screen a frame ago: a chaos dive opens with a hard glitch. */
     let phase: Phase = "title";
     let request = requestAnimationFrame(function loop(now) {
       request = requestAnimationFrame(loop);
@@ -207,8 +207,8 @@ export function Game() {
       }
       if (closing) lights = closing.draw(frame, lights, now / 1000 - doneAt, now / 1000);
       // A chaos dive is seen on a failing tape, its end too; now and then a glitch turns something in the dark into something worse.
-      if (game.phase === "drop" && phase !== "drop") glitch.cut(frame.height, scene.focus);
-      phase = game.phase;
+      if (shown.phase === "drop" && phase !== "drop") glitch.cut(frame.height, scene.focus);
+      phase = shown.phase;
       const focus = closing ? closing.point : scene.focus;
       const faults = glitch.count;
       glitch.update(dt, strength(shown, scene.depth, scene.panic), frame.height, focus, shown);

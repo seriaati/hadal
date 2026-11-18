@@ -1,5 +1,5 @@
 import {
-  AIR_MAX, AIR_MIN, DEFAULT_AIR, DEFAULT_SETTINGS, DIVE_PROMPTS, MAX_PLAYERS, ROOM_CODE_LENGTH, SUITS,
+  AIR_MAX, AIR_MIN, DEFAULT_AIR, DEFAULT_SETTINGS, DIVE_PROMPTS, MAX_PLAYERS, MODES, ROOM_CODE_LENGTH, SUITS,
   type ClientMessage, type Refusal, type RoomPlayer, type RoomSettings, type RoomView, type ServerMessage,
 } from "../shared/room";
 import { USERNAME } from "../shared/types";
@@ -88,7 +88,7 @@ async function change(member: Member, room: Room, changes: Partial<RoomSettings>
     judging: changes.judging ?? old.judging,
   };
   const sound =
-    (settings.mode === "deepest" || settings.mode === "longest") && Number.isInteger(settings.air) && settings.air >= AIR_MIN && settings.air <= AIR_MAX &&
+    MODES.includes(settings.mode) && Number.isInteger(settings.air) && settings.air >= AIR_MIN && settings.air <= AIR_MAX &&
     typeof settings.builtIn === "boolean" && typeof settings.judging === "boolean" &&
     Array.isArray(settings.ownPacks) && new Set(settings.ownPacks).size === settings.ownPacks.length &&
     (settings.builtIn || settings.ownPacks.length > 0);
@@ -119,7 +119,7 @@ async function start(member: Member, room: Room): Promise<Refusal | void> {
   room.dive = new Dive({
     mode,
     index,
-    // "Longest" goes on until the prompts run out.
+    // "Longest" and "chaos" go on until the prompts run out.
     prompts: pickPrompts(index, mode === "deepest" ? DIVE_PROMPTS : index.size),
     order: shuffle(room.players.map((player) => player.id)),
     air: room.settings.air,

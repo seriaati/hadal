@@ -5,7 +5,7 @@ import type { RoomLog } from "./ending";
 import { RoomClient, type Heard } from "../room";
 import { RoomDive } from "../roomdive";
 import type { Sound } from "../sound";
-import { ascentSeconds, createGame, type Game } from "../state";
+import { LOST_SECONDS, ascentSeconds, createGame, type Game } from "../state";
 import type { AccountPanel } from "./account";
 import { SUIT_COLORS, type Crew, type Turn } from "./scene";
 import type { Part, Step, Ui } from "./ui";
@@ -74,6 +74,11 @@ export class MultiplayerPanel {
   ending: { log: RoomLog; follow: number; you: number; at: number; rise: number } | null = null;
   /** The room closed, or the connection was lost, while the end screen was open: closing it goes back to the first step. */
   private gone = false;
+  /**
+   * The player's own chaos dive was lost: when, in seconds, and the dive and divers as they were then. Until its last
+   * words are said the player sees that moment, then they watch the rest of the dive.
+   */
+  private lost: { at: number; game: Game; crew: Crew[] } | null = null;
 
   constructor(
     private ui: Ui,
@@ -110,6 +115,7 @@ export class MultiplayerPanel {
    * lantern burning; before it, the room's, with the camera on the player's own; or the player's own alone while they make or join one.
    */
   crew(): Crew[] | null {
+    if (this.dying) return this.lost!.crew;
     if (this.ending) {
       // Every diver still in is hauled up their line, all of them reaching the surface together.
       const { log, follow, you } = this.ending;
@@ -146,8 +152,13 @@ export class MultiplayerPanel {
 
   /** How far the haul up at the end of a dive has come, from 0 to 1, gently at both ends. */
   private risen(): number {
-    const t = Math.min(1, (performance.now() / 1000 - this.ending!.at) / this.ending!.rise);
+    const t = Math.max(0, Math.min(1, (performance.now() / 1000 - this.ending!.at) / this.ending!.rise));
     return t * t * (3 - 2 * t);
+  }
+
+  /** Whether the player's own chaos dive has just been lost, and its last words are still being said. */
+  private get dying(): boolean {
+    return !!this.lost && performance.now() / 1000 - this.lost.at < LOST_SECONDS;
   }
 
   /** Whether the divers are back at the surface after a dive, so that the end screen opens. */
@@ -166,14 +177,26 @@ export class MultiplayerPanel {
 
   /** The dive of the room as a game the scene can draw, while there is one; at its end, the depth unwinding as the divers come up. */
   game(now: number): Game | null {
+    if (this.lost && this.dying) return Object.assign(this.lost.game, { phaseTime: now - this.lost.at });
     if (this.ending) {
       const { log, follow } = this.ending;
       const depth = (log.divers.find((diver) => diver.id === follow)?.depth ?? 0) * (1 - this.risen());
-      return { ...createGame(), phase: "ascent", depth };
+      return { ...createGame(), phase: this.surfaced ? "done" : "ascent", chaos: log.mode === "chaos", depth };
     }
-    const dive = this.diving && this.client.view?.dive;
+    const view = this.client.view;
+    const dive = this.diving && view?.dive;
     if (!this.yours) this.typed = "";
-    return dive ? this.dive.update(dive, this.sent, now) : null;
+    if (!dive) return null;
+    const chaos = view.settings.mode === "chaos";
+    const game = this.dive.update(dive, this.sent, now, chaos);
+    // The player's own diver has just gone out of a chaos dive: their screen dies as a single player's does.
+    if (chaos && !this.lost && dive.verdict && dive.divers.find((diver) => diver.id === view.you)?.out) {
+      // It is their turn, so theirs is the diver in focus; their lantern goes out.
+      const crew = this.crew()!.map((diver) => (diver.focus ? { ...diver, lit: false } : diver));
+      this.lost = { at: now, game: { ...game, phase: "lost", phaseTime: 0, lamps: [...game.lamps], results: [...game.results] }, crew };
+      return this.lost.game;
+    }
+    return game;
   }
 
   /** What the words of the dive need beyond those of single player. */
@@ -201,7 +224,7 @@ export class MultiplayerPanel {
   /** Whether it is the player's turn to answer, and an answer is wanted. */
   get yours(): boolean {
     const view = this.client.view;
-    return !!view?.dive && this.diving && view.dive.turn === view.you && !view.dive.verdict;
+    return !!view?.dive && this.diving && view.dive.turn === view.you && !view.dive.verdict && !view.dive.drop && !this.dying;
   }
 
   type(text: string) {
@@ -221,6 +244,7 @@ export class MultiplayerPanel {
   /** Leave the dive, and with it the room. */
   leaveDive() {
     this.diving = false;
+    this.lost = null;
     this.client.close();
     this.ui.close();
   }
@@ -239,6 +263,7 @@ export class MultiplayerPanel {
         this.diving = diving;
         this.refused = null;
         if (diving) {
+          this.lost = null;
           this.dive.reset();
           this.ui.close();
         } else if (message.room.last) {
@@ -285,7 +310,9 @@ export class MultiplayerPanel {
     });
     const follow = divers.some((diver) => diver.id === you) ? you : divers.find((diver) => diver.won)!.id;
     const rise = ascentSeconds(Math.max(...divers.map((diver) => diver.depth)));
-    return { log: { mode: last!.mode, divers }, follow, you, at: performance.now() / 1000, rise };
+    // One whose chaos dive has just been lost hears their last words out before the haul up begins.
+    const at = Math.max(performance.now() / 1000, this.lost ? this.lost.at + LOST_SECONDS : 0);
+    return { log: { mode: last!.mode, divers }, follow, you, at, rise };
   }
 
   /** A heart won in "longest" (a full bar) rings high, after the lamp that filled it. */
