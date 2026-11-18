@@ -1,4 +1,4 @@
-import { AIR_MAX, AIR_MIN, MAX_PLAYERS, ROOM_CODE_LENGTH, SUITS, type Refusal, type RoomPlayer, type RoomSettings, type RoomView } from "../../shared/room";
+import { AIR_MAX, AIR_MIN, MAX_PLAYERS, MODES, ROOM_CODE_LENGTH, SUITS, type Mode, type Refusal, type RoomPlayer, type RoomSettings, type RoomView } from "../../shared/room";
 import { USERNAME_MAX, type PackSummary } from "../../shared/types";
 import { formatMeters } from "../depth";
 import type { RoomLog } from "./ending";
@@ -23,6 +23,13 @@ const REFUSALS: Record<Refusal, [Where, string]> = {
   "not-ready": ["start", "everyone has to be ready first"],
   "no-prompts": ["start", "these packs have no prompt with an answer for everyone: choose others"],
 };
+/** Each mode as the host chooses it: its name, and how it is played. */
+const MODE_WORDS: Record<Mode, [string, string]> = {
+  deepest: ["Deepest", "10 prompts answered in turns, and the diver who goes deepest wins"],
+  longest: ["Longest", "two hearts each: an empty tank costs one, rare answers win more, and the last diver in wins"],
+  chaos: ["Chaos", "little air, on a failing tape: one empty tank puts a diver out, and the last diver in wins"],
+};
+
 /** The air is set in steps of this many seconds. */
 const AIR_STEP = 5;
 
@@ -459,12 +466,12 @@ export class MultiplayerPanel {
     if (!settings) return { title: "Set up the room", rows: [] };
     const air = this.air ?? settings.air;
     const keyed = this.account.account?.keys.anthropic || this.account.account?.keys.jev;
-    const mode = () => this.change({ mode: settings.mode === "deepest" ? "longest" : "deepest" });
+    const shift = (way: -1 | 1) => this.change({ mode: MODES[(MODES.indexOf(settings.mode) + way + MODES.length) % MODES.length] });
     const judging = () => this.change({ judging: !settings.judging });
     return {
       title: "Set up the room",
       rows: [
-        { kind: "press", id: "mode", label: "Mode", value: settings.mode === "deepest" ? "Deepest" : "Longest", press: mode, shift: mode },
+        { kind: "press", id: "mode", label: "Mode", value: MODE_WORDS[settings.mode][0], press: () => this.open(this.modeStep), shift },
         {
           kind: "slider",
           id: "air",
@@ -495,6 +502,27 @@ export class MultiplayerPanel {
         ...(keyed ? [] : [{ kind: "note", text: "keep a key to judge unlisted answers" } as Part]),
         ...this.refusal("settings"),
       ],
+    };
+  };
+
+  /** The modes, each with how it is played. Choosing one goes back to the set-up. */
+  private modeStep = (): Step => {
+    const settings = this.client.view?.settings;
+    if (!settings) return { title: "Mode", rows: [] };
+    return {
+      title: "Mode",
+      rows: MODES.flatMap((mode): Part[] => {
+        const [name, how] = MODE_WORDS[mode];
+        const chosen = settings.mode === mode;
+        const choose = () => {
+          if (!chosen) this.change({ mode });
+          this.ui.back();
+        };
+        return [
+          { kind: "press", id: `mode:${mode}`, label: name, value: chosen ? "chosen" : undefined, on: chosen ? true : undefined, press: choose },
+          { kind: "note", text: how },
+        ];
+      }),
     };
   };
 
