@@ -41,9 +41,8 @@ dive, summon a creature. Its "Hide" button folds it away, and the browser rememb
   a run; `sound.ts` makes every sound (there are no sound files); `pixel/` is the renderer
   (frame buffer and soft light, the hand-built fonts and the fetched one for other scripts
   (`other.ts`), the scene, creatures, the parts and keys every panel shares (`ui.ts`), and
-  the settings, account and packs panels, which only list what they hold);
-  `logbook/` draws the hand-drawn summary of a finished dive (`sketch.ts` holds the paint and
-  ink tools, `dive.ts` and `entries.ts` are the two pages)
+  the settings, account and packs panels, which only list what they hold, and the screen that
+  ends a dive, `ending.ts`)
 - `src/shared/`: types and constants used by both sides
 - `packs/`: built-in packs, one JSON file each, in the format described under "Pack format" in
   `docs/PLAN.md` and checked by `validatePack` in `src/server/packs.ts`
@@ -51,8 +50,11 @@ dive, summon a creature. Its "Hide" button folds it away, and the browser rememb
   was chosen
 - `design/multiplayer/`: still mock-ups of multiplayer, drawn with the game's own renderer
   (`bun design/multiplayer/render.ts` redraws `png/`; needs Google Chrome)
-- `design/explorations/`: the eight art-direction mock-ups; 01 is the chosen style, 02 is the
-  summary screen
+- `design/ending/`: stills of five directions for the end screen, drawn with the game's
+  renderer (`bun design/ending/render.ts` redraws `png/`; needs Google Chrome); 3, "lamps in
+  the dark", was chosen
+- `design/explorations/`: the eight art-direction mock-ups; 01 is the chosen style (02, the
+  hand-drawn logbook, was the end screen until stage 10)
 
 ## Rules
 
@@ -63,7 +65,6 @@ dive, summon a creature. Its "Hide" button folds it away, and the browser rememb
   sent back to the browser or written to a log.
 - The project owner is new to web development: build in small stages and explain tradeoffs.
 - Everything in the game view is drawn on one pixel grid with the 22-colour palette. Keep the
-  screen clean: a new on-screen element must earn its place or live in the world. The logbook
-  that closes a dive is the one exception: it is hand-drawn, on its own layer over the game.
+  screen clean: a new on-screen element must earn its place or live in the world.
 - Creatures are scenery. They never attack the diver or affect the score.
 - In development the game is reachable from the browser console as `window.hadal`.

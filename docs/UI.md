@@ -73,7 +73,7 @@ The same in every panel.
   second Escape leaves the dive, as does pressing the last line; opened with Escape, the step
   says so. This is the one step where Escape does not mean back, so everything else that
   means back (Left, the `‹`, a click outside, the cog again) keeps the dive. A dive that is
-  left goes straight to the title: it is not logged and no logbook opens. A key held down
+  left goes straight to the title: it is not logged and no end screen opens. A key held down
   counts once, so holding Escape cannot leave a dive.
 - **Where the focus lands.** When a step opens, on its first thing. Coming back from a step,
   on the line that opened it. After something is added, on the new thing. After something is
@@ -112,6 +112,26 @@ The same in every panel.
 - **In multiplayer** the column of words starts at 184 instead of 170 on a wide screen, so
   that it clears the third line. Going back from a room's step leaves the room; going back
   from `‹ Multiplayer` closes the connection to the server.
+
+## The end of a dive
+
+Agreed with the owner on 2026-11-18 (`design/ending/`, direction 3). The screen that ends a
+dive is not a panel: once the diver is back at the surface the sea fades to black and the lamps
+of the dive rise into a row on a line, each as bright as its answer was rare.
+
+- The focus rests on a lamp or on the line back ("Back to the title", or "Back to the room").
+  It is shown as everywhere: the amber mark (before a lamp's number, or under a small lamp of a
+  room's row) and cream words.
+- The words about the lamp in focus stand under the lamps: pack and number, prompt, the answer
+  large in mint (or "Out of air" in rose), what it gained and its light.
+- Left and Right move along a row and stop at its ends. Up and Down move between rows,
+  keeping the column, and round through the line back. Moving the focus makes no sound.
+- Enter and Escape leave from anywhere. The pointer gives the focus to a lamp or the line back;
+  only a press on the line back leaves.
+- In a room every diver has a row, in place order, named at the left in their suit's colour,
+  the winner in amber.
+- A chaos dive's end stays on the failing tape, with bloodshot eyes that follow
+  the focus, and for a lost dive a cut line (`docs/PLAN.md`, stage 10).
 
 ## Sizes
 
