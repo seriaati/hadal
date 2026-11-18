@@ -1,7 +1,7 @@
 import app from "../web/index.html";
-import type { BunRequest } from "bun";
+import type { BunRequest, Server } from "bun";
 import { MAX_PACK_BYTES, PROVIDERS, type Config, type Provider } from "../shared/types";
-import { SESSION_DAYS, accountIdOf, accountOf, signIn, signOut, signUp } from "./accounts";
+import { SESSION_DAYS, accountIdOf, accountOf, signInFrom, signOut, signUp, type Entry } from "./accounts";
 import { listPacks, loadPack, removePack, savePack } from "./custom";
 import { migrate } from "./db";
 import { OWN, buildIndex, judge, nearestAnswer, pickPrompts, type PromptIndex } from "./game";
@@ -25,7 +25,7 @@ usePrompts(prompts);
 await migrate();
 
 /** Sign up or sign in. The token goes into a cookie that scripts in the page cannot read. */
-async function enter(req: BunRequest, entry: typeof signIn) {
+async function enter(req: BunRequest, entry: (username: string, password: string) => Promise<Entry>) {
   const { username, password } = (await req.json()) as { username: string; password: string };
   const result = await entry(String(username ?? ""), String(password ?? ""));
   if ("error" in result) return Response.json({ error: result.error }, { status: 400 });
@@ -33,6 +33,14 @@ async function enter(req: BunRequest, entry: typeof signIn) {
     httpOnly: true, sameSite: "lax", secure: PRODUCTION, path: "/", maxAge: SESSION_DAYS * 24 * 60 * 60,
   });
   return Response.json(result.account);
+}
+
+/**
+ * The player's address. The production instance sits behind Cloudflare, which names the player in
+ * CF-Connecting-IP; without that header, the server is reached directly.
+ */
+function addressOf(req: Request, server: Server<Member>) {
+  return req.headers.get("cf-connecting-ip") ?? server.requestIP(req)?.address ?? "";
 }
 
 /** The prompts of one of the signed-in player's own packs. Empty if there is no such pack, or nobody is signed in. */
@@ -103,7 +111,9 @@ const server = Bun.serve({
       GET: async (req) => Response.json(await accountOf(req.cookies.get(SESSION))),
     },
     "/api/account/signup": { POST: (req) => enter(req, signUp) },
-    "/api/account/signin": { POST: (req) => enter(req, signIn) },
+    "/api/account/signin": {
+      POST: (req, server) => enter(req, (username, password) => signInFrom(addressOf(req, server), username, password)),
+    },
     "/api/account/signout": {
       POST: async (req) => {
         const token = req.cookies.get(SESSION);

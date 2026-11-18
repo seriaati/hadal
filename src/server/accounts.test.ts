@@ -1,5 +1,5 @@
 import { afterAll, expect, test } from "bun:test";
-import { accountOf, signIn, signOut, signUp } from "./accounts";
+import { SIGN_IN_TRIES, accountOf, signIn, signInFrom, signOut, signUp } from "./accounts";
 import { migrate, sql } from "./db";
 
 // These tests need the database (`docker compose up -d db`). Their accounts are removed afterwards.
@@ -78,4 +78,22 @@ test("an expired or unknown session names nobody", async () => {
   expect(await accountOf(entry.token)).toBeNull();
   expect(await accountOf("no such token")).toBeNull();
   expect(await accountOf(null)).toBeNull();
+});
+
+test("an address that gives too many wrong passwords is refused for a while, even with the right one", async () => {
+  const name = fresh();
+  await signUp(name, PASSWORD);
+  const address = crypto.randomUUID();
+  // Sent all at once, as a guesser would: none may slip past the limit.
+  const wrong = await Promise.all(Array.from({ length: SIGN_IN_TRIES + 5 }, () => signInFrom(address, name, "wrong horse")));
+  expect(wrong.filter((entry) => "error" in entry && entry.error === "Wrong name or password")).toHaveLength(SIGN_IN_TRIES);
+  expect(await signInFrom(address, name, PASSWORD)).toEqual({ error: "Too many wrong tries. Wait 15 min" });
+  expect(await signInFrom(crypto.randomUUID(), name, PASSWORD)).toHaveProperty("account.username", name);
+});
+
+test("signing in rightly does not count against the address", async () => {
+  const name = fresh();
+  await signUp(name, PASSWORD);
+  const address = crypto.randomUUID();
+  for (let i = 0; i < SIGN_IN_TRIES + 2; i++) expect(await signInFrom(address, name, PASSWORD)).toHaveProperty("account.username", name);
 });

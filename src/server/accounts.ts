@@ -39,6 +39,28 @@ export async function signIn(username: string, password: string): Promise<Entry>
   return openSession(row.id);
 }
 
+export const SIGN_IN_TRIES = 10;
+const SIGN_IN_MINUTES = 15;
+/** Failed sign-ins per address, each count kept for SIGN_IN_MINUTES from the first. Lost on restart. */
+const tries = new Map<string, { failed: number; since: number }>();
+
+/** Sign in, unless the address has given too many wrong passwords lately. */
+export async function signInFrom(address: string, username: string, password: string): Promise<Entry> {
+  const now = Date.now();
+  for (const [key, entry] of tries) if (now - entry.since > SIGN_IN_MINUTES * 60_000) tries.delete(key);
+  const counted = tries.get(address) ?? { failed: 0, since: now };
+  if (counted.failed >= SIGN_IN_TRIES) {
+    const minutes = Math.ceil((counted.since + SIGN_IN_MINUTES * 60_000 - now) / 60_000);
+    return { error: `Too many wrong tries. Wait ${minutes} min` };
+  }
+  // Counted before the password is checked, so tries sent all at once cannot slip past the limit.
+  counted.failed++;
+  tries.set(address, counted);
+  const entry = await signIn(username, password);
+  if (!("error" in entry)) counted.failed--;
+  return entry;
+}
+
 export async function accountOf(token: string | null): Promise<Account | null> {
   if (!token) return null;
   const [row] = await sql`
