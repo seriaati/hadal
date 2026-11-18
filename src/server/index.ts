@@ -82,6 +82,8 @@ const server = Bun.serve({
   maxRequestBodySize: 2 * MAX_PACK_BYTES,
   routes: {
     "/": app,
+    // The link preview, at an address that does not change, as the page's og:image names it.
+    "/og.png": () => new Response(Bun.file(`${import.meta.dir}/../web/og.png`)),
     "/api/config": {
       GET: () => Response.json({ devMode: DEV_MODE } satisfies Config),
     },

@@ -12,3 +12,6 @@ design/ending/out/
 
 # The bundled page the chaos mock-up runs
 design/chaos/out/
+
+# The bundled page the link preview is drawn from
+design/brand/out/

@@ -53,6 +53,8 @@ dive, summon a creature. Its "Hide" button folds it away, and the browser rememb
 - `design/ending/`: stills of five directions for the end screen, drawn with the game's
   renderer (`bun design/ending/render.ts` redraws `png/`; needs Google Chrome); 3, "lamps in
   the dark", was chosen
+- `design/brand/`: the logo (the diver's helmet) and the link preview; `bun design/brand/render.ts`
+  draws the icons and `og.png` into `src/web/` (the preview needs Google Chrome)
 - `design/explorations/`: the eight art-direction mock-ups; 01 is the chosen style (02, the
   hand-drawn logbook, was the end screen until stage 10)
 
