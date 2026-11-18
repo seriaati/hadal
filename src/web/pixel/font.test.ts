@@ -39,6 +39,15 @@ test("letters of other scripts come from the other font, and a line breaks betwe
   expect(measure(tiny, "A東京")).toBe(3);
 });
 
+test("Chinese breaks between any two letters, but never puts a mark at the start of a line, and keeps digits together", () => {
+  const before = other.glyph;
+  other.glyph = (unit) => (/[ -~]/.test(unit) ? undefined : ["####", "####"]);
+  // Each letter is 4 wide, with a gap of 1: three letters fit in 14.
+  expect(wrap(tiny, "一二三，四五", 14)).toEqual(["一二", "三，四", "五"]);
+  expect(wrap(tiny, "一二三四 18", 27)).toEqual(["一二三四", "18"]);
+  other.glyph = before;
+});
+
 test("lines of the other font's taller letters are set further apart", () => {
   other.line = 10;
   expect(pitch(tiny, "Tokyo")).toBe(8);

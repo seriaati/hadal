@@ -203,26 +203,46 @@ export function drawText(frame: Frame, font: Font, text: string, x: number, y: n
   return x;
 }
 
+/** Scripts written without spaces, where a line may break between any two letters. */
+const UNSPACED = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u;
+/** Marks that may not begin a line, and those that may not end one. */
+const CLOSING = /^[，。、；：？！）》”’…]/;
+const OPENING = /[（《“‘]$/;
+
+/** A word cut where a line may break inside it: between letters of a script written without spaces, keeping each mark with its letter. */
+function breaks(word: string): string[] {
+  if (latin(word)) return [word];
+  const chunks: string[] = [];
+  for (const piece of pieces(word)) {
+    const last = chunks.at(-1);
+    if (last !== undefined && (CLOSING.test(piece) || OPENING.test(last) || (!UNSPACED.test(piece) && !UNSPACED.test(last.at(-1)!)))) chunks[chunks.length - 1] += piece;
+    else chunks.push(piece);
+  }
+  return chunks;
+}
+
 /** Break text into lines no wider than `width`, between words where it can and inside a word wider than a line. */
 export function wrap(font: Font, text: string, width: number): string[] {
   const lines: string[] = [];
   let line = "";
   for (const word of text.split(" ")) {
-    const longer = line ? `${line} ${word}` : word;
-    if (line && measure(font, longer) > width) {
-      lines.push(line);
-      line = word;
-    } else {
-      line = longer;
-    }
-    while (measure(font, line) > width) {
-      const parts = pieces(line);
-      if (parts.length < 2) break;
-      let cut = parts.length - 1;
-      while (cut > 1 && measure(font, parts.slice(0, cut).join("")) > width) cut--;
-      lines.push(parts.slice(0, cut).join(""));
-      line = parts.slice(cut).join("");
-    }
+    breaks(word).forEach((chunk, i) => {
+      const longer = line ? `${line}${i === 0 ? " " : ""}${chunk}` : chunk;
+      if (line && measure(font, longer) > width) {
+        lines.push(line);
+        line = chunk;
+      } else {
+        line = longer;
+      }
+      while (measure(font, line) > width) {
+        const parts = pieces(line);
+        if (parts.length < 2) break;
+        let cut = parts.length - 1;
+        while (cut > 1 && measure(font, parts.slice(0, cut).join("")) > width) cut--;
+        lines.push(parts.slice(0, cut).join(""));
+        line = parts.slice(cut).join("");
+      }
+    });
   }
   if (line) lines.push(line);
   return lines;
