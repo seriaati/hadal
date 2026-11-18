@@ -1,4 +1,4 @@
-/** The 19-colour palette. Sprites and text refer to colours by index. */
+/** The 22-colour palette. Sprites and text refer to colours by index. */
 export const PALETTE = [
   "#05060b", // 0  void
   "#0a0d18", // 1  abyss water
@@ -19,13 +19,16 @@ export const PALETTE = [
   "#fff1c2", // 16 cream
   "#5b3a78", // 17 violet
   "#c2415c", // 18 rose
+  "#1d3b26", // 19 deep moss
+  "#3d7a3a", // 20 moss
+  "#8cc45a", // 21 lichen
 ];
 const RGB = PALETTE.map((hex) => [0, 1, 2].map((i) => parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16)));
 
 /** Sprite rows are strings in which each character names a palette colour; "." is transparent. */
 const SPRITE_COLORS: Record<string, number> = {
   "0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7,
-  t: 8, T: 9, m: 10, w: 11, r: 12, R: 13, o: 14, a: 15, c: 16, v: 17, x: 18,
+  t: 8, T: 9, m: 10, w: 11, r: 12, R: 13, o: 14, a: 15, c: 16, v: 17, x: 18, g: 19, G: 20, l: 21,
 };
 
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];

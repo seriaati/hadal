@@ -58,7 +58,7 @@ correctly at a chosen rarity, run out of air, end the dive, summon a creature.
 - A player's API key stays on the server, encrypted. It is used only for that player and never
   sent back to the browser or written to a log.
 - The project owner is new to web development: build in small stages and explain tradeoffs.
-- Everything in the game view is drawn on one pixel grid with the 19-colour palette. Keep the
+- Everything in the game view is drawn on one pixel grid with the 22-colour palette. Keep the
   screen clean: a new on-screen element must earn its place or live in the world. The logbook
   that closes a dive is the one exception: it is hand-drawn, on its own layer over the game.
 - Creatures are scenery. They never attack the diver or affect the score.
