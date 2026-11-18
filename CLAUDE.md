@@ -47,6 +47,8 @@ correctly at a chosen rarity, run out of air, end the dive, summon a creature.
   `docs/PLAN.md` and checked by `validatePack` in `src/server/packs.ts`
 - `design/interface/`: the playable mock-ups of four directions for the panels; "open water"
   was chosen
+- `design/multiplayer/`: still mock-ups of multiplayer, drawn with the game's own renderer
+  (`bun design/multiplayer/render.ts` redraws `png/`; needs Google Chrome)
 - `design/explorations/`: the eight art-direction mock-ups; 01 is the chosen style, 02 is the
   summary screen
 
