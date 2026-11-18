@@ -1,16 +1,19 @@
+import { Converter } from "opencc-js/t2cn";
 import type { Answer, GamePrompt, Pack, Verdict } from "../shared/types";
 
 export type PromptEntry = { prompt: GamePrompt; answers: Map<string, Answer> };
 export type PromptIndex = Map<string, PromptEntry>;
+const simplified = Converter({ from: "t", to: "cn" });
 /** Starts the prompt ids of a player's own pack. No built-in pack's id can hold a colon. */
 export const OWN = "own:";
 
 /**
- * Reduce an answer to a comparison key: no case, accents, punctuation, spaces or leading "the".
+ * Reduce an answer to a comparison key: no case, accents, punctuation, spaces or leading "the",
+ * and Chinese in simplified characters, so "關" and "关" are the same answer.
  * Only Latin letters lose their accents: in other scripts the marks tell words apart.
  */
 export function normalize(text: string): string {
-  return text
+  return simplified(text)
     .normalize("NFD")
     .replace(/(?<=\p{Script=Latin})\p{M}+/gu, "")
     .toLowerCase()

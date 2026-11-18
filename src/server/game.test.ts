@@ -14,7 +14,13 @@ test("normalize ignores case, accents, punctuation, spaces and a leading 'the'",
 test("normalize keeps other scripts, and the marks that tell their words apart", () => {
   expect(normalize("Ελλάδα")).toBe("ελλάδα".normalize("NFD"));
   expect(normalize("かぎ")).not.toBe(normalize("かき"));
-  expect(normalize("東京!")).toBe("東京");
+  expect(normalize("ソウル!")).toBe("ソウル");
+});
+
+test("normalize reads traditional and simplified Chinese as the same characters", () => {
+  expect(normalize("關")).toBe(normalize("关"));
+  expect(normalize("臺灣")).toBe(normalize("台湾"));
+  expect(judge(index, "zh-geography/asia-countries", "韓國")?.answer).toBe("韩国");
 });
 
 test("a correct answer returns the pack's spelling and its rarity", () => {

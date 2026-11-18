@@ -70,5 +70,6 @@ built-in pack is not valid. Uploaded packs go through the same check.
 - A prompt has at least two answers. Rarity is a whole number from 1 (everyone says it) to
   100, and the rarest answer of every prompt has 100.
 - Every spelling (the text and each alias) is at most 40 characters, has at least one letter
-  or digit, and matches no other spelling of the prompt.
+  or digit, and matches no other spelling of the prompt (spellings that differ only in simplified
+  and traditional characters match).
 - An uploaded file is at most 200 KB.
