@@ -93,7 +93,7 @@ const server = Bun.serve({
   routes: {
     "/": app,
     // The link preview, at an address that does not change, as the page's og:image names it.
-    "/og.png": () => new Response(Bun.file(`${import.meta.dir}/../web/og.png`)),
+    "/og-2.png": () => new Response(Bun.file(`${import.meta.dir}/../web/og-2.png`)),
     "/api/config": {
       GET: () => Response.json({ devMode: DEV_MODE } satisfies Config),
     },

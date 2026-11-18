@@ -8,8 +8,8 @@ const here = import.meta.dir;
 const web = `${here}/../../src/web`;
 
 await $`bun build ${here}/page.ts --outfile=${here}/out/page.js --format=iife`.quiet();
-await $`google-chrome --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1200,630 --virtual-time-budget=1000 --screenshot=${web}/og.png file://${here}/index.html`.quiet();
-console.log("src/web/og.png");
+await $`google-chrome --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1200,630 --virtual-time-budget=1000 --screenshot=${web}/og-2.png file://${here}/index.html`.quiet();
+console.log("src/web/og-2.png");
 
 const COLORS: Record<string, number> = { "0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, w: 11, r: 12, R: 13, o: 14, a: 15, c: 16 };
 // The browser tab's icon has no background; the phone's home-screen icon has the water of the game behind it.
