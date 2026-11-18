@@ -8,13 +8,22 @@ import { FONTS, drawText, fit, measure, pitch, plain, rise, wrap, type Font } fr
 import { dither, hash, type Frame, type Light } from "./frame";
 import { drawMark } from "./ui";
 
-const METERS_PER_PIXEL = 5;
+/**
+ * The world row at a depth, on a curve: near the surface a metre is drawn larger than in the deep, so a common answer
+ * early in a dive still moves the diver well down the screen, and a deep dive is not endlessly tall.
+ */
+function rowOf(depth: number): number {
+  return Math.round(50 * (Math.sqrt(depth + 2000) - Math.sqrt(2000)));
+}
+function depthOf(row: number): number {
+  return (row / 50 + Math.sqrt(2000)) ** 2 - 2000;
+}
 const CHAIN_X = 84;
 const LAMP_X = 76;
 const DIVER_X = 84;
 /** World rows count down from the diver's position at 0 m. The waterline is just above it. */
 const SURFACE_ROW = -14;
-const FLOOR_ROW = 11000 / METERS_PER_PIXEL + 26;
+const FLOOR_ROW = rowOf(11000) + 26;
 /** Rows of rock generated above row 0, so that array indices stay positive. */
 const PAD = 300;
 const ROWS = PAD + FLOOR_ROW + 300;
@@ -143,7 +152,7 @@ export type Turn = {
   bar: number;
 };
 const LINE_GAP = 64;
-const KELP_ROWS = 600 / METERS_PER_PIXEL;
+const KELP_ROWS = rowOf(600);
 const TRAVEL_SECONDS = 0.75;
 
 /** One step of easing from `from` towards `to`: a share `rate` of the way, but never less than `least`, nor past it. */
@@ -271,7 +280,7 @@ export class Scene {
       }
       diving = Math.abs(gap) > 4;
     }
-    const camera = Math.round(this.depth / METERS_PER_PIXEL);
+    const camera = rowOf(this.depth);
     const scroll = camera - this.camera;
     this.camera = camera;
     const across = Math.round(this.across);
@@ -298,7 +307,7 @@ export class Scene {
         const reachedAt = marks.get(i);
         if (lamp.lit && reachedAt === undefined) return [];
         const stacked = list.slice(0, i).filter((other) => other.depth === lamp.depth).length;
-        const y = screenY(Math.round(lamp.depth / METERS_PER_PIXEL)) + 2 + stacked * 10;
+        const y = screenY(rowOf(lamp.depth)) + 2 + stacked * 10;
         if (y < -70 || y > H + 70) return [];
         // Older lamps burn lower; a lamp flares as it is lit.
         const newer = list.slice(i + 1).filter((other) => other.lit).length;
@@ -320,7 +329,7 @@ export class Scene {
         const settled = diver.focus ? !diving : Math.abs(diver.depth - depth) <= 4;
         const x = lineX(diver.slot);
         const marks = crew ? (this.marks.get(diver.name) ?? this.marks.set(diver.name, new Map()).get(diver.name)!) : this.reached;
-        const y = screenY(Math.round(depth / METERS_PER_PIXEL)) + (settled ? Math.round(Math.sin(time * 1.3 + diver.slot * 2)) : 0) - held(game);
+        const y = screenY(rowOf(depth)) + (settled ? Math.round(Math.sin(time * 1.3 + diver.slot * 2)) : 0) - held(game);
         return { ...diver, x, y, depth, lamps: hang(marks, diver.lamps ?? [], depth, x) };
       });
     const lamps = lines.flatMap((line) => line.lamps);
@@ -395,7 +404,7 @@ export class Scene {
     const water = this.water;
     for (let y = 0; y < H; y++) {
       const row = rowAt(y);
-      const depth = row * METERS_PER_PIXEL;
+      const depth = depthOf(row);
       const [from, to, mix] =
         row < SURFACE_ROW ? [1, 1, 0]
         : depth < 200 ? [4, 3, depth / 200]
@@ -440,7 +449,7 @@ export class Scene {
 
     // ---- far lights: other lives, a long way off
     for (let cy = Math.floor(rowAt(0) / 24); cy <= Math.floor(rowAt(H) / 24); cy++) {
-      if (cy * 24 * METERS_PER_PIXEL < 800) continue;
+      if (depthOf(cy * 24) < 800) continue;
       for (let cx = Math.max(4, Math.floor(across / 24)); cx * 24 - across < W; cx++) {
         const chance = hash(cx * 7 + 3, cy);
         const out = hash(cx + Math.floor(time * 0.7) * 31, cy) < 0.15;
@@ -469,7 +478,7 @@ export class Scene {
       frame.put(x, y, tint || (flake.k < 0.22 ? 4 : 3));
     }
 
-    const boundaries = ZONES.map((from, i) => ({ from, name: t().dive.zones[i]!.short, y: screenY(from / METERS_PER_PIXEL) })).slice(1);
+    const boundaries = ZONES.map((from, i) => ({ from, name: t().dive.zones[i]!.short, y: screenY(rowOf(from)) })).slice(1);
     for (const { y } of boundaries) {
       if (y < 0 || y >= H) continue;
       for (let x = 0; x < W; x++) if (x % 5 !== 2 && x % 5 !== 4 && !behindWords(x, y)) frame.put(x, y, x % 5 < 2 ? 5 : 3);
