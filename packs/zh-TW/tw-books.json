@@ -1,0 +1,91 @@
+{
+  "id": "tw-books",
+  "name": "書籍",
+  "prompts": [
+    {
+      "id": "fellowship",
+      "text": "說出一位魔戒遠征隊的成員",
+      "answers": [
+        { "text": "佛羅多", "aliases": ["弗羅多", "弗羅多·巴金斯", "佛羅多·巴金斯", "Frodo", "Frodo Baggins"], "rarity": 5 },
+        { "text": "甘道夫", "aliases": ["灰袍甘道夫", "米斯蘭達", "Gandalf", "Gandalf the Grey", "Mithrandir"], "rarity": 5 },
+        { "text": "亞拉岡", "aliases": ["阿拉貢", "大步佬", "神行客", "Aragorn", "Strider", "Elessar"], "rarity": 15 },
+        { "text": "勒苟拉斯", "aliases": ["萊戈拉斯", "Legolas"], "rarity": 15 },
+        { "text": "山姆", "aliases": ["山姆懷斯", "山姆衛斯", "山姆懷斯·甘姆吉", "山姆衛斯·詹吉", "Sam", "Samwise", "Samwise Gamgee", "Sam Gamgee"], "rarity": 20 },
+        { "text": "金靂", "aliases": ["吉姆利", "Gimli"], "rarity": 25 },
+        { "text": "波羅莫", "aliases": ["波羅米爾", "Boromir"], "rarity": 65 },
+        { "text": "皮聘", "aliases": ["皮平", "皮聘·圖克", "皮平·圖克", "皮瑞格林", "佩里格林", "佩里格林·圖克", "Pippin", "Peregrin Took", "Peregrin", "Pippin Took"], "rarity": 80 },
+        { "text": "梅里", "aliases": ["梅里雅達克", "梅里阿道克", "梅里雅達克·烈酒鹿", "Merry", "Meriadoc Brandybuck", "Meriadoc", "Merry Brandybuck"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "austen-novels",
+      "text": "說出一部珍·奧斯汀的小說",
+      "answers": [
+        { "text": "傲慢與偏見", "aliases": ["Pride and Prejudice", "Pride & Prejudice"], "rarity": 5 },
+        { "text": "理性與感性", "aliases": ["理智與情感", "Sense and Sensibility", "Sense & Sensibility"], "rarity": 15 },
+        { "text": "艾瑪", "aliases": ["愛瑪", "Emma"], "rarity": 20 },
+        { "text": "勸導", "aliases": ["勸服", "說服", "Persuasion"], "rarity": 55 },
+        { "text": "曼斯菲爾德莊園", "aliases": ["曼斯菲爾莊園", "Mansfield Park"], "rarity": 60 },
+        { "text": "諾桑覺寺", "aliases": ["Northanger Abbey"], "rarity": 70 },
+        { "text": "蘇珊夫人", "aliases": ["Lady Susan"], "rarity": 95 },
+        { "text": "桑迪頓", "aliases": ["Sanditon"], "rarity": 100 },
+        { "text": "沃森一家", "aliases": ["The Watsons"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "narnia-books",
+      "text": "說出《納尼亞傳奇》系列中的一本書",
+      "answers": [
+        { "text": "獅子·女巫·魔衣櫥", "aliases": ["獅子、女巫和魔衣櫥", "獅子、女巫與魔衣櫥", "The Lion, the Witch and the Wardrobe", "The Lion, the Witch & the Wardrobe"], "rarity": 5 },
+        { "text": "賈思潘王子", "aliases": ["凱斯賓王子", "卡斯賓王子", "Prince Caspian"], "rarity": 30 },
+        { "text": "黎明行者號", "aliases": ["黎明踏浪號", "The Voyage of the Dawn Treader", "Dawn Treader"], "rarity": 35 },
+        { "text": "魔法師的外甥", "aliases": ["魔術師的外甥", "The Magician's Nephew"], "rarity": 50 },
+        { "text": "銀椅", "aliases": ["The Silver Chair"], "rarity": 60 },
+        { "text": "最後的戰役", "aliases": ["最後一戰", "The Last Battle"], "rarity": 65 },
+        { "text": "奇幻馬和傳說", "aliases": ["能言馬與男孩", "馬和他的男孩", "The Horse and His Boy", "The Horse & His Boy", "A Horse and His Boy"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "shakespeare-plays",
+      "text": "說出一部莎士比亞的戲劇",
+      "answers": [
+        { "text": "羅密歐與茱麗葉", "aliases": ["羅密歐和茱麗葉", "羅密歐與朱麗葉", "羅密歐和朱麗葉", "Romeo and Juliet", "Romeo & Juliet"], "rarity": 5 },
+        { "text": "哈姆雷特", "aliases": ["哈姆萊特", "王子復仇記", "Hamlet"], "rarity": 5 },
+        { "text": "馬克白", "aliases": ["麥克白", "Macbeth", "The Scottish Play"], "rarity": 8 },
+        { "text": "奧賽羅", "aliases": ["奧瑟羅", "Othello"], "rarity": 15 },
+        { "text": "仲夏夜之夢", "aliases": ["A Midsummer Night's Dream", "Midsummer Night's Dream"], "rarity": 15 },
+        { "text": "李爾王", "aliases": ["King Lear", "Lear"], "rarity": 20 },
+        { "text": "暴風雨", "aliases": ["The Tempest"], "rarity": 20 },
+        { "text": "凱撒大帝", "aliases": ["裘力斯·凱撒", "尤利烏斯·愷撒", "朱利葉斯·凱撒", "Julius Caesar"], "rarity": 20 },
+        { "text": "無事生非", "aliases": ["無事煩惱", "Much Ado About Nothing", "Much Ado"], "rarity": 25 },
+        { "text": "第十二夜", "aliases": ["Twelfth Night", "12th Night"], "rarity": 25 },
+        { "text": "威尼斯商人", "aliases": ["The Merchant of Venice"], "rarity": 25 },
+        { "text": "馴悍記", "aliases": ["The Taming of the Shrew"], "rarity": 30 },
+        { "text": "皆大歡喜", "aliases": ["As You Like It"], "rarity": 35 },
+        { "text": "理查三世", "aliases": ["理查德三世", "Richard III", "Richard 3", "Richard the Third"], "rarity": 35 },
+        { "text": "亨利五世", "aliases": ["Henry V", "Henry 5", "Henry the Fifth"], "rarity": 40 },
+        { "text": "安東尼與克莉奧佩特拉", "aliases": ["安東尼和克莉奧佩特拉", "安東尼與埃及豔后", "Antony and Cleopatra", "Antony & Cleopatra"], "rarity": 40 },
+        { "text": "錯中錯", "aliases": ["錯誤的喜劇", "The Comedy of Errors", "A Comedy of Errors"], "rarity": 50 },
+        { "text": "冬天的故事", "aliases": ["The Winter's Tale", "A Winter's Tale"], "rarity": 50 },
+        { "text": "一報還一報", "aliases": ["量罪記", "惡有惡報", "Measure for Measure"], "rarity": 55 },
+        { "text": "亨利四世", "aliases": ["亨利四世上篇", "亨利四世下篇", "Henry IV", "Henry IV Part 1", "Henry IV Part 2", "Henry IV Part I", "Henry IV Part II", "Henry 4", "Henry the Fourth"], "rarity": 55 },
+        { "text": "理查二世", "aliases": ["理查德二世", "Richard II", "Richard 2", "Richard the Second"], "rarity": 60 },
+        { "text": "愛的徒勞", "aliases": ["空愛一場", "Love's Labour's Lost", "Love's Labor's Lost"], "rarity": 60 },
+        { "text": "科利奧蘭納斯", "aliases": ["Coriolanus"], "rarity": 60 },
+        { "text": "泰特斯·安特洛尼克斯", "aliases": ["泰特斯", "Titus Andronicus", "Titus"], "rarity": 60 },
+        { "text": "溫莎的風流婦人", "aliases": ["溫莎的風流娘兒們", "The Merry Wives of Windsor"], "rarity": 65 },
+        { "text": "終成眷屬", "aliases": ["All's Well That Ends Well"], "rarity": 65 },
+        { "text": "維洛那二紳士", "aliases": ["The Two Gentlemen of Verona"], "rarity": 70 },
+        { "text": "亨利六世", "aliases": ["亨利六世上篇", "亨利六世中篇", "亨利六世下篇", "Henry VI", "Henry VI Part 1", "Henry VI Part 2", "Henry VI Part 3", "Henry 6", "Henry the Sixth"], "rarity": 70 },
+        { "text": "辛白林", "aliases": ["Cymbeline"], "rarity": 75 },
+        { "text": "特洛伊羅斯與克瑞西達", "aliases": ["特洛伊羅斯和克瑞西達", "Troilus and Cressida", "Troilus & Cressida"], "rarity": 75 },
+        { "text": "亨利八世", "aliases": ["Henry VIII", "Henry 8", "Henry the Eighth", "All Is True"], "rarity": 75 },
+        { "text": "約翰王", "aliases": ["King John"], "rarity": 80 },
+        { "text": "雅典的泰門", "aliases": ["Timon of Athens", "Timon"], "rarity": 80 },
+        { "text": "泰爾親王配力克里斯", "aliases": ["配力克里斯", "Pericles", "Pericles, Prince of Tyre"], "rarity": 85 },
+        { "text": "兩貴親", "aliases": ["兩位貴族親戚", "兩個高貴的親戚", "The Two Noble Kinsmen"], "rarity": 95 },
+        { "text": "愛德華三世", "aliases": ["Edward III", "Edward 3", "Edward the Third"], "rarity": 100 }
+      ]
+    }
+  ]
+}

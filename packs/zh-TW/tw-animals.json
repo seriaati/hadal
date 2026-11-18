@@ -1,0 +1,83 @@
+{
+  "id": "tw-animals",
+  "name": "動物",
+  "prompts": [
+    {
+      "id": "bears",
+      "text": "說出一種熊",
+      "answers": [
+        { "text": "北極熊", "aliases": ["白熊", "Polar bear", "Polar"], "rarity": 10 },
+        { "text": "棕熊", "aliases": ["灰熊", "科迪亞克棕熊", "科迪亞克熊", "Brown bear", "Grizzly bear", "Kodiak bear", "Brown", "Grizzly", "Kodiak"], "rarity": 10 },
+        { "text": "大貓熊", "aliases": ["大熊貓", "貓熊", "熊貓", "Giant panda", "Panda", "Panda bear"], "rarity": 15 },
+        { "text": "美洲黑熊", "aliases": ["American black bear", "Black bear", "American black", "Black"], "rarity": 20 },
+        { "text": "馬來熊", "aliases": ["太陽熊", "Sun bear", "Malayan sun bear", "Sun", "Malayan sun"], "rarity": 65 },
+        { "text": "懶熊", "aliases": ["Sloth bear", "Sloth"], "rarity": 80 },
+        { "text": "亞洲黑熊", "aliases": ["黑熊", "台灣黑熊", "狗熊", "月熊", "喜馬拉雅黑熊", "Asian black bear", "Asiatic black bear", "Moon bear", "Himalayan black bear", "Asian black", "Asiatic black", "Moon", "Himalayan black"], "rarity": 85 },
+        { "text": "眼鏡熊", "aliases": ["安地斯熊", "安第斯熊", "Spectacled bear", "Andean bear", "Spectacled", "Andean"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "great-apes",
+      "text": "說出一種大型類人猿",
+      "answers": [
+        { "text": "大猩猩", "aliases": ["西部大猩猩", "東部大猩猩", "山地大猩猩", "Gorilla", "Western gorilla", "Eastern gorilla", "Mountain gorilla"], "rarity": 10 },
+        { "text": "黑猩猩", "aliases": ["普通黑猩猩", "Chimpanzee", "Chimp", "Common chimpanzee"], "rarity": 15 },
+        { "text": "紅毛猩猩", "aliases": ["猩猩", "婆羅洲猩猩", "蘇門答臘猩猩", "Orangutan", "Bornean orangutan", "Sumatran orangutan", "Tapanuli orangutan"], "rarity": 20 },
+        { "text": "人類", "aliases": ["人", "智人", "Human", "Homo sapiens", "Man"], "rarity": 60 },
+        { "text": "倭黑猩猩", "aliases": ["巴諾布猿", "侏儒黑猩猩", "Bonobo", "Pygmy chimpanzee"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "penguins",
+      "text": "說出一種企鵝",
+      "answers": [
+        { "text": "皇帝企鵝", "aliases": ["帝企鵝", "Emperor penguin", "Emperor"], "rarity": 5 },
+        { "text": "國王企鵝", "aliases": ["王企鵝", "King penguin", "King"], "rarity": 20 },
+        { "text": "阿德利企鵝", "aliases": ["阿德利", "Adélie penguin", "Adélie"], "rarity": 35 },
+        { "text": "跳岩企鵝", "aliases": ["跳岩", "南跳岩企鵝", "北跳岩企鵝", "東跳岩企鵝", "Rockhopper penguin", "Southern rockhopper penguin", "Northern rockhopper penguin", "Eastern rockhopper penguin", "Rockhopper", "Southern rockhopper", "Northern rockhopper", "Eastern rockhopper"], "rarity": 40 },
+        { "text": "小藍企鵝", "aliases": ["小企鵝", "藍企鵝", "神仙企鵝", "Little penguin", "Fairy penguin", "Little blue penguin", "Blue penguin", "Little", "Fairy", "Little blue", "Blue"], "rarity": 45 },
+        { "text": "長冠企鵝", "aliases": ["馬可羅尼企鵝", "通心粉企鵝", "Macaroni penguin", "Macaroni"], "rarity": 50 },
+        { "text": "非洲企鵝", "aliases": ["黑腳企鵝", "斑嘴環企鵝", "公驢企鵝", "African penguin", "Jackass penguin", "Cape penguin", "Black-footed penguin", "African", "Jackass", "Cape", "Black-footed"], "rarity": 55 },
+        { "text": "帽帶企鵝", "aliases": ["南極企鵝", "頰帶企鵝", "Chinstrap penguin", "Chinstrap"], "rarity": 55 },
+        { "text": "巴布亞企鵝", "aliases": ["白眉企鵝", "金圖企鵝", "Gentoo penguin", "Gentoo"], "rarity": 55 },
+        { "text": "加拉巴哥企鵝", "aliases": ["加拉帕戈斯企鵝", "加島環企鵝", "加拉巴哥", "加拉帕戈斯", "Galápagos penguin", "Galápagos"], "rarity": 60 },
+        { "text": "洪堡企鵝", "aliases": ["洪氏環企鵝", "秘魯企鵝", "洪堡", "Humboldt penguin", "Peruvian penguin", "Humboldt", "Peruvian"], "rarity": 70 },
+        { "text": "麥哲倫企鵝", "aliases": ["麥哲倫環企鵝", "麥哲倫", "Magellanic penguin", "Magellanic"], "rarity": 75 },
+        { "text": "黃眼企鵝", "aliases": ["Yellow-eyed penguin", "Hoiho", "Yellow-eyed"], "rarity": 85 },
+        { "text": "皇家企鵝", "aliases": ["Royal penguin", "Royal"], "rarity": 90 },
+        { "text": "峽灣企鵝", "aliases": ["Fiordland penguin", "Fiordland crested penguin", "Tawaki", "Fiordland", "Fiordland crested"], "rarity": 95 },
+        { "text": "豎冠企鵝", "aliases": ["翹眉企鵝", "Erect-crested penguin", "Erect-crested"], "rarity": 100 },
+        { "text": "斯島黃眉企鵝", "aliases": ["Snares penguin", "Snares crested penguin", "Snares Island penguin", "Snares", "Snares crested", "Snares Island"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "chinese-zodiac",
+      "text": "說出一種十二生肖中的動物",
+      "answers": [
+        { "text": "龍", "aliases": ["Dragon"], "rarity": 5 },
+        { "text": "虎", "aliases": ["老虎", "Tiger"], "rarity": 15 },
+        { "text": "鼠", "aliases": ["老鼠", "Rat", "Mouse"], "rarity": 15 },
+        { "text": "猴", "aliases": ["猴子", "Monkey"], "rarity": 25 },
+        { "text": "蛇", "aliases": ["Snake", "Serpent"], "rarity": 25 },
+        { "text": "狗", "aliases": ["犬", "Dog"], "rarity": 30 },
+        { "text": "豬", "aliases": ["野豬", "Pig", "Boar"], "rarity": 30 },
+        { "text": "兔", "aliases": ["兔子", "Rabbit", "Hare"], "rarity": 35 },
+        { "text": "馬", "aliases": ["Horse"], "rarity": 40 },
+        { "text": "牛", "aliases": ["水牛", "黃牛", "Ox", "Cow", "Bull", "Buffalo", "Water buffalo"], "rarity": 60 },
+        { "text": "雞", "aliases": ["公雞", "Rooster", "Chicken", "Cock", "Cockerel"], "rarity": 75 },
+        { "text": "羊", "aliases": ["山羊", "綿羊", "Goat", "Sheep", "Ram"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "big-five",
+      "text": "說出非洲五霸之一",
+      "answers": [
+        { "text": "獅子", "aliases": ["獅", "非洲獅", "Lion", "African lion"], "rarity": 5 },
+        { "text": "大象", "aliases": ["象", "非洲象", "非洲草原象", "Elephant", "African elephant", "African bush elephant"], "rarity": 10 },
+        { "text": "犀牛", "aliases": ["犀", "黑犀", "黑犀牛", "白犀", "白犀牛", "Rhinoceros", "Rhino", "Black rhinoceros", "Black rhino", "White rhinoceros", "White rhino"], "rarity": 30 },
+        { "text": "豹", "aliases": ["豹子", "花豹", "金錢豹", "非洲豹", "Leopard", "African leopard"], "rarity": 45 },
+        { "text": "非洲水牛", "aliases": ["水牛", "好望角水牛", "Buffalo", "Cape buffalo", "African buffalo"], "rarity": 100 }
+      ]
+    }
+  ]
+}

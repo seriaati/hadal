@@ -1,0 +1,102 @@
+{
+  "id": "tw-film",
+  "name": "電影",
+  "prompts": [
+    {
+      "id": "seven-dwarfs",
+      "text": "說出迪士尼動畫《白雪公主》裡的七個小矮人之一",
+      "answers": [
+        { "text": "糊塗蛋", "aliases": ["Dopey", "迷糊", "糊塗"], "rarity": 10 },
+        { "text": "愛生氣", "aliases": ["Grumpy", "暴躁", "壞脾氣"], "rarity": 10 },
+        { "text": "瞌睡蟲", "aliases": ["Sleepy", "瞌睡"], "rarity": 25 },
+        { "text": "開心果", "aliases": ["Happy", "快樂", "開心"], "rarity": 35 },
+        { "text": "噴嚏精", "aliases": ["Sneezy", "噴嚏"], "rarity": 40 },
+        { "text": "萬事通", "aliases": ["Doc", "博士", "醫生"], "rarity": 55 },
+        { "text": "害羞鬼", "aliases": ["Bashful", "害羞"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "bond-actors",
+      "text": "說出一位在官方007系列電影中飾演過詹姆士·龐德的演員",
+      "answers": [
+        { "text": "史恩·康納萊", "aliases": ["Sean Connery", "Connery", "康納萊", "肖恩·康納利", "康納利"], "rarity": 10 },
+        { "text": "丹尼爾·克雷格", "aliases": ["Daniel Craig", "Craig", "克雷格"], "rarity": 10 },
+        { "text": "皮爾斯·布洛斯南", "aliases": ["Pierce Brosnan", "Brosnan", "布洛斯南", "皮爾斯·布魯斯南", "布魯斯南"], "rarity": 20 },
+        { "text": "羅傑·摩爾", "aliases": ["Roger Moore", "Moore", "摩爾"], "rarity": 30 },
+        { "text": "提摩西·達頓", "aliases": ["Timothy Dalton", "Dalton", "達頓", "蒂莫西·道爾頓", "道爾頓"], "rarity": 70 },
+        { "text": "喬治·拉扎貝", "aliases": ["George Lazenby", "Lazenby", "拉扎貝"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "nolan-films",
+      "text": "說出一部克里斯多福·諾蘭執導的電影",
+      "answers": [
+        { "text": "全面啟動", "aliases": ["Inception", "盜夢空間"], "rarity": 5 },
+        { "text": "黑暗騎士", "aliases": ["The Dark Knight", "蝙蝠俠：黑暗騎士"], "rarity": 5 },
+        { "text": "奧本海默", "aliases": ["Oppenheimer"], "rarity": 10 },
+        { "text": "星際效應", "aliases": ["Interstellar", "星際穿越"], "rarity": 10 },
+        { "text": "敦克爾克大行動", "aliases": ["Dunkirk", "敦克爾克", "敦刻爾克"], "rarity": 30 },
+        { "text": "天能", "aliases": ["Tenet", "信條"], "rarity": 30 },
+        { "text": "蝙蝠俠：開戰時刻", "aliases": ["Batman Begins", "開戰時刻", "蝙蝠俠：俠影之謎", "俠影之謎"], "rarity": 35 },
+        { "text": "黑暗騎士：黎明昇起", "aliases": ["The Dark Knight Rises", "黎明昇起", "蝙蝠俠：黑暗騎士崛起", "黑暗騎士崛起"], "rarity": 35 },
+        { "text": "頂尖對決", "aliases": ["The Prestige", "致命魔術"], "rarity": 45 },
+        { "text": "記憶拼圖", "aliases": ["Memento", "記憶碎片"], "rarity": 50 },
+        { "text": "奧德賽", "aliases": ["The Odyssey"], "rarity": 60 },
+        { "text": "針鋒相對", "aliases": ["Insomnia", "失眠症"], "rarity": 85 },
+        { "text": "跟蹤", "aliases": ["Following", "追隨"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "star-wars-saga",
+      "text": "說出一部《星際大戰》系列第一至第九部的電影",
+      "answers": [
+        { "text": "帝國大反擊", "aliases": ["The Empire Strikes Back", "Empire", "Episode V", "Episode 5", "星際大戰五部曲：帝國大反擊", "帝國反擊戰", "星球大戰：帝國反擊戰", "星球大戰2：帝國反擊戰"], "rarity": 5 },
+        { "text": "曙光乍現", "aliases": ["A New Hope", "New Hope", "Star Wars", "Star Wars: A New Hope", "Episode IV", "Episode 4", "星際大戰四部曲：曙光乍現", "星際大戰", "新希望", "星球大戰：新希望", "星球大戰"], "rarity": 15 },
+        { "text": "絕地大反攻", "aliases": ["Return of the Jedi", "Episode VI", "Episode 6", "星際大戰六部曲：絕地大反攻", "絕地歸來", "星球大戰：絕地歸來", "星球大戰3：絕地歸來"], "rarity": 15 },
+        { "text": "威脅潛伏", "aliases": ["The Phantom Menace", "Episode I", "Episode 1", "星際大戰首部曲：威脅潛伏", "幽靈的威脅", "星球大戰前傳1：幽靈的威脅", "魅影危機"], "rarity": 25 },
+        { "text": "西斯大帝的復仇", "aliases": ["Revenge of the Sith", "Episode III", "Episode 3", "星際大戰三部曲：西斯大帝的復仇", "西斯的復仇", "星球大戰前傳3：西斯的復仇", "西斯復仇"], "rarity": 25 },
+        { "text": "原力覺醒", "aliases": ["The Force Awakens", "Episode VII", "Episode 7", "星際大戰七部曲：原力覺醒", "星球大戰：原力覺醒"], "rarity": 35 },
+        { "text": "最後的絕地武士", "aliases": ["The Last Jedi", "Episode VIII", "Episode 8", "星際大戰八部曲：最後的絕地武士", "星球大戰：最後的絕地武士"], "rarity": 50 },
+        { "text": "天行者的崛起", "aliases": ["The Rise of Skywalker", "Episode IX", "Episode 9", "星際大戰九部曲：天行者的崛起", "天行者崛起", "星球大戰：天行者崛起"], "rarity": 80 },
+        { "text": "複製人全面進攻", "aliases": ["Attack of the Clones", "Episode II", "Episode 2", "星際大戰二部曲：複製人全面進攻", "克隆人的進攻", "星球大戰前傳2：克隆人的進攻"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "pixar-films",
+      "text": "說出一部皮克斯動畫長片",
+      "answers": [
+        { "text": "玩具總動員", "aliases": ["Toy Story"], "rarity": 5 },
+        { "text": "海底總動員", "aliases": ["Finding Nemo"], "rarity": 10 },
+        { "text": "天外奇蹟", "aliases": ["Up", "飛屋環遊記"], "rarity": 20 },
+        { "text": "怪獸電力公司", "aliases": ["Monsters, Inc.", "Monsters Incorporated", "怪獸公司"], "rarity": 20 },
+        { "text": "超人特攻隊", "aliases": ["The Incredibles", "超人總動員"], "rarity": 20 },
+        { "text": "汽車總動員", "aliases": ["Cars", "賽車總動員"], "rarity": 20 },
+        { "text": "料理鼠王", "aliases": ["Ratatouille", "美食總動員"], "rarity": 25 },
+        { "text": "瓦力", "aliases": ["WALL-E", "機器人總動員"], "rarity": 25 },
+        { "text": "腦筋急轉彎", "aliases": ["Inside Out", "頭腦特工隊"], "rarity": 25 },
+        { "text": "可可夜總會", "aliases": ["Coco", "尋夢環遊記"], "rarity": 25 },
+        { "text": "玩具總動員2", "aliases": ["Toy Story 2", "Toy Story II"], "rarity": 35 },
+        { "text": "玩具總動員3", "aliases": ["Toy Story 3", "Toy Story III"], "rarity": 35 },
+        { "text": "勇敢傳說", "aliases": ["Brave", "勇敢傳說之幻險森林"], "rarity": 45 },
+        { "text": "靈魂急轉彎", "aliases": ["Soul", "心靈奇旅"], "rarity": 45 },
+        { "text": "海底總動員2：多莉去哪兒", "aliases": ["Finding Dory", "海底總動員2", "多莉去哪兒"], "rarity": 45 },
+        { "text": "蟲蟲危機", "aliases": ["A Bug's Life", "Bug's Life"], "rarity": 50 },
+        { "text": "玩具總動員4", "aliases": ["Toy Story 4", "Toy Story IV"], "rarity": 55 },
+        { "text": "怪獸大學", "aliases": ["Monsters University"], "rarity": 55 },
+        { "text": "腦筋急轉彎2", "aliases": ["Inside Out 2", "頭腦特工隊2"], "rarity": 55 },
+        { "text": "超人特攻隊2", "aliases": ["Incredibles 2", "超人總動員2"], "rarity": 55 },
+        { "text": "路卡的夏天", "aliases": ["Luca", "夏日友晴天"], "rarity": 60 },
+        { "text": "青春養成記", "aliases": ["Turning Red", "青春變形記"], "rarity": 65 },
+        { "text": "汽車總動員2", "aliases": ["Cars 2", "賽車總動員2"], "rarity": 70 },
+        { "text": "元素方城市", "aliases": ["Elemental", "瘋狂元素城"], "rarity": 70 },
+        { "text": "1/2的魔法", "aliases": ["Onward", "二分之一的魔法"], "rarity": 80 },
+        { "text": "巴斯光年", "aliases": ["Lightyear", "光年正傳"], "rarity": 80 },
+        { "text": "汽車總動員3", "aliases": ["Cars 3", "汽車總動員3：閃電再起", "賽車總動員3", "賽車總動員3：極速挑戰"], "rarity": 85 },
+        { "text": "玩具總動員5", "aliases": ["Toy Story 5", "Toy Story V"], "rarity": 85 },
+        { "text": "外星奇遇記", "aliases": ["Elio", "地球特派員"], "rarity": 90 },
+        { "text": "狸想世界", "aliases": ["Hoppers", "河狸變身計劃"], "rarity": 95 },
+        { "text": "恐龍當家", "aliases": ["The Good Dinosaur"], "rarity": 100 }
+      ]
+    }
+  ]
+}

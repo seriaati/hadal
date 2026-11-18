@@ -1,9 +1,13 @@
 import { LANGUAGES, LANGUAGE_COOKIE, isLanguage, wordsIn, type Language } from "../shared/language";
 
-/** The first language the browser asks for that the game speaks, by its main part ("zh-TW" asks for Chinese). */
+/** Chinese written in traditional characters: in Taiwan, Hong Kong and Macao, or asked for by its script. */
+const TRADITIONAL = /^zh-(hant|tw|hk|mo)\b/;
+
+/** The first language the browser asks for that the game speaks, by its main part ("zh-HK" asks for traditional Chinese). */
 function preferred(): Language {
-  for (const tag of navigator.languages) {
-    const found = LANGUAGES.find((language) => language.split("-")[0] === tag.split("-")[0]!.toLowerCase());
+  for (const tag of navigator.languages.map((tag) => tag.toLowerCase())) {
+    if (TRADITIONAL.test(tag)) return "zh-TW";
+    const found = LANGUAGES.find((language) => language.split("-")[0] === tag.split("-")[0]);
     if (found) return found;
   }
   return "en";

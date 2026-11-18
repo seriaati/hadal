@@ -29,7 +29,7 @@ const room = async (hostAccount: string | null = null, ...guests: string[]) => {
   return { host, others, code: seen(host).code };
 };
 
-const inEnglish = (packs: Pack[]) => ({ en: packs, "zh-CN": [] });
+const inEnglish = (packs: Pack[]) => ({ en: packs, "zh-CN": [], "zh-TW": [] });
 const ocean = { id: "two", text: "Name an ocean", answers: [{ text: "Pacific", rarity: 10 }, { text: "Indian", rarity: 60 }] };
 const lake = { id: "one", text: "Name a lake", answers: [{ text: "Baikal", rarity: 10 }, { text: "Titicaca", rarity: 60 }] };
 usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: [ocean] }, { id: "lakes", name: "Lakes", prompts: [lake] }]));
@@ -50,7 +50,7 @@ afterAll(async () => {
 });
 
 test("a new room plays the built-in packs of its host's language", async () => {
-  usePrompts({ en: [{ id: "seas", name: "Seas", prompts: [ocean] }], "zh-CN": [{ id: "hu", name: "湖泊", prompts: [lake] }] });
+  usePrompts({ en: [{ id: "seas", name: "Seas", prompts: [ocean] }], "zh-CN": [{ id: "hu", name: "湖泊", prompts: [lake] }], "zh-TW": [] });
   const host = { ...member(), language: "zh-CN" as const };
   await say(host, { type: "create", nickname: "host", suit: 0 });
   expect(seen(host).settings.builtIn).toEqual(["hu"]);

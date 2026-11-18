@@ -23,6 +23,7 @@ test("two built-in packs of different languages cannot share an id", async () =>
   const dir = await mkdtemp(join(tmpdir(), "hadal-"));
   await Bun.write(join(dir, "en", "seas.json"), JSON.stringify(pack({}, { id: "seas" })));
   await Bun.write(join(dir, "zh-CN", "seas.json"), JSON.stringify(pack({}, { id: "seas" })));
+  await Bun.write(join(dir, "zh-TW", "tides.json"), JSON.stringify(pack({}, { id: "tides" })));
   await expect(loadBuiltIn(dir)).rejects.toThrow('two built-in packs have the id "seas"');
 });
 

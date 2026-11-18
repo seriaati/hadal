@@ -1,0 +1,70 @@
+{
+  "id": "tw-games",
+  "name": "競技",
+  "prompts": [
+    {
+      "id": "tennis-grand-slams",
+      "text": "說出網球四大滿貫賽事之一",
+      "answers": [
+        { "text": "溫布頓網球錦標賽", "aliases": ["溫網", "溫布頓", "溫布爾登網球錦標賽", "溫布爾登", "溫布爾頓", "Wimbledon", "The Championships", "Wimbledon Championships"], "rarity": 5 },
+        { "text": "美國網球公開賽", "aliases": ["美網", "美國公開賽", "US Open", "United States Open", "Flushing Meadows"], "rarity": 30 },
+        { "text": "法國網球公開賽", "aliases": ["法網", "法國公開賽", "羅蘭加洛斯", "French Open", "Roland Garros"], "rarity": 40 },
+        { "text": "澳洲網球公開賽", "aliases": ["澳網", "澳洲公開賽", "澳大利亞網球公開賽", "澳大利亞公開賽", "Australian Open", "Aussie Open"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "decathlon-events",
+      "text": "說出十項全能的一個比賽項目",
+      "answers": [
+        { "text": "100公尺", "aliases": ["100公尺賽跑", "100米", "100米跑", "百米", "百米賽跑", "百米跑", "一百公尺", "一百米","100 metres", "100 meters", "100m", "100 metres sprint", "100 meter dash", "100m sprint", "100m dash", "100"], "rarity": 15 },
+        { "text": "跳遠", "aliases": ["Long jump"], "rarity": 20 },
+        { "text": "跳高", "aliases": ["High jump"], "rarity": 20 },
+        { "text": "標槍", "aliases": ["擲標槍", "Javelin throw", "Javelin"], "rarity": 20 },
+        { "text": "鉛球", "aliases": ["推鉛球", "Shot put", "Shot"], "rarity": 25 },
+        { "text": "鐵餅", "aliases": ["擲鐵餅", "Discus throw", "Discus"], "rarity": 25 },
+        { "text": "撐竿跳高", "aliases": ["撐杆跳高", "撐竿跳", "撐杆跳", "Pole vault"], "rarity": 30 },
+        { "text": "110公尺跨欄", "aliases": ["110公尺高欄", "110米欄", "110米跨欄", "110米高欄", "跨欄", "高欄", "110 metres hurdles", "110 meters hurdles", "110m hurdles", "110 hurdles", "110m", "Hurdles", "High hurdles"], "rarity": 30 },
+        { "text": "1500公尺", "aliases": ["1500公尺賽跑", "1500米", "1500米跑", "一千五百公尺", "一千五百米", "1500 metres", "1500 meters", "1500m", "1500", "Metric mile"], "rarity": 55 },
+        { "text": "400公尺", "aliases": ["400公尺賽跑", "400米", "400米跑", "四百公尺", "四百米", "400 metres", "400 meters", "400m", "400"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "chess-pieces",
+      "text": "說出一種西洋棋棋子",
+      "answers": [
+        { "text": "皇后", "aliases": ["后", "王后", "Queen"], "rarity": 10 },
+        { "text": "國王", "aliases": ["王", "King", "Kings"], "rarity": 10 },
+        { "text": "騎士", "aliases": ["馬", "Knight", "Horse"], "rarity": 15 },
+        { "text": "兵", "aliases": ["士兵", "小兵", "Pawn", "Pawns"], "rarity": 30 },
+        { "text": "主教", "aliases": ["象", "Bishop"], "rarity": 60 },
+        { "text": "城堡", "aliases": ["車", "Rook", "Rooks", "Castle", "Tower"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "poker-hands",
+      "text": "說出一種撲克牌型",
+      "answers": [
+        { "text": "皇家同花順", "aliases": ["同花大順", "Royal flush"], "rarity": 10 },
+        { "text": "葫蘆", "aliases": ["滿堂紅", "Full house", "Boat", "Full boat"], "rarity": 10 },
+        { "text": "順子", "aliases": ["Straight"], "rarity": 20 },
+        { "text": "同花", "aliases": ["Flush"], "rarity": 20 },
+        { "text": "同花順", "aliases": ["Straight flush"], "rarity": 30 },
+        { "text": "一對", "aliases": ["對子", "Pair", "One pair", "A pair", "Two of a kind"], "rarity": 30 },
+        { "text": "四條", "aliases": ["金剛", "鐵支", "Four of a kind", "Quads", "4 of a kind"], "rarity": 35 },
+        { "text": "三條", "aliases": ["Three of a kind", "Trips", "Set", "3 of a kind"], "rarity": 40 },
+        { "text": "兩對", "aliases": ["Two pair", "2 pair", "2 pairs"], "rarity": 50 },
+        { "text": "高牌", "aliases": ["散牌", "烏龍", "High card", "No pair"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "golf-majors",
+      "text": "說出男子高爾夫四大滿貫賽事之一",
+      "answers": [
+        { "text": "美國名人賽", "aliases": ["名人賽", "美國大師賽", "大師賽", "奧古斯塔", "The Masters", "Masters Tournament", "US Masters", "Augusta"], "rarity": 5 },
+        { "text": "英國公開賽", "aliases": ["英國高爾夫公開賽", "The Open Championship", "British Open", "The Open"], "rarity": 25 },
+        { "text": "美國公開賽", "aliases": ["美國高爾夫公開賽", "US Open", "United States Open"], "rarity": 40 },
+        { "text": "PGA錦標賽", "aliases": ["美國PGA錦標賽", "美國職業高爾夫球協會錦標賽", "PGA Championship", "US PGA Championship", "US PGA", "PGA"], "rarity": 100 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "id": "tw-music",
+  "name": "音樂",
+  "prompts": [
+    {
+      "id": "beatles",
+      "text": "說出披頭四的一位成員",
+      "answers": [
+        { "text": "約翰·藍儂", "aliases": ["藍儂", "約翰·列儂", "列儂", "約翰", "John Lennon", "John", "Lennon"], "rarity": 5 },
+        { "text": "保羅·麥卡尼", "aliases": ["麥卡尼", "保羅·麥卡特尼", "麥卡特尼", "保羅", "Paul McCartney", "Paul", "McCartney", "Macca"], "rarity": 5 },
+        { "text": "林哥·史達", "aliases": ["史達", "林哥·斯塔爾", "林戈·斯塔爾", "林戈", "林哥", "斯塔爾", "Ringo Starr", "Ringo", "Starr", "Richard Starkey"], "rarity": 15 },
+        { "text": "喬治·哈里森", "aliases": ["喬治", "哈里森", "George Harrison", "George", "Harrison"], "rarity": 20 },
+        { "text": "彼特·貝斯特", "aliases": ["皮特·貝斯特", "貝斯特", "Pete Best"], "rarity": 85 },
+        { "text": "斯圖爾特·薩克利夫", "aliases": ["斯圖亞特·薩克利夫", "斯圖·薩克利夫", "薩克利夫", "Stuart Sutcliffe", "Stu Sutcliffe", "Sutcliffe"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "queen",
+      "text": "說出皇后合唱團的一位成員",
+      "answers": [
+        { "text": "佛萊迪·墨裘瑞", "aliases": ["墨裘瑞", "佛萊迪", "弗雷迪·默丘里", "默丘里", "弗雷迪", "佛萊迪·摩克瑞", "Freddie Mercury", "Freddie", "Mercury", "Farrokh Bulsara"], "rarity": 5 },
+        { "text": "布萊恩·梅", "aliases": ["布賴恩·梅", "Brian May", "May"], "rarity": 30 },
+        { "text": "羅傑·泰勒", "aliases": ["泰勒", "Roger Taylor", "Taylor", "Roger Meddows Taylor"], "rarity": 70 },
+        { "text": "約翰·迪肯", "aliases": ["迪肯", "John Deacon", "Deacon"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "brass-instruments",
+      "text": "說出一種銅管樂器",
+      "answers": [
+        { "text": "小號", "aliases": ["小喇叭", "高音小號", "低音小號", "Trumpet", "Piccolo trumpet", "Bass trumpet"], "rarity": 5 },
+        { "text": "長號", "aliases": ["伸縮號", "拉管", "低音長號", "次中音長號", "活塞長號", "Trombone", "Bass trombone", "Tenor trombone", "Valve trombone"], "rarity": 10 },
+        { "text": "低音號", "aliases": ["大號", "低音大號", "Tuba"], "rarity": 15 },
+        { "text": "法國號", "aliases": ["圓號", "French horn", "Horn"], "rarity": 20 },
+        { "text": "短號", "aliases": ["Cornet"], "rarity": 50 },
+        { "text": "軍號", "aliases": ["號角", "Bugle"], "rarity": 50 },
+        { "text": "上低音號", "aliases": ["粗管上低音號", "悠風號", "Euphonium"], "rarity": 65 },
+        { "text": "蘇沙號", "aliases": ["蘇薩號", "蘇沙大號", "蘇薩大號", "太陽號", "Sousaphone"], "rarity": 70 },
+        { "text": "富魯格號", "aliases": ["柔音號", "Flugelhorn", "Fluegelhorn"], "rarity": 75 },
+        { "text": "次中音號", "aliases": ["細管上低音號", "Baritone horn", "Baritone"], "rarity": 80 },
+        { "text": "中音號", "aliases": ["Tenor horn", "Alto horn"], "rarity": 85 },
+        { "text": "行進法國號", "aliases": ["行進圓號", "Mellophone"], "rarity": 90 },
+        { "text": "薩克號", "aliases": ["薩克斯號", "Saxhorn"], "rarity": 95 },
+        { "text": "郵號", "aliases": ["Post horn"], "rarity": 95 },
+        { "text": "有鍵低音長號", "aliases": ["Cimbasso"], "rarity": 100 },
+        { "text": "華格納低音號", "aliases": ["華格納大號", "華格納號", "瓦格納大號", "瓦格納號", "Wagner tuba"], "rarity": 100 },
+        { "text": "赫利孔號", "aliases": ["Helicon"], "rarity": 100 },
+        { "text": "奧菲克萊德號", "aliases": ["奧非克萊德號", "Ophicleide"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "thrash-big-four",
+      "text": "說出鞭擊金屬四大天王之一",
+      "answers": [
+        { "text": "金屬製品", "aliases": ["金屬製品樂團", "金屬樂團", "金屬樂隊", "Metallica"], "rarity": 5 },
+        { "text": "殺手樂團", "aliases": ["殺手樂隊", "殺手合唱團", "Slayer"], "rarity": 45 },
+        { "text": "麥加帝斯", "aliases": ["麥加帝斯樂團", "麥加帝斯樂隊", "Megadeth"], "rarity": 45 },
+        { "text": "炭疽樂團", "aliases": ["炭疽樂隊", "炭疽熱", "炭疽", "Anthrax"], "rarity": 100 }
+      ]
+    }
+  ]
+}
