@@ -58,7 +58,7 @@ test("the people of a room are read, not reached: the focus passes over them", (
     title: "Room",
     code: { text: "KXWRT", copy: () => {} },
     rows: [
-      { kind: "player", name: "ana", color: 5, note: "host" },
+      { kind: "player", name: "ana", color: 5, note: "", host: true },
       { kind: "player", name: "ben", color: 9, note: "" },
       { kind: "gap" },
       press("start"),

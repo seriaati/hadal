@@ -204,7 +204,6 @@ export const zhTW: Words = {
     code: "房間代碼",
     joinIt: "加入房間",
     room: "房間",
-    host: "房主",
     ready: "已準備",
     start: "開始下潛",
     waitingFor: (refused: string, names: string) => `${refused}：正在等待 ${names}`,

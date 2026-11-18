@@ -35,7 +35,7 @@ export type Field = { kind: "field"; id: string; label: string; max: number; dot
 export type Slider = { kind: "slider"; id: string; label: string; value: number; set: (value: number) => void; steps?: number; colors?: number[]; text?: string };
 export type Note = { kind: "note"; text: string; bad?: boolean };
 export type Wait = { kind: "wait"; text: string; done: number; of: number };
-export type Player = { kind: "player"; name: string; color: number; note: string };
+export type Player = { kind: "player"; name: string; color: number; note: string; host?: boolean };
 export type Part = Press | Field | Slider | Note | Wait | Player | { kind: "gap" };
 type Control = Press | Field | Slider;
 /**
@@ -55,6 +55,7 @@ const HEAD = 14;
 const INDENT = 7;
 const STEPS = 20;
 const MARK = ["a..", "aa.", "aaa", "aa.", "a.."];
+const CROWN = [".....", "..x..", "x.x.x", "xxxxx", "xxxxx"];
 
 const isControl = (part: Part): part is Control => part.kind === "press" || part.kind === "field" || part.kind === "slider";
 const kindOf = (part: Control) => (part.kind === "press" ? (part.file ? "file" : part.submit ? "submit" : "press") : part.kind);
@@ -64,6 +65,11 @@ export function drawMark(frame: Frame, x: number, y: number) {
   frame.emit = 220;
   frame.sprite(MARK, x, y);
   frame.emit = 0;
+}
+
+/** The mark of a room's host, beside their name. */
+export function drawCrown(frame: Frame, x: number, y: number, color: number) {
+  CROWN.forEach((row, j) => [...row].forEach((char, i) => char === "x" && frame.put(x + i, y + j, color)));
 }
 
 export function lay(step: Step, width: number, line: number): { placed: Placed[]; height: number } {
@@ -520,8 +526,13 @@ export class Ui {
         cover(control!, track, py, end - track - 1, h);
       } else if (part.kind === "player") {
         for (let j = 0; j < 15; j++) frame.put(tx + (j % 3), py + 2 + Math.floor(j / 3), part.color);
-        const name = plain(part.name);
-        say(plain(part.note), say(name, tx + 6, py + 2, 7) + 4, py + 2, 6);
+        let end = say(plain(part.name), tx + 6, py + 2, 7) + 4;
+        if (part.host) {
+          drawCrown(frame, end, py + 2, 6);
+          scene.cover(end, end + 5, py + 2, py + 8);
+          end += 9;
+        }
+        say(plain(part.note), end, py + 2, 6);
       } else if (part.kind === "note" || part.kind === "wait") {
         const gap = pitch(tiny, plain(part.text), 8);
         lines.forEach((line, i) => say(line, tx, py + 1 + i * gap, part.kind === "wait" ? 7 : part.bad ? 18 : 6));

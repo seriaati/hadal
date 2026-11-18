@@ -111,16 +111,17 @@ export class MultiplayerPanel {
    */
   crew(): Crew[] | null {
     if (this.dying) return this.lost!.crew;
+    const view = this.client.view;
     if (this.ending) {
       // Every diver still in is hauled up their line, all of them reaching the surface together.
       const { log, follow, you } = this.ending;
       const left = 1 - this.risen();
       return log.divers.map((diver, slot) => {
         const out = diver.out !== null;
-        return { slot, suit: diver.suit, name: diver.name, lit: !out, focus: diver.id === follow, depth: diver.depth * left, lamps: diver.lamps, label: diver.id !== you, out, hauled: true };
+        const host = view?.players.find((player) => player.id === diver.id)?.host;
+        return { slot, suit: diver.suit, name: diver.name, lit: !out, focus: diver.id === follow, depth: diver.depth * left, lamps: diver.lamps, label: diver.id !== you, out, hauled: true, host };
       });
     }
-    const view = this.client.view;
     const dive = this.diving && view?.dive;
     if (dive) {
       const longest = view.settings.mode === "longest";
@@ -130,13 +131,13 @@ export class MultiplayerPanel {
         const { depth, lamps } = diver;
         // One who has just gone out is still seen through the verdict, and hauled up when the turn passes.
         const out = diver.out && !turn;
-        return player ? [{ slot, suit: player.suit, name: player.nickname, lit: turn, focus: turn, depth, lamps, label: diver.id !== view.you, hearts: longest ? diver.hearts : undefined, out }] : [];
+        return player ? [{ slot, suit: player.suit, name: player.nickname, lit: turn, focus: turn, depth, lamps, label: diver.id !== view.you, hearts: longest ? diver.hearts : undefined, out, host: player.host }] : [];
       });
     }
     if (!this.ui.holds(this.first)) return null;
     if (!view) return [{ slot: 0, suit: this.suit, name: "", lit: true, focus: true, depth: 0 }];
     // The host has no ready of their own: starting the dive is it.
-    return view.players.map((player, slot) => ({ slot, suit: player.suit, name: player.nickname, lit: player.host || player.ready, focus: player.id === view.you, depth: 0 }));
+    return view.players.map((player, slot) => ({ slot, suit: player.suit, name: player.nickname, lit: player.host || player.ready, focus: player.id === view.you, depth: 0, host: player.host }));
   }
 
   private open(step: () => Step) {
@@ -409,7 +410,8 @@ export class MultiplayerPanel {
         kind: "player",
         name: player.nickname,
         color: SUIT_COLORS[player.suit]!,
-        note: [player.host ? words.host : player.ready ? words.ready : "", depth === undefined ? "" : formatMeters(depth)].filter(Boolean).join(" ~ "),
+        host: player.host,
+        note: [player.ready ? words.ready : "", depth === undefined ? "" : formatMeters(depth)].filter(Boolean).join(" ~ "),
       };
     });
     const winners = view.players.filter((player) => view.last?.divers.some((diver) => diver.id === player.id && diver.won)).map((player) => player.nickname);

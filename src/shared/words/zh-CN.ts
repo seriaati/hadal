@@ -204,7 +204,6 @@ export const zhCN: Words = {
     code: "房间代码",
     joinIt: "加入房间",
     room: "房间",
-    host: "房主",
     ready: "已准备",
     start: "开始下潜",
     waitingFor: (refused: string, names: string) => `${refused}：正在等待 ${names}`,

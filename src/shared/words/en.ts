@@ -226,7 +226,6 @@ export const en = {
     code: "Room code",
     joinIt: "Join the room",
     room: "Room",
-    host: "host",
     ready: "ready",
     start: "Start the dive",
     waitingFor: (refused: string, names: string) => `${refused}: waiting for ${names}`,

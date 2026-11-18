@@ -6,7 +6,7 @@ import { ascentSeconds, fullAir, type Game, type Lamp } from "../state";
 import { Ambient } from "./creatures";
 import { FONTS, drawText, fit, measure, pitch, plain, rise, wrap, type Font } from "./font";
 import { dither, hash, type Frame, type Light } from "./frame";
-import { drawMark } from "./ui";
+import { drawCrown, drawMark } from "./ui";
 
 /**
  * The world row at a depth, on a curve: near the surface a metre is drawn larger than in the deep, so a common answer
@@ -128,11 +128,12 @@ const WORN = SUITS.map((suit) =>
 /**
  * A diver of a room: on line `slot`, counted from the left (the first hangs where the single-player diver does), at
  * `depth` metres, with the lamps they have hung. The camera follows the one in `focus`. With `label`, their depth
- * stands over their name: another player's, in a dive. In "longest" their `hearts` follow the name, and one who is
- * `out` has been hauled up: their line and lamps stay, and they are named at the top of the screen. One being `hauled`
- * up at the end of a dive is shown exactly at `depth`, which is given afresh every frame.
+ * stands over their name: another player's, in a dive. The `host` of the room has a crown before their name. In
+ * "longest" their `hearts` follow the name, and one who is `out` has been hauled up: their line and lamps stay, and they
+ * are named at the top of the screen. One being `hauled` up at the end of a dive is shown exactly at `depth`, which is
+ * given afresh every frame.
  */
-export type Crew = { slot: number; suit: number; name: string; lit: boolean; focus: boolean; depth: number; lamps?: Lamp[]; label?: boolean; hearts?: number; out?: boolean; hauled?: boolean };
+export type Crew = { slot: number; suit: number; name: string; lit: boolean; focus: boolean; depth: number; lamps?: Lamp[]; label?: boolean; hearts?: number; out?: boolean; hauled?: boolean; host?: boolean };
 /**
  * What a dive in a room adds to the words: the room's air in seconds, whether the turn is the
  * player's own, the answers already given to the prompt, whether the answer just refused was
@@ -654,16 +655,18 @@ export class Scene {
       if (!line.name) continue;
       const tag = line.label && !line.out ? formatMeters(line.depth) : "";
       const hearts = line.hearts === undefined ? 0 : 2 + heartsWidth(line.hearts);
+      const crown = line.host ? 7 : 0;
       const above = line.out || line.y + 25 < 0;
       const below = !above && line.y > H - 6;
       if (above || below) {
         // Out of view above or below, or out of the dive: named at that edge of the screen, on their line.
         const text = tag ? `${line.name} ${tag}` : line.name;
-        const width = 7 + measure(tiny, text) + hearts;
+        const width = 7 + crown + measure(tiny, text) + hearts;
         const x = Math.max(2, Math.min(right - width, line.x + 10 - (width >> 1)));
         const y = above ? 3 : x + width > depthLeft || x < heartsRight ? H - 32 : H - 8;
         frame.sprite(above ? UP : DOWN, x, y + 1);
-        const end = drawText(frame, tiny, text, x + 7, y, 6);
+        if (line.host) drawCrown(frame, x + 7, y, 6);
+        const end = drawText(frame, tiny, text, x + 7 + crown, y, 6);
         if (line.hearts !== undefined) drawHearts(frame, line.hearts, end + 2, y);
         continue;
       }
@@ -672,7 +675,9 @@ export class Scene {
       const under = line.y < (tag ? 18 : 10) || !!sub;
       const y = under ? line.y + 29 : line.y - 9;
       frame.emit = line.lit ? 70 : 0;
-      const end = drawText(frame, tiny, line.name, at(measure(tiny, line.name) + hearts), y, line.lit ? 16 : 6);
+      const x = at(crown + measure(tiny, line.name) + hearts);
+      if (line.host) drawCrown(frame, x, y, line.lit ? 16 : 6);
+      const end = drawText(frame, tiny, line.name, x + crown, y, line.lit ? 16 : 6);
       frame.emit = 0;
       if (line.hearts !== undefined) drawHearts(frame, line.hearts, end + 2, y);
       if (tag) drawText(frame, tiny, tag, at(measure(tiny, tag)), under ? y + 8 : y - 8, 6);
