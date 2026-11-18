@@ -1,7 +1,7 @@
 import { BAR_FULL, MAX_HEARTS, START_HEARTS } from "../../shared/room";
 import { METERS_PER_POINT } from "../../shared/types";
 import { ZONES, formatMeters, lightOf } from "../depth";
-import { AIR_SECONDS, ascentSeconds, type Game, type Lamp } from "../state";
+import { ascentSeconds, fullAir, type Game, type Lamp } from "../state";
 import { Ambient } from "./creatures";
 import { FONTS, drawText, fit, measure, pitch, plain, wrap, type Font } from "./font";
 import { dither, hash, type Frame, type Light } from "./frame";
@@ -35,6 +35,39 @@ const DOWN = ["66666", ".666.", "..6.."];
 /** A heart of a diver in "longest", and one spent. */
 const HEART = ["xx.xx", "xxxxx", "xxxxx", ".xxx.", "..x.."];
 const SPENT = ["55.55", "5.5.5", "5...5", ".5.5.", "..5.."];
+/**
+ * The submarine of a chaos dive, bow to the right. Its warning lamps blink in two groups, "x" and "X"; the screw is
+ * the first column. It holds the diver by the helmet in a clamp under its keel.
+ */
+const SUB = [
+  "..........................x",
+  "..........................5",
+  ".......................4555556",
+  "......................455555556",
+  "......................45X555X56",
+  "......................455555556",
+  "......................455555556",
+  "...............334444555555555555555555555566",
+  "...........334444444455555555555555555555555555666",
+  ".5.....334444444444445555555555555555555555555555666",
+  ".5...3344444X444444445555555X5555555555555X55555555666",
+  "55.334444444444444444555555555555555555555555555555666x",
+  "55334444444444444444455555555555555555555555555555666",
+  "55.334444444444444444555555555555555555555555555555",
+  ".5...33333333333333335555555555555555555555555555",
+  ".5.......33333333333333333333333333333333333333",
+];
+const CLAMP_SHUT = ["...66...", "...67...", "67777776", "7......7", "7......7"];
+const CLAMP_OPEN = ["...66...", "...67...", "67777776", ".7....7."];
+/** The buoy the line hangs from in a chaos dive, once the submarine has gone. */
+const BUOY = ["..X..", "..5..", ".rRo.", "rRRRo", ".rrR."];
+/** A palette colour one step further into the dark. */
+const DARKER: Record<string, string> = { "6": "5", "5": "4", "4": "3", "3": "2", "2": "1", "1": "0", x: "r", r: "0", R: "r", o: "R", a: "o", c: "a" };
+/** The drop-off, in seconds from its start: the clamp opens, and the submarine sets off. */
+const RELEASE = 1.4;
+const LEAVE = 1.9;
+/** How far above its place on the line the clamp holds the diver. */
+const CLAMPED = 7;
 const DIVER = [
   ".......rRRRoo........",
   ".....rrRRRRooam......",
@@ -173,11 +206,13 @@ export class Scene {
   private rock = buildRock();
   private water = new Uint8Array(0);
   /** The span of words on each screen row last frame, so lines in the water can break behind them. */
-  private wordsFrom = new Int16Array(0);
-  private wordsTo = new Int16Array(0);
+  wordsFrom = new Int16Array(0);
+  wordsTo = new Int16Array(0);
   private snow: { x: number; y: number; k: number }[] = [];
   private bubbles: { x: number; y: number; size: number; phase: number }[] = [];
   private nextBubble = 0;
+  /** Whether the diver of a chaos dive has been let go, and the bubbles of that have risen. */
+  private freed = false;
   /** Where the title menu was last drawn. */
   private menuLeft = 0;
   private menuTop = 0;
@@ -203,6 +238,8 @@ export class Scene {
   crew: Crew[] | null = null;
   /** The turn on screen, in a dive of a room. */
   turn: Turn | null = null;
+  /** The middle of the diver in focus, on the frame, as last drawn. */
+  focus = { x: 0, y: 0 };
   /** How starved of air the diver is, from 0 (fine) to 1 (out). */
   panic = 0;
 
@@ -276,7 +313,8 @@ export class Scene {
 
     // The lines that hang from the boat: the player's alone, or one for each diver of a room.
     // On a wide screen as many as fit beside the words; in a dive on a narrow one, the diver in focus and the one before.
-    const members: Crew[] = crew ?? [{ slot: 0, suit: 0, name: "", lit: true, focus: true, depth: game.depth, lamps: game.lamps }];
+    // A chaos diver whose air ran out has a dead lantern.
+    const members: Crew[] = crew ?? [{ slot: 0, suit: 0, name: "", lit: game.phase !== "lost", focus: true, depth: game.depth, lamps: game.lamps }];
     const focus = members.find((diver) => diver.focus) ?? members[0]!;
     const lineX = (slot: number) => CHAIN_X + slot * LINE_GAP - across;
     const lines = members
@@ -286,15 +324,17 @@ export class Scene {
         const settled = diver.focus ? !diving : Math.abs(diver.depth - depth) <= 4;
         const x = lineX(diver.slot);
         const marks = crew ? (this.marks.get(diver.name) ?? this.marks.set(diver.name, new Map()).get(diver.name)!) : this.reached;
-        const y = screenY(Math.round(depth / METERS_PER_PIXEL)) + (settled ? Math.round(Math.sin(time * 1.3 + diver.slot * 2)) : 0);
+        const y = screenY(Math.round(depth / METERS_PER_PIXEL)) + (settled ? Math.round(Math.sin(time * 1.3 + diver.slot * 2)) : 0) - (crew ? 0 : held(game));
         return { ...diver, x, y, depth, lamps: hang(marks, diver.lamps ?? [], depth, x) };
       });
     const lamps = lines.flatMap((line) => line.lamps);
     const lead = lines.find((line) => line.focus);
+    if (lead) this.focus = { x: lead.x + 10, y: lead.y + 12 };
+    const sub = crew ? null : vessel(game);
 
     // Running low on air: the lantern sputters and the dark begins to pulse red.
     // In the last third of the air, the diver is in trouble and the screen shows it.
-    const starved = game.phase === "ask" ? Math.max(0, 1 - game.air / (this.full / 3)) : 0;
+    const starved = game.phase === "ask" ? Math.max(0, 1 - game.air / (this.full(game) / 3)) : 0;
     this.panic += (starved - this.panic) * Math.min(1, dt * 5);
     this.pulse += dt * (1.2 + this.panic * 1.6) * Math.PI * 2;
     const beat = Math.max(0, Math.sin(this.pulse)) ** 2;
@@ -320,6 +360,14 @@ export class Scene {
       if (W > H) edges.push([W + radius / 6, H / 2]);
       for (const [x, y] of edges) lights.push({ x: x!, y: y!, radius, rgb: [210, 40, 70], strength });
     }
+    // The warning lamps of the submarine, and of the buoy: they blink in turn.
+    const blink = Math.floor(time * 3) % 2 === 0;
+    const sunk = (name: "x" | "X", rows: string[], left: number, top: number, fade = 0) =>
+      rows.flatMap((row, j) => [...row].flatMap((char, i) => (char === name && fade < 0.85 ? [{ x: left + i + 0.5, y: top + j + 0.5, radius: 20, rgb: [210, 40, 70] as Light["rgb"], strength: 0.55 * (1 - fade) }] : [])));
+    // It holds the diver's helmet in its clamp, CLAMPED rows above their place on the line, and rides the waves with them.
+    const subAt = sub && { x: lineX(0) - 16 + sub.dx, y: screenY(0) - 19 - CLAMPED + sub.dy + (sub.dx ? 0 : Math.round(Math.sin(time * 1.3))) };
+    if (subAt) lights.push(...sunk(blink ? "x" : "X", SUB, subAt.x, subAt.y, sub.fade));
+    if (game.chaos && !crew && !subAt && Math.floor(time * 1.2) % 2 === 0) lights.push(...sunk("X", BUOY, lineX(0) - 2, screenY(SURFACE_ROW) - 3));
 
     const light = (list: Lit[], x: number, y: number) => {
       let value = 0;
@@ -373,7 +421,7 @@ export class Scene {
     // ---- the boat the lines hang from: one hull, a wheelhouse over every line
     const surface = screenY(SURFACE_ROW);
     const slots = members.map((diver) => diver.slot);
-    if (surface > -20 && surface < H + 20) {
+    if (!game.chaos && surface > -20 && surface < H + 20) {
       const stern = lineX(Math.min(...slots)) - 24;
       const bow = lineX(Math.max(...slots)) + 50;
       frame.block = 224;
@@ -409,6 +457,7 @@ export class Scene {
     }
 
     // ---- whatever is out there
+    this.ambient.chaos = game.chaos;
     this.ambient.update(dt, this.depth, scroll, W, H);
     this.ambient.draw(frame, water, time, lights);
 
@@ -506,9 +555,29 @@ export class Scene {
         frame.put(lamp.x + 3, lamp.y + 7, 5);
       }
     }
+    // ---- in a chaos dive, the buoy the line hangs from, and the submarine while it is there
+    if (game.chaos && !crew) {
+      const lit = (rows: string[], name: "x" | "X", on: boolean) => rows.map((row) => row.replaceAll(name, on ? "x" : "r"));
+      frame.block = 224;
+      frame.sprite(lit(BUOY, "X", Math.floor(time * 1.2) % 2 === 0), lineX(0) - 2, screenY(SURFACE_ROW) - 3, "x");
+      if (sub && subAt) {
+        let rows = lit(lit(SUB, "x", blink), "X", !blink);
+        // The screw turns while the submarine moves.
+        if (sub.dx && Math.floor(time * 10) % 2) rows = rows.map((row, j) => (j === 11 || j === 13 ? `.${row.slice(1)}` : row));
+        for (let k = 0; k < Math.floor(sub.fade * 4); k++) rows = rows.map((row) => row.replace(/[^.]/g, (char) => DARKER[char] ?? char));
+        // Under the waterline it is a step darker.
+        rows = rows.map((row, j) => (subAt.y + j > screenY(SURFACE_ROW) ? row.replace(/[^.x]/g, (char) => DARKER[char] ?? char) : row));
+        frame.sprite(rows, subAt.x, subAt.y, "x");
+      }
+    }
     frame.block = -1;
 
-    // ---- bubbles climbing the line from the helmet of the diver in focus
+    // ---- bubbles climbing the line from the helmet of the diver in focus: a burst as the clamp lets go
+    if (game.phase !== "drop") this.freed = false;
+    else if (!this.freed && game.phaseTime >= RELEASE && lead) {
+      this.freed = true;
+      for (let i = 0; i < 10; i++) this.bubbles.push({ x: lead.x + 6 + Math.random() * 10, y: lead.y - 2 + Math.random() * 8, size: 1 + Math.floor(Math.random() * 3), phase: Math.random() * 6 });
+    }
     this.nextBubble -= dt;
     if (this.nextBubble <= 0 && lead) {
       this.nextBubble = (0.5 + Math.random() * 0.9) * (1 - 0.7 * this.panic);
@@ -539,6 +608,8 @@ export class Scene {
       if (lit) frame.sprite(LANTERN, x + 16, y + 17, "ac");
       else frame.sprite(LANTERN_OUT, x + 16, y + 17);
     }
+    // The clamp holds the helmet from either side, so it is drawn over the diver.
+    if (sub && subAt && sub.fade < 0.5) frame.sprite(sub.open ? CLAMP_OPEN : CLAMP_SHUT, subAt.x + 22, subAt.y + 16);
     frame.block = -1;
 
     // ---- in a room, their names over them, and over another player's their depth
@@ -624,8 +695,8 @@ export class Scene {
   }
 
   /** The seconds of air a turn starts with. */
-  private get full(): number {
-    return this.turn?.air ?? AIR_SECONDS;
+  private full(game: Game): number {
+    return this.turn?.air ?? fullAir(game);
   }
 
   /** Which line of the title menu is at a point of the frame. No line has an index outside the menu. */
@@ -716,7 +787,8 @@ export class Scene {
 
     // The prompt, and the air left to answer it. A finished dive has none, only the depth unwinding.
     const prompt = game.prompts[game.round];
-    if (!prompt) return;
+    // While the submarine lets the diver go, the first prompt is not yet asked.
+    if (!prompt || game.phase === "drop") return;
     const asking = game.phase === "ask";
     const head = `${plain(prompt.pack)} ~ ${game.round + 1} of ${game.prompts.length}`;
     const watching = this.turn?.watching ? `${this.turn.watching} watching` : "";
@@ -733,8 +805,8 @@ export class Scene {
     if (turn?.taken.length) this.hudBottom = sayWrapped(tiny, `Taken ~ ${turn.taken.map(plain).join(", ")}`, this.hudBottom + 4, 6).y + 10;
     if (asking) {
       const y = promptY + lines.length * 11 + 4;
-      const low = game.air <= this.full / 3;
-      const left = Math.ceil((game.air / this.full) * 15);
+      const low = game.air <= this.full(game) / 3;
+      const left = Math.ceil((game.air / this.full(game)) * 15);
       const blink = Math.floor(time * (low ? 5 : 2)) % 2 === 0;
       const pitch = room >= 100 ? 4 : 3;
       const start = say(tiny, "Air", x, y, low ? 18 : 6) + 4;
@@ -790,11 +862,33 @@ export class Scene {
       if (end + 3 + measure(tiny, note) > W - 4) say(tiny, note, x, (y += 8), result.correct ? 9 : 5);
       else say(tiny, note, end + 3, y, result.correct ? 9 : 5);
       // In a room the next turn comes by itself.
-      if (!turn && !diving && game.phaseTime > 0.6) {
+      if (!turn && !diving && game.phase === "verdict" && game.phaseTime > 0.6) {
         key(x, y + 12, game.round + 1 === game.prompts.length ? "End the dive" : "Keep going");
       }
     }
   }
+}
+
+/**
+ * Where the submarine of a chaos dive is: how far it has gone from where it held the diver, across and down, how far into
+ * the dark it has faded (0 to 1), and whether its clamp is open. Null when there is no submarine: it brings the diver
+ * and goes, and comes back for the haul.
+ */
+function vessel(game: Game): { dx: number; dy: number; fade: number; open: boolean } | null {
+  if (!game.chaos) return null;
+  if (game.phase === "ascent" || game.phase === "done") return { dx: 0, dy: 0, fade: 0, open: true };
+  if (game.phase !== "drop") return null;
+  const t = game.phaseTime;
+  const gone = Math.max(0, t - LEAVE);
+  const dx = Math.round(24 * gone * gone);
+  return { dx, dy: Math.round(dx * 0.25), fade: Math.min(1, Math.max(0, (t - 2.6) / 1.4)), open: t >= RELEASE };
+}
+
+/** How far above their place on the line the diver of a chaos dive is still held by the clamp, or is falling from it. */
+function held(game: Game): number {
+  if (!game.chaos || game.phase !== "drop") return 0;
+  const fall = Math.min(1, Math.max(0, (game.phaseTime - RELEASE) / 0.3));
+  return Math.round(CLAMPED * (1 - fall * fall));
 }
 
 /** A drawn Enter key, with what pressing it does. Returns the x where it ends. */

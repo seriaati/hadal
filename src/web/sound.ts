@@ -1,4 +1,5 @@
 import type { CreatureKind } from "./pixel/creatures";
+import { DARK_AT, OFF_AT, type Glitch } from "./pixel/glitch";
 import type { Scene } from "./pixel/scene";
 import type { Game, Phase } from "./state";
 
@@ -61,7 +62,31 @@ function build() {
 
   const deep = noise("ambient", "lowpass", 600);
   const rush = noise("effects", "bandpass", 600);
-  return { context, gains, hiss, surface, deep, rush, drone };
+
+  // The tape of a chaos dive: mains hum, tape hiss, a wash of static while the signal is lost.
+  const hum = new GainNode(context, { gain: 0 });
+  hum.connect(gains.ambient);
+  for (const [frequency, share] of [[60, 1], [120, 0.5], [180, 0.25]] as const) {
+    const voice = new OscillatorNode(context, { frequency });
+    voice.connect(new GainNode(context, { gain: share })).connect(hum);
+    voice.start();
+  }
+  const tapeHiss = noise("ambient", "highpass", 4500);
+  const wash = noise("effects", "bandpass", 1100);
+  // The music runs through the tape too: muffled, and its pitch wavers (wow, and the faster flutter).
+  const tape = new BiquadFilterNode(context, { type: "lowpass", frequency: 20000 });
+  const musicBus = new GainNode(context);
+  musicBus.connect(tape).connect(gains.music);
+  const waver = (frequency: number) => {
+    const depth = new GainNode(context, { gain: 0 });
+    const swing = new OscillatorNode(context, { frequency });
+    swing.connect(depth);
+    swing.start();
+    return depth;
+  };
+  const wow = waver(0.6);
+  const flutter = waver(7);
+  return { context, gains, hiss, surface, deep, rush, drone, hum, tapeHiss, wash, tape, musicBus, wow, flutter };
 }
 
 /**
@@ -82,6 +107,16 @@ export class Sound {
   private bubble = 0;
   private typed = "";
   private seen = new WeakSet<object>();
+  // What the tape of a chaos dive had done a frame ago.
+  private faults = 0;
+  private losses = 0;
+  private turns = 0;
+  private klaxon = 0;
+  private off = false;
+  /** When the sting of a lost signal was last heard, in the audio clock's seconds. */
+  private stung = -Infinity;
+  private typedOut = 0;
+  private scared = false;
   // Where the music is: seconds until the next chord and the next note, and which they are.
   private chordIn = 0;
   private chord = 0;
@@ -155,7 +190,7 @@ export class Sound {
   private rest = () => void (document.hidden ? this.rig?.context.suspend() : this.rig?.context.resume());
 
   /** Once a frame, after the scene is drawn: steer the lasting sounds and play whatever just happened. */
-  update(game: Game, scene: Scene, dt: number) {
+  update(game: Game, scene: Scene, dt: number, glitch?: Glitch) {
     const rig = this.rig;
     if (!rig) return;
     const steer = (param: AudioParam, value: number) => param.setTargetAtTime(value, rig.context.currentTime, 0.25);
@@ -177,9 +212,13 @@ export class Sound {
     if (game.input !== this.typed) this.burst("bandpass", 1800 + Math.random() * 600, 0.3, 0.06);
     this.typed = game.input;
 
-    // A bell tolls as the dive begins.
-    if (game.phase === "ask" && this.phase === "title") this.bell(294, 0.3, 3.5);
+    // A bell tolls as the dive begins. In a chaos dive it is cracked: two bells a little out of tune.
+    if (game.phase === "ask" && (this.phase === "title" || this.phase === "drop")) {
+      this.bell(294, 0.3, 3.5);
+      if (game.chaos) this.bell(311, 0.22, 3);
+    }
     this.phase = game.phase;
+    if (glitch) this.tape(game, scene, glitch);
 
     // A wrong answer: a dull knock.
     if (game.rejected && game.rejected !== this.rejected) this.note("effects", "triangle", 320, 110, 0.35, 0.25);
@@ -240,6 +279,70 @@ export class Sound {
     }
   }
 
+  /** The sounds of a chaos dive's failing tape, and of what lives in it. */
+  private tape(game: Game, scene: Scene, glitch: Glitch) {
+    const rig = this.rig!;
+    const steer = (param: AudioParam, value: number, time = 0.1) => param.setTargetAtTime(value, rig.context.currentTime, time);
+    // Once a lost dive's screen has gone dark, the tape and the music are silent: only the sea is left.
+    const dark = glitch.lostFor >= DARK_AT;
+    const level = dark ? 0 : glitch.level;
+    steer(rig.hum.gain, 0.03 * level);
+    steer(rig.tapeHiss.gain.gain, level > 0 ? 0.03 + 0.05 * level : 0);
+    steer(rig.wash.gain.gain, glitch.lost > 0 ? 0.18 : 0, 0.03);
+    steer(rig.wow.gain, 45 * level);
+    steer(rig.flutter.gain, 10 * level);
+    steer(rig.tape.frequency, level > 0 ? 6000 - 4500 * level : 20000);
+    steer(rig.musicBus.gain, dark ? 0 : glitch.lost > 0 ? 0.1 : 1, 0.05);
+
+    // Every fault crackles.
+    if (glitch.count > this.faults) {
+      this.burst("bandpass", 1500 + Math.random() * 4000, 0.15 + 0.25 * level, 0.04 + Math.random() * 0.2);
+      this.burst("highpass", 6000, 0.08, 0.03);
+    }
+    this.faults = glitch.count;
+    // A loss of signal: a hit of static, and a whine falling away. It is shrill, so it is heard at most every 30 seconds.
+    if (glitch.losses > this.losses && rig.context.currentTime - this.stung >= 30) {
+      this.stung = rig.context.currentTime;
+      this.burst("highpass", 1000, 0.35, 0.3);
+      this.note("effects", "sine", 1600, 120, 0.05, 0.9);
+    }
+    this.losses = glitch.losses;
+    // Something turns: a screech, two voices that grate, over a low blow.
+    if (scene.ambient.turns > this.turns) {
+      this.note("effects", "sawtooth", 1400, 220, 0.05, 1.2, 0.02);
+      this.note("effects", "sawtooth", 1460, 205, 0.05, 1.2, 0.02);
+      this.note("effects", "triangle", 90, 38, 0.3, 1.6);
+    }
+    this.turns = scene.ambient.turns;
+    // The submarine's klaxon, while its lights blink and it holds the diver.
+    if (game.chaos && game.phase === "drop" && game.phaseTime < 2.4 && game.phaseTime >= this.klaxon) {
+      this.klaxon = game.phaseTime + 0.66;
+      this.note("effects", "square", 440, 330, 0.035, 0.5, 0.02);
+    }
+    if (game.phase !== "drop") this.klaxon = 0;
+    // A lost dive: the set switches off with a thump and the whine of its tube dying away.
+    const off = glitch.lostFor >= OFF_AT;
+    if (off && !this.off) {
+      this.burst("lowpass", 300, 0.5, 0.2);
+      this.note("effects", "sine", 7800, 5000, 0.015, 1.2);
+    }
+    this.off = off;
+    // Its last words are typed, a soft key for every letter.
+    if (glitch.typed > this.typedOut) {
+      this.burst("bandpass", 2400 + Math.random() * 600, 0.12, 0.03);
+      this.note("effects", "triangle", 140, 90, 0.05, 0.06);
+    }
+    this.typedOut = glitch.typed;
+    // And for some, the eyes: the sting, always heard here, over a deep blow.
+    if (glitch.scared && !this.scared) {
+      this.burst("highpass", 1000, 0.45, 0.4);
+      this.note("effects", "sine", 1600, 120, 0.07, 0.9);
+      this.note("effects", "sawtooth", 1400, 200, 0.05, 0.9, 0.01);
+      this.note("effects", "triangle", 80, 30, 0.4, 1.8);
+    }
+    this.scared = glitch.scared;
+  }
+
   /**
    * The music is made up as it goes: slow chords that swell and fade into each other, and a tune
    * of lone notes that wanders over them. `dark` runs from 0 at the surface to 1 in the hadal zone:
@@ -278,7 +381,17 @@ export class Sound {
     gain.gain.setValueAtTime(0, start);
     gain.gain.linearRampToValueAtTime(level, start + attack);
     gain.gain.exponentialRampToValueAtTime(0.001, start + seconds);
-    voice.connect(gain).connect(gains[kind]);
+    // Music runs through the tape, and wavers with it.
+    const { musicBus, wow, flutter } = this.rig!;
+    voice.connect(gain).connect(kind === "music" ? musicBus : gains[kind]);
+    if (kind === "music") {
+      wow.connect(voice.detune);
+      flutter.connect(voice.detune);
+      voice.onended = () => {
+        wow.disconnect(voice.detune);
+        flutter.disconnect(voice.detune);
+      };
+    }
     voice.start(start);
     voice.stop(start + seconds);
   }

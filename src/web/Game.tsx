@@ -4,10 +4,11 @@ import { DevMenu, type DevTools } from "./DevMenu";
 import { Logbook } from "./Logbook";
 import type { Log } from "./logbook/log";
 import { Sound } from "./sound";
-import { createGame, leave, pressEnter, start, tick } from "./state";
+import { createGame, leave, lostDive, pressEnter, start, tick, type Phase } from "./state";
 import { AccountPanel } from "./pixel/account";
 import { drawable } from "./pixel/other";
 import { Display, Frame } from "./pixel/frame";
+import { Glitch, strength } from "./pixel/glitch";
 import { MultiplayerPanel } from "./pixel/multiplayer";
 import { PacksPanel } from "./pixel/packs";
 import { Scene } from "./pixel/scene";
@@ -36,6 +37,7 @@ export function Game() {
     const frame = new Frame();
     const display = new Display(canvas, glow.current!);
     const sound = new Sound();
+    const glitch = new Glitch();
     const ui = new Ui(form.current!, input);
     const settings = () => settingsStep(sound);
     const account: AccountPanel = new AccountPanel(ui, () => void packs.load());
@@ -46,11 +48,12 @@ export function Game() {
     /** The dive on screen: the player's own, or the room's while the room dives. */
     let shown = game;
     /** The title menu: its lines, and the one Enter acts on. */
-    const menu = { items: ["Descend", "Packs", "Multiplayer", "Sign in"], choice: 0 };
+    const menu = { items: ["Descend", "Chaos", "Packs", "Multiplayer", "Sign in"], choice: 0 };
     const choose = (line: number) => {
       if (line === 0) pressEnter(game);
-      else if (line === 1) packs.show();
-      else if (line === 2) multiplayer.show();
+      else if (line === 1) void start(game, undefined, true);
+      else if (line === 2) packs.show();
+      else if (line === 3) multiplayer.show();
       else account.show();
     };
     /** Whether the step about leaving the dive was opened with Escape: it then says what a second Escape does. */
@@ -76,10 +79,10 @@ export function Game() {
     const openMenu = (escape: boolean) => {
       byEscape = escape;
       if (shown.phase === "title") ui.go(settings);
-      else if (shown.phase === "ask" || shown.phase === "verdict") ui.go(leaving);
+      else if (shown.phase === "drop" || shown.phase === "ask" || shown.phase === "verdict") ui.go(leaving);
     };
     // In development, let the browser console (and test scripts) reach the game.
-    if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game, scene, frame, display, sound, ui, account, packs, multiplayer, room: multiplayer.client } });
+    if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game, scene, frame, display, sound, glitch, ui, account, packs, multiplayer, room: multiplayer.client } });
 
     void fetch("/api/config")
       .then((res) => res.json() as Promise<Config>)
@@ -140,6 +143,8 @@ export function Game() {
     /** When the divers came back to the surface, in seconds. */
     let doneAt = 0;
     let last = performance.now();
+    /** The phase of the player's own dive a frame ago: a chaos dive opens with a hard glitch. */
+    let phase: Phase = "title";
     let request = requestAnimationFrame(function loop(now) {
       request = requestAnimationFrame(loop);
       const dt = Math.min(0.05, (now - last) / 1000);
@@ -150,7 +155,7 @@ export function Game() {
       // A prompt in another script keeps its air until the font that draws it has arrived.
       const prompt = game.phase === "ask" && game.prompts[game.round];
       if (!prompt || drawable(prompt.text)) tick(game, dt);
-      const log = multiplayer.ending?.log ?? (game.phase === "ascent" || game.phase === "done" ? game : null);
+      const log = multiplayer.ending?.log ?? (game.phase === "ascent" || game.phase === "lost" || game.phase === "done" ? game : null);
       if (log !== ended) {
         ended = log;
         setLogged(log);
@@ -165,7 +170,7 @@ export function Game() {
       display.fit(frame);
       // Once the logbook has faded in it hides the sea, which need not be drawn.
       if (!done || now / 1000 - doneAt < 1) {
-        menu.items[3] = account.account?.username ?? "Sign in";
+        menu.items[4] = account.account?.username ?? "Sign in";
         multiplayer.update();
         shown = multiplayer.game(now / 1000) ?? game;
         // The diver whose turn it is sees their own typing at once, not as it comes back from the server.
@@ -173,11 +178,21 @@ export function Game() {
         scene.crew = multiplayer.crew();
         scene.turn = multiplayer.turn();
         const lights = scene.draw(frame, shown, menu, dt, now / 1000, ui.open);
+        // A chaos dive is seen on a failing tape; now and then a glitch turns something in the dark into something worse.
+        if (game.phase === "drop" && phase !== "drop") glitch.cut(frame.height, scene.focus);
+        phase = game.phase;
+        const faults = glitch.count;
+        glitch.update(dt, strength(shown, scene.depth, scene.panic), frame.height, scene.focus, shown);
+        if (glitch.count > faults && Math.random() < 0.5) scene.ambient.jolt(frame.width, frame.height);
+        glitch.apply(frame, scene.wordsFrom, scene.wordsTo, now / 1000, scene.focus);
+        // The screen of a lost chaos dive stays dark under the logbook.
+        if (shown.phase === "done" && lostDive(shown)) frame.clear();
+        if (glitch.blackout || (shown.phase === "done" && lostDive(shown))) lights.length = 0;
         drawCog(frame);
         ui.draw(frame, scene, canvas.clientWidth / frame.width, now / 1000, shown.phase !== "title");
         display.present(frame, lights);
       }
-      sound.update(shown, scene, dt);
+      sound.update(shown, scene, dt, glitch);
     });
 
     return () => {
