@@ -71,3 +71,11 @@ test("the people of a room are read, not reached: the focus passes over them", (
   expect((move(laid, spot("start"), "up")?.part as { id: string }).id).toBe("leave");
   expect((move(laid, spot("leave"), "down")?.part as { id: string }).id).toBe("start");
 });
+
+test("two things marked `right` stand side by side against the right edge, in their order", () => {
+  const { placed } = lay({ title: "Packs", rows: [[press("rivers"), press("download", true), press("remove", true)]] }, 140, 12);
+  const [name, download, remove] = placed;
+  expect(remove!.x + remove!.w).toBe(140);
+  expect(download!.x + download!.w).toBe(remove!.x - 8);
+  expect(name!.x + name!.w).toBe(download!.x - 4);
+});

@@ -89,6 +89,15 @@ export class PacksPanel {
       },
       {
         kind: "press",
+        id: `download:${pack.id}`,
+        label: "Download",
+        says: `Download ${pack.name}`,
+        right: true,
+        quiet: true,
+        press: () => Object.assign(document.createElement("a"), { href: `/api/packs/${pack.id}`, download: `${pack.id}.json` }).click(),
+      },
+      {
+        kind: "press",
         id: `remove:${pack.id}`,
         label: this.doomed === pack.id ? "Sure?" : "Remove",
         says: `Remove ${pack.name}`,

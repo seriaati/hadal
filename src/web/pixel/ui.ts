@@ -93,9 +93,11 @@ export function lay(step: Step, width: number, line: number): { placed: Placed[]
       let w = width - x;
       if (parts.length > 1) {
         const next = parts[i + 1];
+        // The parts set against the right edge stand side by side there, in their order.
+        const after = (from: number) => parts.slice(from).reduce((sum, one) => sum + natural(one) + 8, -8);
         w = natural(part);
-        if (part.kind === "press" && part.right) x = width - w;
-        else if (next?.kind === "press" && next.right) w = width - natural(next) - 4 - x;
+        if (part.kind === "press" && part.right) x = width - after(i);
+        else if (next?.kind === "press" && next.right) w = width - after(i + 1) - 4 - x;
       }
       placed.push({ part, row: index, x, y, w, h, lines });
       x += w + 8;

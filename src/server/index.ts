@@ -121,6 +121,15 @@ const server = Bun.serve({
       POST: (req) => packs(req, async (accountId) => savePack(accountId, await req.text())),
     },
     "/api/packs/:id": {
+      // The pack as a file, to keep or to change and add again.
+      GET: async (req) => {
+        const accountId = await accountIdOf(req.cookies.get(SESSION));
+        const pack = accountId && (await loadPack(accountId, req.params.id));
+        if (!pack) return new Response("Unknown pack", { status: 404 });
+        return new Response(JSON.stringify(pack, null, 2), {
+          headers: { "content-type": "application/json", "content-disposition": `attachment; filename="${pack.id}.json"` },
+        });
+      },
       DELETE: (req) => packs(req, (accountId) => removePack(accountId, req.params.id)),
     },
     "/api/write": {
