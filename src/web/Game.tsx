@@ -14,6 +14,7 @@ import { Scene, type Menu } from "./pixel/scene";
 import { drawCog, overCog, settingsStep } from "./pixel/settings";
 import { Ui, type Part, type Step } from "./pixel/ui";
 
+const REPO = "https://github.com/seriaati/hadal";
 const ARROWS: Record<string, "up" | "down" | "left" | "right"> = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right" };
 
 /** The whole game is drawn on canvas. A hidden text field takes the typing, so phones get a keyboard. */
@@ -65,13 +66,21 @@ export function Game() {
         { kind: "note", text: `10 prompts with ${CHAOS_AIR_SECONDS} s of air each: rarer answers go deeper, and the first empty tank ends the dive` },
       ],
     });
+    const about = (): Step => ({
+      title: "About",
+      rows: [
+        { kind: "note", text: "Hadal is made by seria" },
+        { kind: "press", id: "source", label: "github.com/seriaati/hadal", says: "Open the source code on GitHub", press: () => open(REPO, "_blank", "noopener") },
+      ],
+    });
     /** The title menu: its lines, and the one Enter acts on. */
-    const menu: Menu = { items: ["Single player", "Multiplayer", "Packs", "Sign in"], choice: 0 };
+    const menu: Menu = { items: ["Single player", "Multiplayer", "Packs", "Sign in", "About"], choice: 0 };
     const choose = (line: number) => {
       if (line === 0) ui.go(single);
       else if (line === 1) multiplayer.show();
       else if (line === 2) packs.show();
-      else account.show();
+      else if (line === 3) account.show();
+      else ui.go(about);
     };
     /** Whether the step about leaving the dive was opened with Escape: it then says what a second Escape does. */
     let byEscape = false;

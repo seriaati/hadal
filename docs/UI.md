@@ -114,9 +114,9 @@ The same in every panel.
 - **A key that failed.** When a request the live judge makes with a player's key fails (the
   key is refused, is out of credit or over its rate limit, or no answer comes), the server
   notes it on the key, and in a room on the host's. Back at the title after a dive, a rose
-  message under the menu says "Your key failed: see Account" ("keys" if both did). The
-  account panel names it on the key's line ("Anthropic key ~ refused") and the key's step
-  says what happened and what to do, in rose. It stays until a request with the key works,
+  message in place of the line under the title says "Your key failed: see Account" ("keys"
+  if both did). The account panel names it on the key's line ("Anthropic key ~ refused")
+  and the key's step says what happened and what to do, in rose. It stays until a request with the key works,
   or the key is replaced or forgotten.
 - **A room's link** opens "Join a room" with the code filled in and the focus on the name.
 - **The room's mode** is chosen in a step of its own, `‹ Mode`: a line for each mode with a

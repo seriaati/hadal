@@ -18,8 +18,10 @@ const FLOOR_ROW = 11000 / METERS_PER_PIXEL + 26;
 const PAD = 300;
 const ROWS = PAD + FLOOR_ROW + 300;
 
-/** The title screen's choices, one to a line. Enter acts on the chosen one, which carries the mark of the focus. */
-/** The title menu: its lines, the one in focus, and a `note` under them of something that went wrong. */
+/**
+ * The title screen's choices, one to a line. Enter acts on the chosen one, which carries the mark of the focus.
+ * A `note` of something that went wrong is said in place of the line under the title.
+ */
 export type Menu = { items: string[]; choice: number; note?: string };
 const MENU_ROW = 13;
 
@@ -783,8 +785,8 @@ export class Scene {
       say(font, "HADAL", x, base - 4, amber(tall));
       frame.emit = 0;
       // On a narrow screen the line under the title runs on to a second one.
-      const under = wrap(tiny, "Rare answers sink deeper", room);
-      under.forEach((line, i) => say(tiny, line, x, base + tall + 2 + i * 8, 6));
+      const under = wrap(tiny, menu.note ?? "Rare answers sink deeper", room);
+      under.forEach((line, i) => say(tiny, line, x, base + tall + 2 + i * 8, menu.note ? 18 : 6));
       this.menuLeft = x;
       this.menuTop = base + tall + 6 + under.length * 8;
       menu.items.forEach((item, i) => {
@@ -798,11 +800,6 @@ export class Scene {
         frame.emit = 0;
         cover(x - 6, x, y + 2, y + 7);
       });
-      let y = this.menuTop + menu.items.length * MENU_ROW + 4;
-      for (const line of menu.note ? wrap(tiny, menu.note, room) : []) {
-        say(tiny, line, x, y, 18);
-        y += 8;
-      }
       return;
     }
 
