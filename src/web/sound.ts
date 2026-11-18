@@ -95,7 +95,7 @@ function build() {
  */
 export class Sound {
   /** Where each slider in the settings stands. */
-  levels: Record<Level, number> = { master: 0.75, music: 1, effects: 1, ambient: 1, ...JSON.parse(localStorage.getItem(STORED) ?? "{}") };
+  levels: Record<Level, number> = { master: 0.5, music: 1, effects: 1, ambient: 1, ...JSON.parse(localStorage.getItem(STORED) ?? "{}") };
   private rig: Rig | null = null;
   // The game as it was a frame ago, to hear what has changed since.
   private phase: Phase = "title";
