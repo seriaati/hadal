@@ -12,7 +12,7 @@ test("when no kind of creature can arrive, nothing does", () => {
   for (let second = 0; second < 8; second++) ambient.update(1, 1200, 0, width, height, 0);
 
   const lights: Light[] = [];
-  ambient.draw(frame, new Uint8Array(height), 0, lights);
+  ambient.draw(frame, new Uint8Array(height), 0, lights, () => false);
   expect(lights).toHaveLength(1);
   expect(Number.isFinite(lights[0]!.y)).toBe(true);
 });
@@ -37,7 +37,7 @@ test("a whale is never drawn above the water", () => {
   ambient.spawn("whale", width, height, 0);
   ambient.creatures[0]!.x = 20;
   ambient.creatures[0]!.y = 40;
-  ambient.draw(frame, new Uint8Array(height).fill(4), 0, []);
+  ambient.draw(frame, new Uint8Array(height).fill(4), 0, [], () => false);
   expect(frame.color.subarray(0, 60 * width).some((color) => color !== 0)).toBe(false);
   expect(frame.color.subarray(60 * width).some((color) => color !== 0)).toBe(true);
 });

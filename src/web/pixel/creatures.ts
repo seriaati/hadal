@@ -133,14 +133,15 @@ export class Ambient {
   }
 
   /** `water` is the water colour of each row of the frame. */
-  draw(frame: Frame, water: Uint8Array, time: number, lights: Light[]) {
+  /** `behindWords` says whether a point lies behind the words on screen. */
+  draw(frame: Frame, water: Uint8Array, time: number, lights: Light[], behindWords: (x: number, y: number) => boolean) {
     for (const creature of this.creatures) {
       // While it turns it flickers between what it was and what it is becoming.
       const worse = creature.turned || (creature.flick > 0 && Math.floor(creature.flick * 18) % 2 === 0);
       if (creature.kind === "eyes") (worse ? drawBloodyEyes : drawEyes)(frame, creature);
       else if (creature.kind === "serpent") drawSerpent(frame, creature, water, time, worse);
       else if (creature.kind === "fish") drawShoal(frame, creature, water, this.top);
-      else if (creature.kind === "whale") drawWhale(frame, creature, water, this.top);
+      else if (creature.kind === "whale") drawWhale(frame, creature, water, this.top, behindWords);
       else drawAngler(frame, creature, water, time, lights, worse);
     }
   }
@@ -198,7 +199,7 @@ const WHALE_JAW = curve([[1, 20], [8, 21], [16, 21.6], [22, 21], [25, 20.2]]);
  * and forked flukes. Its back is darker than the water and its belly lighter, so it stands out. The flukes beat slowly,
  * and the back half of it bends with them.
  */
-function drawWhale(frame: Frame, whale: Whale, water: Uint8Array, top: number) {
+function drawWhale(frame: Frame, whale: Whale, water: Uint8Array, top: number, behindWords: (x: number, y: number) => boolean) {
   const s = whale.scale;
   const left = Math.round(whale.x);
   const phase = whale.age * WHALE_STROKE;
@@ -265,7 +266,8 @@ function drawWhale(frame: Frame, whale: Whale, water: Uint8Array, top: number) {
           color = v < lead + 0.6 ? shade(y, 3) : v > finV + width * 0.55 - 0.7 ? shade(y, 1) : shade(y, 2);
         }
       }
-      if (color >= 0) frame.put(x, y, color);
+      // Its pale parts are the colours of the words: behind them it is never brighter than the water near the surface.
+      if (color >= 0) frame.put(x, y, behindWords(x, y) ? Math.min(color, 4) : color);
     }
   }
 }

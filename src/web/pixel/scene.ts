@@ -461,7 +461,7 @@ export class Scene {
     // ---- whatever is out there
     this.ambient.chaos = game.chaos;
     this.ambient.update(dt, this.depth, scroll, W, H, surface + 1);
-    this.ambient.draw(frame, water, time, lights);
+    this.ambient.draw(frame, water, time, lights, behindWords);
 
     // ---- marine snow, tinted by whichever light it drifts through
     const flakes = Math.round((W * H) / 250);
