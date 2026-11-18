@@ -1,5 +1,5 @@
 import { afterAll, expect, test } from "bun:test";
-import { createGame, leave, pressEnter, tick } from "./state";
+import { CHAOS_AIR_SECONDS, DROP_SECONDS, LOST_SECONDS, createGame, leave, lostDive, pressEnter, start, tick } from "./state";
 
 // Every test file runs in one process: the server's tests need the real `fetch` back.
 const realFetch = globalThis.fetch;
@@ -78,4 +78,37 @@ test("no air is used while an answer is being judged", async () => {
   expect(game.rejected?.text).toBe("lima");
   tick(game, 1);
   expect(game.air).toBe(15);
+});
+
+test("a chaos dive drops the diver off, gives 8 seconds of air, and ends at the first prompt whose air runs out", async () => {
+  const prompts = [{ id: "p/a", text: "A", pack: "P" }, { id: "p/b", text: "B", pack: "P" }, { id: "p/c", text: "C", pack: "P" }];
+  globalThis.fetch = (async (url: string) =>
+    Response.json(url === "/api/game" ? { prompts } : { answer: "Peru", rarity: 40 })) as unknown as typeof fetch;
+
+  const game = createGame();
+  await start(game, undefined, true);
+  // No air is used while the submarine lets the diver go.
+  expect(game.phase).toBe("drop");
+  tick(game, DROP_SECONDS - 0.1);
+  expect(game.air).toBe(CHAOS_AIR_SECONDS);
+  tick(game, 0.2);
+  expect(game.phase).toBe("ask");
+
+  game.input = "peru";
+  pressEnter(game);
+  await Bun.sleep(1);
+  tick(game, 1);
+  pressEnter(game);
+  expect(game.air).toBe(CHAOS_AIR_SECONDS);
+  expect(lostDive(game)).toBe(false);
+
+  // The second prompt runs out of air: the dive is lost, the third prompt never asked.
+  tick(game, CHAOS_AIR_SECONDS + 0.1);
+  expect(game.phase).toBe("lost");
+  expect(lostDive(game)).toBe(true);
+  pressEnter(game);
+  expect(game.phase).toBe("lost");
+  tick(game, LOST_SECONDS);
+  expect(game.phase).toBe("done");
+  expect(game.results).toEqual([{ answer: "Peru", rarity: 40, correct: true }, { answer: "", rarity: 0, correct: false }]);
 });

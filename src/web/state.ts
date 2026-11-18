@@ -2,15 +2,25 @@ import { METERS_PER_POINT, type GamePrompt, type Verdict } from "../shared/types
 
 /** Seconds of air the diver has for each prompt. Wrong answers can be retried until it runs out. */
 export const AIR_SECONDS = 18;
+export const CHAOS_AIR_SECONDS = 8;
+/** How long the submarine of a chaos dive takes to let the diver go, before the first prompt. */
+export const DROP_SECONDS = 4;
+/** How long a lost chaos dive takes to die (its signal, then its last words), before the logbook. */
+export const LOST_SECONDS = 7.5;
 
 /** A lamp hung on the line: lit by a correct answer, dead when the air ran out first. */
 export type Lamp = { depth: number; lit: boolean };
 export type Result = { answer: string; rarity: number; correct: boolean };
-/** After the last verdict the diver is hauled up ("ascent"); at the surface the logbook opens ("done"). */
-export type Phase = "title" | "ask" | "verdict" | "ascent" | "done";
+/**
+ * A chaos dive opens with the diver being dropped off ("drop"). After the last verdict the diver is hauled up ("ascent");
+ * at the surface the logbook opens ("done"). A chaos dive ends at the first prompt whose air runs out: the signal is
+ * "lost", and then the logbook opens.
+ */
+export type Phase = "title" | "drop" | "ask" | "verdict" | "ascent" | "lost" | "done";
 
 export type Game = {
   phase: Phase;
+  chaos: boolean;
   /** Seconds since the phase began. */
   phaseTime: number;
   prompts: GamePrompt[];
@@ -33,10 +43,14 @@ export type Game = {
 
 export function createGame(): Game {
   return {
-    phase: "title", phaseTime: 0, prompts: [], round: 0, input: "", air: AIR_SECONDS,
+    phase: "title", chaos: false, phaseTime: 0, prompts: [], round: 0, input: "", air: AIR_SECONDS,
     judging: null, rejected: null, depth: 0, lamps: [], result: null, results: [],
   };
 }
+
+export const fullAir = (game: Game) => (game.chaos ? CHAOS_AIR_SECONDS : AIR_SECONDS);
+/** Whether a chaos dive ended because the air ran out. */
+export const lostDive = (game: Game) => game.chaos && game.results.at(-1)?.correct === false;
 
 /** Seconds the haul back to the surface takes: longer from deeper, but never long. */
 export function ascentSeconds(depth: number): number {
@@ -55,18 +69,19 @@ function finish(game: Game, result: Result) {
 }
 
 /** Begin a dive: in the built-in packs, or in the one of the player's own packs that `pack` names. */
-export async function start(game: Game, pack?: string) {
+export async function start(game: Game, pack?: string, chaos = false) {
   const res = await fetch(pack ? `/api/game?pack=${pack}` : "/api/game");
   if (!res.ok) return;
   const { prompts } = (await res.json()) as { prompts: GamePrompt[] };
-  Object.assign(game, createGame(), { prompts });
-  enter(game, "ask");
+  Object.assign(game, createGame(), { prompts, chaos, air: chaos ? CHAOS_AIR_SECONDS : AIR_SECONDS });
+  enter(game, chaos ? "drop" : "ask");
 }
 
 /** The air ran out before a correct answer: the round is lost. */
 function fail(game: Game) {
   game.lamps.push({ depth: game.depth, lit: false });
   finish(game, { answer: "", rarity: 0, correct: false });
+  if (game.chaos) enter(game, "lost");
 }
 
 /** Send what has been typed to be judged. A wrong answer only costs the time it took. */
@@ -103,6 +118,8 @@ export function leave(game: Game) {
 export function tick(game: Game, dt: number) {
   game.phaseTime += dt;
   if (game.phase === "ascent" && game.phaseTime >= ascentSeconds(game.depth)) enter(game, "done");
+  if (game.phase === "drop" && game.phaseTime >= DROP_SECONDS) enter(game, "ask");
+  if (game.phase === "lost" && game.phaseTime >= LOST_SECONDS) enter(game, "done");
   // No air is used while an answer is being judged: that wait is not the diver's doing.
   if (game.phase !== "ask" || game.judging) return;
   game.air = Math.max(0, game.air - dt);
@@ -123,7 +140,7 @@ export function pressEnter(game: Game) {
   } else if (game.phase === "verdict" && game.phaseTime > 0.4) {
     game.round++;
     game.input = "";
-    game.air = AIR_SECONDS;
+    game.air = fullAir(game);
     game.rejected = null;
     game.result = null;
     enter(game, game.round === game.prompts.length ? "ascent" : "ask");
