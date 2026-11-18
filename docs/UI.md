@@ -23,10 +23,12 @@ Every panel is built from these, and each has one look.
 
 | Part | What it is | Look |
 |---|---|---|
-| Step | One screen of a panel | Its name at the top in dim letters, with a `‹` before it |
+| Step | One screen of a panel | Its name at the top in dim letters, with a `‹` before it. Under the pointer the `‹` and the name light up like a line in focus, since a press there goes back. A room's step has its code after the name, in pale letters, since it is read out to others; a press on the code copies it, and it lights up the same way |
 | Line | Anything pressed: a row of a list, a button, a link | Pale words. A lesser line beside another ("Remove") is dim |
 | Field | A line of typing | Its label in dim letters, the typing under it, a rule under that |
-| Slider | A level from 0 to 1 | Its label, and 20 pips at the right of the line, like the air gauge |
+| Slider | A level from 0 to 1 | Its label, and 20 pips at the right of the line, like the air gauge. It may have fewer steps (the air of a room: 12, with "30 s" after the pips), or be a choice of colours, one pip of each (a suit) |
+| Setting | A line that stands for a choice | Its label, and the choice against the right edge ("Deepest", "built-in + 2"), with a pip before it if it is on or off. Left and Right change it, like a slider; Enter flips an on or off one |
+| Player | One of the people in a room | A pip of their suit's colour, the name, and a dim word ("host", "ready"). Only read: the focus passes over it |
 | Message | Words that are only read | Dim words, wrapped |
 | Wait | Something that takes long | Words, then one pip per piece of the work, then "prompt 4 of 10" |
 
@@ -84,6 +86,32 @@ The same in every panel.
   cog, and every line, field and slider of a panel.
 - **No key hints are drawn.** The keys are the ones every game uses.
 - **Nothing waits for an animation.** A panel is there on the frame its key is pressed.
+- **A room's dive** is worked like single player's: Enter sends what is typed, Escape asks
+  whether to leave the dive, and leaving it leaves the room (the step says so: "Esc again
+  leaves the dive and the room"). Only the diver whose turn it is types; above their
+  typing stands "Your turn" in amber, and the others see it dim, without a caret. One who
+  only watches sees "Watching" there instead, dim; how many watch is counted after the
+  prompt's number ("2 of 10 ~ 1 watching"), or on a line of its own where it does not fit.
+- **In "longest"** every diver's hearts follow their name, rose when full and an outline
+  when spent, in view and at the edges. The player's own hearts, their bar (10 teal pips)
+  and a spent heart at its end stand at the bottom left while they are in (the bar goes at
+  5 hearts, the most a diver can have); labels at the
+  bottom edge move up out of their way. A diver who is out is named at the top edge with
+  spent hearts. A heart gained is heard as two high bell notes after the lamp's own; a
+  heart lost needs no sound of its own, since the broken glass of a dead lamp is it. The
+  depth at the bottom right is always the player's own (owner, 2026-11-18); another
+  player's diver carries their depth in dim letters over their name. Names are cream for the
+  diver whose turn it is (in the room, for every diver who is ready) and dim for the others.
+  A diver out of view is named at the top or bottom edge, on their line, with an arrow; a
+  name that would run into the depth reading at the bottom right goes above it.
+- **After a room's dive** each player's row ends with the depth they reached ("host ~
+  2,805 m"), and a dim note under the list says who went deepest.
+- **The step's name and code** take the focus from the pointer only (Tab and the arrows
+  never reach them). On them, Down or Tab goes to the first line, Up to the last, Left goes
+  back from the name, and Left and Right move between the name and the code.
+- **In multiplayer** the column of words starts at 184 instead of 170 on a wide screen, so
+  that it clears the third line. Going back from a room's step leaves the room; going back
+  from `‹ Multiplayer` closes the connection to the server.
 
 ## Sizes
 
@@ -104,6 +132,8 @@ field rule 4 (15 in focus), caret 16, pips 6 on and 4 off (15 on in focus), wait
 - Sound and light answer for the interface where they can: a slider's step is heard at its
   new level, and a pack that has been written rings like a lit lamp (a dull knock if it could
   not be written), whether or not the panel is still open.
+- A lantern lit in a room (a player is ready) is heard as a strike and a warm rising note;
+  one put out, as a soft puff falling. Not as a dive begins or ends, which clears them all.
 - Writing a pack counts the prompts as Claude writes them, and can be stopped. Escape leaves
   the step and the writing goes on.
 
