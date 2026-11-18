@@ -67,13 +67,6 @@ The same in every panel.
   Escape, Left from the leftmost line, the `‹` and a click outside the words all mean it.
   No panel has a "Back" button. The one exception is a message with nothing else to press,
   because the focus must rest somewhere.
-- **Leaving a dive** (owner, 2026-11-17). In a dive, Escape or the cog opens the step "Leave
-  the dive?" with three lines: "Keep diving" (in focus), "Settings", "Leave the dive". A
-  second Escape leaves the dive, as does pressing the last line; opened with Escape, the step
-  says so. This is the one step where Escape does not mean back, so everything else that
-  means back (Left, the `‹`, a click outside, the cog again) keeps the dive. A dive that is
-  left goes straight to the title: it is not logged and no end screen opens. A key held down
-  counts once, so holding Escape cannot leave a dive.
 - **Where the focus lands.** When a step opens, on its first thing. Coming back from a step,
   on the line that opened it. After something is added, on the new thing. After something is
   removed, on what took its place.
@@ -85,69 +78,6 @@ The same in every panel.
   cog, and every line, field and slider of a panel.
 - **No key hints are drawn.** The keys are the ones every game uses.
 - **Nothing waits for an animation.** A panel is there on the frame its key is pressed.
-- **A room's dive** is worked like single player's: Enter sends what is typed, Escape asks
-  whether to leave the dive, and leaving it leaves the room (the step says so: "Esc again
-  leaves the dive and the room"). Only the diver whose turn it is types; above their
-  typing stands "Your turn" in amber, and the others see it dim, without a caret. One who
-  only watches sees "Watching" there instead, dim; how many watch is counted after the
-  prompt's number ("2 of 10 ~ 1 watching"), or on a line of its own where it does not fit.
-- **In "longest"** every diver's hearts follow their name, rose when full and an outline
-  when spent, in view and at the edges. The player's own hearts, their bar (10 teal pips)
-  and a spent heart at its end stand at the bottom left while they are in (the bar goes at
-  5 hearts, the most a diver can have); labels at the
-  bottom edge move up out of their way. A diver who is out is named at the top edge with
-  spent hearts. A heart gained is heard as two high bell notes after the lamp's own; a
-  heart lost needs no sound of its own, since the broken glass of a dead lamp is it. The
-  depth at the bottom right is always the player's own (owner, 2026-11-18); another
-  player's diver carries their depth in dim letters over their name. Names are cream for the
-  diver whose turn it is (in the room, for every diver who is ready) and dim for the others.
-  A diver out of view is named at the top or bottom edge, on their line, with an arrow; a
-  name that would run into the depth reading at the bottom right goes above it.
-- **After a room's dive** each player's row ends with the depth they reached ("host ~
-  2,805 m"), and a dim note under the list says who went deepest.
-- **The step's name and code** take the focus from the pointer only (Tab and the arrows
-  never reach them). On them, Down or Tab goes to the first line, Up to the last, Left goes
-  back from the name, and Left and Right move between the name and the code.
-- **In multiplayer** the column of words starts at 184 instead of 170 on a wide screen, so
-  that it clears the third line. Going back from a room's step leaves the room; going back
-  from `‹ Multiplayer` closes the connection to the server.
-- **A key that failed.** When a request the live judge makes with a player's key fails (the
-  key is refused, is out of credit or over its rate limit, or no answer comes), the server
-  notes it on the key, and in a room on the host's. Back at the title after a dive, a rose
-  message in place of the line under the title says "Your key failed: see Account" ("keys"
-  if both did). The account panel names it on the key's line ("Anthropic key ~ refused")
-  and the key's step says what happened and what to do, in rose. It stays until a request with the key works,
-  or the key is replaced or forgotten.
-- **A room's link** opens "Join a room" with the code filled in and the focus on the name.
-- **The room's mode** is chosen in a step of its own, `‹ Mode`: a line for each mode with a
-  message under it on how it is played, and "chosen" against the right edge of the one in use.
-  Choosing one goes back to the set-up, with the focus on "Mode".
-- **The room's packs.** In `‹ Packs`, "Built-in packs" says how many are on ("all", "3 of 12",
-  "none") and opens `‹ Built-in packs`: "All", then a line for each pack, each on or off. Left
-  and Right on "Built-in packs" turn them all on or all off. A room may be set up with no pack
-  while the host chooses; "Start the dive" then says to choose some.
-- **In a room's chaos dive** no hearts are drawn, since each diver has one. A diver whose air
-  runs out sees the end of a single player's chaos dive (last words in the dark), then watches.
-
-## The end of a dive
-
-The screen that ends a dive is not a panel: once the diver is back at the surface the sea
-fades to black and the lamps of the dive rise into a row on a line, each as bright as its
-answer was rare.
-
-- The focus rests on a lamp or on the line back ("Back to the title", or "Back to the room").
-  It is shown as everywhere: the amber mark (before a lamp's number, or under a small lamp of a
-  room's row) and cream words.
-- The words about the lamp in focus stand under the lamps: pack and number, prompt, the answer
-  large in mint (or "Out of air" in rose), what it gained and its light.
-- Left and Right move along a row and stop at its ends. Up and Down move between rows,
-  keeping the column, and round through the line back. Moving the focus makes no sound.
-- Enter and Escape leave from anywhere. The pointer gives the focus to a lamp or the line back;
-  only a press on the line back leaves.
-- In a room every diver has a row, in place order, named at the left in their suit's colour,
-  the winner in amber.
-- A chaos dive's end stays on the failing tape, with bloodshot eyes that follow
-  the focus, and for a lost dive a cut line.
 
 ## Sizes
 
@@ -166,12 +96,7 @@ field rule 4 (15 in focus), caret 16, pips 6 on and 4 off (15 on in focus), wait
 ## The world
 
 - Sound and light answer for the interface where they can: a slider's step is heard at its
-  new level, and a pack that has been written rings like a lit lamp (a dull knock if it could
-  not be written), whether or not the panel is still open.
-- A lantern lit in a room (a player is ready) is heard as a strike and a warm rising note;
-  one put out, as a soft puff falling. Not as a dive begins or ends, which clears them all.
-- Writing a pack counts the prompts as Claude writes them, and can be stopped. Escape leaves
-  the step and the writing goes on.
+  new level.
 
 ## Wording
 
