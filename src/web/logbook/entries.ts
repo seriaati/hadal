@@ -1,6 +1,6 @@
 import { METERS_PER_POINT } from "../../shared/types";
 import { formatMeters, zoneAt } from "../depth";
-import type { Game } from "../state";
+import { lostDive, type Game } from "../state";
 import { SUIT_WASH, isRoom, type Log, type RoomLog } from "./log";
 import {
   DISPLAY, GLAZE, GRAPHITE, INK, RED, RUST, TYPED,
@@ -67,6 +67,36 @@ function stampZone(dark: CanvasRenderingContext2D, x: number, y: number, zone: s
   dark.drawImage(stamp.canvas, x - size / 2, y - size / 2, size, size);
 }
 
+/**
+ * The stamp of a chaos dive, its middle at (x, y): a box with a double rule, and under the word what became of the
+ * diver.
+ */
+function stampChaos(dark: CanvasRenderingContext2D, x: number, y: number, lost: boolean) {
+  const [width, height] = [176, 120];
+  const stamp = newCanvas(undefined, width, height);
+  stamp.save();
+  stamp.translate(width / 2, height / 2);
+  stamp.rotate((7 * Math.PI) / 180);
+  stamp.strokeStyle = stamp.fillStyle = STAMP_RED;
+  stamp.lineWidth = 3;
+  stamp.strokeRect(-70, -30, 140, 60);
+  stamp.lineWidth = 1.2;
+  stamp.strokeRect(-64, -24, 128, 48);
+  stamp.textAlign = "center";
+  stamp.font = `28px "${TYPED}", monospace`;
+  stamp.letterSpacing = "3px";
+  stamp.fillText("CHAOS", 0, 4);
+  stamp.font = `10px "${TYPED}", monospace`;
+  stamp.letterSpacing = "1px";
+  stamp.fillText(lost ? "SIGNAL LOST" : "8 SECONDS OF AIR", 0, 18);
+  stamp.restore();
+  speckle(stamp, "destination-out", 0.9, 2.5, width, height);
+  dark.drawImage(stamp.canvas, x - width / 2, y - height / 2, width, height);
+}
+
+/** The prompts that were asked: all of them, or in a chaos dive that was lost, those up to the one it was lost at. */
+const asked = (game: Game) => game.prompts.slice(0, game.results.length);
+
 /** The number of a prompt, in a lamp that is lit if the prompt was answered. */
 function lampMark({ paint, dark }: Sheet, x: number, y: number, number: number, lit: boolean) {
   if (lit) {
@@ -110,10 +140,11 @@ function* wideEntries(game: Game): Generator<void, Sheet> {
   ink(dark, [[40, 172], [150, 170], [300, 173]], { w: 1.8 });
   ink(dark, [[50, 178], [160, 176], [288, 178]], { w: 1.1 });
   stampZone(dark, 478, 112, zoneAt(game.depth).replace(" zone", ""));
+  if (game.chaos) stampChaos(dark, 372, 168, lostDive(game));
   yield;
 
   // ---- one entry for every prompt: what came down the wire, and what was answered
-  game.prompts.forEach((prompt, i) => {
+  asked(game).forEach((prompt, i) => {
     const result = game.results[i]!;
     const top = 194 + i * 48;
     lampMark(sheet, 54, top + 22, i + 1, result.correct);
@@ -139,14 +170,16 @@ function* narrowEntries(game: Game): Generator<void, Sheet> {
   const [left, right, text] = [22, NARROW_W - 22, 56];
   // Every prompt and answer is written over as many lines as it takes, so the lines are counted before the paper is cut.
   const pen = newCanvas(1, 1, 1);
-  const rows = game.prompts.map((prompt, i) => {
+  const rows = asked(game).map((prompt, i) => {
     const result = game.results[i]!;
     const prompts = wrap(pen, prompt.text, right - text, NARROW_PROMPT);
     const hand = shrunk(pen, result.answer, 20, NARROW_ANSWER);
     const answers = result.correct ? wrap(pen, result.answer, right - text - 100, hand) : ["out of air"];
     return { prompt, result, prompts, answers, hand, height: 91 + (prompts.length - 1) * 18 + (answers.length - 1) * 30 };
   });
-  const foot = 290 + rows.reduce((sum, row) => sum + row.height, 0);
+  // There is no room for the stamp of a chaos dive beside the zone's, so it goes under the last entry.
+  const stamped = game.chaos ? 96 : 0;
+  const foot = 290 + rows.reduce((sum, row) => sum + row.height, 0) + stamped;
   const sheet = yield* createSheet(NARROW_W, foot + 64);
   const { paint, dark } = sheet;
   yield;
@@ -181,6 +214,7 @@ function* narrowEntries(game: Game): Generator<void, Sheet> {
     pencil(dark, [[left, top + height - 16], [right, top + height - 17]], { n: 1, opacity: 0.3, w: 0.7 });
     top += height;
   });
+  if (game.chaos) stampChaos(dark, right - 90, top + 40, lostDive(game));
   yield;
 
   turnThePage(dark, 30, foot, "tap anywhere");
