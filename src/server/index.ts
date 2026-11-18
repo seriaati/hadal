@@ -4,11 +4,12 @@ import { MAX_PACK_BYTES, PROVIDERS, type Config, type Provider } from "../shared
 import { SESSION_DAYS, accountIdOf, accountOf, signIn, signOut, signUp } from "./accounts";
 import { listPacks, loadPack, removePack, savePack } from "./custom";
 import { migrate } from "./db";
-import { buildIndex, judge, nearestAnswer, pickPrompts, type PromptIndex } from "./game";
+import { OWN, buildIndex, judge, nearestAnswer, pickPrompts, type PromptIndex } from "./game";
 import { writePack } from "./generate";
 import { removeKey, saveKey } from "./keys";
 import { judgeLive } from "./live";
 import { loadPacks } from "./packs";
+import { leave, receive, usePrompts, type Member } from "./rooms";
 
 const PROMPTS_PER_GAME = 10;
 /**
@@ -19,9 +20,8 @@ const DEV_MODE = process.env.HADAL_DEV_MODE === "1";
 const PRODUCTION = process.env.NODE_ENV === "production";
 /** The cookie that holds a signed-in player's session token. */
 const SESSION = "session";
-/** Starts the prompt ids of a player's own pack. No built-in pack's id can hold a colon. */
-const OWN = "own:";
 const prompts = buildIndex(await loadPacks());
+usePrompts(prompts);
 await migrate();
 
 /** Sign up or sign in. The token goes into a cookie that scripts in the page cannot read. */
@@ -149,6 +149,11 @@ const server = Bun.serve({
         return new Response(lines, { headers: { "content-type": "application/x-ndjson" } });
       },
     },
+    "/api/room": async (req, server) => {
+      const accountId = await accountIdOf(req.cookies.get(SESSION));
+      if (server.upgrade(req, { data: { accountId, send() {} } })) return;
+      return new Response("Expected a WebSocket", { status: 400 });
+    },
     "/api/dev/answer": {
       GET: async (req) => {
         if (!DEV_MODE) return new Response("Not found", { status: 404 });
@@ -158,6 +163,16 @@ const server = Bun.serve({
         return answer ? Response.json({ answer }) : new Response("Unknown prompt", { status: 404 });
       },
     },
+  },
+  websocket: {
+    data: {} as Member,
+    // A message about a room is a few lines of JSON.
+    maxPayloadLength: 4096,
+    open(ws) {
+      ws.data.send = (message) => ws.send(JSON.stringify(message));
+    },
+    message: (ws, text) => receive(ws.data, String(text)),
+    close: (ws) => leave(ws.data),
   },
 });
 

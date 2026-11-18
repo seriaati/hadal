@@ -2,6 +2,8 @@ import type { Answer, GamePrompt, Pack, Verdict } from "../shared/types";
 
 export type PromptEntry = { prompt: GamePrompt; answers: Map<string, Answer> };
 export type PromptIndex = Map<string, PromptEntry>;
+/** Starts the prompt ids of a player's own pack. No built-in pack's id can hold a colon. */
+export const OWN = "own:";
 
 /**
  * Reduce an answer to a comparison key: no case, accents, punctuation, spaces or leading "the".
@@ -37,13 +39,18 @@ export function buildIndex(packs: Pack[], prefix = ""): PromptIndex {
   return index;
 }
 
-export function pickPrompts(index: PromptIndex, count: number): GamePrompt[] {
-  const prompts = [...index.values()].map((entry) => entry.prompt);
-  for (let i = prompts.length - 1; i > 0; i--) {
+/** The same things in a random order. */
+export function shuffle<T>(things: T[]): T[] {
+  const shuffled = [...things];
+  for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [prompts[i], prompts[j]] = [prompts[j]!, prompts[i]!];
+    [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
   }
-  return prompts.slice(0, count);
+  return shuffled;
+}
+
+export function pickPrompts(index: PromptIndex, count: number): GamePrompt[] {
+  return shuffle([...index.values()].map((entry) => entry.prompt)).slice(0, count);
 }
 
 /** The pack's spelling of the answer whose rarity is nearest to `rarity`, or null when the prompt id is unknown. */
