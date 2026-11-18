@@ -23,8 +23,8 @@ Every panel is built from these, and each has one look.
 
 | Part | What it is | Look |
 |---|---|---|
-| Step | One screen of a panel | Its name at the top in dim letters, with a `‹` before it. Under the pointer the `‹` and the name light up like a line in focus, since a press there goes back. A room's step has its code after the name, in pale letters, since it is read out to others; a press on the code copies it, and it lights up the same way |
-| Line | Anything pressed: a row of a list, a button, a link | Pale words. A lesser line beside another ("Remove") is dim |
+| Step | One screen of a panel | Its name at the top in dim letters, with a `‹` before it. Under the pointer the `‹` and the name light up like a line in focus, since a press there goes back. A room's step has its code after the name, in pale letters, since it is read out to others; a press on the code copies the room's link, and it lights up the same way |
+| Line | Anything pressed: a row of a list, a button, a link | Pale words. A lesser line beside another ("Download", "Remove") is dim; two of them stand side by side against the right edge |
 | Field | A line of typing | Its label in dim letters, the typing under it, a rule under that |
 | Slider | A level from 0 to 1 | Its label, and 20 pips at the right of the line, like the air gauge. It may have fewer steps (the air of a room: 12, with "30 s" after the pips), or be a choice of colours, one pip of each (a suit) |
 | Setting | A line that stands for a choice | Its label, and the choice against the right edge ("Deepest", "built-in + 2"), with a pip before it if it is on or off. Left and Right change it, like a slider; Enter flips an on or off one |
@@ -112,6 +112,12 @@ The same in every panel.
 - **In multiplayer** the column of words starts at 184 instead of 170 on a wide screen, so
   that it clears the third line. Going back from a room's step leaves the room; going back
   from `‹ Multiplayer` closes the connection to the server.
+- **A room's link** opens "Join a room" with the code filled in and the focus on the name.
+- **The room's mode** is chosen in a step of its own, `‹ Mode`: a line for each mode with a
+  message under it on how it is played, and "chosen" against the right edge of the one in use.
+  Choosing one goes back to the set-up, with the focus on "Mode".
+- **In a room's chaos dive** no hearts are drawn, since each diver has one. A diver whose air
+  runs out sees the end of a single player's chaos dive (last words in the dark), then watches.
 
 ## The end of a dive
 
