@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, expect, test } from "bun:test";
 import { accountIdOf, accountOf, signUp } from "./accounts";
 import { migrate, sql } from "./db";
-import { loadKey, removeKey, saveKey } from "./keys";
+import { loadKey, noteUse, removeKey, saveKey } from "./keys";
 
 // These tests need the database (`docker compose up -d db`). Their accounts, and so their keys, are removed afterwards.
 await migrate();
@@ -83,4 +83,16 @@ test("a key is kept for each provider, apart from the other", async () => {
   expect(await loadKey(id, "jev")).toBeNull();
   await removeKey(id, "jev");
   expect((await accountOf(token))!.keys).toEqual({ anthropic: true, jev: false });
+});
+
+test("why a key last failed is shown to its owner until it works again or is replaced", async () => {
+  const { id, token } = await account();
+  await saveKey(id, "anthropic", KEY);
+  await noteUse(id, "anthropic", "refused");
+  expect((await accountOf(token))!.failed).toEqual({ anthropic: "refused", jev: null });
+  await noteUse(id, "anthropic", null);
+  expect((await accountOf(token))!.failed.anthropic).toBeNull();
+  await noteUse(id, "anthropic", "limited");
+  await saveKey(id, "anthropic", KEY);
+  expect((await accountOf(token))!.failed.anthropic).toBeNull();
 });

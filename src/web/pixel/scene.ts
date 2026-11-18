@@ -19,7 +19,8 @@ const PAD = 300;
 const ROWS = PAD + FLOOR_ROW + 300;
 
 /** The title screen's choices, one to a line. Enter acts on the chosen one, which carries the mark of the focus. */
-export type Menu = { items: string[]; choice: number };
+/** The title menu: its lines, the one in focus, and a `note` under them of something that went wrong. */
+export type Menu = { items: string[]; choice: number; note?: string };
 const MENU_ROW = 13;
 
 export const LAMP_LIT = [".rRo.", "rRRRo", ".aca.", ".ccc.", ".aca.", "rRRRo"];
@@ -797,6 +798,11 @@ export class Scene {
         frame.emit = 0;
         cover(x - 6, x, y + 2, y + 7);
       });
+      let y = this.menuTop + menu.items.length * MENU_ROW + 4;
+      for (const line of menu.note ? wrap(tiny, menu.note, room) : []) {
+        say(tiny, line, x, y, 18);
+        y += 8;
+      }
       return;
     }
 

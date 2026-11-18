@@ -66,10 +66,13 @@ export async function accountOf(token: string | null): Promise<Account | null> {
   const [row] = await sql`
     select username,
       exists (select from keys where keys.account_id = accounts.id and provider = 'anthropic') as anthropic,
-      exists (select from keys where keys.account_id = accounts.id and provider = 'jev') as jev
+      exists (select from keys where keys.account_id = accounts.id and provider = 'jev') as jev,
+      (select failed from keys where keys.account_id = accounts.id and provider = 'anthropic') as anthropic_failed,
+      (select failed from keys where keys.account_id = accounts.id and provider = 'jev') as jev_failed
     from sessions join accounts on accounts.id = account_id
     where token_hash = ${hashToken(token)} and expires_at > now()`;
-  return row ? { username: row.username, keys: { anthropic: row.anthropic, jev: row.jev } } : null;
+  if (!row) return null;
+  return { username: row.username, keys: { anthropic: row.anthropic, jev: row.jev }, failed: { anthropic: row.anthropic_failed, jev: row.jev_failed } };
 }
 
 /** The id of the signed-in account, for the tables that hang off it. It never goes to the browser. */

@@ -26,8 +26,16 @@ export const METERS_PER_POINT = 11;
 /** Whose API keys a player may keep: Anthropic's (Claude writes packs and judges answers) and TypeSafe's (Jev judges answers). */
 export const PROVIDERS = ["anthropic", "jev"] as const;
 export type Provider = (typeof PROVIDERS)[number];
-/** A signed-in player, as the browser sees them. `keys` is which API keys of theirs are kept: the keys themselves stay on the server. */
-export type Account = { username: string; keys: Record<Provider, boolean> };
+/**
+ * Why the last request the live judge made with a key failed: the provider refused the key,
+ * it is out of credit or over its rate limit, or no answer came (a timeout, an outage).
+ */
+export type KeyFailure = "refused" | "limited" | "unanswered";
+/**
+ * A signed-in player, as the browser sees them. `keys` is which API keys of theirs are kept: the keys themselves stay on the server.
+ * `failed` is why the last use of each kept key failed, or null if it worked.
+ */
+export type Account = { username: string; keys: Record<Provider, boolean>; failed: Record<Provider, KeyFailure | null> };
 export const MAX_KEY_LENGTH = 300;
 /** What a player may ask a pack to be written about. */
 export const MAX_TOPIC_LENGTH = 60;

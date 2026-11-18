@@ -177,3 +177,16 @@ test("where Jev is not sure, Claude rules; without Claude the answer is wrong fo
     asked = [];
   }
 });
+
+test("a judge's failure is noted on the key that was used, and a later ruling clears it", async () => {
+  const id = await account("anthropic", "jev");
+  const failed = async () => Object.fromEntries((await sql`select provider, failed from keys where account_id = ${id}`).map((row: { provider: string; failed: string | null }) => [row.provider, row.failed]));
+  jev = { status: 401 };
+  reply = { status: 429 };
+  expect(await judgeLive(entry, "Ruvuma", id)).toEqual(WRONG);
+  expect(await failed()).toEqual({ jev: "refused", anthropic: "limited" });
+  jev = { status: 529 };
+  reply = { ruling: { correct: true, answer: "Ruvuma", rarity: 80 } };
+  expect(await judgeLive(entry, "Ruvuma", id)).toEqual({ answer: "Ruvuma", rarity: 80 });
+  expect(await failed()).toEqual({ jev: "unanswered", anthropic: null });
+});

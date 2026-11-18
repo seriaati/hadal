@@ -10,7 +10,7 @@ import { Display, Frame, type Light } from "./pixel/frame";
 import { Glitch, strength } from "./pixel/glitch";
 import { MultiplayerPanel } from "./pixel/multiplayer";
 import { PacksPanel } from "./pixel/packs";
-import { Scene } from "./pixel/scene";
+import { Scene, type Menu } from "./pixel/scene";
 import { drawCog, overCog, settingsStep } from "./pixel/settings";
 import { Ui, type Part, type Step } from "./pixel/ui";
 
@@ -66,7 +66,7 @@ export function Game() {
       ],
     });
     /** The title menu: its lines, and the one Enter acts on. */
-    const menu = { items: ["Single player", "Multiplayer", "Packs", "Sign in"], choice: 0 };
+    const menu: Menu = { items: ["Single player", "Multiplayer", "Packs", "Sign in"], choice: 0 };
     const choose = (line: number) => {
       if (line === 0) ui.go(single);
       else if (line === 1) multiplayer.show();
@@ -201,6 +201,7 @@ export function Game() {
       }
       display.fit(frame);
       menu.items[3] = account.account ? "Account" : "Sign in";
+      menu.note = account.trouble();
       multiplayer.update();
       shown = multiplayer.game(now / 1000) ?? game;
       // The diver whose turn it is sees their own typing at once, not as it comes back from the server.
@@ -221,6 +222,8 @@ export function Game() {
       if (closing) lights = closing.draw(frame, lights, now / 1000 - doneAt, now / 1000);
       // A chaos dive is seen on a failing tape, its end too; now and then a glitch turns something in the dark into something worse.
       if (shown.phase === "drop" && phase !== "drop") glitch.cut(frame.height, scene.focus);
+      // A dive may have used the player's keys: back at the title, the menu tells of any that failed.
+      if (shown.phase === "title" && phase !== "title") account.refresh();
       phase = shown.phase;
       const focus = closing ? closing.point : scene.focus;
       const faults = glitch.count;

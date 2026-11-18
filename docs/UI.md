@@ -111,6 +111,13 @@ The same in every panel.
 - **In multiplayer** the column of words starts at 184 instead of 170 on a wide screen, so
   that it clears the third line. Going back from a room's step leaves the room; going back
   from `‹ Multiplayer` closes the connection to the server.
+- **A key that failed.** When a request the live judge makes with a player's key fails (the
+  key is refused, is out of credit or over its rate limit, or no answer comes), the server
+  notes it on the key, and in a room on the host's. Back at the title after a dive, a rose
+  message under the menu says "Your key failed: see Account" ("keys" if both did). The
+  account panel names it on the key's line ("Anthropic key ~ refused") and the key's step
+  says what happened and what to do, in rose. It stays until a request with the key works,
+  or the key is replaced or forgotten.
 - **A room's link** opens "Join a room" with the code filled in and the focus on the name.
 - **The room's mode** is chosen in a step of its own, `‹ Mode`: a line for each mode with a
   message under it on how it is played, and "chosen" against the right edge of the one in use.

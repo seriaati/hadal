@@ -1,8 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { MAX_ANSWER_LENGTH, type Answer, type Provider, type Verdict } from "../shared/types";
+import { MAX_ANSWER_LENGTH, type Answer, type KeyFailure, type Provider, type Verdict } from "../shared/types";
 import { sql } from "./db";
 import { normalize, type PromptEntry } from "./game";
-import { loadKey } from "./keys";
+import { loadKey, noteUse } from "./keys";
 
 const MODEL = "claude-haiku-5-5";
 // The player waits for the judges, so neither is given long. Jev usually answers in a fifth of a second.
@@ -77,67 +77,80 @@ async function jev(apiKey: string, state: object, questions: object): Promise<Je
     body: JSON.stringify({ model: JEV_MODEL, state, questions }),
     signal: AbortSignal.timeout(JEV_TIMEOUT_MS),
   });
-  if (!res.ok) throw new Error(`${res.status}`);
+  if (!res.ok) throw Object.assign(new Error(`Jev answered ${res.status}`), { status: res.status });
   return ((await res.json()) as { answers: JevAnswers }).answers;
 }
 
 /**
- * Have Jev rule on an answer, paid for with the player's own key. Null when it is not sure, or
- * gave no ruling. Jev writes nothing, so a correct answer is spelt as the player typed it.
+ * Have Jev rule on an answer, paid for with the player's own key. Null when it is not sure, and
+ * throws when a request fails. Jev writes nothing, so a correct answer is spelt as the player typed it.
  */
 async function askJev(apiKey: string, entry: PromptEntry, typed: string): Promise<Verdict | null> {
   const names = listed(entry).map((answer) => answer.text);
-  if (names.length >= MAX_CHOICES) return null;
   const prompt = entry.prompt.text;
-  try {
-    // Two requests: Jev rules better on an answer when it is not shown the listed ones, but it
-    // must see them to say whether the answer is one of them under another name.
-    const [alone, among] = await Promise.all([
-      jev(apiKey, { prompt, answer: typed }, { correct: CORRECT, rarity: RARITY }),
-      jev(
-        apiKey,
-        { prompt, "listed answers": names, answer: typed },
-        {
-          same: {
-            type: "choice",
-            instructions: "Which listed answer is the answer another name or spelling for?",
-            criteria: Object.fromEntries([...names, NONE].map((name) => [name, null])),
-          },
+  // Two requests: Jev rules better on an answer when it is not shown the listed ones, but it
+  // must see them to say whether the answer is one of them under another name.
+  const [alone, among] = await Promise.all([
+    jev(apiKey, { prompt, answer: typed }, { correct: CORRECT, rarity: RARITY }),
+    jev(
+      apiKey,
+      { prompt, "listed answers": names, answer: typed },
+      {
+        same: {
+          type: "choice",
+          instructions: "Which listed answer is the answer another name or spelling for?",
+          criteria: Object.fromEntries([...names, NONE].map((name) => [name, null])),
         },
-      ),
-    ]);
-    const { choice, confidence } = among.same!;
-    if (confidence < SURE_WHICH) return null;
-    if (choice !== NONE) {
-      const known = entry.answers.get(normalize(choice));
-      return known ? { answer: known.text, rarity: known.rarity } : null;
-    }
-    const right = alone.correct!.noul;
-    if (right >= SURE_RIGHT) return { answer: typed, rarity: Math.max(1, Math.min(100, Math.round(1 + (alone.rarity!.score / 4) * 99))) };
-    return right <= SURE_WRONG ? WRONG : null;
-  } catch (error) {
-    console.error(`Jev gave no ruling: ${error instanceof Error ? error.message : error}`);
-    return null;
+      },
+    ),
+  ]);
+  const { choice, confidence } = among.same!;
+  if (confidence < SURE_WHICH) return null;
+  if (choice !== NONE) {
+    const known = entry.answers.get(normalize(choice));
+    return known ? { answer: known.text, rarity: known.rarity } : null;
   }
+  const right = alone.correct!.noul;
+  if (right >= SURE_RIGHT) return { answer: typed, rarity: Math.max(1, Math.min(100, Math.round(1 + (alone.rarity!.score / 4) * 99))) };
+  return right <= SURE_WRONG ? WRONG : null;
 }
 
-/** Have Claude rule on an answer, paid for with the player's own key. Null when no ruling came back. */
+/** Have Claude rule on an answer, paid for with the player's own key. Null when it gave no ruling, and throws when the request fails. */
 async function askClaude(apiKey: string, entry: PromptEntry, typed: string): Promise<Verdict | null> {
+  const message = await new Anthropic({ apiKey, timeout: TIMEOUT_MS, maxRetries: 0 }).messages.create({
+    model: MODEL,
+    // Room for the model to think before its short answer.
+    max_tokens: 2000,
+    output_config: { effort: "low", format: { type: "json_schema", schema: SCHEMA } },
+    system: SYSTEM,
+    messages: [{ role: "user", content: question(entry, typed) }],
+  });
+  const written = message.content.find((block) => block.type === "text");
+  if (message.stop_reason !== "end_turn" || !written) return null;
+  return settle(entry, typed, JSON.parse(written.text) as Ruling);
+}
+
+/** What the owner of a key is told about a request with it that failed. */
+export function failure(error: unknown): KeyFailure {
+  const status = (error as { status?: number }).status;
+  if (status === 401 || status === 403) return "refused";
+  // Anthropic answers an account that is out of credit with a 400 that says so.
+  const broke = error instanceof Anthropic.BadRequestError && /credit balance/i.test(error.message);
+  return status === 402 || status === 429 || broke ? "limited" : "unanswered";
+}
+
+/** Ask a judge with the player's key for it, if they keep one, and note on the key whether the request went through. */
+async function ask(accountId: string | null, provider: Provider, judge: (apiKey: string) => Promise<Verdict | null>): Promise<Verdict | null> {
+  const apiKey = accountId && (await loadKey(accountId, provider));
+  if (!accountId || !apiKey) return null;
   try {
-    const message = await new Anthropic({ apiKey, timeout: TIMEOUT_MS, maxRetries: 0 }).messages.create({
-      model: MODEL,
-      // Room for the model to think before its short answer.
-      max_tokens: 2000,
-      output_config: { effort: "low", format: { type: "json_schema", schema: SCHEMA } },
-      system: SYSTEM,
-      messages: [{ role: "user", content: question(entry, typed) }],
-    });
-    const written = message.content.find((block) => block.type === "text");
-    if (message.stop_reason !== "end_turn" || !written) return null;
-    return settle(entry, typed, JSON.parse(written.text) as Ruling);
+    const verdict = await judge(apiKey);
+    await noteUse(accountId, provider, null);
+    return verdict;
   } catch (error) {
     // Only the kind of failure is logged: nothing of a request made with a player's key goes to a log.
-    console.error(`Claude gave no ruling: ${error instanceof Anthropic.APIError ? (error.status ?? error.name) : (error as Error).name}`);
+    console.error(`${provider} gave no ruling: ${(error as { status?: number }).status ?? (error as Error).name}`);
+    await noteUse(accountId, provider, failure(error));
     return null;
   }
 }
@@ -156,13 +169,8 @@ export async function judgeLive(entry: PromptEntry, input: string, accountId: st
   const prompt = new Bun.CryptoHasher("sha256").update(JSON.stringify([entry.prompt.text, listed(entry)])).digest("hex");
   const [kept] = await sql`select spelling, rarity from verdicts where prompt = ${prompt} and answer = ${answer}`;
   if (kept) return { answer: kept.spelling, rarity: kept.rarity };
-  const key = async (provider: Provider) => (accountId ? loadKey(accountId, provider) : null);
-  const jevKey = await key("jev");
-  let verdict = jevKey ? await askJev(jevKey, entry, typed) : null;
-  if (!verdict) {
-    const claudeKey = await key("anthropic");
-    verdict = claudeKey ? await askClaude(claudeKey, entry, typed) : null;
-  }
+  let verdict = listed(entry).length < MAX_CHOICES ? await ask(accountId, "jev", (apiKey) => askJev(apiKey, entry, typed)) : null;
+  verdict ??= await ask(accountId, "anthropic", (apiKey) => askClaude(apiKey, entry, typed));
   if (!verdict) return WRONG;
   await sql`
     insert into verdicts (prompt, answer, asked, spelling, rarity)

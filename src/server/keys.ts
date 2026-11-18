@@ -1,4 +1,4 @@
-import { MAX_KEY_LENGTH, type Provider } from "../shared/types";
+import { MAX_KEY_LENGTH, type KeyFailure, type Provider } from "../shared/types";
 import { sql } from "./db";
 
 const MIN_SECRET_LENGTH = 32;
@@ -30,7 +30,7 @@ export async function saveKey(accountId: string, provider: Provider, key: string
   const stored = Buffer.concat([iv, new Uint8Array(sealed)]).toString("base64");
   await sql`
     insert into keys (account_id, provider, sealed) values (${accountId}, ${provider}, ${stored})
-    on conflict (account_id, provider) do update set sealed = excluded.sealed`;
+    on conflict (account_id, provider) do update set sealed = excluded.sealed, failed = null`;
   return null;
 }
 
@@ -49,4 +49,9 @@ export async function loadKey(accountId: string, provider: Provider): Promise<st
 
 export async function removeKey(accountId: string, provider: Provider) {
   await sql`delete from keys where account_id = ${accountId} and provider = ${provider}`;
+}
+
+/** Note how a request made with a player's key went: why it failed, or null if it worked. */
+export async function noteUse(accountId: string, provider: Provider, failed: KeyFailure | null) {
+  await sql`update keys set failed = ${failed} where account_id = ${accountId} and provider = ${provider} and failed is distinct from ${failed}`;
 }

@@ -1,10 +1,17 @@
-import { MAX_KEY_LENGTH, PASSWORD_MAX, PROVIDERS, USERNAME_MAX, type Account, type Provider } from "../../shared/types";
+import { MAX_KEY_LENGTH, PASSWORD_MAX, PROVIDERS, USERNAME_MAX, type Account, type KeyFailure, type Provider } from "../../shared/types";
 import type { Part, Step, Ui } from "./ui";
 
 /** What each key is called, and what keeping one is good for. */
 const KEYS: Record<Provider, { name: string; use: string }> = {
   anthropic: { name: "Anthropic key", use: "An Anthropic key lets Claude write packs, and judge answers the packs miss" },
   jev: { name: "Jev key", use: "A Jev key lets Jev judge answers the packs miss" },
+};
+
+/** How a key's last failure is told: after its line, in its step, and at the title. */
+const FAILURES: Record<KeyFailure, { short: string; what: string; fix: string }> = {
+  refused: { short: "refused", what: "was refused", fix: "check it, or type a new one" },
+  limited: { short: "at its limit", what: "hit its limit", fix: "check its credit and rate limit" },
+  unanswered: { short: "no answer", what: "got no answer", fix: "the service may have been down" },
 };
 
 /**
@@ -33,6 +40,24 @@ export class AccountPanel {
       });
   }
 
+  /** Ask the server again who is signed in and how their keys last went, as after a dive, which may have used them. */
+  refresh() {
+    if (this.busy) return;
+    void fetch("/api/account")
+      .then((res) => res.json() as Promise<Account | null>)
+      .then((account) => {
+        const other = account?.username !== this.account?.username;
+        this.account = account;
+        if (other) this.changed();
+      });
+  }
+
+  /** What the title menu says when keys failed the last time they were used. Short, to fit under the menu on a low screen. */
+  trouble(): string | undefined {
+    const failed = PROVIDERS.filter((provider) => this.account?.failed[provider]).length;
+    if (failed) return `Your ${failed > 1 ? "keys" : "key"} failed: see Account`;
+  }
+
   /** Open the panel: on the account if signed in (or on one of its keys), otherwise to sign in or to create an account. */
   show(key?: Provider) {
     this.creating = false;
@@ -42,7 +67,9 @@ export class AccountPanel {
 
   private keyStep(provider: Provider): Step {
     const kept = this.account?.keys[provider];
+    const failed = this.account?.failed[provider];
     const field = `${provider}-key`;
+    const trouble = failed && `It ${FAILURES[failed].what} when it last judged an answer: ${FAILURES[failed].fix}`;
     const about = kept ? "A key is kept. Type a new one to replace it" : KEYS[provider].use;
     return {
       title: KEYS[provider].name,
@@ -50,7 +77,7 @@ export class AccountPanel {
       rows: [
         // Not a password field, or the browser would offer the account's password for it. It is drawn as dots anyway.
         { kind: "field", id: field, label: "API key", max: MAX_KEY_LENGTH, dots: true, autocomplete: "off" },
-        { kind: "note", text: this.error || about, bad: this.error !== "" },
+        { kind: "note", text: this.error || trouble || about, bad: this.error !== "" || !!trouble },
         [
           { kind: "press", id: "keep", label: "Keep key", press: () => void this.setKey(provider, { method: "PUT", body: JSON.stringify({ key: this.ui.value(field) }) }) },
           ...(kept ? [{ kind: "press", id: "forget", label: "Forget key", press: () => void this.setKey(provider, { method: "DELETE" }) } as Part] : []),
@@ -72,7 +99,7 @@ export class AccountPanel {
           ...PROVIDERS.map((provider): Part => ({
             kind: "press",
             id: provider,
-            label: `${KEYS[provider].name}${account.keys[provider] ? " ~ kept" : ""}`,
+            label: `${KEYS[provider].name}${account.failed[provider] ? ` ~ ${FAILURES[account.failed[provider]].short}` : account.keys[provider] ? " ~ kept" : ""}`,
             press: () => {
               this.error = "";
               this.ui.go(this.keys[provider]);
