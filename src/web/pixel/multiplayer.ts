@@ -27,7 +27,7 @@ const REFUSALS: Record<Refusal, [Where, string]> = {
 const MODE_WORDS: Record<Mode, [string, string]> = {
   deepest: ["Deepest", "10 prompts answered in turns, and the diver who goes deepest wins"],
   longest: ["Longest", "two hearts each: an empty tank costs one, rare answers win more, and the last diver in wins"],
-  chaos: ["Chaos", "little air, on a failing tape: one empty tank puts a diver out, and the last diver in wins"],
+  chaos: ["Chaos", "little air: one empty tank puts a diver out, and the last diver in wins"],
 };
 
 /** The air is set in steps of this many seconds. */

@@ -789,7 +789,7 @@ export class Scene {
       menu.items.forEach((item, i) => {
         const y = this.menuTop + i * MENU_ROW;
         const chosen = i === menu.choice;
-        // A long username loses its end on a narrow screen.
+        // A long line loses its end on a narrow screen.
         while (measure(tiny, item) > room) item = item.slice(0, -1);
         if (chosen) drawMark(frame, x - 6, y + 2);
         frame.emit = chosen ? 70 : 0;

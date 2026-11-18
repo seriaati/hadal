@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { MAX_ANSWER_LENGTH, type Config } from "../shared/types";
 import { DevMenu, type DevTools } from "./DevMenu";
 import { Sound } from "./sound";
-import { createGame, leave, lostDive, pressEnter, start, tick, type Phase } from "./state";
+import { AIR_SECONDS, CHAOS_AIR_SECONDS, createGame, leave, lostDive, pressEnter, start, tick, type Phase } from "./state";
 import { AccountPanel } from "./pixel/account";
 import { drawable } from "./pixel/other";
 import { Ending, FADE_SECONDS, type Log } from "./pixel/ending";
@@ -51,13 +51,26 @@ export function Game() {
     const closeEnding = () => (multiplayer.ending ? multiplayer.closeEnding() : pressEnter(game));
     /** The dive on screen: the player's own, or the room's while the room dives. */
     let shown = game;
+    const dive = (chaos: boolean) => {
+      ui.close();
+      void start(game, undefined, chaos);
+    };
+    /** The single player's modes, each with how it is played. Choosing one begins the dive. */
+    const single = (): Step => ({
+      title: "Single player",
+      rows: [
+        { kind: "press", id: "mode:descend", label: "Descend", press: () => dive(false) },
+        { kind: "note", text: `10 prompts with ${AIR_SECONDS} s of air each: rarer answers go deeper, and an empty tank only loses that prompt` },
+        { kind: "press", id: "mode:chaos", label: "Chaos", press: () => dive(true) },
+        { kind: "note", text: `10 prompts with ${CHAOS_AIR_SECONDS} s of air each: rarer answers go deeper, and the first empty tank ends the dive` },
+      ],
+    });
     /** The title menu: its lines, and the one Enter acts on. */
-    const menu = { items: ["Descend", "Chaos", "Packs", "Multiplayer", "Sign in"], choice: 0 };
+    const menu = { items: ["Single player", "Multiplayer", "Packs", "Sign in"], choice: 0 };
     const choose = (line: number) => {
-      if (line === 0) pressEnter(game);
-      else if (line === 1) void start(game, undefined, true);
+      if (line === 0) ui.go(single);
+      else if (line === 1) multiplayer.show();
       else if (line === 2) packs.show();
-      else if (line === 3) multiplayer.show();
       else account.show();
     };
     /** Whether the step about leaving the dive was opened with Escape: it then says what a second Escape does. */
@@ -187,7 +200,7 @@ export function Game() {
         doneAt = now / 1000;
       }
       display.fit(frame);
-      menu.items[4] = account.account?.username ?? "Sign in";
+      menu.items[3] = account.account ? "Account" : "Sign in";
       multiplayer.update();
       shown = multiplayer.game(now / 1000) ?? game;
       // The diver whose turn it is sees their own typing at once, not as it comes back from the server.
