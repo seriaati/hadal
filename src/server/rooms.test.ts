@@ -1,5 +1,5 @@
 import { afterAll, expect, test } from "bun:test";
-import { DEFAULT_SETTINGS, type ClientMessage, type RoomView, type ServerMessage } from "../shared/room";
+import { DEFAULT_SETTINGS as SHARED_DEFAULTS, type ClientMessage, type RoomView, type ServerMessage } from "../shared/room";
 import { accountIdOf, signUp } from "./accounts";
 import { savePack } from "./custom";
 import { migrate, sql } from "./db";
@@ -28,6 +28,11 @@ const room = async (hostAccount: string | null = null, ...guests: string[]) => {
   for (const [i, guest] of others.entries()) await say(guest, { type: "join", code: seen(host).code, nickname: guests[i]!, suit: 1 });
   return { host, others, code: seen(host).code };
 };
+
+const ocean = { id: "two", text: "Name an ocean", answers: [{ text: "Pacific", rarity: 10 }, { text: "Indian", rarity: 60 }] };
+const lake = { id: "one", text: "Name a lake", answers: [{ text: "Baikal", rarity: 10 }, { text: "Titicaca", rarity: 60 }] };
+usePrompts(buildIndex([{ id: "seas", name: "Seas", prompts: [ocean] }, { id: "lakes", name: "Lakes", prompts: [lake] }]));
+const DEFAULT_SETTINGS = { ...SHARED_DEFAULTS, builtIn: ["seas", "lakes"] };
 
 // The tests of the host's packs and keys need the database (`docker compose up -d db`). Their accounts are removed afterwards.
 await migrate();
@@ -121,7 +126,7 @@ test("a new mode brings its own air unless the air is given too", async () => {
 
 test("settings that cannot be are refused and change nothing", async () => {
   const { host } = await room();
-  const bad = [{ air: 4 }, { air: 61 }, { air: 20.5 }, { air: "20" }, { mode: "widest" }, { builtIn: false }, { builtIn: "yes" }, { ownPacks: "rivers" }, { judging: 1 }];
+  const bad = [{ air: 4 }, { air: 61 }, { air: 20.5 }, { air: "20" }, { mode: "widest" }, { builtIn: false }, { builtIn: "yes" }, { builtIn: ["rivers"] }, { builtIn: [1] }, { builtIn: ["seas", "seas"] }, { ownPacks: "rivers" }, { judging: 1 }];
   for (const settings of bad) {
     await say(host, { type: "settings", settings: settings as never });
     expect(host.sent.at(-1)).toEqual({ type: "refused", reason: "bad-settings" });
@@ -143,15 +148,28 @@ test("the host plays packs of their own, and only those", async () => {
   const pack = { id: "rivers", name: "Rivers", prompts: [{ id: "africa", text: "Name a river in Africa", answers: [{ text: "Nile", rarity: 10 }, { text: "Okavango", rarity: 100 }] }] };
   expect(await savePack(id, JSON.stringify(pack))).toEqual([]);
   const { host } = await room(id);
-  await say(host, { type: "settings", settings: { builtIn: false, ownPacks: ["rivers"] } });
-  expect(seen(host).settings).toMatchObject({ builtIn: false, ownPacks: ["rivers"] });
+  await say(host, { type: "settings", settings: { builtIn: [], ownPacks: ["rivers"] } });
+  expect(seen(host).settings).toMatchObject({ builtIn: [], ownPacks: ["rivers"] });
   await say(host, { type: "settings", settings: { ownPacks: ["rivers", "lakes"] } });
   expect(host.sent.at(-1)).toEqual({ type: "refused", reason: "bad-settings" });
   await say(host, { type: "settings", settings: { ownPacks: ["rivers", "rivers"] } });
   expect(host.sent.at(-1)).toEqual({ type: "refused", reason: "bad-settings" });
-  // With no pack of the host's left, the built-in ones must be on.
-  await say(host, { type: "settings", settings: { ownPacks: [] } });
-  expect(host.sent.at(-1)).toEqual({ type: "refused", reason: "bad-settings" });
+});
+
+test("the host chooses which built-in packs to play, and may choose none until the dive starts", async () => {
+  const { host, others } = await room(null, "ben");
+  await say(host, { type: "settings", settings: { builtIn: ["lakes"] } });
+  expect(seen(host).settings.builtIn).toEqual(["lakes"]);
+  await say(host, { type: "settings", settings: { builtIn: [] } });
+  expect(seen(host).settings.builtIn).toEqual([]);
+  await say(others[0]!, { type: "ready", ready: true });
+  await say(host, { type: "start" });
+  expect(host.sent.at(-1)).toEqual({ type: "refused", reason: "no-packs" });
+  await say(host, { type: "settings", settings: { builtIn: ["lakes"] } });
+  await say(others[0]!, { type: "ready", ready: true });
+  await say(host, { type: "start" });
+  expect(seen(host).dive!.prompt.text).toBe("Name a lake");
+  leave(host);
 });
 
 test("judging can be turned on only by a host who keeps a key", async () => {

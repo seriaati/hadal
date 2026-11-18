@@ -21,6 +21,7 @@ const REFUSALS: Record<Refusal, [Where, string]> = {
   "not-host": ["settings", "only the host sets up the room"],
   "bad-settings": ["settings", "the room cannot be set up that way"],
   "not-ready": ["start", "everyone has to be ready first"],
+  "no-packs": ["start", "no pack is chosen: choose some in the set-up"],
   "no-prompts": ["start", "these packs have no prompt with an answer for everyone: choose others"],
 };
 /** [name, how it is played] */
@@ -39,12 +40,12 @@ const COPIED_FOR = 2000;
 /** "ben", "ben and cal", "ana, ben and cal". */
 const names = (list: string[]) => (list.length < 2 ? list.join("") : `${list.slice(0, -1).join(", ")} and ${list.at(-1)}`);
 
-/** Which packs a room plays: in a few words for the host's set-up, or in full for the others. */
-function packsOf({ builtIn, ownPacks: { length } }: RoomSettings, full: boolean): string {
-  if (!full) return builtIn ? (length ? `built-in + ${length}` : "built-in") : `${length} of yours`;
-  if (!length) return "built-in packs";
-  const own = `${length} of the host's ${length === 1 ? "pack" : "packs"}`;
-  return builtIn ? `built-in packs + ${own}` : own;
+/** Which packs a room plays, out of `all` built-in ones: in a few words for the host's set-up, or in full for the others. */
+function packsOf({ builtIn: { length: built }, ownPacks: { length: own } }: RoomSettings, all: number, full: boolean): string {
+  const some = built === all ? "" : `${built} `;
+  if (!full) return built ? (own ? `${some}built-in + ${own}` : `${some}built-in`) : own ? `${own} of yours` : "none";
+  const parts = [built ? `${some}built-in ${built === 1 ? "pack" : "packs"}` : "", own ? `${own} of the host's ${own === 1 ? "pack" : "packs"}` : ""];
+  return parts.filter(Boolean).join(" + ") || "no packs";
 }
 
 export class MultiplayerPanel {
@@ -63,6 +64,7 @@ export class MultiplayerPanel {
   /** The air the host has just set, until the room comes back with it. */
   private air: number | null = null;
   private packs: PackSummary[] = [];
+  private builtIn: PackSummary[] = [];
   private copiedAt = -Infinity;
   /** The code of the room whose link opened the game, until it is joined. */
   private linked = "";
@@ -91,6 +93,7 @@ export class MultiplayerPanel {
 
   show() {
     this.note = "";
+    if (!this.builtIn.length) void fetch("/api/builtin").then(async (res) => res.ok && (this.builtIn = (await res.json()) as PackSummary[]));
     this.ui.go(this.first);
   }
 
@@ -437,7 +440,7 @@ export class MultiplayerPanel {
           says: you.ready ? "Put the lantern out: not ready" : "Light the lantern: ready",
           press: () => this.client.send({ type: "ready", ready: !you.ready }),
         },
-        { kind: "note", text: `${mode} ~ ${air} s of air ~ ${packsOf(view.settings, true)}${judging ? " ~ live judging" : ""}` },
+        { kind: "note", text: `${mode} ~ ${air} s of air ~ ${packsOf(view.settings, this.builtIn.length, true)}${judging ? " ~ live judging" : ""}` },
       );
     }
     const copy = () => this.copy(view.code);
@@ -479,7 +482,7 @@ export class MultiplayerPanel {
           kind: "press",
           id: "packs",
           label: "Packs",
-          value: packsOf(settings, false),
+          value: packsOf(settings, this.builtIn.length, false),
           press: () => {
             if (this.account.account) void fetch("/api/packs").then(async (res) => res.ok && (this.packs = (await res.json()) as PackSummary[]));
             this.open(this.packsStep);
@@ -517,16 +520,23 @@ export class MultiplayerPanel {
   private packsStep = (): Step => {
     const settings = this.client.view?.settings;
     if (!settings) return { title: "Packs", rows: [] };
-    // A room plays one pack at least, so the last one on stays on.
-    const choose = (builtIn: boolean, ownPacks: string[]) => {
-      if (builtIn || ownPacks.length) this.change({ builtIn, ownPacks });
-      else this.refused = ["settings", "a room plays one pack at least"];
-    };
     const own = settings.ownPacks;
+    const built = settings.builtIn.length;
+    const all = this.builtIn.length;
+    // Left and Right turn them all on, or all off.
+    const flip = () => this.change({ builtIn: built === all ? [] : this.builtIn.map((pack) => pack.id) });
     return {
       title: "Packs",
       rows: [
-        { kind: "press", id: "builtin", label: "Built-in packs", value: settings.builtIn ? "on" : "off", on: settings.builtIn, press: () => choose(!settings.builtIn, own) },
+        {
+          kind: "press",
+          id: "builtin",
+          label: "Built-in packs",
+          value: built === all ? "all" : built ? `${built} of ${all}` : "none",
+          on: built > 0,
+          press: () => this.open(this.builtInStep),
+          shift: flip,
+        },
         ...this.packs.map((pack): Part => {
           const on = own.includes(pack.id);
           return {
@@ -535,10 +545,35 @@ export class MultiplayerPanel {
             label: pack.name,
             value: on ? "on" : "off",
             on,
-            press: () => choose(settings.builtIn, on ? own.filter((id) => id !== pack.id) : [...own, pack.id]),
+            press: () => this.change({ ownPacks: on ? own.filter((id) => id !== pack.id) : [...own, pack.id] }),
           };
         }),
         ...(this.account.account ? [] : [{ kind: "note", text: "sign in to play packs of your own" } as Part]),
+        ...this.refusal("settings"),
+      ],
+    };
+  };
+
+  private builtInStep = (): Step => {
+    const settings = this.client.view?.settings;
+    if (!settings) return { title: "Built-in packs", rows: [] };
+    const chosen = settings.builtIn;
+    const all = chosen.length === this.builtIn.length;
+    return {
+      title: "Built-in packs",
+      rows: [
+        { kind: "press", id: "builtin:all", label: "All", value: all ? "on" : "off", on: all, press: () => this.change({ builtIn: all ? [] : this.builtIn.map((pack) => pack.id) }) },
+        ...this.builtIn.map((pack): Part => {
+          const on = chosen.includes(pack.id);
+          return {
+            kind: "press",
+            id: `builtin:${pack.id}`,
+            label: pack.name,
+            value: on ? "on" : "off",
+            on,
+            press: () => this.change({ builtIn: on ? chosen.filter((id) => id !== pack.id) : [...chosen, pack.id] }),
+          };
+        }),
         ...this.refusal("settings"),
       ],
     };

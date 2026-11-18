@@ -21,11 +21,15 @@ const LETTERS = "ACDEFGHJKLMNPRSTUWYZ";
 const rooms = new Map<string, Room>();
 const places = new Map<Member, Room>();
 let builtIn: PromptIndex = new Map();
+let builtInPacks: string[] = [];
 let clock: Clock = realClock;
+
+const packOf = (promptId: string) => promptId.slice(0, promptId.indexOf("/"));
 
 /** The built-in prompts, and in the tests a clock moved by hand. */
 export function usePrompts(index: PromptIndex, time: Clock = realClock) {
   builtIn = index;
+  builtInPacks = [...new Set([...index.keys()].map(packOf))];
   clock = time;
 }
 
@@ -48,7 +52,7 @@ function enter(member: Member, message: { nickname: string; suit: number }, code
   if (!USERNAME.test(nickname)) return "bad-name";
   if (!Number.isInteger(message.suit) || message.suit < 0 || message.suit >= SUITS) return "bad-suit";
   const room: Room | undefined =
-    code === undefined ? { code: newCode(), players: [], settings: DEFAULT_SETTINGS, nextId: 0, dive: null, last: null } : rooms.get(code.trim().toUpperCase());
+    code === undefined ? { code: newCode(), players: [], settings: { ...DEFAULT_SETTINGS, builtIn: builtInPacks }, nextId: 0, dive: null, last: null } : rooms.get(code.trim().toUpperCase());
   if (!room) return "no-room";
   if (room.players.length >= MAX_PLAYERS) return "full";
   if (room.players.some((player) => player.nickname === nickname)) return "name-taken";
@@ -88,9 +92,9 @@ async function change(member: Member, room: Room, changes: Partial<RoomSettings>
   };
   const sound =
     MODES.includes(settings.mode) && Number.isInteger(settings.air) && settings.air >= AIR_MIN && settings.air <= AIR_MAX &&
-    typeof settings.builtIn === "boolean" && typeof settings.judging === "boolean" &&
-    Array.isArray(settings.ownPacks) && new Set(settings.ownPacks).size === settings.ownPacks.length &&
-    (settings.builtIn || settings.ownPacks.length > 0);
+    typeof settings.judging === "boolean" &&
+    Array.isArray(settings.builtIn) && new Set(settings.builtIn).size === settings.builtIn.length && settings.builtIn.every((id) => builtInPacks.includes(id)) &&
+    Array.isArray(settings.ownPacks) && new Set(settings.ownPacks).size === settings.ownPacks.length;
   if (!sound) return "bad-settings";
   room.settings = settings;
   // Whoever was ready had agreed to the settings as they were.
@@ -106,12 +110,15 @@ async function start(member: Member, room: Room): Promise<Refusal | void> {
   if (room.players[0]!.member !== member) return "not-host";
   if (room.dive) return;
   if (room.players.some((player) => !player.host && !player.ready)) return "not-ready";
+  // A room may be set up with no pack while the host chooses, but not dive without one.
+  if (!room.settings.builtIn.length && !room.settings.ownPacks.length) return "no-packs";
   const { accountId } = member;
   const own = accountId ? (await Promise.all(room.settings.ownPacks.map((id) => loadPack(accountId, id)))).filter((pack) => pack !== null) : [];
   const judgeAs = accountId && room.settings.judging && (await keyed(accountId)) ? accountId : null;
   if (places.get(member) !== room || room.dive) return;
   room.settings = { ...room.settings, ownPacks: own.map((pack) => pack.id), judging: judgeAs !== null };
-  const index = enoughFor(new Map([...(room.settings.builtIn ? builtIn : []), ...buildIndex(own, OWN)]), room.players.length);
+  const chosen = [...builtIn].filter(([id]) => room.settings.builtIn.includes(packOf(id)));
+  const index = enoughFor(new Map([...chosen, ...buildIndex(own, OWN)]), room.players.length);
   if (!index.size) return "no-prompts";
   room.last = null;
   const { mode } = room.settings;

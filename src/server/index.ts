@@ -1,6 +1,6 @@
 import app from "../web/index.html";
 import type { BunRequest, Server } from "bun";
-import { MAX_PACK_BYTES, PROVIDERS, type Config, type Provider } from "../shared/types";
+import { MAX_PACK_BYTES, PROVIDERS, type Config, type PackSummary, type Provider } from "../shared/types";
 import { SESSION_DAYS, accountIdOf, accountOf, signInFrom, signOut, signUp, type Entry } from "./accounts";
 import { listPacks, loadPack, removePack, savePack } from "./custom";
 import { migrate } from "./db";
@@ -19,7 +19,9 @@ const PROMPTS_PER_GAME = 10;
 const DEV_MODE = process.env.HADAL_DEV_MODE === "1";
 const PRODUCTION = process.env.NODE_ENV === "production";
 const SESSION = "session";
-const prompts = buildIndex(await loadPacks());
+const builtIn = await loadPacks();
+const builtInSummaries: PackSummary[] = builtIn.map((pack) => ({ id: pack.id, name: pack.name, prompts: pack.prompts.length }));
+const prompts = buildIndex(builtIn);
 usePrompts(prompts);
 await migrate();
 
@@ -81,6 +83,9 @@ const server = Bun.serve({
     "/og.png": () => new Response(Bun.file(`${import.meta.dir}/../web/og.png`)),
     "/api/config": {
       GET: () => Response.json({ devMode: DEV_MODE } satisfies Config),
+    },
+    "/api/builtin": {
+      GET: () => Response.json(builtInSummaries),
     },
     "/api/game": {
       GET: async (req) => {

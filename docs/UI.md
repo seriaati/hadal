@@ -122,6 +122,10 @@ The same in every panel.
 - **The room's mode** is chosen in a step of its own, `‹ Mode`: a line for each mode with a
   message under it on how it is played, and "chosen" against the right edge of the one in use.
   Choosing one goes back to the set-up, with the focus on "Mode".
+- **The room's packs.** In `‹ Packs`, "Built-in packs" says how many are on ("all", "3 of 12",
+  "none") and opens `‹ Built-in packs`: "All", then a line for each pack, each on or off. Left
+  and Right on "Built-in packs" turn them all on or all off. A room may be set up with no pack
+  while the host chooses; "Start the dive" then says to choose some.
 - **In a room's chaos dive** no hearts are drawn, since each diver has one. A diver whose air
   runs out sees the end of a single player's chaos dive (last words in the dark), then watches.
 

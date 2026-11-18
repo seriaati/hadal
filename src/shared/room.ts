@@ -12,9 +12,10 @@ export const AIR_MIN = 5;
 export const AIR_MAX = 60;
 export const DEFAULT_AIR: Record<Mode, number> = { deepest: 30, longest: 15, chaos: 8 };
 
-/** `ownPacks` holds the ids of the host's own packs; prompts come from them, the built-in packs, or both. */
-export type RoomSettings = { mode: Mode; air: number; builtIn: boolean; ownPacks: string[]; judging: boolean };
-export const DEFAULT_SETTINGS: RoomSettings = { mode: "deepest", air: DEFAULT_AIR.deepest, builtIn: true, ownPacks: [], judging: false };
+/** `builtIn` and `ownPacks` hold the ids of the built-in packs and of the host's own packs that the prompts come from. */
+export type RoomSettings = { mode: Mode; air: number; builtIn: string[]; ownPacks: string[]; judging: boolean };
+/** A new room plays every built-in pack, which only the server knows. */
+export const DEFAULT_SETTINGS: Omit<RoomSettings, "builtIn"> = { mode: "deepest", air: DEFAULT_AIR.deepest, ownPacks: [], judging: false };
 
 /** How many prompts a dive in "deepest" mode asks. */
 export const DIVE_PROMPTS = 10;
@@ -97,6 +98,6 @@ export type ClientMessage =
   | { type: "answer"; text: string }
   | { type: "leave" };
 
-export type Refusal = "no-room" | "full" | "name-taken" | "bad-name" | "bad-suit" | "not-host" | "bad-settings" | "not-ready" | "no-prompts";
+export type Refusal = "no-room" | "full" | "name-taken" | "bad-name" | "bad-suit" | "not-host" | "bad-settings" | "not-ready" | "no-packs" | "no-prompts";
 /** `room` is the whole room again, sent after every change to it. `closed` means the host left and the room is gone. */
 export type ServerMessage = { type: "room"; room: RoomView } | { type: "refused"; reason: Refusal } | { type: "closed" };
