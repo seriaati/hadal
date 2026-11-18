@@ -1,16 +1,16 @@
 import { afterAll, expect, test } from "bun:test";
 import { DEFAULT_SETTINGS as SHARED_DEFAULTS, type ClientMessage, type RoomView, type ServerMessage } from "../shared/room";
+import type { Pack } from "../shared/types";
 import { accountIdOf, signUp } from "./accounts";
 import { savePack } from "./custom";
 import { migrate, sql } from "./db";
 import { saveKey } from "./keys";
-import { buildIndex } from "./game";
 import { leave, receive, usePrompts, type Member } from "./rooms";
 
 type Fake = Member & { sent: ServerMessage[] };
 const member = (accountId: string | null = null): Fake => {
   const sent: ServerMessage[] = [];
-  return { accountId, sent, send: (message) => sent.push(message) };
+  return { accountId, language: "en", sent, send: (message) => sent.push(message) };
 };
 const say = (from: Fake, message: ClientMessage) => receive(from, JSON.stringify(message));
 /** The room as the member was last sent it. */
@@ -29,9 +29,10 @@ const room = async (hostAccount: string | null = null, ...guests: string[]) => {
   return { host, others, code: seen(host).code };
 };
 
+const inEnglish = (packs: Pack[]) => ({ en: packs, "zh-CN": [] });
 const ocean = { id: "two", text: "Name an ocean", answers: [{ text: "Pacific", rarity: 10 }, { text: "Indian", rarity: 60 }] };
 const lake = { id: "one", text: "Name a lake", answers: [{ text: "Baikal", rarity: 10 }, { text: "Titicaca", rarity: 60 }] };
-usePrompts(buildIndex([{ id: "seas", name: "Seas", prompts: [ocean] }, { id: "lakes", name: "Lakes", prompts: [lake] }]));
+usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: [ocean] }, { id: "lakes", name: "Lakes", prompts: [lake] }]));
 const DEFAULT_SETTINGS = { ...SHARED_DEFAULTS, builtIn: ["seas", "lakes"] };
 
 // The tests of the host's packs and keys need the database (`docker compose up -d db`). Their accounts are removed afterwards.
@@ -46,6 +47,18 @@ const account = async () => {
 };
 afterAll(async () => {
   await sql`delete from accounts where username in ${sql(made)}`;
+});
+
+test("a new room plays the built-in packs of its host's language", async () => {
+  usePrompts({ en: [{ id: "seas", name: "Seas", prompts: [ocean] }], "zh-CN": [{ id: "hu", name: "湖泊", prompts: [lake] }] });
+  const host = { ...member(), language: "zh-CN" as const };
+  await say(host, { type: "create", nickname: "host", suit: 0 });
+  expect(seen(host).settings.builtIn).toEqual(["hu"]);
+  // Packs of another language may still be chosen.
+  await say(host, { type: "settings", settings: { builtIn: ["hu", "seas"] } });
+  expect(seen(host).settings.builtIn).toEqual(["hu", "seas"]);
+  leave(host);
+  usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: [ocean] }, { id: "lakes", name: "Lakes", prompts: [lake] }]));
 });
 
 test("creating a room makes its host, with a code and the settings a room starts with", async () => {
@@ -220,7 +233,7 @@ test("nonsense is ignored", async () => {
 
 test("a dive starts once every guest is ready, from prompts with an answer for each of them", async () => {
   usePrompts(
-    buildIndex([
+    inEnglish([
       {
         id: "seas",
         name: "Seas",
@@ -258,7 +271,7 @@ test("a dive starts once every guest is ready, from prompts with an answer for e
 
 test("a dive in deepest asks 10 prompts, and one in longest every prompt there is", async () => {
   const many = Array.from({ length: 14 }, (_, i) => ({ id: `p${i}`, text: `Name sea ${i}`, answers: [{ text: "Baltic", rarity: 50 }, { text: "North", rarity: 60 }] }));
-  usePrompts(buildIndex([{ id: "seas", name: "Seas", prompts: many }]));
+  usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: many }]));
   const { host, others } = await room(null, "ben");
   const play = async () => {
     await say(others[0]!, { type: "ready", ready: true });
@@ -277,7 +290,7 @@ test("a dive in deepest asks 10 prompts, and one in longest every prompt there i
 });
 
 test("a dive is refused when no prompt has an answer for every diver", async () => {
-  usePrompts(buildIndex([{ id: "seas", name: "Seas", prompts: [{ id: "one", text: "Name a sea", answers: [{ text: "Baltic", rarity: 50 }] }] }]));
+  usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: [{ id: "one", text: "Name a sea", answers: [{ text: "Baltic", rarity: 50 }] }] }]));
   const { host, others } = await room(null, "ben");
   await say(others[0]!, { type: "ready", ready: true });
   await say(host, { type: "start" });
@@ -286,7 +299,7 @@ test("a dive is refused when no prompt has an answer for every diver", async () 
 });
 
 test("a guest who leaves during a dive is taken out of it, and one who joins watches", async () => {
-  usePrompts(buildIndex([{ id: "seas", name: "Seas", prompts: [{ id: "two", text: "Name an ocean", answers: [{ text: "Pacific", rarity: 10 }, { text: "Indian", rarity: 60 }, { text: "Arctic", rarity: 80 }] }] }]));
+  usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: [{ id: "two", text: "Name an ocean", answers: [{ text: "Pacific", rarity: 10 }, { text: "Indian", rarity: 60 }, { text: "Arctic", rarity: 80 }] }] }]));
   const { host, others, code } = await room(null, "ben", "cal");
   for (const guest of others) await say(guest, { type: "ready", ready: true });
   await say(host, { type: "start" });

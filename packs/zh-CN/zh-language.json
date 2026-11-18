@@ -1,0 +1,127 @@
+{
+  "id": "zh-language",
+  "name": "语言",
+  "prompts": [
+    {
+      "id": "greek-letters",
+      "text": "说出一个希腊字母",
+      "answers": [
+        { "text": "阿尔法", "aliases": ["Alpha", "α"], "rarity": 5 },
+        { "text": "贝塔", "aliases": ["Beta", "β"], "rarity": 5 },
+        { "text": "欧米伽", "aliases": ["Omega", "ω", "奥米伽", "欧米茄", "欧米加"], "rarity": 10 },
+        { "text": "德尔塔", "aliases": ["Delta", "δ"], "rarity": 10 },
+        { "text": "伽马", "aliases": ["Gamma", "γ", "伽玛"], "rarity": 10 },
+        { "text": "派", "aliases": ["Pi", "π"], "rarity": 15 },
+        { "text": "西格玛", "aliases": ["Sigma", "σ", "西格马"], "rarity": 20 },
+        { "text": "西塔", "aliases": ["Theta", "θ", "塞塔"], "rarity": 25 },
+        { "text": "艾普西隆", "aliases": ["Epsilon", "ε", "伊普西隆", "伊普西龙", "艾普西龙"], "rarity": 30 },
+        { "text": "兰姆达", "aliases": ["Lambda", "λ", "拉姆达", "兰布达"], "rarity": 30 },
+        { "text": "奥米克戎", "aliases": ["Omicron", "ο", "奥密克戎"], "rarity": 35 },
+        { "text": "卡帕", "aliases": ["Kappa", "κ"], "rarity": 35 },
+        { "text": "斐", "aliases": ["Phi", "φ"], "rarity": 40 },
+        { "text": "泽塔", "aliases": ["Zeta", "ζ", "截塔"], "rarity": 45 },
+        { "text": "缪", "aliases": ["Mu", "μ", "谬"], "rarity": 45 },
+        { "text": "普西", "aliases": ["Psi", "ψ", "普赛"], "rarity": 50 },
+        { "text": "约塔", "aliases": ["Iota", "ι", "艾欧塔"], "rarity": 50 },
+        { "text": "陶", "aliases": ["Tau", "τ", "套"], "rarity": 55 },
+        { "text": "柔", "aliases": ["Rho", "ρ", "肉"], "rarity": 55 },
+        { "text": "卡伊", "aliases": ["Chi", "χ", "凯"], "rarity": 55 },
+        { "text": "伊塔", "aliases": ["Eta", "η", "艾塔"], "rarity": 60 },
+        { "text": "纽", "aliases": ["Nu", "ν"], "rarity": 70 },
+        { "text": "克西", "aliases": ["Xi", "ξ", "克赛"], "rarity": 75 },
+        { "text": "宇普西隆", "aliases": ["Upsilon", "Ypsilon", "υ", "宇普西龙", "阿普西隆"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "un-languages",
+      "text": "说出一种联合国官方语言",
+      "answers": [
+        { "text": "英语", "aliases": ["English", "英文"], "rarity": 5 },
+        { "text": "法语", "aliases": ["French", "法文"], "rarity": 10 },
+        { "text": "西班牙语", "aliases": ["Spanish", "西班牙文", "西语"], "rarity": 15 },
+        { "text": "中文", "aliases": ["Chinese", "Mandarin", "Mandarin Chinese", "Standard Chinese", "汉语", "普通话", "华语", "国语", "中国话"], "rarity": 25 },
+        { "text": "俄语", "aliases": ["Russian", "俄文"], "rarity": 60 },
+        { "text": "阿拉伯语", "aliases": ["Arabic", "Modern Standard Arabic", "阿拉伯文", "阿语"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "parts-of-speech",
+      "text": "说出英语传统的八大词类之一",
+      "answers": [
+        { "text": "名词", "aliases": ["Noun", "Nouns"], "rarity": 5 },
+        { "text": "动词", "aliases": ["Verb", "Verbs"], "rarity": 5 },
+        { "text": "形容词", "aliases": ["Adjective"], "rarity": 10 },
+        { "text": "副词", "aliases": ["Adverb"], "rarity": 20 },
+        { "text": "代词", "aliases": ["Pronoun", "代名词"], "rarity": 40 },
+        { "text": "介词", "aliases": ["Preposition", "前置词"], "rarity": 55 },
+        { "text": "连词", "aliases": ["Conjunction", "连接词"], "rarity": 60 },
+        { "text": "感叹词", "aliases": ["Interjection", "Exclamation", "叹词"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "nato-alphabet",
+      "text": "说出北约音标字母中的一个代码词",
+      "answers": [
+        { "text": "Alfa", "aliases": ["Alpha", "阿尔法"], "rarity": 5 },
+        { "text": "Bravo", "aliases": ["布拉沃"], "rarity": 5 },
+        { "text": "Charlie", "aliases": ["查理"], "rarity": 10 },
+        { "text": "Delta", "aliases": ["德尔塔"], "rarity": 15 },
+        { "text": "Foxtrot", "aliases": ["狐步", "狐步舞"], "rarity": 15 },
+        { "text": "Tango", "aliases": ["探戈"], "rarity": 20 },
+        { "text": "Zulu", "aliases": ["祖鲁"], "rarity": 25 },
+        { "text": "Whiskey", "aliases": ["Whisky", "威士忌"], "rarity": 25 },
+        { "text": "Echo", "aliases": ["回声"], "rarity": 25 },
+        { "text": "X-ray", "aliases": ["X光", "X射线"], "rarity": 35 },
+        { "text": "Oscar", "aliases": ["奥斯卡"], "rarity": 40 },
+        { "text": "Romeo", "aliases": ["罗密欧"], "rarity": 40 },
+        { "text": "Sierra", "rarity": 45 },
+        { "text": "Yankee", "aliases": ["扬基"], "rarity": 45 },
+        { "text": "Victor", "aliases": ["维克托", "维克多"], "rarity": 50 },
+        { "text": "Hotel", "aliases": ["酒店", "旅馆"], "rarity": 50 },
+        { "text": "Golf", "aliases": ["高尔夫"], "rarity": 55 },
+        { "text": "Kilo", "rarity": 55 },
+        { "text": "Mike", "aliases": ["迈克"], "rarity": 60 },
+        { "text": "Papa", "rarity": 60 },
+        { "text": "Juliett", "aliases": ["Juliet", "朱丽叶"], "rarity": 65 },
+        { "text": "India", "aliases": ["印度"], "rarity": 70 },
+        { "text": "November", "aliases": ["十一月"], "rarity": 75 },
+        { "text": "Quebec", "aliases": ["魁北克"], "rarity": 85 },
+        { "text": "Lima", "aliases": ["利马"], "rarity": 90 },
+        { "text": "Uniform", "aliases": ["制服"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "romance-languages",
+      "text": "说出一种罗曼语族的语言",
+      "answers": [
+        { "text": "西班牙语", "aliases": ["Spanish", "Castilian", "Español", "西班牙文", "西语", "卡斯蒂利亚语"], "rarity": 5 },
+        { "text": "法语", "aliases": ["French", "法文"], "rarity": 5 },
+        { "text": "意大利语", "aliases": ["Italian", "意大利文", "意语"], "rarity": 10 },
+        { "text": "葡萄牙语", "aliases": ["Portuguese", "葡萄牙文", "葡语"], "rarity": 20 },
+        { "text": "罗马尼亚语", "aliases": ["Romanian", "Rumanian", "Moldovan", "摩尔多瓦语"], "rarity": 35 },
+        { "text": "加泰罗尼亚语", "aliases": ["Catalan", "Valencian", "加泰隆尼亚语", "巴伦西亚语", "瓦伦西亚语"], "rarity": 45 },
+        { "text": "加利西亚语", "aliases": ["Galician", "加里西亚语"], "rarity": 70 },
+        { "text": "奥克语", "aliases": ["Occitan", "Provençal", "Gascon", "奥克西坦语", "普罗旺斯语", "加斯科涅语"], "rarity": 75 },
+        { "text": "撒丁语", "aliases": ["Sardinian", "萨丁语"], "rarity": 80 },
+        { "text": "西西里语", "aliases": ["Sicilian"], "rarity": 80 },
+        { "text": "科西嘉语", "aliases": ["Corsican"], "rarity": 85 },
+        { "text": "罗曼什语", "aliases": ["Romansh", "Romansch", "Rumantsch"], "rarity": 85 },
+        { "text": "那不勒斯语", "aliases": ["Neapolitan"], "rarity": 90 },
+        { "text": "威尼斯语", "aliases": ["Venetian"], "rarity": 90 },
+        { "text": "拉迪诺语", "aliases": ["Ladino", "Judaeo-Spanish", "Judeo-Spanish", "犹太西班牙语"], "rarity": 90 },
+        { "text": "阿拉贡语", "aliases": ["Aragonese"], "rarity": 95 },
+        { "text": "阿斯图里亚斯语", "aliases": ["Asturian", "Asturleonese", "Leonese", "阿斯图里亚斯-莱昂语", "莱昂语"], "rarity": 95 },
+        { "text": "瓦隆语", "aliases": ["Walloon"], "rarity": 95 },
+        { "text": "弗留利语", "aliases": ["Friulian", "Friulan"], "rarity": 95 },
+        { "text": "伦巴第语", "aliases": ["Lombard"], "rarity": 95 },
+        { "text": "皮埃蒙特语", "aliases": ["Piedmontese"], "rarity": 95 },
+        { "text": "拉登语", "aliases": ["Ladin"], "rarity": 100 },
+        { "text": "利古里亚语", "aliases": ["Ligurian", "Genoese", "热那亚语"], "rarity": 100 },
+        { "text": "法兰克-普罗旺斯语", "aliases": ["Franco-Provençal", "Arpitan", "阿尔皮坦语"], "rarity": 100 },
+        { "text": "阿罗马尼亚语", "aliases": ["Aromanian", "Vlach"], "rarity": 100 },
+        { "text": "达尔马提亚语", "aliases": ["Dalmatian"], "rarity": 100 },
+        { "text": "米兰德斯语", "aliases": ["Mirandese"], "rarity": 100 }
+      ]
+    }
+  ]
+}

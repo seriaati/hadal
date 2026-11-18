@@ -1,0 +1,91 @@
+{
+  "id": "zh-science",
+  "name": "科学",
+  "prompts": [
+    {
+      "id": "noble-gases",
+      "text": "说出一种稀有气体",
+      "answers": [
+        { "text": "氦", "aliases": ["氦气", "Helium"], "rarity": 10 },
+        { "text": "氖", "aliases": ["氖气", "Neon"], "rarity": 15 },
+        { "text": "氩", "aliases": ["氩气", "Argon"], "rarity": 35 },
+        { "text": "氪", "aliases": ["氪气", "Krypton"], "rarity": 50 },
+        { "text": "氙", "aliases": ["氙气", "Xenon"], "rarity": 60 },
+        { "text": "氡", "aliases": ["氡气", "Radon"], "rarity": 75 },
+        { "text": "鿫", "aliases": ["Oganesson"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "planets",
+      "text": "说出太阳系中的一颗行星或矮行星",
+      "answers": [
+        { "text": "火星", "aliases": ["Mars"], "rarity": 8 },
+        { "text": "地球", "aliases": ["Earth"], "rarity": 10 },
+        { "text": "木星", "aliases": ["Jupiter"], "rarity": 12 },
+        { "text": "土星", "aliases": ["Saturn"], "rarity": 15 },
+        { "text": "冥王星", "aliases": ["Pluto"], "rarity": 20 },
+        { "text": "金星", "aliases": ["Venus"], "rarity": 25 },
+        { "text": "水星", "aliases": ["Mercury"], "rarity": 30 },
+        { "text": "海王星", "aliases": ["Neptune"], "rarity": 35 },
+        { "text": "天王星", "aliases": ["Uranus"], "rarity": 35 },
+        { "text": "谷神星", "aliases": ["Ceres"], "rarity": 75 },
+        { "text": "阋神星", "aliases": ["Eris"], "rarity": 85 },
+        { "text": "鸟神星", "aliases": ["Makemake"], "rarity": 95 },
+        { "text": "妊神星", "aliases": ["Haumea"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "single-letter-elements",
+      "text": "说出一种元素符号只有一个字母的化学元素",
+      "answers": [
+        { "text": "氢", "aliases": ["氢气", "Hydrogen", "H"], "rarity": 5 },
+        { "text": "氧", "aliases": ["氧气", "Oxygen", "O"], "rarity": 5 },
+        { "text": "碳", "aliases": ["Carbon", "C"], "rarity": 10 },
+        { "text": "氮", "aliases": ["氮气", "Nitrogen", "N"], "rarity": 15 },
+        { "text": "钾", "aliases": ["Potassium", "K"], "rarity": 35 },
+        { "text": "硫", "aliases": ["硫黄", "硫磺", "Sulfur", "Sulphur", "S"], "rarity": 40 },
+        { "text": "氟", "aliases": ["氟气", "Fluorine", "F"], "rarity": 45 },
+        { "text": "磷", "aliases": ["Phosphorus", "P"], "rarity": 45 },
+        { "text": "铀", "aliases": ["Uranium", "U"], "rarity": 50 },
+        { "text": "碘", "aliases": ["Iodine", "I"], "rarity": 55 },
+        { "text": "硼", "aliases": ["Boron", "B"], "rarity": 60 },
+        { "text": "钨", "aliases": ["Tungsten", "Wolfram", "W"], "rarity": 75 },
+        { "text": "钒", "aliases": ["Vanadium", "V"], "rarity": 85 },
+        { "text": "钇", "aliases": ["Yttrium", "Y"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "si-base-units",
+      "text": "说出七个国际单位制基本单位之一",
+      "answers": [
+        { "text": "米", "aliases": ["公尺", "Metre", "Meter", "Metres", "Meters"], "rarity": 10 },
+        { "text": "千克", "aliases": ["公斤", "Kilogram", "Kilograms", "Kilogramme", "kg"], "rarity": 10 },
+        { "text": "秒", "aliases": ["Second", "Seconds"], "rarity": 15 },
+        { "text": "开尔文", "aliases": ["开", "Kelvin", "Kelvins"], "rarity": 45 },
+        { "text": "安培", "aliases": ["安", "Ampere", "Amperes", "Amp", "Amps"], "rarity": 50 },
+        { "text": "摩尔", "aliases": ["摩", "Mole", "Moles", "mol"], "rarity": 75 },
+        { "text": "坎德拉", "aliases": ["坎", "Candela", "Candelas"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "galilean-moons",
+      "text": "说出木星的四颗伽利略卫星之一",
+      "answers": [
+        { "text": "木卫二", "aliases": ["欧罗巴", "Europa"], "rarity": 20 },
+        { "text": "木卫一", "aliases": ["伊奥", "艾奥", "Io"], "rarity": 25 },
+        { "text": "木卫三", "aliases": ["盖尼米德", "加尼美德", "Ganymede"], "rarity": 45 },
+        { "text": "木卫四", "aliases": ["卡利斯托", "卡里斯托", "Callisto"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "fundamental-forces",
+      "text": "说出自然界的四种基本力之一",
+      "answers": [
+        { "text": "引力", "aliases": ["万有引力", "重力", "引力相互作用", "Gravity", "Gravitation", "Gravitational force", "Gravitational"], "rarity": 5 },
+        { "text": "电磁力", "aliases": ["电磁相互作用", "电磁作用", "Electromagnetism", "Electromagnetic force", "Electromagnetic", "Electromagnetic interaction"], "rarity": 30 },
+        { "text": "强相互作用", "aliases": ["强力", "强核力", "强作用", "强作用力", "Strong nuclear force", "Strong force", "Strong interaction", "Strong nuclear", "Strong"], "rarity": 60 },
+        { "text": "弱相互作用", "aliases": ["弱力", "弱核力", "弱作用", "弱作用力", "Weak nuclear force", "Weak force", "Weak interaction", "Weak nuclear", "Weak"], "rarity": 100 }
+      ]
+    }
+  ]
+}

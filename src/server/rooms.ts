@@ -2,15 +2,16 @@ import {
   AIR_MAX, AIR_MIN, DEFAULT_AIR, DEFAULT_SETTINGS, DIVE_PROMPTS, MAX_PLAYERS, MODES, ROOM_CODE_LENGTH, SUITS,
   type ClientMessage, type Refusal, type RoomPlayer, type RoomSettings, type RoomView, type ServerMessage,
 } from "../shared/room";
-import { USERNAME } from "../shared/types";
+import type { Language } from "../shared/language";
+import { USERNAME, type Pack } from "../shared/types";
 import { listPacks, loadPack } from "./custom";
 import { Dive, enoughFor, realClock, type Clock } from "./dive";
 import { OWN, buildIndex, pickPrompts, shuffle, type PromptIndex } from "./game";
 import { loadKey } from "./keys";
 import { judgeLive } from "./live";
 
-/** One connection. `accountId` is who was signed in when it was opened, not now. */
-export type Member = { accountId: string | null; send(message: ServerMessage): void };
+/** One connection. `accountId` is who was signed in when it was opened, not now; `language` is the language the player plays in. */
+export type Member = { accountId: string | null; language: Language; send(message: ServerMessage): void };
 
 type Player = RoomPlayer & { member: Member };
 /** The host is the first of the players for as long as the room lasts. `last` is how the dive before ended. */
@@ -22,14 +23,17 @@ const rooms = new Map<string, Room>();
 const places = new Map<Member, Room>();
 let builtIn: PromptIndex = new Map();
 let builtInPacks: string[] = [];
+/** The ids of each language's built-in packs: a new room plays those of its host's language. */
+let packsIn: Partial<Record<Language, string[]>> = {};
 let clock: Clock = realClock;
 
 const packOf = (promptId: string) => promptId.slice(0, promptId.indexOf("/"));
 
-/** The built-in prompts, and in the tests a clock moved by hand. */
-export function usePrompts(index: PromptIndex, time: Clock = realClock) {
-  builtIn = index;
-  builtInPacks = [...new Set([...index.keys()].map(packOf))];
+/** The built-in packs of every language, and in the tests a clock moved by hand. A room may play packs of any language. */
+export function usePrompts(packs: Record<Language, Pack[]>, time: Clock = realClock) {
+  builtIn = buildIndex(Object.values(packs).flat());
+  builtInPacks = [...new Set([...builtIn.keys()].map(packOf))];
+  packsIn = Object.fromEntries(Object.entries(packs).map(([language, list]) => [language, list.map((pack) => pack.id)]));
   clock = time;
 }
 
@@ -52,7 +56,7 @@ function enter(member: Member, message: { nickname: string; suit: number }, code
   if (!USERNAME.test(nickname)) return "bad-name";
   if (!Number.isInteger(message.suit) || message.suit < 0 || message.suit >= SUITS) return "bad-suit";
   const room: Room | undefined =
-    code === undefined ? { code: newCode(), players: [], settings: { ...DEFAULT_SETTINGS, builtIn: builtInPacks }, nextId: 0, dive: null, last: null } : rooms.get(code.trim().toUpperCase());
+    code === undefined ? { code: newCode(), players: [], settings: { ...DEFAULT_SETTINGS, builtIn: packsIn[member.language] ?? [] }, nextId: 0, dive: null, last: null } : rooms.get(code.trim().toUpperCase());
   if (!room) return "no-room";
   if (room.players.length >= MAX_PLAYERS) return "full";
   if (room.players.some((player) => player.nickname === nickname)) return "name-taken";

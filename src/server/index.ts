@@ -1,7 +1,7 @@
 import app from "../web/index.html";
 import type { BunRequest, Server } from "bun";
-import { LANGUAGE_COOKIE, isLanguage, wordsIn, type Language } from "../shared/language";
-import { MAX_PACK_BYTES, PROVIDERS, type Config, type PackSummary, type Provider } from "../shared/types";
+import { LANGUAGES, LANGUAGE_COOKIE, isLanguage, wordsIn, type Language } from "../shared/language";
+import { MAX_PACK_BYTES, PROVIDERS, type Config, type Pack, type PackSummary, type Provider } from "../shared/types";
 import type { Words } from "../shared/words/en";
 import { SESSION_DAYS, accountIdOf, accountOf, signInFrom, signOut, signUp, type Entry } from "./accounts";
 import { listPacks, loadPack, removePack, savePack } from "./custom";
@@ -10,7 +10,7 @@ import { OWN, buildIndex, judge, nearestAnswer, pickPrompts, type PromptIndex } 
 import { writePack } from "./generate";
 import { removeKey, saveKey } from "./keys";
 import { judgeLive } from "./live";
-import { loadPacks } from "./packs";
+import { loadBuiltIn } from "./packs";
 import { leave, receive, usePrompts, type Member } from "./rooms";
 
 const PROMPTS_PER_GAME = 10;
@@ -21,10 +21,13 @@ const PROMPTS_PER_GAME = 10;
 const DEV_MODE = process.env.HADAL_DEV_MODE === "1";
 const PRODUCTION = process.env.NODE_ENV === "production";
 const SESSION = "session";
-const builtIn = await loadPacks();
-const builtInSummaries: PackSummary[] = builtIn.map((pack) => ({ id: pack.id, name: pack.name, prompts: pack.prompts.length }));
-const prompts = buildIndex(builtIn);
-usePrompts(prompts);
+const builtIn = await loadBuiltIn();
+const inEach = <T>(make: (packs: Pack[]) => T) => Object.fromEntries(LANGUAGES.map((language) => [language, make(builtIn[language])])) as Record<Language, T>;
+const summaries = inEach((packs): PackSummary[] => packs.map((pack) => ({ id: pack.id, name: pack.name, prompts: pack.prompts.length })));
+/** A dive draws from the packs of the player's language; an answer is judged against every built-in prompt. */
+const promptsIn = inEach(buildIndex);
+const prompts = buildIndex(Object.values(builtIn).flat());
+usePrompts(builtIn);
 await migrate();
 
 /** The language the player plays in, which the browser keeps in a cookie. */
@@ -95,12 +98,12 @@ const server = Bun.serve({
       GET: () => Response.json({ devMode: DEV_MODE } satisfies Config),
     },
     "/api/builtin": {
-      GET: () => Response.json(builtInSummaries),
+      GET: (req) => Response.json(summaries[languageOf(req)]),
     },
     "/api/game": {
       GET: async (req) => {
         const pack = new URL(req.url).searchParams.get("pack");
-        const index = pack === null ? prompts : await ownIndex(req, pack);
+        const index = pack === null ? promptsIn[languageOf(req)] : await ownIndex(req, pack);
         if (!index.size) return new Response("Unknown pack", { status: 404 });
         return Response.json({ prompts: pickPrompts(index, PROMPTS_PER_GAME) });
       },
@@ -181,7 +184,7 @@ const server = Bun.serve({
     },
     "/api/room": async (req, server) => {
       const accountId = await accountIdOf(req.cookies.get(SESSION));
-      if (server.upgrade(req, { data: { accountId, send() {} } })) return;
+      if (server.upgrade(req, { data: { accountId, language: languageOf(req), send() {} } })) return;
       return new Response("Expected a WebSocket", { status: 400 });
     },
     "/api/dev/answer": {

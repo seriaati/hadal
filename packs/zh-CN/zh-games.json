@@ -1,0 +1,70 @@
+{
+  "id": "zh-games",
+  "name": "竞技",
+  "prompts": [
+    {
+      "id": "tennis-grand-slams",
+      "text": "说出网球四大满贯赛事之一",
+      "answers": [
+        { "text": "温布尔登网球锦标赛", "aliases": ["温网", "温布尔登", "温布尔顿", "Wimbledon", "The Championships", "Wimbledon Championships"], "rarity": 5 },
+        { "text": "美国网球公开赛", "aliases": ["美网", "美国公开赛", "US Open", "United States Open", "Flushing Meadows"], "rarity": 30 },
+        { "text": "法国网球公开赛", "aliases": ["法网", "法国公开赛", "罗兰·加洛斯", "French Open", "Roland Garros"], "rarity": 40 },
+        { "text": "澳大利亚网球公开赛", "aliases": ["澳网", "澳大利亚公开赛", "澳洲网球公开赛", "Australian Open", "Aussie Open"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "decathlon-events",
+      "text": "说出十项全能的一个比赛项目",
+      "answers": [
+        { "text": "100米", "aliases": ["100米跑", "百米", "百米跑", "一百米", "100 metres", "100 meters", "100m", "100 metres sprint", "100 meter dash", "100m sprint", "100m dash", "100"], "rarity": 15 },
+        { "text": "跳远", "aliases": ["Long jump"], "rarity": 20 },
+        { "text": "跳高", "aliases": ["High jump"], "rarity": 20 },
+        { "text": "标枪", "aliases": ["掷标枪", "Javelin throw", "Javelin"], "rarity": 20 },
+        { "text": "铅球", "aliases": ["推铅球", "Shot put", "Shot"], "rarity": 25 },
+        { "text": "铁饼", "aliases": ["掷铁饼", "Discus throw", "Discus"], "rarity": 25 },
+        { "text": "撑竿跳高", "aliases": ["撑杆跳高", "撑竿跳", "撑杆跳", "Pole vault"], "rarity": 30 },
+        { "text": "110米栏", "aliases": ["110米跨栏", "110米高栏", "跨栏", "高栏", "110 metres hurdles", "110 meters hurdles", "110m hurdles", "110 hurdles", "110m", "Hurdles", "High hurdles"], "rarity": 30 },
+        { "text": "1500米", "aliases": ["1500米跑", "一千五百米", "1500 metres", "1500 meters", "1500m", "1500", "Metric mile"], "rarity": 55 },
+        { "text": "400米", "aliases": ["400米跑", "四百米", "400 metres", "400 meters", "400m", "400"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "chess-pieces",
+      "text": "说出一种国际象棋棋子",
+      "answers": [
+        { "text": "后", "aliases": ["王后", "皇后", "Queen"], "rarity": 10 },
+        { "text": "王", "aliases": ["国王", "King", "Kings"], "rarity": 10 },
+        { "text": "马", "aliases": ["骑士", "Knight", "Horse"], "rarity": 15 },
+        { "text": "兵", "aliases": ["Pawn", "Pawns"], "rarity": 30 },
+        { "text": "象", "aliases": ["主教", "Bishop"], "rarity": 60 },
+        { "text": "车", "aliases": ["城堡", "Rook", "Rooks", "Castle", "Tower"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "poker-hands",
+      "text": "说出一种扑克牌型",
+      "answers": [
+        { "text": "皇家同花顺", "aliases": ["同花大顺", "Royal flush"], "rarity": 10 },
+        { "text": "葫芦", "aliases": ["满堂红", "Full house", "Boat", "Full boat"], "rarity": 10 },
+        { "text": "顺子", "aliases": ["Straight"], "rarity": 20 },
+        { "text": "同花", "aliases": ["Flush"], "rarity": 20 },
+        { "text": "同花顺", "aliases": ["Straight flush"], "rarity": 30 },
+        { "text": "一对", "aliases": ["对子", "Pair", "One pair", "A pair", "Two of a kind"], "rarity": 30 },
+        { "text": "四条", "aliases": ["金刚", "铁支", "Four of a kind", "Quads", "4 of a kind"], "rarity": 35 },
+        { "text": "三条", "aliases": ["Three of a kind", "Trips", "Set", "3 of a kind"], "rarity": 40 },
+        { "text": "两对", "aliases": ["Two pair", "2 pair", "2 pairs"], "rarity": 50 },
+        { "text": "高牌", "aliases": ["散牌", "乌龙", "High card", "No pair"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "golf-majors",
+      "text": "说出男子高尔夫四大满贯赛事之一",
+      "answers": [
+        { "text": "美国大师赛", "aliases": ["大师赛", "美国名人赛", "名人赛", "奥古斯塔", "The Masters", "Masters Tournament", "US Masters", "Augusta"], "rarity": 5 },
+        { "text": "英国公开赛", "aliases": ["英国高尔夫公开赛", "The Open Championship", "British Open", "The Open"], "rarity": 25 },
+        { "text": "美国公开赛", "aliases": ["美国高尔夫公开赛", "US Open", "United States Open"], "rarity": 40 },
+        { "text": "PGA锦标赛", "aliases": ["美国PGA锦标赛", "美国职业高尔夫球协会锦标赛", "PGA Championship", "US PGA Championship", "US PGA", "PGA"], "rarity": 100 }
+      ]
+    }
+  ]
+}

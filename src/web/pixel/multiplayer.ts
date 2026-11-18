@@ -83,7 +83,8 @@ export class MultiplayerPanel {
 
   show() {
     this.note = "";
-    if (!this.builtIn.length) void fetch("/api/builtin").then(async (res) => res.ok && (this.builtIn = (await res.json()) as PackSummary[]));
+    // Asked each time: the language, and with it the built-in packs, may have changed.
+    void fetch("/api/builtin").then(async (res) => res.ok && (this.builtIn = (await res.json()) as PackSummary[]));
     this.ui.go(this.first);
   }
 

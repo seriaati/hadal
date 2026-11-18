@@ -1,4 +1,5 @@
 import { basename, join } from "node:path";
+import { LANGUAGES, type Language } from "../shared/language";
 import { MAX_ANSWER_LENGTH, type Pack } from "../shared/types";
 import { en, type Words } from "../shared/words/en";
 import { normalize } from "./game";
@@ -83,7 +84,17 @@ export function validatePack(data: unknown, words: Words = en): string[] {
   return problems;
 }
 
-export async function loadPacks(dir = PACKS_DIR): Promise<Pack[]> {
+/** The built-in packs of every language, each in the folder named after its language. */
+export async function loadBuiltIn(dir = PACKS_DIR): Promise<Record<Language, Pack[]>> {
+  const packs = Object.fromEntries(await Promise.all(LANGUAGES.map(async (language) => [language, await loadPacks(join(dir, language))]))) as Record<Language, Pack[]>;
+  // A prompt's id starts with its pack's, and every language's prompts are judged together.
+  const ids = Object.values(packs).flat().map((pack) => pack.id);
+  const twice = ids.find((id, i) => ids.indexOf(id) !== i);
+  if (twice) throw new Error(`two built-in packs have the id "${twice}": a pack's id is unique across every language`);
+  return packs;
+}
+
+export async function loadPacks(dir: string): Promise<Pack[]> {
   const files = await Array.fromAsync(new Bun.Glob("*.json").scan({ cwd: dir, absolute: true }));
   return Promise.all(
     files.sort().map(async (file) => {

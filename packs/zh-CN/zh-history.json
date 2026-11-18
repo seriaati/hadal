@@ -1,0 +1,71 @@
+{
+  "id": "zh-history",
+  "name": "历史",
+  "prompts": [
+    {
+      "id": "ancient-wonders",
+      "text": "说出古代世界七大奇迹之一",
+      "answers": [
+        { "text": "吉萨大金字塔", "aliases": ["Great Pyramid of Giza", "Pyramids of Giza", "Pyramid of Giza", "Great Pyramid", "Great Pyramids", "Pyramids", "Pyramid", "Pyramid of Khufu", "Pyramid of Cheops", "吉萨金字塔", "吉萨金字塔群", "胡夫金字塔", "大金字塔", "金字塔", "埃及金字塔"], "rarity": 5 },
+        { "text": "巴比伦空中花园", "aliases": ["Hanging Gardens of Babylon", "Hanging Gardens", "Gardens of Babylon", "空中花园", "巴比伦花园"], "rarity": 15 },
+        { "text": "罗得岛太阳神铜像", "aliases": ["Colossus of Rhodes", "Colossus", "罗德岛太阳神铜像", "罗得岛太阳神巨像", "罗德岛太阳神巨像", "罗得岛巨像", "罗德岛巨像", "太阳神铜像", "太阳神巨像", "巨像"], "rarity": 30 },
+        { "text": "亚历山大灯塔", "aliases": ["Lighthouse of Alexandria", "Pharos of Alexandria", "Pharos", "Lighthouse", "亚历山大港灯塔", "法罗斯灯塔", "法罗斯岛灯塔", "灯塔"], "rarity": 40 },
+        { "text": "奥林匹亚宙斯神像", "aliases": ["Statue of Zeus at Olympia", "Statue of Zeus", "Zeus at Olympia", "Zeus", "宙斯神像", "宙斯像", "宙斯"], "rarity": 60 },
+        { "text": "以弗所阿尔忒弥斯神庙", "aliases": ["Temple of Artemis at Ephesus", "Temple of Artemis", "Temple of Artemis in Ephesus", "Artemision", "Temple of Diana", "阿尔忒弥斯神庙", "阿耳忒弥斯神庙", "阿尔忒弥斯神殿", "以弗所神庙", "狄安娜神庙"], "rarity": 80 },
+        { "text": "摩索拉斯王陵墓", "aliases": ["Mausoleum at Halicarnassus", "Mausoleum of Halicarnassus", "Mausoleum", "Tomb of Mausolus", "Halicarnassus", "哈利卡纳苏斯的摩索拉斯王陵墓", "摩索拉斯陵墓", "摩索拉斯王陵", "哈利卡纳苏斯"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "henry-viii-wives",
+      "text": "说出亨利八世的一位妻子",
+      "answers": [
+        { "text": "安妮·博林", "aliases": ["Anne Boleyn", "Boleyn", "安·博林", "安妮·波琳", "安·波琳", "博林", "波琳"], "rarity": 5 },
+        { "text": "阿拉贡的凯瑟琳", "aliases": ["Catherine of Aragon", "Katherine of Aragon", "Aragon", "阿拉贡的卡特琳娜", "阿拉贡"], "rarity": 25 },
+        { "text": "简·西摩", "aliases": ["Jane Seymour", "Seymour", "珍·西摩", "西摩"], "rarity": 40 },
+        { "text": "克里维斯的安妮", "aliases": ["Anne of Cleves", "Cleves", "克莱沃的安妮", "克里维斯", "克莱沃"], "rarity": 60 },
+        { "text": "凯瑟琳·帕尔", "aliases": ["Catherine Parr", "Katherine Parr", "Kateryn Parr", "Parr", "帕尔"], "rarity": 70 },
+        { "text": "凯瑟琳·霍华德", "aliases": ["Catherine Howard", "Katherine Howard", "Kathryn Howard", "Howard", "霍华德"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "thirteen-colonies",
+      "text": "说出北美最初的十三个殖民地之一",
+      "answers": [
+        { "text": "弗吉尼亚", "aliases": ["Virginia", "弗吉尼亚州", "维吉尼亚"], "rarity": 10 },
+        { "text": "马萨诸塞", "aliases": ["Massachusetts", "Massachusetts Bay", "马萨诸塞州", "马萨诸塞湾", "麻萨诸塞", "麻省"], "rarity": 10 },
+        { "text": "纽约", "aliases": ["New York", "纽约州"], "rarity": 15 },
+        { "text": "宾夕法尼亚", "aliases": ["Pennsylvania", "宾夕法尼亚州", "宾州"], "rarity": 25 },
+        { "text": "佐治亚", "aliases": ["Georgia", "佐治亚州", "乔治亚", "乔治亚州"], "rarity": 40 },
+        { "text": "马里兰", "aliases": ["Maryland", "马里兰州"], "rarity": 45 },
+        { "text": "北卡罗来纳", "aliases": ["North Carolina", "北卡罗来纳州", "北卡罗莱纳", "北卡"], "rarity": 50 },
+        { "text": "南卡罗来纳", "aliases": ["South Carolina", "南卡罗来纳州", "南卡罗莱纳", "南卡"], "rarity": 50 },
+        { "text": "康涅狄格", "aliases": ["Connecticut", "康涅狄格州", "康乃狄克"], "rarity": 55 },
+        { "text": "新泽西", "aliases": ["New Jersey", "新泽西州", "纽泽西"], "rarity": 55 },
+        { "text": "罗得岛", "aliases": ["Rhode Island", "罗得岛州", "罗德岛", "罗德岛州"], "rarity": 60 },
+        { "text": "特拉华", "aliases": ["Delaware", "特拉华州", "德拉瓦"], "rarity": 80 },
+        { "text": "新罕布什尔", "aliases": ["New Hampshire", "新罕布什尔州", "新罕布夏"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "assassinated-presidents",
+      "text": "说出一位遇刺身亡的美国总统",
+      "answers": [
+        { "text": "亚伯拉罕·林肯", "aliases": ["Abraham Lincoln", "Lincoln", "Abe Lincoln", "林肯"], "rarity": 5 },
+        { "text": "约翰·F·肯尼迪", "aliases": ["John F. Kennedy", "Kennedy", "JFK", "John Kennedy", "John Fitzgerald Kennedy", "Jack Kennedy", "约翰·肯尼迪", "约翰·菲茨杰拉德·肯尼迪", "肯尼迪", "甘迺迪"], "rarity": 5 },
+        { "text": "威廉·麦金莱", "aliases": ["William McKinley", "McKinley", "麦金莱", "麦金利", "威廉·麦金利"], "rarity": 75 },
+        { "text": "詹姆斯·加菲尔德", "aliases": ["James A. Garfield", "James Garfield", "Garfield", "詹姆斯·A·加菲尔德", "加菲尔德"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "first-roman-emperors",
+      "text": "说出罗马帝国最初的五位皇帝之一",
+      "answers": [
+        { "text": "奥古斯都", "aliases": ["Augustus", "Octavian", "Octavius", "Caesar Augustus", "Augustus Caesar", "屋大维", "恺撒·奥古斯都", "凯撒·奥古斯都", "奥古斯都·恺撒", "奥古斯都·凯撒"], "rarity": 10 },
+        { "text": "尼禄", "aliases": ["Nero"], "rarity": 15 },
+        { "text": "卡利古拉", "aliases": ["Caligula", "Gaius", "Gaius Caligula", "卡里古拉", "盖乌斯", "盖乌斯·卡利古拉"], "rarity": 30 },
+        { "text": "克劳狄乌斯", "aliases": ["Claudius", "克劳狄", "克劳狄一世", "克劳迪亚斯", "克劳迪乌斯"], "rarity": 60 },
+        { "text": "提比略", "aliases": ["Tiberius", "提贝里乌斯", "提庇留"], "rarity": 100 }
+      ]
+    }
+  ]
+}

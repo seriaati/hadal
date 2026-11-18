@@ -1,0 +1,62 @@
+{
+  "id": "zh-music",
+  "name": "音乐",
+  "prompts": [
+    {
+      "id": "beatles",
+      "text": "说出披头士乐队的一位成员",
+      "answers": [
+        { "text": "约翰·列侬", "aliases": ["列侬", "约翰", "约翰·蓝侬", "John Lennon", "John", "Lennon"], "rarity": 5 },
+        { "text": "保罗·麦卡特尼", "aliases": ["麦卡特尼", "保罗", "Paul McCartney", "Paul", "McCartney", "Macca"], "rarity": 5 },
+        { "text": "林戈·斯塔尔", "aliases": ["林哥·斯塔尔", "林戈", "林哥", "斯塔尔", "Ringo Starr", "Ringo", "Starr", "Richard Starkey"], "rarity": 15 },
+        { "text": "乔治·哈里森", "aliases": ["乔治", "哈里森", "George Harrison", "George", "Harrison"], "rarity": 20 },
+        { "text": "皮特·贝斯特", "aliases": ["彼特·贝斯特", "贝斯特", "Pete Best"], "rarity": 85 },
+        { "text": "斯图尔特·萨克利夫", "aliases": ["斯图亚特·萨克利夫", "斯图·萨克利夫", "萨克利夫", "Stuart Sutcliffe", "Stu Sutcliffe", "Sutcliffe"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "queen",
+      "text": "说出皇后乐队的一位成员",
+      "answers": [
+        { "text": "弗雷迪·默丘里", "aliases": ["默丘里", "弗雷迪", "佛莱迪·摩克瑞", "Freddie Mercury", "Freddie", "Mercury", "Farrokh Bulsara"], "rarity": 5 },
+        { "text": "布莱恩·梅", "aliases": ["布赖恩·梅", "Brian May", "May"], "rarity": 30 },
+        { "text": "罗杰·泰勒", "aliases": ["泰勒", "Roger Taylor", "Taylor", "Roger Meddows Taylor"], "rarity": 70 },
+        { "text": "约翰·迪肯", "aliases": ["迪肯", "John Deacon", "Deacon"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "brass-instruments",
+      "text": "说出一种铜管乐器",
+      "answers": [
+        { "text": "小号", "aliases": ["高音小号", "低音小号", "Trumpet", "Piccolo trumpet", "Bass trumpet"], "rarity": 5 },
+        { "text": "长号", "aliases": ["伸缩号", "拉管", "低音长号", "次中音长号", "活塞长号", "Trombone", "Bass trombone", "Tenor trombone", "Valve trombone"], "rarity": 10 },
+        { "text": "大号", "aliases": ["低音大号", "Tuba"], "rarity": 15 },
+        { "text": "圆号", "aliases": ["法国号", "French horn", "Horn"], "rarity": 20 },
+        { "text": "短号", "aliases": ["Cornet"], "rarity": 50 },
+        { "text": "军号", "aliases": ["Bugle"], "rarity": 50 },
+        { "text": "上低音号", "aliases": ["粗管上低音号", "悠风号", "Euphonium"], "rarity": 65 },
+        { "text": "苏萨号", "aliases": ["苏萨大号", "太阳号", "Sousaphone"], "rarity": 70 },
+        { "text": "富鲁格号", "aliases": ["柔音号", "Flugelhorn", "Fluegelhorn"], "rarity": 75 },
+        { "text": "次中音号", "aliases": ["细管上低音号", "Baritone horn", "Baritone"], "rarity": 80 },
+        { "text": "中音号", "aliases": ["Tenor horn", "Alto horn"], "rarity": 85 },
+        { "text": "行进圆号", "aliases": ["Mellophone"], "rarity": 90 },
+        { "text": "萨克号", "aliases": ["萨克斯号", "Saxhorn"], "rarity": 95 },
+        { "text": "邮号", "aliases": ["Post horn"], "rarity": 95 },
+        { "text": "有键低音长号", "aliases": ["Cimbasso"], "rarity": 100 },
+        { "text": "瓦格纳大号", "aliases": ["瓦格纳号", "Wagner tuba"], "rarity": 100 },
+        { "text": "赫利孔号", "aliases": ["Helicon"], "rarity": 100 },
+        { "text": "奥菲克莱德号", "aliases": ["奥非克莱德号", "Ophicleide"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "thrash-big-four",
+      "text": "说出鞭击金属四大天王之一",
+      "answers": [
+        { "text": "金属乐队", "aliases": ["Metallica"], "rarity": 5 },
+        { "text": "杀手乐队", "aliases": ["Slayer"], "rarity": 45 },
+        { "text": "麦加帝斯", "aliases": ["麦加帝斯乐队", "Megadeth"], "rarity": 45 },
+        { "text": "炭疽乐队", "aliases": ["炭疽", "Anthrax"], "rarity": 100 }
+      ]
+    }
+  ]
+}

@@ -45,8 +45,9 @@ dive, summon a creature. Its "Hide" button folds it away, and the browser rememb
   ends a dive, `ending.ts`)
 - `src/shared/`: types and constants used by both sides, and every word the game says, one
   table per language in `words/` (`en.ts` is the model; the compiler holds the others to it)
-- `packs/`: built-in packs, one JSON file each, in the format described under "Pack format" in
-  `docs/GAME.md` and checked by `validatePack` in `src/server/packs.ts`
+- `packs/`: built-in packs, a folder per language with one JSON file each, in the format
+  described under "Pack format" in `docs/GAME.md` and checked by `validatePack` in
+  `src/server/packs.ts`
 - `design/brand/`: the logo (the diver's helmet) and the link preview; `bun design/brand/render.ts`
   draws the icons and `og.png` into `src/web/` (the preview needs Google Chrome)
 

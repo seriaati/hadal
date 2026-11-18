@@ -1,0 +1,97 @@
+{
+  "id": "zh-sea",
+  "name": "海洋",
+  "prompts": [
+    {
+      "id": "oceans",
+      "text": "说出世界五大洋之一",
+      "answers": [
+        { "text": "太平洋", "aliases": ["Pacific Ocean", "Pacific"], "rarity": 5 },
+        { "text": "大西洋", "aliases": ["Atlantic Ocean", "Atlantic"], "rarity": 5 },
+        { "text": "印度洋", "aliases": ["Indian Ocean", "Indian"], "rarity": 25 },
+        { "text": "北冰洋", "aliases": ["北极海", "Arctic Ocean", "Arctic"], "rarity": 35 },
+        { "text": "南大洋", "aliases": ["南冰洋", "南极洋", "南极海", "Southern Ocean", "Antarctic Ocean", "Austral Ocean", "Southern", "Antarctic", "Austral"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "depth-zones",
+      "text": "说出远洋的五个深度带之一",
+      "answers": [
+        { "text": "暮光带", "aliases": ["暮光区", "暮光", "中层带", "弱光带", "Twilight zone", "Mesopelagic zone", "Disphotic zone", "Twilight", "Mesopelagic", "Disphotic"], "rarity": 25 },
+        { "text": "阳光带", "aliases": ["阳光区", "阳光", "上层带", "透光带", "真光带", "Sunlight zone", "Epipelagic zone", "Sunlit zone", "Euphotic zone", "Sunlight", "Epipelagic", "Sunlit", "Euphotic"], "rarity": 30 },
+        { "text": "午夜带", "aliases": ["午夜区", "午夜", "深层带", "半深海带", "Midnight zone", "Bathypelagic zone", "Bathyal zone", "Midnight", "Bathypelagic", "Bathyal"], "rarity": 35 },
+        { "text": "深渊带", "aliases": ["深渊区", "深渊", "深海带", "Abyssal zone", "Abyssopelagic zone", "Abyss", "Abyssal", "Abyssopelagic"], "rarity": 55 },
+        { "text": "超深渊带", "aliases": ["超深渊区", "超深渊", "超深海带", "海沟带", "海沟", "Hadal zone", "Hadopelagic zone", "Hadalpelagic zone", "Trenches", "Hadal", "Hadopelagic", "Hadalpelagic"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "sea-turtles",
+      "text": "说出一种海龟",
+      "answers": [
+        { "text": "绿海龟", "aliases": ["绿蠵龟", "Green sea turtle", "Green turtle", "Green"], "rarity": 15 },
+        { "text": "棱皮龟", "aliases": ["革龟", "Leatherback sea turtle", "Leatherback turtle", "Leatherback"], "rarity": 15 },
+        { "text": "蠵龟", "aliases": ["红海龟", "赤蠵龟", "Loggerhead sea turtle", "Loggerhead turtle", "Loggerhead"], "rarity": 25 },
+        { "text": "玳瑁", "aliases": ["Hawksbill sea turtle", "Hawksbill turtle", "Hawksbill"], "rarity": 40 },
+        { "text": "丽龟", "aliases": ["太平洋丽龟", "橄榄丽龟", "橄榄绿鳞龟", "Olive ridley sea turtle", "Pacific ridley sea turtle", "Olive ridley turtle", "Olive ridley", "Pacific ridley turtle", "Pacific ridley"], "rarity": 80 },
+        { "text": "肯氏龟", "aliases": ["肯氏丽龟", "大西洋丽龟", "Kemp's ridley sea turtle", "Atlantic ridley sea turtle", "Kemp's ridley turtle", "Kemp's ridley", "Atlantic ridley turtle", "Atlantic ridley"], "rarity": 85 },
+        { "text": "平背龟", "aliases": ["澳洲平背龟", "澳大利亚平背龟", "Flatback sea turtle", "Australian flatback sea turtle", "Flatback turtle", "Flatback", "Australian flatback turtle", "Australian flatback"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "sharks",
+      "text": "说出一种鲨鱼",
+      "answers": [
+        { "text": "大白鲨", "aliases": ["噬人鲨", "白鲨", "Great white shark", "White shark", "White pointer", "Great white", "White"], "rarity": 5 },
+        { "text": "双髻鲨", "aliases": ["锤头鲨", "锤头双髻鲨", "无沟双髻鲨", "路氏双髻鲨", "Hammerhead shark", "Great hammerhead shark", "Scalloped hammerhead shark", "Hammerhead", "Great hammerhead", "Scalloped hammerhead"], "rarity": 10 },
+        { "text": "鼬鲨", "aliases": ["虎鲨", "居氏鼬鲨", "Tiger shark", "Tiger"], "rarity": 15 },
+        { "text": "鲸鲨", "aliases": ["豆腐鲨", "Whale shark", "Whale"], "rarity": 15 },
+        { "text": "公牛鲨", "aliases": ["牛鲨", "低鳍真鲨", "Bull shark", "Zambezi shark", "Bull", "Zambezi"], "rarity": 25 },
+        { "text": "灰鲭鲨", "aliases": ["鲭鲨", "尖吻鲭鲨", "长鳍鲭鲨", "Mako shark", "Shortfin mako shark", "Longfin mako shark", "Mako", "Shortfin mako", "Longfin mako"], "rarity": 30 },
+        { "text": "铰口鲨", "aliases": ["护士鲨", "Nurse shark", "Tawny nurse shark", "Nurse", "Tawny nurse"], "rarity": 30 },
+        { "text": "巨齿鲨", "aliases": ["Megalodon"], "rarity": 30 },
+        { "text": "大青鲨", "aliases": ["蓝鲨", "Blue shark", "Blue"], "rarity": 40 },
+        { "text": "姥鲨", "aliases": ["象鲛", "Basking shark", "Basking"], "rarity": 40 },
+        { "text": "礁鲨", "aliases": ["黑鳍鲨", "黑鳍礁鲨", "乌翅真鲨", "白鳍鲨", "白鳍礁鲨", "灰三齿鲨", "灰礁鲨", "黑尾真鲨", "加勒比礁鲨", "Reef shark", "Blacktip reef shark", "Whitetip reef shark", "Grey reef shark", "Gray reef shark", "Caribbean reef shark", "Reef", "Blacktip reef", "Whitetip reef", "Grey reef", "Gray reef", "Caribbean reef"], "rarity": 40 },
+        { "text": "柠檬鲨", "aliases": ["Lemon shark", "Lemon"], "rarity": 45 },
+        { "text": "长尾鲨", "aliases": ["狐鲨", "狐形长尾鲨", "大眼长尾鲨", "Thresher shark", "Common thresher shark", "Bigeye thresher shark", "Thresher", "Common thresher", "Bigeye thresher"], "rarity": 45 },
+        { "text": "格陵兰睡鲨", "aliases": ["格陵兰鲨", "小头睡鲨", "Greenland shark", "Greenland"], "rarity": 50 },
+        { "text": "剑吻鲨", "aliases": ["欧氏尖吻鲛", "尖吻鲛", "哥布林鲨", "精灵鲨", "Goblin shark", "Goblin"], "rarity": 50 },
+        { "text": "半带皱唇鲨", "aliases": ["豹纹皱唇鲨", "加州豹鲨", "豹鲨", "Leopard shark", "Leopard"], "rarity": 55 },
+        { "text": "黑边鳍真鲨", "aliases": ["黑边鳍鲨", "Blacktip shark", "Blacktip"], "rarity": 55 },
+        { "text": "长鳍真鲨", "aliases": ["远洋白鳍鲨", "远洋白鳍真鲨", "Oceanic whitetip shark", "Whitetip shark", "Oceanic whitetip", "Whitetip"], "rarity": 60 },
+        { "text": "角鲨", "aliases": ["白斑角鲨", "狗鲨", "Dogfish", "Spiny dogfish", "Spurdog", "Dogfish shark"], "rarity": 60 },
+        { "text": "扁鲨", "aliases": ["天使鲨", "Angel shark", "Angel"], "rarity": 65 },
+        { "text": "沙虎鲨", "aliases": ["沙锥齿鲨", "锥齿鲨", "Sand tiger shark", "Grey nurse shark", "Gray nurse shark", "Ragged-tooth shark", "Sand tiger", "Grey nurse", "Gray nurse", "Ragged-tooth"], "rarity": 65 },
+        { "text": "须鲨", "aliases": ["地毯鲨", "Wobbegong", "Wobbegong shark", "Carpet shark", "Carpet"], "rarity": 65 },
+        { "text": "豹纹鲨", "aliases": ["大尾虎鲛", "斑马鲨", "Zebra shark", "Zebra"], "rarity": 70 },
+        { "text": "巨口鲨", "aliases": ["大口鲨", "Megamouth shark", "Megamouth"], "rarity": 70 },
+        { "text": "达摩鲨", "aliases": ["巴西达摩鲨", "雪茄达摩鲨", "Cookiecutter shark", "Cookiecutter"], "rarity": 75 },
+        { "text": "澳大利亚虎鲨", "aliases": ["澳洲虎鲨", "杰克逊港虎鲨", "Port Jackson shark", "Port Jackson"], "rarity": 75 },
+        { "text": "皱鳃鲨", "aliases": ["皱鳃鲛", "Frilled shark", "Frill shark", "Frilled", "Frill"], "rarity": 75 },
+        { "text": "猫鲨", "aliases": ["Catshark"], "rarity": 80 },
+        { "text": "佛氏虎鲨", "aliases": ["Horn shark", "Horn"], "rarity": 80 },
+        { "text": "鼠鲨", "aliases": ["Porbeagle", "Porbeagle shark"], "rarity": 80 },
+        { "text": "六鳃鲨", "aliases": ["灰六鳃鲨", "Sixgill shark", "Bluntnose sixgill shark", "Cow shark", "Sixgill", "Bluntnose sixgill", "Cow"], "rarity": 85 },
+        { "text": "七鳃鲨", "aliases": ["扁头哈那鲨", "哈那鲨", "Sevengill shark", "Broadnose sevengill shark", "Sevengill", "Broadnose sevengill"], "rarity": 90 },
+        { "text": "鲑鲨", "aliases": ["太平洋鼠鲨", "Salmon shark", "Salmon"], "rarity": 90 },
+        { "text": "镰状真鲨", "aliases": ["丝鲨", "Silky shark", "Silky"], "rarity": 90 },
+        { "text": "铅灰真鲨", "aliases": ["Sandbar shark", "Sandbar"], "rarity": 90 },
+        { "text": "暗色真鲨", "aliases": ["Dusky shark", "Dusky"], "rarity": 90 },
+        { "text": "短鳍真鲨", "aliases": ["飞旋鲨", "Spinner shark", "Spinner"], "rarity": 90 },
+        { "text": "斑竹鲨", "aliases": ["竹鲨", "Bamboo shark", "Bamboo"], "rarity": 90 },
+        { "text": "肩章鲨", "aliases": ["眼斑长尾须鲨", "Epaulette shark", "Epaulette"], "rarity": 90 },
+        { "text": "灯笼鲨", "aliases": ["乌鲨", "Lantern shark", "Dwarf lanternshark", "Lantern"], "rarity": 90 },
+        { "text": "翅鲨", "aliases": ["Tope", "Tope shark", "School shark", "Soupfin shark", "School", "Soupfin"], "rarity": 95 },
+        { "text": "锯鲨", "aliases": ["Sawshark"], "rarity": 95 },
+        { "text": "窄头双髻鲨", "aliases": ["Bonnethead shark", "Bonnethead"], "rarity": 95 },
+        { "text": "膨鲨", "aliases": ["头鲨", "Swell shark", "Swell"], "rarity": 95 },
+        { "text": "短尾真鲨", "aliases": ["铜鲨", "Copper shark", "Bronze whaler", "Copper"], "rarity": 95 },
+        { "text": "加拉帕戈斯真鲨", "aliases": ["加拉帕戈斯鲨", "Galapagos shark", "Galapagos"], "rarity": 95 },
+        { "text": "白边真鲨", "aliases": ["白边鳍真鲨", "Silvertip shark", "Silvertip"], "rarity": 95 },
+        { "text": "睡鲨", "aliases": ["太平洋睡鲨", "Sleeper shark", "Pacific sleeper shark", "Sleeper", "Pacific sleeper"], "rarity": 100 },
+        { "text": "鳄鲨", "aliases": ["拟锥齿鲨", "Crocodile shark", "Crocodile"], "rarity": 100 },
+        { "text": "黑吻真鲨", "aliases": ["黑鼻鲨", "Blacknose shark", "Blacknose"], "rarity": 100 }
+      ]
+    }
+  ]
+}

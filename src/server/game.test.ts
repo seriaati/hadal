@@ -1,9 +1,9 @@
 import { expect, test } from "bun:test";
 import type { Pack } from "../shared/types";
 import { buildIndex, judge, nearestAnswer, normalize, pickPrompts, typos } from "./game";
-import { loadPacks } from "./packs";
+import { loadBuiltIn } from "./packs";
 
-const index = buildIndex(await loadPacks());
+const index = buildIndex(Object.values(await loadBuiltIn()).flat());
 const ASIA = "geography/asia-countries";
 
 test("normalize ignores case, accents, punctuation, spaces and a leading 'the'", () => {

@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadPacks, validatePack } from "./packs";
+import { loadBuiltIn, loadPacks, validatePack } from "./packs";
 
 const answers = [
   { text: "Peru", rarity: 20 },
@@ -15,8 +15,15 @@ const pack = (prompt: object = {}, top: object = {}) => ({
   ...top,
 });
 
-test("every built-in pack is valid", async () => {
-  expect((await loadPacks()).length).toBeGreaterThan(0);
+test("every built-in pack is valid, and every language has some", async () => {
+  for (const packs of Object.values(await loadBuiltIn())) expect(packs.length).toBeGreaterThan(0);
+});
+
+test("two built-in packs of different languages cannot share an id", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "hadal-"));
+  await Bun.write(join(dir, "en", "seas.json"), JSON.stringify(pack({}, { id: "seas" })));
+  await Bun.write(join(dir, "zh-CN", "seas.json"), JSON.stringify(pack({}, { id: "seas" })));
+  await expect(loadBuiltIn(dir)).rejects.toThrow('two built-in packs have the id "seas"');
 });
 
 test("a well-formed pack has no problems", () => {

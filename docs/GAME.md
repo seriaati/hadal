@@ -17,8 +17,10 @@ private rooms joined by a code or a link. Players can also add packs of their ow
 Claude write one, and have answers a pack does not list judged live with their own API key.
 
 The game speaks English and Simplified Chinese. It starts in the browser's language, and the
-settings change it; Claude writes a player's packs in their language. The built-in packs are
-in English for now.
+settings change it; Claude writes a player's packs in their language. Each language has
+built-in packs of its own: the Chinese ones are the English packs translated, and their answers
+also take the English names. A room starts with the packs of its host's language, and the host
+may add any others.
 
 ## The look
 
@@ -62,7 +64,8 @@ built-in pack is not valid. Uploaded packs go through the same check.
 
 - No other fields are allowed, so a misspelt field name is caught.
 - Ids are lower-case letters and digits joined by hyphens, at most 40 characters. A prompt's
-  id is unique within its pack; a built-in pack's id is its file name.
+  id is unique within its pack. A built-in pack's id is its file name, unique across every
+  language: the packs of a language are in `packs/<language>/` (`packs/en/`, `packs/zh-CN/`).
 - The name is at most 24 characters and a prompt's text at most 80.
 - A prompt has at least two answers. Rarity is a whole number from 1 (everyone says it) to
   100, and the rarest answer of every prompt has 100.

@@ -1,0 +1,74 @@
+{
+  "id": "zh-mythology",
+  "name": "神话",
+  "prompts": [
+    {
+      "id": "olympians",
+      "text": "说出一位希腊神话中的奥林匹斯十二主神",
+      "answers": [
+        { "text": "宙斯", "aliases": ["Zeus"], "rarity": 5 },
+        { "text": "波塞冬", "aliases": ["波赛冬", "Poseidon"], "rarity": 10 },
+        { "text": "雅典娜", "aliases": ["帕拉斯·雅典娜", "Athena", "Athene", "Pallas Athena"], "rarity": 15 },
+        { "text": "阿波罗", "aliases": ["Apollo", "Apollon"], "rarity": 20 },
+        { "text": "阿佛洛狄忒", "aliases": ["阿芙洛狄忒", "阿芙罗狄蒂", "Aphrodite"], "rarity": 20 },
+        { "text": "阿瑞斯", "aliases": ["Ares"], "rarity": 25 },
+        { "text": "赫尔墨斯", "aliases": ["赫耳墨斯", "Hermes"], "rarity": 30 },
+        { "text": "阿尔忒弥斯", "aliases": ["阿耳忒弥斯", "Artemis"], "rarity": 35 },
+        { "text": "赫拉", "aliases": ["希拉", "Hera"], "rarity": 35 },
+        { "text": "赫菲斯托斯", "aliases": ["赫淮斯托斯", "Hephaestus", "Hephaistos"], "rarity": 60 },
+        { "text": "狄俄尼索斯", "aliases": ["狄奥尼索斯", "巴克斯", "酒神", "Dionysus", "Dionysos", "Bacchus"], "rarity": 60 },
+        { "text": "得墨忒耳", "aliases": ["德墨忒尔", "狄蜜特", "Demeter"], "rarity": 65 },
+        { "text": "赫斯提亚", "aliases": ["赫斯提娅", "Hestia"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "deadly-sins",
+      "text": "说出七宗罪之一",
+      "answers": [
+        { "text": "色欲", "aliases": ["淫欲", "Lust"], "rarity": 10 },
+        { "text": "贪婪", "aliases": ["贪欲", "Greed", "Avarice", "Covetousness"], "rarity": 15 },
+        { "text": "暴食", "aliases": ["贪食", "Gluttony"], "rarity": 30 },
+        { "text": "懒惰", "aliases": ["怠惰", "Sloth", "Laziness", "Acedia"], "rarity": 40 },
+        { "text": "傲慢", "aliases": ["骄傲", "自负", "虚荣", "Pride", "Vanity", "Hubris"], "rarity": 55 },
+        { "text": "暴怒", "aliases": ["愤怒", "Wrath", "Anger", "Rage", "Ire"], "rarity": 70 },
+        { "text": "嫉妒", "aliases": ["妒忌", "Envy", "Jealousy"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "underworld-rivers",
+      "text": "说出一条希腊神话中冥界的河流",
+      "answers": [
+        { "text": "斯堤克斯河", "aliases": ["斯堤克斯", "斯提克斯河", "斯提克斯", "冥河", "Styx"], "rarity": 5 },
+        { "text": "勒忒河", "aliases": ["勒忒", "忘川", "忘川河", "遗忘之河", "Lethe"], "rarity": 50 },
+        { "text": "阿刻戎河", "aliases": ["阿刻戎", "Acheron"], "rarity": 65 },
+        { "text": "弗列革吞河", "aliases": ["弗列革吞", "火焰之河", "Phlegethon", "Pyriphlegethon"], "rarity": 90 },
+        { "text": "科库托斯河", "aliases": ["科库托斯", "哀叹之河", "Cocytus", "Kokytos"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "four-horsemen",
+      "text": "说出《启示录》四骑士之一",
+      "answers": [
+        { "text": "死亡", "aliases": ["死神", "Death"], "rarity": 10 },
+        { "text": "战争", "aliases": ["War"], "rarity": 15 },
+        { "text": "饥荒", "aliases": ["饥饿", "饥馑", "Famine", "Hunger"], "rarity": 35 },
+        { "text": "瘟疫", "aliases": ["征服", "Pestilence", "Plague", "Conquest"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "santas-reindeer",
+      "text": "说出圣诞老人的一头驯鹿",
+      "answers": [
+        { "text": "鲁道夫", "aliases": ["红鼻子鲁道夫", "Rudolph", "Rudolf"], "rarity": 5 },
+        { "text": "闪电", "aliases": ["Blitzen", "Blixem", "Blixen"], "rarity": 25 },
+        { "text": "猛冲者", "aliases": ["冲锋者", "冲刺者", "Dasher"], "rarity": 30 },
+        { "text": "舞者", "aliases": ["舞蹈家", "舞蹈者", "Dancer"], "rarity": 30 },
+        { "text": "欢腾者", "aliases": ["腾跃者", "Prancer"], "rarity": 35 },
+        { "text": "彗星", "aliases": ["Comet"], "rarity": 40 },
+        { "text": "丘比特", "aliases": ["Cupid"], "rarity": 45 },
+        { "text": "雌狐", "aliases": ["悍妇", "Vixen"], "rarity": 60 },
+        { "text": "雷霆", "aliases": ["雷", "Donner", "Donder", "Dunder"], "rarity": 100 }
+      ]
+    }
+  ]
+}

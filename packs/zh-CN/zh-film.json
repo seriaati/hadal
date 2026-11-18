@@ -1,0 +1,102 @@
+{
+  "id": "zh-film",
+  "name": "电影",
+  "prompts": [
+    {
+      "id": "seven-dwarfs",
+      "text": "说出迪士尼动画《白雪公主》里的七个小矮人之一",
+      "answers": [
+        { "text": "糊涂蛋", "aliases": ["Dopey", "迷糊", "糊涂"], "rarity": 10 },
+        { "text": "爱生气", "aliases": ["Grumpy", "暴躁", "坏脾气"], "rarity": 10 },
+        { "text": "瞌睡虫", "aliases": ["Sleepy", "瞌睡"], "rarity": 25 },
+        { "text": "开心果", "aliases": ["Happy", "快乐", "开心"], "rarity": 35 },
+        { "text": "喷嚏精", "aliases": ["Sneezy", "喷嚏"], "rarity": 40 },
+        { "text": "万事通", "aliases": ["Doc", "博士", "医生"], "rarity": 55 },
+        { "text": "害羞鬼", "aliases": ["Bashful", "害羞"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "bond-actors",
+      "text": "说出一位在官方007系列电影中饰演过詹姆斯·邦德的演员",
+      "answers": [
+        { "text": "肖恩·康纳利", "aliases": ["Sean Connery", "Connery", "康纳利", "史恩·康纳莱", "康纳莱"], "rarity": 10 },
+        { "text": "丹尼尔·克雷格", "aliases": ["Daniel Craig", "Craig", "克雷格"], "rarity": 10 },
+        { "text": "皮尔斯·布鲁斯南", "aliases": ["Pierce Brosnan", "Brosnan", "布鲁斯南", "皮尔斯·布洛斯南", "布洛斯南"], "rarity": 20 },
+        { "text": "罗杰·摩尔", "aliases": ["Roger Moore", "Moore", "摩尔"], "rarity": 30 },
+        { "text": "蒂莫西·道尔顿", "aliases": ["Timothy Dalton", "Dalton", "道尔顿", "提摩西·达顿", "达顿"], "rarity": 70 },
+        { "text": "乔治·拉扎贝", "aliases": ["George Lazenby", "Lazenby", "拉扎贝"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "nolan-films",
+      "text": "说出一部克里斯托弗·诺兰执导的电影",
+      "answers": [
+        { "text": "盗梦空间", "aliases": ["Inception", "全面启动"], "rarity": 5 },
+        { "text": "蝙蝠侠：黑暗骑士", "aliases": ["The Dark Knight", "黑暗骑士"], "rarity": 5 },
+        { "text": "奥本海默", "aliases": ["Oppenheimer"], "rarity": 10 },
+        { "text": "星际穿越", "aliases": ["Interstellar", "星际效应"], "rarity": 10 },
+        { "text": "敦刻尔克", "aliases": ["Dunkirk", "敦克尔克大行动"], "rarity": 30 },
+        { "text": "信条", "aliases": ["Tenet", "天能"], "rarity": 30 },
+        { "text": "蝙蝠侠：侠影之谜", "aliases": ["Batman Begins", "侠影之谜", "蝙蝠侠：开战时刻", "开战时刻"], "rarity": 35 },
+        { "text": "蝙蝠侠：黑暗骑士崛起", "aliases": ["The Dark Knight Rises", "黑暗骑士崛起", "黑暗骑士：黎明升起", "黎明升起"], "rarity": 35 },
+        { "text": "致命魔术", "aliases": ["The Prestige", "顶尖对决"], "rarity": 45 },
+        { "text": "记忆碎片", "aliases": ["Memento", "记忆拼图"], "rarity": 50 },
+        { "text": "奥德赛", "aliases": ["The Odyssey"], "rarity": 60 },
+        { "text": "失眠症", "aliases": ["Insomnia", "针锋相对"], "rarity": 85 },
+        { "text": "追随", "aliases": ["Following"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "star-wars-saga",
+      "text": "说出一部《星球大战》系列第一至第九部的电影",
+      "answers": [
+        { "text": "帝国反击战", "aliases": ["The Empire Strikes Back", "Empire", "Episode V", "Episode 5", "星球大战：帝国反击战", "星球大战2：帝国反击战", "帝国大反击"], "rarity": 5 },
+        { "text": "新希望", "aliases": ["A New Hope", "New Hope", "Star Wars", "Star Wars: A New Hope", "Episode IV", "Episode 4", "星球大战：新希望", "星球大战", "曙光乍现"], "rarity": 15 },
+        { "text": "绝地归来", "aliases": ["Return of the Jedi", "Episode VI", "Episode 6", "星球大战：绝地归来", "星球大战3：绝地归来", "绝地大反攻"], "rarity": 15 },
+        { "text": "幽灵的威胁", "aliases": ["The Phantom Menace", "Episode I", "Episode 1", "星球大战前传1：幽灵的威胁", "威胁潜伏", "魅影危机"], "rarity": 25 },
+        { "text": "西斯的复仇", "aliases": ["Revenge of the Sith", "Episode III", "Episode 3", "星球大战前传3：西斯的复仇", "西斯复仇", "西斯大帝的复仇"], "rarity": 25 },
+        { "text": "原力觉醒", "aliases": ["The Force Awakens", "Episode VII", "Episode 7", "星球大战：原力觉醒"], "rarity": 35 },
+        { "text": "最后的绝地武士", "aliases": ["The Last Jedi", "Episode VIII", "Episode 8", "星球大战：最后的绝地武士"], "rarity": 50 },
+        { "text": "天行者崛起", "aliases": ["The Rise of Skywalker", "Episode IX", "Episode 9", "星球大战：天行者崛起", "天行者的崛起"], "rarity": 80 },
+        { "text": "克隆人的进攻", "aliases": ["Attack of the Clones", "Episode II", "Episode 2", "星球大战前传2：克隆人的进攻", "复制人全面进攻"], "rarity": 100 }
+      ]
+    },
+    {
+      "id": "pixar-films",
+      "text": "说出一部皮克斯动画长片",
+      "answers": [
+        { "text": "玩具总动员", "aliases": ["Toy Story"], "rarity": 5 },
+        { "text": "海底总动员", "aliases": ["Finding Nemo"], "rarity": 10 },
+        { "text": "飞屋环游记", "aliases": ["Up", "天外奇迹"], "rarity": 20 },
+        { "text": "怪兽电力公司", "aliases": ["Monsters, Inc.", "Monsters Incorporated", "怪兽公司"], "rarity": 20 },
+        { "text": "超人总动员", "aliases": ["The Incredibles", "超人特攻队"], "rarity": 20 },
+        { "text": "赛车总动员", "aliases": ["Cars", "汽车总动员"], "rarity": 20 },
+        { "text": "美食总动员", "aliases": ["Ratatouille", "料理鼠王"], "rarity": 25 },
+        { "text": "机器人总动员", "aliases": ["WALL-E", "瓦力"], "rarity": 25 },
+        { "text": "头脑特工队", "aliases": ["Inside Out", "脑筋急转弯"], "rarity": 25 },
+        { "text": "寻梦环游记", "aliases": ["Coco", "可可夜总会"], "rarity": 25 },
+        { "text": "玩具总动员2", "aliases": ["Toy Story 2", "Toy Story II"], "rarity": 35 },
+        { "text": "玩具总动员3", "aliases": ["Toy Story 3", "Toy Story III"], "rarity": 35 },
+        { "text": "勇敢传说", "aliases": ["Brave", "勇敢传说之幻险森林"], "rarity": 45 },
+        { "text": "心灵奇旅", "aliases": ["Soul", "灵魂急转弯"], "rarity": 45 },
+        { "text": "海底总动员2：多莉去哪儿", "aliases": ["Finding Dory", "海底总动员2", "多莉去哪儿"], "rarity": 45 },
+        { "text": "虫虫危机", "aliases": ["A Bug's Life", "Bug's Life"], "rarity": 50 },
+        { "text": "玩具总动员4", "aliases": ["Toy Story 4", "Toy Story IV"], "rarity": 55 },
+        { "text": "怪兽大学", "aliases": ["Monsters University"], "rarity": 55 },
+        { "text": "头脑特工队2", "aliases": ["Inside Out 2", "脑筋急转弯2"], "rarity": 55 },
+        { "text": "超人总动员2", "aliases": ["Incredibles 2", "超人特攻队2"], "rarity": 55 },
+        { "text": "夏日友晴天", "aliases": ["Luca", "路卡的夏天"], "rarity": 60 },
+        { "text": "青春变形记", "aliases": ["Turning Red", "青春养成记"], "rarity": 65 },
+        { "text": "赛车总动员2", "aliases": ["Cars 2", "汽车总动员2"], "rarity": 70 },
+        { "text": "疯狂元素城", "aliases": ["Elemental", "元素方城市"], "rarity": 70 },
+        { "text": "1/2的魔法", "aliases": ["Onward", "二分之一的魔法"], "rarity": 80 },
+        { "text": "光年正传", "aliases": ["Lightyear", "巴斯光年"], "rarity": 80 },
+        { "text": "赛车总动员3", "aliases": ["Cars 3", "汽车总动员3", "赛车总动员3：极速挑战"], "rarity": 85 },
+        { "text": "玩具总动员5", "aliases": ["Toy Story 5", "Toy Story V"], "rarity": 85 },
+        { "text": "地球特派员", "aliases": ["Elio", "外星奇遇记"], "rarity": 90 },
+        { "text": "河狸变身计划", "aliases": ["Hoppers", "狸想世界"], "rarity": 95 },
+        { "text": "恐龙当家", "aliases": ["The Good Dinosaur"], "rarity": 100 }
+      ]
+    }
+  ]
+}
