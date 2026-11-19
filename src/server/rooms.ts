@@ -249,8 +249,46 @@ function remove(member: Member, room: Room, id: number, ban: boolean) {
   tell(room);
 }
 
+/** Seconds a player whose connection closed keeps their place in the room, for their page to connect again and take it back. */
+export const AWAY_SECONDS = 30;
+const away = new Map<Member, Timer>();
+
+/** The connection closed: the player leaves the room unless they are back in time. */
+export function lost(member: Member) {
+  member.closed = true;
+  if (places.has(member)) away.set(member, setTimeout(() => leave(member), AWAY_SECONDS * 1000));
+}
+
+/**
+ * A page whose connection closed takes its player's place back. If the room is not there, the server has started
+ * again since (a new version of the game): the first player back opens it again under its code, without the dive
+ * that was under way, and the others join it as they come back.
+ */
+async function back(member: Member, message: Extract<ClientMessage, { type: "back" }>): Promise<Refusal | void> {
+  const code = String(message.code ?? "").trim().toUpperCase();
+  const room = rooms.get(code);
+  if (room) {
+    // The server may not have noticed yet that the old connection closed: the browser's cookie says whose place it is.
+    const player = room.players.find((one) => one.id === message.id && one.member.browser === member.browser);
+    if (!player) return enter(member, message, code);
+    clearTimeout(away.get(player.member));
+    away.delete(player.member);
+    places.delete(player.member);
+    player.member = member;
+    places.set(member, room);
+    return tell(room);
+  }
+  if (code.length !== ROOM_CODE_LENGTH || [...code].some((letter) => !LETTERS.includes(letter))) return "no-room";
+  const settings = await remembered(member, message.settings);
+  if (places.has(member) || member.closed) return;
+  // Another player may have opened it again meanwhile.
+  return enter(member, message, rooms.has(code) ? code : { code, settings });
+}
+
 /** When the host goes, the crown passes to the player after them. When the last player goes, so does the room. */
 export function leave(member: Member) {
+  clearTimeout(away.get(member));
+  away.delete(member);
   const room = places.get(member);
   if (!room) return;
   places.delete(member);
@@ -282,6 +320,7 @@ export async function receive(member: Member, text: string) {
     if (!places.has(member) && !member.closed) refuse(enter(member, message, { settings }));
   }
   else if (message?.type === "join" && !room) refuse(enter(member, message, String(message.code ?? "")));
+  else if (message?.type === "back" && !room) refuse(await back(member, message));
   else if (message?.type === "settings" && room) refuse(await change(member, room, message.settings ?? {}));
   else if (message?.type === "start" && room) refuse(await start(member, room));
   else if (message?.type === "host" && room) crown(member, room, message.id);

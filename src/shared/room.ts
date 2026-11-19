@@ -102,6 +102,8 @@ export type ClientMessage =
   /** `settings` are those the host's browser remembers from their last room; the server keeps what still holds of them. */
   | { type: "create"; nickname: string; suit: number; settings?: Partial<RoomSettings> }
   | { type: "join"; code: string; nickname: string; suit: number }
+  /** The page's connection closed, and it takes its place in the room back: player `id`, or if the room is gone, as one of these settings. */
+  | { type: "back"; code: string; id: number; nickname: string; suit: number; settings: Partial<RoomSettings> }
   | { type: "ready"; ready: boolean }
   | { type: "suit"; suit: number }
   | { type: "settings"; settings: Partial<RoomSettings> }

@@ -11,7 +11,7 @@ import { writePack } from "./generate";
 import { removeKey, saveKey } from "./keys";
 import { judgeLive } from "./live";
 import { loadBuiltIn } from "./packs";
-import { leave, receive, usePrompts, type Member } from "./rooms";
+import { lost, receive, usePrompts, type Member } from "./rooms";
 
 const PROMPTS_PER_GAME = 10;
 /**
@@ -219,14 +219,14 @@ const server = Bun.serve({
     data: {} as Member,
     // A message about a room is a few lines of JSON.
     maxPayloadLength: 4096,
+    // Cloudflare closes a connection that is quiet for about 100 seconds. Bun pings a quiet one at 0.6 of this, which keeps it open.
+    idleTimeout: 60,
     open(ws) {
       ws.data.send = (message) => ws.send(JSON.stringify(message));
     },
-    message: (ws, text) => receive(ws.data, String(text)),
-    close: (ws) => {
-      ws.data.closed = true;
-      leave(ws.data);
-    },
+    // An error left uncaught here (the database out of reach) would stop the server, and every room with it.
+    message: (ws, text) => receive(ws.data, String(text)).catch((error) => console.error(error)),
+    close: (ws) => lost(ws.data),
   },
 });
 

@@ -5,7 +5,7 @@ import { accountIdOf, signUp } from "./accounts";
 import { savePack } from "./custom";
 import { migrate, sql } from "./db";
 import { saveKey } from "./keys";
-import { leave, receive, usePrompts, type Member } from "./rooms";
+import { leave, lost, receive, usePrompts, type Member } from "./rooms";
 
 type Fake = Member & { sent: ServerMessage[] };
 const member = (accountId: string | null = null, browser: string = crypto.randomUUID()): Fake => {
@@ -137,6 +137,44 @@ test("a player joins in the suit they chose if nobody wears it, otherwise in one
   expect(suits[3]).toBe(free);
   expect(new Set(suits).size).toBe(4);
   leave(host);
+});
+
+test("a player whose connection closes keeps their place, and takes it back from the same browser", async () => {
+  const { host, others: [ben], code } = await room(null, "ben");
+  const id = seen(ben!).you;
+  lost(ben!);
+  expect(names(host)).toEqual(["host", "ben"]);
+  const stranger = member();
+  await say(stranger, { type: "back", code, id, nickname: "ben", suit: 1, settings: {} });
+  expect(stranger.sent.at(-1)).toEqual({ type: "refused", reason: "name-taken" });
+  const again = member(null, ben!.browser);
+  await say(again, { type: "back", code, id, nickname: "ben", suit: 1, settings: {} });
+  expect(seen(again).you).toBe(id);
+  expect(names(again)).toEqual(["host", "ben"]);
+  // The old connection's place is the new one's: closing it again does nothing more.
+  lost(ben!);
+  await say(again, { type: "ready", ready: true });
+  expect(seen(host).players[1]!.ready).toBe(true);
+  leave(again);
+  expect(names(host)).toEqual(["host"]);
+  leave(host);
+});
+
+test("a room the server no longer has is opened again under its code by the first player back", async () => {
+  const code = "ACDEF";
+  const ana = member();
+  await say(ana, { type: "back", code, id: 3, nickname: "ana", suit: 2, settings: { mode: "longest" } });
+  expect(seen(ana)).toMatchObject({ code, players: [{ nickname: "ana", suit: 2, host: true }], dive: null });
+  expect(seen(ana).settings.mode).toBe("longest");
+  const ben = member();
+  await say(ben, { type: "back", code, id: 0, nickname: "ben", suit: 2, settings: {} });
+  expect(names(ana)).toEqual(["ana", "ben"]);
+  expect(seen(ana).settings.mode).toBe("longest");
+  const odd = member();
+  await say(odd, { type: "back", code: "AB0", id: 0, nickname: "cal", suit: 0, settings: {} });
+  expect(odd.sent.at(-1)).toEqual({ type: "refused", reason: "no-room" });
+  leave(ana);
+  leave(ben);
 });
 
 test("a player changes their suit in the room, but not during a dive", async () => {
