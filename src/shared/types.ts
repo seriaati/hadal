@@ -44,5 +44,8 @@ export type WriteOrder = { topic: string; instructions: string; prompts: number;
 /** Lower-case letters and digits only: what the pixel fonts can draw. */
 export const USERNAME = /^[a-z0-9]{3,16}$/;
 export const USERNAME_MAX = 16;
+/** A name in a room: letters and digits of any script (and the marks some scripts set on their letters), drawn in the fetched font where the pixel fonts have none. */
+export const NICKNAME = /^[\p{L}\p{N}][\p{L}\p{M}\p{N}]{0,15}$/u;
+export const NICKNAME_MAX = 16;
 export const PASSWORD_MIN = 8;
 export const PASSWORD_MAX = 100;

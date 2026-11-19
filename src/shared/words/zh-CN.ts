@@ -1,5 +1,5 @@
 import { MAX_PLAYERS, type Mode, type Refusal } from "../room";
-import { USERNAME_MAX } from "../types";
+import { NICKNAME_MAX, USERNAME_MAX } from "../types";
 import type { Words } from "./en";
 
 export const zhCN: Words = {
@@ -266,7 +266,7 @@ export const zhCN: Words = {
       "no-room": "没有这个代码的房间",
       full: `房间已满：每个房间最多 ${MAX_PLAYERS} 名潜水员`,
       "name-taken": "房间里已有人用这个名字，请换一个",
-      "bad-name": `名字为 3 到 ${USERNAME_MAX} 个字母或数字`,
+      "bad-name": `名字最多 ${NICKNAME_MAX} 个字，只用文字或数字`,
       "bad-suit": "只有六种潜水服可选",
       "not-host": "只有房主可以设置房间",
       "bad-settings": "房间不能这样设置",

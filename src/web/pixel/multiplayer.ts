@@ -1,5 +1,5 @@
 import { AIR_MAX, AIR_MIN, BAR_FULL, HEARTS, MODES, ROOM_CODE_LENGTH, SUITS, type Gone, type Refusal, type RoomPlayer, type RoomSettings, type RoomView } from "../../shared/room";
-import { USERNAME_MAX, type PackSummary } from "../../shared/types";
+import { NICKNAME_MAX, type PackSummary } from "../../shared/types";
 import { formatMeters } from "../depth";
 import { t } from "../language";
 import type { RoomLog } from "./ending";
@@ -449,7 +449,7 @@ export class MultiplayerPanel {
 
   private you(): Part[] {
     return [
-      { kind: "field", id: "name", label: t().rooms.name, max: USERNAME_MAX, autocomplete: "nickname", start: this.account.account?.username },
+      { kind: "field", id: "name", label: t().rooms.name, max: NICKNAME_MAX, autocomplete: "nickname", start: this.account.account?.username },
       ...this.refusal("name"),
       { kind: "slider", id: "suit", label: t().rooms.suit, value: this.suit / (SUITS - 1), steps: SUITS - 1, colors: SUIT_COLORS, set: (value) => (this.suit = Math.round(value * (SUITS - 1))) },
       ...this.refusal("end"),

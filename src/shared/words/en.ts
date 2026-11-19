@@ -1,5 +1,5 @@
 import { MAX_PLAYERS, type Hearts, type Mode, type Refusal } from "../room";
-import { USERNAME_MAX } from "../types";
+import { NICKNAME_MAX, USERNAME_MAX } from "../types";
 
 /**
  * Everything the game says, in English. Every other language has the same keys, which the
@@ -296,7 +296,7 @@ export const en = {
       "no-room": "no room has that code",
       full: `that room is full: a room holds ${MAX_PLAYERS} divers`,
       "name-taken": "someone in that room has that name: choose another",
-      "bad-name": `a name is 3 to ${USERNAME_MAX} letters or digits`,
+      "bad-name": `a name is up to ${NICKNAME_MAX} letters or digits`,
       "bad-suit": "that suit is not one of the six",
       "not-host": "only the host sets up the room",
       "bad-settings": "the room cannot be set up that way",

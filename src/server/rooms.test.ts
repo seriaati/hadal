@@ -90,8 +90,16 @@ test("joining is refused with the reason", async () => {
   expect(await refused({ type: "join", code: "ZZZZZZ", nickname: "cal", suit: 0 })).toEqual([{ type: "refused", reason: "no-room" }]);
   expect(await refused({ type: "join", code, nickname: "BEN", suit: 0 })).toEqual([{ type: "refused", reason: "name-taken" }]);
   expect(await refused({ type: "join", code, nickname: "c al", suit: 0 })).toEqual([{ type: "refused", reason: "bad-name" }]);
+  expect(await refused({ type: "join", code, nickname: "ben!", suit: 0 })).toEqual([{ type: "refused", reason: "bad-name" }]);
+  expect(await refused({ type: "join", code, nickname: "a".repeat(17), suit: 0 })).toEqual([{ type: "refused", reason: "bad-name" }]);
   expect(await refused({ type: "join", code, nickname: "cal", suit: 6 })).toEqual([{ type: "refused", reason: "bad-suit" }]);
   expect(await refused({ type: "create", nickname: "cal", suit: 1.5 })).toEqual([{ type: "refused", reason: "bad-suit" }]);
+});
+
+test("a name in a room may be in any script", async () => {
+  const { host, code } = await room();
+  for (const nickname of ["小明", "Ана", "Bo"]) await say(member(), { type: "join", code, nickname, suit: 0 });
+  expect(names(host)).toEqual(["host", "小明", "ана", "bo"]);
 });
 
 test("a room holds six", async () => {

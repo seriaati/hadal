@@ -3,7 +3,7 @@ import {
   type ClientMessage, type Gone, type Refusal, type RoomPlayer, type RoomSettings, type RoomView, type ServerMessage,
 } from "../shared/room";
 import type { Language } from "../shared/language";
-import { USERNAME, type GamePrompt, type Pack } from "../shared/types";
+import { NICKNAME, type GamePrompt, type Pack } from "../shared/types";
 import { listPacks, loadPack } from "./custom";
 import { Dive, enoughFor, realClock, type Clock } from "./dive";
 import { OWN, buildIndex, pickPrompts, shuffle, type PromptIndex } from "./game";
@@ -77,8 +77,8 @@ function tell(room: Room) {
 
 /** Without a `code` the room is a new one and the player its host. */
 function enter(member: Member, message: { nickname: string; suit: number }, code?: string): Refusal | void {
-  const nickname = String(message.nickname ?? "").trim().toLowerCase();
-  if (!USERNAME.test(nickname)) return "bad-name";
+  const nickname = String(message.nickname ?? "").trim().normalize("NFC").toLowerCase();
+  if (!NICKNAME.test(nickname)) return "bad-name";
   if (!Number.isInteger(message.suit) || message.suit < 0 || message.suit >= SUITS) return "bad-suit";
   const room: Room | undefined =
     code === undefined ? { code: newCode(), players: [], settings: { ...DEFAULT_SETTINGS, builtIn: packsIn[member.language] ?? [] }, nextId: 0, dive: null, last: null, banned: new Set(), asked: new Set(), asking: null } : rooms.get(code.trim().toUpperCase());
