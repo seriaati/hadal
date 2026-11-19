@@ -184,13 +184,17 @@ export function Game() {
     let doneAt = 0;
     let last = performance.now();
     let phase: Phase = "title";
+    let yours = false;
     let request = requestAnimationFrame(function loop(now) {
       request = requestAnimationFrame(loop);
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
+      // The words of a turn that has ended are not kept for the next.
+      if (yours && !multiplayer.yours) input.value = "";
+      yours = multiplayer.yours;
       if (game.phase === "ask") game.input = input.value;
-      else if (multiplayer.yours) multiplayer.type(input.value);
-      else input.value = "";
+      else if (yours) multiplayer.type(input.value);
+      else if (!multiplayer.ahead) input.value = "";
       // A prompt in another script keeps its air until the font that draws it has arrived.
       const prompt = game.phase === "ask" && game.prompts[game.round];
       if (!prompt || drawable(prompt.text)) tick(game, dt);
@@ -215,7 +219,7 @@ export function Game() {
       // The diver whose turn it is sees their own typing at once, not as it comes back from the server.
       if (multiplayer.yours) shown.input = input.value;
       scene.crew = multiplayer.crew();
-      scene.turn = multiplayer.turn();
+      scene.turn = multiplayer.turn(input.value);
       let lights: Light[] = [];
       const closing = done ? ending : null;
       // Once the end screen has faded in it hides the sea, which need not be drawn.

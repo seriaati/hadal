@@ -244,8 +244,8 @@ export class MultiplayerPanel {
     return game;
   }
 
-  /** What the words of the dive need beyond those of single player. */
-  turn(): Turn | null {
+  /** What the words of the dive need beyond those of single player. `typed` is what the player has typed. */
+  turn(typed: string): Turn | null {
     const view = this.client.view;
     const dive = this.diving && view?.dive;
     if (!view || !dive) return null;
@@ -264,6 +264,7 @@ export class MultiplayerPanel {
       hearts: counted ? mine.hearts : null,
       bar: mine?.bar ?? 0,
       barFull: BAR_FULL[view.settings.hearts],
+      ahead: this.ahead ? typed : "",
     };
   }
 
@@ -272,6 +273,12 @@ export class MultiplayerPanel {
     const view = this.client.view;
     const dive = view?.dive;
     return !!dive && this.diving && dive.turn === view.you && !dive.verdict && !dive.drop && !this.dying && this.spent !== `${dive.round}:${dive.turn}`;
+  }
+
+  /** Whether the player may type an answer ahead of their turn: they are in the dive, and it is not their turn. */
+  get ahead(): boolean {
+    const view = this.client.view;
+    return !!view?.dive && this.diving && view.dive.order.includes(view.you) && !this.yours && !this.dying;
   }
 
   type(text: string) {

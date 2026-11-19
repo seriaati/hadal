@@ -211,6 +211,8 @@ export type Turn = {
   hearts: number | null;
   bar: number;
   barFull: number;
+  /** What the player has typed ahead of their turn, while another diver answers. */
+  ahead: string;
 };
 const LINE_GAP = 64;
 const KELP_ROWS = rowOf(600);
@@ -628,10 +630,10 @@ export class Scene {
 
     for (const zone of boundaries) {
       if (this.hush && zone.y + 18 > this.hush[0] && zone.y + 4 < this.hush[1]) continue;
-      drawText(frame, FONTS.tiny, zone.name, 4 + shift, zone.y + 4, 6);
-      drawText(frame, FONTS.tiny, formatMeters(zone.from), 4 + shift, zone.y + 12, 5);
       // A name the bottom edge would cut waits until it fits.
       if (zone.y + 18 > H) continue;
+      drawText(frame, FONTS.tiny, zone.name, 4 + shift, zone.y + 4, 6);
+      drawText(frame, FONTS.tiny, formatMeters(zone.from), 4 + shift, zone.y + 12, 5);
     }
 
     frame.block = 166;
@@ -987,6 +989,8 @@ export class Scene {
     // In a room the answers taken can reach down to the typing: it then moves down out of their way.
     const typingY = turn ? Math.max(answerY, this.hudBottom + 13) : answerY;
     const result = game.result;
+    /** Where what the player types ahead of their turn goes: under the diver's own words and what is said of them. */
+    let below: number;
     if (!result) {
       const typed = plain(game.input);
       const font = fit([large, medium, tiny], `${typed}_`, room);
@@ -1008,6 +1012,7 @@ export class Scene {
       } else if (rejected && game.phaseTime - rejected.at < 1.6) {
         sayWrapped(tiny, `${plain(rejected.text).slice(0, 18)} ~ ${turn?.refusedTaken ? t().dive.takenAnswer : t().dive.noLight}`, y + font.height + 7, 18);
       }
+      below = y + font.height + 16;
     } else {
       const text = result.correct ? plain(result.answer) : t().dive.outOfAir;
       const font = fit([large, medium, tiny], text, room);
@@ -1025,6 +1030,11 @@ export class Scene {
       if (!turn && !diving && game.phase === "verdict" && game.phaseTime > 0.6) {
         key(x, y + 12, game.round + 1 === game.prompts.length ? t().dive.endDive : t().dive.keepGoing);
       }
+      below = y + 12;
+    }
+    if (turn?.ahead) {
+      const { end, y } = sayWrapped(tiny, plain(turn.ahead), below, 5);
+      if (Math.floor(time * 2.5) % 2 === 0) for (let j = 0; j < tiny.height; j++) frame.put(end, y + j, 5);
     }
   }
 }
