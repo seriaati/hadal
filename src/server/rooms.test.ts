@@ -382,6 +382,27 @@ test("a dive in deepest asks 10 prompts, and one in longest every prompt there i
   leave(again.host);
 });
 
+test("a room is asked no prompt twice until it has been asked every one", async () => {
+  const many = Array.from({ length: 14 }, (_, i) => ({ id: `p${i}`, text: `Name sea ${i}`, answers: [{ text: "Baltic", rarity: 50 }, { text: "North", rarity: 60 }] }));
+  // Time moves only when the test says: the last timer set is the pause after the turn just ended.
+  const timers: (() => void)[] = [];
+  usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: many }]), { now: () => 0, after: (_, then) => (timers.push(then), () => {}) });
+  const { host } = await room();
+  const asked: string[] = [];
+  for (const _ of [1, 2]) {
+    await say(host, { type: "start" });
+    while (seen(host).dive) {
+      asked.push(seen(host).dive!.prompt.id);
+      await say(host, { type: "out", text: "" });
+      timers.pop()!();
+    }
+  }
+  expect(asked).toHaveLength(20);
+  expect(new Set(asked.slice(0, 14)).size).toBe(14);
+  leave(host);
+  usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: [ocean] }, { id: "lakes", name: "Lakes", prompts: [lake] }]));
+});
+
 test("a dive is refused when no prompt has an answer for every diver", async () => {
   usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: [{ id: "one", text: "Name a sea", answers: [{ text: "Baltic", rarity: 50 }] }] }]));
   const { host, others } = await room(null, "ben");

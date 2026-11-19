@@ -3,7 +3,7 @@ import {
   type ClientMessage, type Gone, type Refusal, type RoomPlayer, type RoomSettings, type RoomView, type ServerMessage,
 } from "../shared/room";
 import type { Language } from "../shared/language";
-import { USERNAME, type Pack } from "../shared/types";
+import { USERNAME, type GamePrompt, type Pack } from "../shared/types";
 import { listPacks, loadPack } from "./custom";
 import { Dive, enoughFor, realClock, type Clock } from "./dive";
 import { OWN, buildIndex, pickPrompts, shuffle, type PromptIndex } from "./game";
@@ -17,8 +17,21 @@ import { judgeLive } from "./live";
 export type Member = { accountId: string | null; browser: string; language: Language; send(message: ServerMessage): void };
 
 type Player = RoomPlayer & { member: Member };
-/** `last` is how the dive before ended. `banned` holds the browsers and accounts the host banned, for as long as the room lasts. */
-type Room = { code: string; players: Player[]; settings: RoomSettings; nextId: number; dive: Dive | null; last: RoomView["last"]; banned: Set<string> };
+/**
+ * `last` is how the dive before ended. `banned` holds the browsers and accounts the host banned, for as long as the room lasts.
+ * `asked` holds the prompts the room has been asked since every prompt last had its turn, and `asking` the one on screen.
+ */
+type Room = {
+  code: string;
+  players: Player[];
+  settings: RoomSettings;
+  nextId: number;
+  dive: Dive | null;
+  last: RoomView["last"];
+  banned: Set<string>;
+  asked: Set<string>;
+  asking: string | null;
+};
 
 /** Letters the game's small capitals cannot mix up: no I or O (1 and 0), Q (O), B (R), V (U) or X (K). */
 const LETTERS = "ACDEFGHJKLMNPRSTUWYZ";
@@ -53,6 +66,12 @@ function newCode(): string {
 function tell(room: Room) {
   const players = room.players.map(({ member, ...player }) => player);
   const dive = room.dive?.view() ?? null;
+  if (dive && dive.prompt.id !== room.asking) {
+    room.asking = dive.prompt.id;
+    // A prompt comes back only once every one has been asked: then they all start over.
+    if (room.asked.has(room.asking)) room.asked.clear();
+    room.asked.add(room.asking);
+  }
   for (const { member, id } of room.players) member.send({ type: "room", room: { code: room.code, you: id, players, settings: room.settings, dive, last: room.last } });
 }
 
@@ -62,7 +81,7 @@ function enter(member: Member, message: { nickname: string; suit: number }, code
   if (!USERNAME.test(nickname)) return "bad-name";
   if (!Number.isInteger(message.suit) || message.suit < 0 || message.suit >= SUITS) return "bad-suit";
   const room: Room | undefined =
-    code === undefined ? { code: newCode(), players: [], settings: { ...DEFAULT_SETTINGS, builtIn: packsIn[member.language] ?? [] }, nextId: 0, dive: null, last: null, banned: new Set() } : rooms.get(code.trim().toUpperCase());
+    code === undefined ? { code: newCode(), players: [], settings: { ...DEFAULT_SETTINGS, builtIn: packsIn[member.language] ?? [] }, nextId: 0, dive: null, last: null, banned: new Set(), asked: new Set(), asking: null } : rooms.get(code.trim().toUpperCase());
   if (!room) return "no-room";
   if (marks(member).some((mark) => room.banned.has(mark))) return "banned";
   if (room.players.length >= MAX_PLAYERS) return "full";
@@ -138,7 +157,7 @@ async function start(member: Member, room: Room): Promise<Refusal | void> {
     mode,
     index,
     // "Longest" and "chaos" go on until the prompts run out.
-    prompts: pickPrompts(index, mode === "deepest" ? DIVE_PROMPTS : index.size),
+    prompts: unasked(room, index, mode === "deepest" ? DIVE_PROMPTS : index.size),
     order: shuffle(room.players.map((player) => player.id)),
     air: room.settings.air,
     barFull: BAR_FULL[room.settings.hearts],
@@ -154,6 +173,13 @@ async function start(member: Member, room: Room): Promise<Refusal | void> {
     },
   });
   room.dive.start();
+}
+
+/** The prompts of a dive: first those the room has not been asked yet, then, once they run out, those it has. */
+function unasked(room: Room, index: PromptIndex, count: number): GamePrompt[] {
+  const asked = (yes: boolean) => new Map([...index].filter(([id]) => room.asked.has(id) === yes));
+  const fresh = pickPrompts(asked(false), count);
+  return fresh.length < count ? [...fresh, ...pickPrompts(asked(true), count - fresh.length)] : fresh;
 }
 
 /**
