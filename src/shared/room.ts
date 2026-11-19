@@ -99,7 +99,8 @@ export type RoomView = {
 };
 
 export type ClientMessage =
-  | { type: "create"; nickname: string; suit: number }
+  /** `settings` are those the host's browser remembers from their last room; the server keeps what still holds of them. */
+  | { type: "create"; nickname: string; suit: number; settings?: Partial<RoomSettings> }
   | { type: "join"; code: string; nickname: string; suit: number }
   | { type: "ready"; ready: boolean }
   | { type: "suit"; suit: number }

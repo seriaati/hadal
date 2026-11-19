@@ -223,7 +223,10 @@ const server = Bun.serve({
       ws.data.send = (message) => ws.send(JSON.stringify(message));
     },
     message: (ws, text) => receive(ws.data, String(text)),
-    close: (ws) => leave(ws.data),
+    close: (ws) => {
+      ws.data.closed = true;
+      leave(ws.data);
+    },
   },
 });
 

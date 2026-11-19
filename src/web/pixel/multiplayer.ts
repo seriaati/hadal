@@ -34,6 +34,17 @@ const AIR_STEP = 5;
 /** How long "Copy the link" says the link was copied, in milliseconds. */
 const COPIED_FOR = 2000;
 
+/** Where the browser keeps the settings of the last room the player was host of, to start their next room with. */
+const SETTINGS = "hadal:room-settings";
+
+function rememberedSettings(): Partial<RoomSettings> | undefined {
+  try {
+    return JSON.parse(localStorage.getItem(SETTINGS) ?? "null") ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Which packs a room plays, out of `all` built-in ones: in a few words for the host's set-up, or in full for the others. */
 function packsOf({ builtIn: { length: built }, ownPacks: { length: own } }: RoomSettings, all: number, full: boolean): string {
   const some = built && built === all ? "all" : built;
@@ -57,6 +68,9 @@ export class MultiplayerPanel {
   private spent = "";
   /** The air the host has just set, until the room comes back with it. */
   private air: number | null = null;
+  /** The host has changed the settings, and the room has not yet come back with them; and the settings as last seen. */
+  private changing = false;
+  private seenSettings = "";
   private packs: PackSummary[] = [];
   private builtIn: PackSummary[] = [];
   private copiedAt = -Infinity;
@@ -311,7 +325,18 @@ export class MultiplayerPanel {
     if (message.type === "room") {
       this.air = null;
       this.sent = performance.now() / 1000;
-      const { code, players } = message.room;
+      const { code, players, settings, you } = message.room;
+      // What the host has just changed is remembered, to start their next room with.
+      const seen = JSON.stringify(settings);
+      if (this.changing && seen !== this.seenSettings && players.find((player) => player.id === you)?.host) {
+        this.changing = false;
+        try {
+          localStorage.setItem(SETTINGS, seen);
+        } catch {
+          // Without storage the next room starts as a new one does.
+        }
+      }
+      this.seenSettings = seen;
       const host = players.find((player) => player.host);
       if (host && this.host?.code === code && this.host.id !== host.id) this.crowned = { id: host.id, from: this.host.name, at: this.sent };
       this.host = host ? { code, id: host.id, name: host.nickname } : null;
@@ -345,6 +370,7 @@ export class MultiplayerPanel {
       this.ui.go(this.room);
     } else if (message.type === "refused") {
       this.air = null;
+      this.changing = false;
       const where = REFUSALS[message.reason];
       this.refused = [where, t().rooms.refusals[message.reason]];
       if (where === "code" || where === "name") this.ui.focus(where);
@@ -407,7 +433,7 @@ export class MultiplayerPanel {
     this.refused = null;
     this.busy = true;
     const you = { nickname: this.ui.value("name").trim(), suit: this.suit };
-    this.client.send(how === "create" ? { type: "create", ...you } : { type: "join", code: this.ui.value("code"), ...you });
+    this.client.send(how === "create" ? { type: "create", ...you, settings: rememberedSettings() } : { type: "join", code: this.ui.value("code"), ...you });
   }
 
   /** Without a secure page (plain http to another machine) browsers keep `navigator.clipboard` closed. */
@@ -435,6 +461,7 @@ export class MultiplayerPanel {
 
   private change(settings: Partial<RoomSettings>) {
     this.refused = null;
+    this.changing = true;
     this.client.send({ type: "settings", settings });
   }
 

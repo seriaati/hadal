@@ -1,6 +1,6 @@
 import {
   AIR_MAX, AIR_MIN, BAR_FULL, DEFAULT_AIR, HEARTS, DEFAULT_SETTINGS, DIVE_PROMPTS, MAX_PLAYERS, MODES, ROOM_CODE_LENGTH, SUITS,
-  type ClientMessage, type Gone, type Refusal, type RoomPlayer, type RoomSettings, type RoomView, type ServerMessage,
+  type ClientMessage, type Gone, type Hearts, type Mode, type Refusal, type RoomPlayer, type RoomSettings, type RoomView, type ServerMessage,
 } from "../shared/room";
 import type { Language } from "../shared/language";
 import { NICKNAME, type GamePrompt, type Pack } from "../shared/types";
@@ -12,9 +12,9 @@ import { judgeLive } from "./live";
 
 /**
  * One connection. `accountId` is who was signed in when it was opened, not now; `browser` is the id the browser keeps in a
- * cookie; `language` is the language the player plays in.
+ * cookie; `language` is the language the player plays in; `closed` is set once the connection has closed.
  */
-export type Member = { accountId: string | null; browser: string; language: Language; send(message: ServerMessage): void };
+export type Member = { accountId: string | null; browser: string; language: Language; closed?: boolean; send(message: ServerMessage): void };
 
 type Player = RoomPlayer & { member: Member };
 /**
@@ -76,13 +76,38 @@ function tell(room: Room) {
   for (const { member, id } of room.players) member.send({ type: "room", room: { code: room.code, you: id, players, settings: room.settings, dive, last: room.last } });
 }
 
-/** Without a `code` the room is a new one and the player its host. */
-function enter(member: Member, message: { nickname: string; suit: number }, code?: string): Refusal | void {
+/**
+ * A new room's settings: the host's language's built-in packs, or what the host's browser remembers of their last
+ * room, as far as it still holds (packs that are gone, or live judging without a key, are left out).
+ */
+async function remembered(member: Member, saved: unknown): Promise<RoomSettings> {
+  const settings: RoomSettings = { ...DEFAULT_SETTINGS, builtIn: packsIn[member.language] ?? [] };
+  if (!saved || typeof saved !== "object") return settings;
+  const { mode, air, hearts, builtIn, ownPacks, judging } = saved as Record<string, unknown>;
+  if (MODES.includes(mode as Mode)) Object.assign(settings, { mode, air: DEFAULT_AIR[mode as Mode] });
+  if (Number.isInteger(air) && (air as number) >= AIR_MIN && (air as number) <= AIR_MAX) settings.air = air as number;
+  if (HEARTS.includes(hearts as Hearts)) settings.hearts = hearts as Hearts;
+  const known = Array.isArray(builtIn) ? [...new Set(builtIn)].filter((id) => builtInPacks.includes(id)) : [];
+  if (Array.isArray(builtIn) && (known.length || !builtIn.length)) settings.builtIn = known;
+  const { accountId } = member;
+  if (!accountId) return settings;
+  if (Array.isArray(ownPacks) && ownPacks.length) {
+    const own = new Set((await listPacks(accountId)).map((pack) => pack.id));
+    settings.ownPacks = [...new Set(ownPacks)].filter((id) => own.has(id));
+  }
+  if (judging === true) settings.judging = await keyed(accountId);
+  return settings;
+}
+
+/** `to` is the code of the room to join, or the settings of a new one (and its code, if it is one coming back), whose host the player becomes. */
+function enter(member: Member, message: { nickname: string; suit: number }, to: string | { code?: string; settings: RoomSettings }): Refusal | void {
   const nickname = String(message.nickname ?? "").trim().normalize("NFC").toLowerCase();
   if (!NICKNAME.test(nickname)) return "bad-name";
   if (!isSuit(message.suit)) return "bad-suit";
   const room: Room | undefined =
-    code === undefined ? { code: newCode(), players: [], settings: { ...DEFAULT_SETTINGS, builtIn: packsIn[member.language] ?? [] }, nextId: 0, dive: null, last: null, banned: new Set(), asked: new Set(), asking: null } : rooms.get(code.trim().toUpperCase());
+    typeof to === "string"
+      ? rooms.get(to.trim().toUpperCase())
+      : { code: to.code ?? newCode(), players: [], settings: to.settings, nextId: 0, dive: null, last: null, banned: new Set(), asked: new Set(), asking: null };
   if (!room) return "no-room";
   if (marks(member).some((mark) => room.banned.has(mark))) return "banned";
   if (room.players.length >= MAX_PLAYERS) return "full";
@@ -251,7 +276,11 @@ export async function receive(member: Member, text: string) {
   }
   const room = places.get(member);
   const refuse = (reason: Refusal | void) => reason && member.send({ type: "refused", reason });
-  if (message?.type === "create" && !room) refuse(enter(member, message));
+  if (message?.type === "create" && !room) {
+    const settings = await remembered(member, message.settings);
+    // The player may have made or joined a room, or gone, while the database was asked.
+    if (!places.has(member) && !member.closed) refuse(enter(member, message, { settings }));
+  }
   else if (message?.type === "join" && !room) refuse(enter(member, message, String(message.code ?? "")));
   else if (message?.type === "settings" && room) refuse(await change(member, room, message.settings ?? {}));
   else if (message?.type === "start" && room) refuse(await start(member, room));

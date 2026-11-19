@@ -210,6 +210,29 @@ test("the host plays packs of their own, and only those", async () => {
   expect(host.sent.at(-1)).toEqual({ type: "refused", reason: "bad-settings" });
 });
 
+test("a new room starts with the settings the host's browser remembers, as far as they still hold", async () => {
+  const host = member();
+  const settings = { mode: "longest", air: 25, hearts: "hard", builtIn: ["lakes", "rivers", "lakes"], ownPacks: ["mine"], judging: true } as const;
+  await say(host, { type: "create", nickname: "host", suit: 0, settings: { ...settings, builtIn: [...settings.builtIn], ownPacks: [...settings.ownPacks] } });
+  expect(seen(host).settings).toEqual({ mode: "longest", air: 25, hearts: "hard", builtIn: ["lakes"], ownPacks: [], judging: false });
+  leave(host);
+  const odd = member();
+  await say(odd, { type: "create", nickname: "host", suit: 0, settings: { mode: "chaos", air: 99, builtIn: ["gone"] } as never });
+  expect(seen(odd).settings).toEqual({ ...DEFAULT_SETTINGS, mode: "chaos", air: 8 });
+  leave(odd);
+});
+
+test("a host's remembered packs of their own and judge come back while they still have them", async () => {
+  const id = await account();
+  const pack = { id: "rivers", name: "Rivers", prompts: [{ id: "africa", text: "Name a river in Africa", answers: [{ text: "Nile", rarity: 10 }, { text: "Okavango", rarity: 100 }] }] };
+  expect(await savePack(id, JSON.stringify(pack))).toEqual([]);
+  expect(await saveKey(id, "jev", "jev-test-0123456789")).toBeNull();
+  const host = member(id);
+  await say(host, { type: "create", nickname: "host", suit: 0, settings: { ownPacks: ["rivers", "gone"], judging: true } });
+  expect(seen(host).settings).toMatchObject({ ownPacks: ["rivers"], judging: true });
+  leave(host);
+});
+
 test("the host chooses which built-in packs to play, and may choose none until the dive starts", async () => {
   const { host, others } = await room(null, "ben");
   await say(host, { type: "settings", settings: { builtIn: ["lakes"] } });
