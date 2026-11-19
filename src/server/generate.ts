@@ -18,7 +18,11 @@ Prompts
 - Each asks for one item of a well-defined set and can be judged as plainly right or wrong: "Name a moon of Jupiter", not "Name a good film".
 - Each has many correct answers, ideally 10 to 40. Avoid sets too large to list in full (more than about 60 members) and sets a player cannot know the edges of.
 - The ${PROMPTS} prompts cover different corners of the topic, and mix easier sets with harder ones.
-- A prompt is at most ${MAX_PROMPT_LENGTH} characters. The pack's name is short, at most ${MAX_NAME_LENGTH} characters.
+- A prompt is at most ${MAX_PROMPT_LENGTH} characters.
+
+Name
+- The pack's name says plainly what the pack is about, the way a player would put it: "Programming", "Rivers of Europe". At most ${MAX_NAME_LENGTH} characters.
+- Leave the sea and the game out of it: no "Depths", "Abyss", "Dive" or other wordplay.
 
 Answers
 - List every correct answer, not a selection. Check each one: a wrong answer in the list is worse than a missing one.
