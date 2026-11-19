@@ -230,6 +230,7 @@ export const zhCN: Words = {
     removedYou: "房主把你移出了房间",
     bannedYou: "房主已禁止你进入这个房间",
     playerSays: (name: string) => `${name}：转让房主、移出或禁止进入`,
+    suitSays: (name: string) => `${name}：更换潜水服`,
     makeHost: "转让房主",
     remove: "移出房间",
     removeHow: "对方可以用房间代码重新加入",

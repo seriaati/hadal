@@ -253,6 +253,7 @@ export const en = {
     removedYou: "the host removed you from the room",
     bannedYou: "the host banned you from the room",
     playerSays: (name: string) => `${name}: make them the host, remove or ban them`,
+    suitSays: (name: string) => `${name}: change your suit`,
     makeHost: "Make them the host",
     remove: "Remove from the room",
     removeHow: "they can come back with the code",

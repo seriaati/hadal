@@ -493,7 +493,9 @@ export class MultiplayerPanel {
         color: SUIT_COLORS[player.suit]!,
         host: player.host,
         note: [player.ready ? words.ready : "", depth === undefined ? "" : formatMeters(depth)].filter(Boolean).join(" ~ "),
-        ...(you.host && player.id !== you.id ? { id: `player:${player.id}`, press: pick, says: words.playerSays(player.nickname) } : {}),
+        ...(player.id === you.id ? { id: `player:${player.id}`, press: () => this.pickSuit(player), says: words.suitSays(player.nickname) }
+        : you.host ? { id: `player:${player.id}`, press: pick, says: words.playerSays(player.nickname) }
+        : {}),
       };
     });
     const winners = view.players.filter((player) => view.last?.divers.some((diver) => diver.id === player.id && diver.won)).map((player) => player.nickname);
@@ -635,6 +637,28 @@ export class MultiplayerPanel {
     const words = t().rooms;
     if (!settings) return { title: words.builtIn, rows: [] };
     return { title: words.builtIn, rows: [...builtInRows(this.choice(settings)), ...this.refusal("settings")] };
+  };
+
+  private pickSuit(you: RoomPlayer) {
+    this.suit = you.suit;
+    this.open(this.suitStep);
+  }
+
+  /** The player's own suit, changed as they slide. */
+  private suitStep = (): Step => {
+    const view = this.client.view;
+    const you = view?.players.find((player) => player.id === view.you);
+    if (!you) return { title: t().rooms.room, rows: [] };
+    const set = (value: number) => {
+      const suit = Math.round(value * (SUITS - 1));
+      if (suit === this.suit) return;
+      this.suit = suit;
+      this.client.send({ type: "suit", suit });
+    };
+    return {
+      title: you.nickname,
+      rows: [{ kind: "slider", id: "suit", label: t().rooms.suit, value: this.suit / (SUITS - 1), steps: SUITS - 1, colors: SUIT_COLORS, set }],
+    };
   };
 
   /** Removing and banning ask first: the second press in a row is the one that does it. The focus goes to what took the player's place. */

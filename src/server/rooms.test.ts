@@ -127,6 +127,20 @@ test("a guest says they are ready; the host has no ready to give", async () => {
   expect(seen(host).players.map((player) => player.ready)).toEqual([false, false]);
 });
 
+test("a player changes their suit in the room, but not during a dive", async () => {
+  const { host, others: [ben] } = await room(null, "ben");
+  await say(ben!, { type: "suit", suit: 4 });
+  expect(seen(host).players.map((player) => player.suit)).toEqual([0, 4]);
+  await say(ben!, { type: "suit", suit: 6 });
+  expect(ben!.sent.at(-1)).toEqual({ type: "refused", reason: "bad-suit" });
+  await say(ben!, { type: "ready", ready: true });
+  await say(host, { type: "start" });
+  const before = host.sent.length;
+  await say(ben!, { type: "suit", suit: 2 });
+  expect(host.sent).toHaveLength(before);
+  leave(host);
+});
+
 test("only the host changes the settings, and a change takes back every ready", async () => {
   const { host, others: [guest] } = await room(null, "ben");
   await say(guest!, { type: "ready", ready: true });

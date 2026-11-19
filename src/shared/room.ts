@@ -102,6 +102,7 @@ export type ClientMessage =
   | { type: "create"; nickname: string; suit: number }
   | { type: "join"; code: string; nickname: string; suit: number }
   | { type: "ready"; ready: boolean }
+  | { type: "suit"; suit: number }
   | { type: "settings"; settings: Partial<RoomSettings> }
   | { type: "start" }
   | { type: "typing"; text: string }

@@ -230,6 +230,7 @@ export const zhTW: Words = {
     removedYou: "房主把你踢出了房間",
     bannedYou: "房主已禁止你進入這個房間",
     playerSays: (name: string) => `${name}：轉讓房主、踢出或禁止進入`,
+    suitSays: (name: string) => `${name}：更換潛水服`,
     makeHost: "轉讓房主",
     remove: "踢出房間",
     removeHow: "對方可以用房間代碼重新加入",

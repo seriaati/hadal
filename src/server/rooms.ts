@@ -43,6 +43,7 @@ let builtInPacks: string[] = [];
 let packsIn: Partial<Record<Language, string[]>> = {};
 let clock: Clock = realClock;
 
+const isSuit = (suit: number) => Number.isInteger(suit) && suit >= 0 && suit < SUITS;
 const packOf = (promptId: string) => promptId.slice(0, promptId.indexOf("/"));
 const isHost = (member: Member, room: Room) => room.players.some((player) => player.host && player.member === member);
 /** What a ban holds on to: the browser, and the account if one is signed in. */
@@ -79,7 +80,7 @@ function tell(room: Room) {
 function enter(member: Member, message: { nickname: string; suit: number }, code?: string): Refusal | void {
   const nickname = String(message.nickname ?? "").trim().normalize("NFC").toLowerCase();
   if (!NICKNAME.test(nickname)) return "bad-name";
-  if (!Number.isInteger(message.suit) || message.suit < 0 || message.suit >= SUITS) return "bad-suit";
+  if (!isSuit(message.suit)) return "bad-suit";
   const room: Room | undefined =
     code === undefined ? { code: newCode(), players: [], settings: { ...DEFAULT_SETTINGS, builtIn: packsIn[member.language] ?? [] }, nextId: 0, dive: null, last: null, banned: new Set(), asked: new Set(), asking: null } : rooms.get(code.trim().toUpperCase());
   if (!room) return "no-room";
@@ -262,6 +263,12 @@ export async function receive(member: Member, text: string) {
     // The host has no ready of their own: starting the game is it.
     if (player.host || room.dive) return;
     player.ready = message.ready === true;
+    tell(room);
+  } else if (message?.type === "suit" && room) {
+    const player = room.players.find((player) => player.member === member)!;
+    if (room.dive) return;
+    if (!isSuit(message.suit)) return refuse("bad-suit");
+    player.suit = message.suit;
     tell(room);
   } else if (message?.type === "leave") leave(member);
 }
