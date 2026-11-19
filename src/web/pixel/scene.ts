@@ -630,6 +630,8 @@ export class Scene {
       if (this.hush && zone.y + 18 > this.hush[0] && zone.y + 4 < this.hush[1]) continue;
       drawText(frame, FONTS.tiny, zone.name, 4 + shift, zone.y + 4, 6);
       drawText(frame, FONTS.tiny, formatMeters(zone.from), 4 + shift, zone.y + 12, 5);
+      // A name the bottom edge would cut waits until it fits.
+      if (zone.y + 18 > H) continue;
     }
 
     frame.block = 166;
