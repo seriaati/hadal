@@ -96,8 +96,13 @@ export type ClientMessage =
   | { type: "start" }
   | { type: "typing"; text: string }
   | { type: "answer"; text: string }
+  | { type: "host"; id: number }
+  | { type: "remove"; id: number; ban: boolean }
   | { type: "leave" };
 
-export type Refusal = "no-room" | "full" | "name-taken" | "bad-name" | "bad-suit" | "not-host" | "bad-settings" | "not-ready" | "no-packs" | "no-prompts";
-/** `room` is the whole room again, sent after every change to it. `closed` means the host left and the room is gone. */
-export type ServerMessage = { type: "room"; room: RoomView } | { type: "refused"; reason: Refusal } | { type: "closed" };
+export type Refusal = "no-room" | "full" | "name-taken" | "bad-name" | "bad-suit" | "not-host" | "bad-settings" | "not-ready" | "no-packs" | "no-prompts" | "banned";
+/**
+ * `room` is the whole room again, sent after every change to it. `removed` means the host took the player out of the
+ * room, and with `banned` they cannot come back to it.
+ */
+export type ServerMessage = { type: "room"; room: RoomView } | { type: "refused"; reason: Refusal } | { type: "removed"; banned: boolean };

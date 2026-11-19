@@ -10,12 +10,15 @@ import { OWN, buildIndex, pickPrompts, shuffle, type PromptIndex } from "./game"
 import { loadKey } from "./keys";
 import { judgeLive } from "./live";
 
-/** One connection. `accountId` is who was signed in when it was opened, not now; `language` is the language the player plays in. */
-export type Member = { accountId: string | null; language: Language; send(message: ServerMessage): void };
+/**
+ * One connection. `accountId` is who was signed in when it was opened, not now; `browser` is the id the browser keeps in a
+ * cookie; `language` is the language the player plays in.
+ */
+export type Member = { accountId: string | null; browser: string; language: Language; send(message: ServerMessage): void };
 
 type Player = RoomPlayer & { member: Member };
-/** The host is the first of the players for as long as the room lasts. `last` is how the dive before ended. */
-type Room = { code: string; players: Player[]; settings: RoomSettings; nextId: number; dive: Dive | null; last: RoomView["last"] };
+/** `last` is how the dive before ended. `banned` holds the browsers and accounts the host banned, for as long as the room lasts. */
+type Room = { code: string; players: Player[]; settings: RoomSettings; nextId: number; dive: Dive | null; last: RoomView["last"]; banned: Set<string> };
 
 /** Letters the game's small capitals cannot mix up: no I or O (1 and 0), Q (O), B (R), V (U) or X (K). */
 const LETTERS = "ACDEFGHJKLMNPRSTUWYZ";
@@ -28,6 +31,9 @@ let packsIn: Partial<Record<Language, string[]>> = {};
 let clock: Clock = realClock;
 
 const packOf = (promptId: string) => promptId.slice(0, promptId.indexOf("/"));
+const isHost = (member: Member, room: Room) => room.players.some((player) => player.host && player.member === member);
+/** What a ban holds on to: the browser, and the account if one is signed in. */
+const marks = ({ browser, accountId }: Member) => [`browser:${browser}`, ...(accountId ? [`account:${accountId}`] : [])];
 
 /** The built-in packs of every language, and in the tests a clock moved by hand. A room may play packs of any language. */
 export function usePrompts(packs: Record<Language, Pack[]>, time: Clock = realClock) {
@@ -56,8 +62,9 @@ function enter(member: Member, message: { nickname: string; suit: number }, code
   if (!USERNAME.test(nickname)) return "bad-name";
   if (!Number.isInteger(message.suit) || message.suit < 0 || message.suit >= SUITS) return "bad-suit";
   const room: Room | undefined =
-    code === undefined ? { code: newCode(), players: [], settings: { ...DEFAULT_SETTINGS, builtIn: packsIn[member.language] ?? [] }, nextId: 0, dive: null, last: null } : rooms.get(code.trim().toUpperCase());
+    code === undefined ? { code: newCode(), players: [], settings: { ...DEFAULT_SETTINGS, builtIn: packsIn[member.language] ?? [] }, nextId: 0, dive: null, last: null, banned: new Set() } : rooms.get(code.trim().toUpperCase());
   if (!room) return "no-room";
+  if (marks(member).some((mark) => room.banned.has(mark))) return "banned";
   if (room.players.length >= MAX_PLAYERS) return "full";
   if (room.players.some((player) => player.nickname === nickname)) return "name-taken";
   room.players.push({ id: room.nextId++, nickname, suit: message.suit, ready: false, host: !room.players.length, member });
@@ -81,7 +88,7 @@ async function keyed(accountId: string): Promise<boolean> {
 }
 
 async function change(member: Member, room: Room, changes: Partial<RoomSettings>): Promise<Refusal | void> {
-  if (room.players[0]!.member !== member) return "not-host";
+  if (!isHost(member, room)) return "not-host";
   if (room.dive) return;
   if (!(await allowed(member.accountId, changes))) return "bad-settings";
   // The host may have left while the database was asked. The settings are read only now, so that two changes sent close together both count.
@@ -111,7 +118,7 @@ async function change(member: Member, room: Room, changes: Partial<RoomSettings>
  * out, and without a key any more the answers are judged only by the pack and kept rulings.
  */
 async function start(member: Member, room: Room): Promise<Refusal | void> {
-  if (room.players[0]!.member !== member) return "not-host";
+  if (!isHost(member, room)) return "not-host";
   if (room.dive) return;
   if (room.players.some((player) => !player.host && !player.ready)) return "not-ready";
   // A room may be set up with no pack while the host chooses, but not dive without one.
@@ -133,7 +140,8 @@ async function start(member: Member, room: Room): Promise<Refusal | void> {
     prompts: pickPrompts(index, mode === "deepest" ? DIVE_PROMPTS : index.size),
     order: shuffle(room.players.map((player) => player.id)),
     air: room.settings.air,
-    live: (entry, typed) => judgeLive(entry, typed, judgeAs),
+    // A host who leaves takes their key with them.
+    live: (entry, typed) => judgeLive(entry, typed, isHost(member, room) ? judgeAs : null),
     clock,
     changed: () => tell(room),
     ended: (divers) => {
@@ -146,24 +154,52 @@ async function start(member: Member, room: Room): Promise<Refusal | void> {
   room.dive.start();
 }
 
-/** When the host goes, so does the room. */
+/**
+ * The crown passes to `player`. The packs of the host's own and their judge go with the old host, and without them
+ * whoever was ready had agreed to other settings.
+ */
+function pass(room: Room, player: Player) {
+  for (const one of room.players) one.host = one === player;
+  player.ready = false;
+  const { ownPacks, judging } = room.settings;
+  if (ownPacks.length || judging) {
+    room.settings = { ...room.settings, ownPacks: [], judging: false };
+    for (const one of room.players) one.ready = false;
+  }
+}
+
+function crown(member: Member, room: Room, id: number) {
+  const player = room.players.find((one) => one.id === id);
+  if (!isHost(member, room) || room.dive || !player || player.member === member) return;
+  pass(room, player);
+  tell(room);
+}
+
+/** The host takes a player out of the room. One banned cannot come back while the room lasts. */
+function remove(member: Member, room: Room, id: number, ban: boolean) {
+  const player = room.players.find((one) => one.id === id);
+  if (!isHost(member, room) || room.dive || !player || player.member === member) return;
+  if (ban) for (const mark of marks(player.member)) room.banned.add(mark);
+  room.players = room.players.filter((one) => one !== player);
+  places.delete(player.member);
+  player.member.send({ type: "removed", banned: ban });
+  tell(room);
+}
+
+/** When the host goes, the crown passes to the player after them. When the last player goes, so does the room. */
 export function leave(member: Member) {
   const room = places.get(member);
   if (!room) return;
   places.delete(member);
-  if (room.players[0]!.member === member) {
+  const at = room.players.findIndex((player) => player.member === member);
+  const [gone] = room.players.splice(at, 1);
+  if (!room.players.length) {
     rooms.delete(room.code);
-    room.dive?.close();
-    for (const { member: other } of room.players.slice(1)) {
-      places.delete(other);
-      other.send({ type: "closed" });
-    }
-  } else {
-    const id = room.players.find((player) => player.member === member)!.id;
-    room.players = room.players.filter((player) => player.member !== member);
-    room.dive?.drop(id);
-    tell(room);
+    return room.dive?.close();
   }
+  if (gone!.host) pass(room, room.players[at % room.players.length]!);
+  room.dive?.drop(gone!.id);
+  tell(room);
 }
 
 /** A message that makes no sense where it arrives is ignored. */
@@ -180,6 +216,8 @@ export async function receive(member: Member, text: string) {
   else if (message?.type === "join" && !room) refuse(enter(member, message, String(message.code ?? "")));
   else if (message?.type === "settings" && room) refuse(await change(member, room, message.settings ?? {}));
   else if (message?.type === "start" && room) refuse(await start(member, room));
+  else if (message?.type === "host" && room) crown(member, room, message.id);
+  else if (message?.type === "remove" && room) remove(member, room, message.id, message.ban === true);
   else if ((message?.type === "typing" || message?.type === "answer") && room?.dive) {
     const id = room.players.find((player) => player.member === member)!.id;
     if (message.type === "typing") room.dive.type(id, message.text);

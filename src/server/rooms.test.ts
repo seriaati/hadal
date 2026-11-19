@@ -8,9 +8,9 @@ import { saveKey } from "./keys";
 import { leave, receive, usePrompts, type Member } from "./rooms";
 
 type Fake = Member & { sent: ServerMessage[] };
-const member = (accountId: string | null = null): Fake => {
+const member = (accountId: string | null = null, browser: string = crypto.randomUUID()): Fake => {
   const sent: ServerMessage[] = [];
-  return { accountId, language: "en", sent, send: (message) => sent.push(message) };
+  return { accountId, browser, language: "en", sent, send: (message) => sent.push(message) };
 };
 const say = (from: Fake, message: ClientMessage) => receive(from, JSON.stringify(message));
 /** The room as the member was last sent it. */
@@ -207,16 +207,96 @@ test("a guest who leaves or drops is gone from the room", async () => {
   expect(names(host)).toEqual(["host", "ben"]);
 });
 
-test("when the host goes the room closes", async () => {
-  const { host, others: [guest], code } = await room(null, "ben");
+test("when the host goes the crown passes to the player after them, and the room closes when the last one goes", async () => {
+  const { host, others: [ben, cal], code } = await room(null, "ben", "cal");
+  await say(cal!, { type: "ready", ready: true });
+  await say(host, { type: "host", id: seen(cal!).you });
+  leave(cal!);
+  // After the last player comes the first.
+  expect(seen(ben!).players.map(({ nickname, host }) => [nickname, host])).toEqual([["host", true], ["ben", false]]);
   leave(host);
-  expect(guest!.sent.at(-1)).toEqual({ type: "closed" });
+  expect(seen(ben!).players).toMatchObject([{ nickname: "ben", host: true }]);
+  leave(ben!);
   const late = member();
   await say(late, { type: "join", code, nickname: "cal", suit: 0 });
   expect(late.sent).toEqual([{ type: "refused", reason: "no-room" }]);
-  // The guest is free to make a room of their own.
-  await say(guest!, { type: "create", nickname: "ben", suit: 0 });
-  expect(seen(guest!).players[0]).toMatchObject({ nickname: "ben", host: true });
+});
+
+test("the host passes the crown", async () => {
+  const { host, others: [ben, cal] } = await room(null, "ben", "cal");
+  const benId = seen(ben!).you;
+  await say(ben!, { type: "ready", ready: true });
+  await say(cal!, { type: "ready", ready: true });
+  await say(cal!, { type: "host", id: seen(cal!).you });
+  expect(seen(host).players.map((player) => player.host)).toEqual([true, false, false]);
+  await say(host, { type: "host", id: benId });
+  // The new host has no ready of their own; the others keep theirs, since the settings did not change.
+  expect(seen(cal!).players.map(({ host, ready }) => [host, ready])).toEqual([[false, false], [true, false], [false, true]]);
+  await say(host, { type: "settings", settings: { air: 20 } });
+  expect(host.sent.at(-1)).toEqual({ type: "refused", reason: "not-host" });
+  await say(ben!, { type: "settings", settings: { air: 20 } });
+  expect(seen(cal!).settings.air).toBe(20);
+  leave(host);
+  expect(names(cal!)).toEqual(["ben", "cal"]);
+  leave(ben!);
+  leave(cal!);
+});
+
+test("the host's own packs and judge stay theirs when the crown passes", async () => {
+  process.env.HADAL_SECRET = "a secret for the tests, long enough";
+  const id = await account();
+  const pack = { id: "rivers", name: "Rivers", prompts: [{ id: "africa", text: "Name a river in Africa", answers: [{ text: "Nile", rarity: 10 }, { text: "Okavango", rarity: 100 }] }] };
+  expect(await savePack(id, JSON.stringify(pack))).toEqual([]);
+  expect(await saveKey(id, "jev", "jev-test-0123456789")).toBeNull();
+  const { host, others: [ben, cal] } = await room(id, "ben", "cal");
+  await say(host, { type: "settings", settings: { ownPacks: ["rivers"], judging: true } });
+  await say(cal!, { type: "ready", ready: true });
+  await say(host, { type: "host", id: seen(ben!).you });
+  expect(seen(cal!).settings).toMatchObject({ ownPacks: [], judging: false });
+  expect(seen(cal!).players.map((player) => player.ready)).toEqual([false, false, false]);
+});
+
+test("the host removes a player, who may come back with the code", async () => {
+  const { host, others: [ben], code } = await room(null, "ben");
+  await say(ben!, { type: "remove", id: seen(host).you, ban: false });
+  expect(names(host)).toEqual(["host", "ben"]);
+  await say(host, { type: "remove", id: seen(ben!).you, ban: false });
+  expect(ben!.sent.at(-1)).toEqual({ type: "removed", banned: false });
+  expect(names(host)).toEqual(["host"]);
+  await say(ben!, { type: "join", code, nickname: "ben", suit: 0 });
+  expect(names(host)).toEqual(["host", "ben"]);
+});
+
+test("a banned player cannot come back, by another name or another connection, until the room is gone", async () => {
+  const id = await account();
+  const { host, code } = await room();
+  const ben = member(id, "bens-browser");
+  await say(ben, { type: "join", code, nickname: "ben", suit: 0 });
+  await say(host, { type: "remove", id: seen(ben).you, ban: true });
+  expect(ben.sent.at(-1)).toEqual({ type: "removed", banned: true });
+  const again = async (who: Fake, to = code) => {
+    await say(who, { type: "join", code: to, nickname: "notben", suit: 0 });
+    return who.sent.at(-1);
+  };
+  expect(await again(member(null, "bens-browser"))).toEqual({ type: "refused", reason: "banned" });
+  expect(await again(member(id))).toEqual({ type: "refused", reason: "banned" });
+  expect(names(host)).toEqual(["host"]);
+  // Another room of the same host's is free to them.
+  leave(host);
+  await say(host, { type: "create", nickname: "host", suit: 0 });
+  expect(await again(member(id, "bens-browser"), seen(host).code)).toMatchObject({ type: "room" });
+});
+
+test("nobody is crowned or removed during a dive", async () => {
+  const { host, others: [ben] } = await room(null, "ben");
+  await say(ben!, { type: "ready", ready: true });
+  await say(host, { type: "start" });
+  expect(seen(host).dive).not.toBeNull();
+  const before = host.sent.length;
+  await say(host, { type: "host", id: seen(ben!).you });
+  await say(host, { type: "remove", id: seen(ben!).you, ban: true });
+  expect(host.sent).toHaveLength(before);
+  leave(host);
 });
 
 test("nonsense is ignored", async () => {
@@ -310,5 +390,18 @@ test("a guest who leaves during a dive is taken out of it, and one who joins wat
   expect(seen(host).dive!.order).toHaveLength(2);
   expect(seen(host).dive!.divers).toHaveLength(2);
   leave(host);
+});
+
+test("a host who leaves during a dive is taken out of it, and the others dive on under the next host", async () => {
+  usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: [{ id: "two", text: "Name an ocean", answers: [{ text: "Pacific", rarity: 10 }, { text: "Indian", rarity: 60 }, { text: "Arctic", rarity: 80 }] }] }]));
+  const { host, others: [ben, cal] } = await room(null, "ben", "cal");
+  await say(ben!, { type: "ready", ready: true });
+  await say(cal!, { type: "ready", ready: true });
+  await say(host, { type: "start" });
+  leave(host);
+  expect(seen(cal!).dive!.order).toHaveLength(2);
+  expect(seen(cal!).players).toMatchObject([{ nickname: "ben", host: true }, { nickname: "cal", host: false }]);
+  leave(ben!);
+  leave(cal!);
 });
 

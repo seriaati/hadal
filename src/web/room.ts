@@ -36,7 +36,7 @@ export class RoomClient {
     socket.addEventListener("message", (event) => {
       const message = JSON.parse(String(event.data)) as ServerMessage;
       if (message.type === "room") this.view = message.room;
-      else if (message.type === "closed") this.view = null;
+      else if (message.type === "removed") this.view = null;
       this.hear(message);
     });
     socket.addEventListener("close", () => {

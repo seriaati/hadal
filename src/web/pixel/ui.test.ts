@@ -72,6 +72,22 @@ test("the people of a room are read, not reached: the focus passes over them", (
   expect((move(laid, spot("leave"), "down")?.part as { id: string }).id).toBe("start");
 });
 
+test("to the host, another player of the room is a line: the focus reaches it", () => {
+  const room: Step = {
+    title: "Room",
+    rows: [
+      { kind: "player", name: "ana", color: 5, note: "", host: true },
+      { kind: "player", name: "ben", color: 9, note: "", id: "player:1", press: () => {} },
+      { kind: "gap" },
+      press("start"),
+    ],
+  };
+  const laid = lay(room, 140, 12).placed;
+  const spot = (id: string) => laid.find((placed) => "id" in placed.part && placed.part.id === id)!;
+  expect(spot("player:1").h).toBe(12);
+  expect((move(laid, spot("start"), "up")?.part as { id: string }).id).toBe("player:1");
+});
+
 test("two things marked `right` stand side by side against the right edge, in their order", () => {
   const { placed } = lay({ title: "Packs", rows: [[press("rivers"), press("download", true), press("remove", true)]] }, 140, 12);
   const [name, download, remove] = placed;

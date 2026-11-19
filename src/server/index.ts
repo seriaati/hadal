@@ -21,6 +21,8 @@ const PROMPTS_PER_GAME = 10;
 const DEV_MODE = process.env.HADAL_DEV_MODE === "1";
 const PRODUCTION = process.env.NODE_ENV === "production";
 const SESSION = "session";
+/** A random id the browser keeps, so that a room's ban holds a guest without an account. */
+const BROWSER = "browser";
 const builtIn = await loadBuiltIn();
 const inEach = <T>(make: (packs: Pack[]) => T) => Object.fromEntries(LANGUAGES.map((language) => [language, make(builtIn[language])])) as Record<Language, T>;
 const summaries = inEach((packs): PackSummary[] => packs.map((pack) => ({ id: pack.id, name: pack.name, prompts: pack.prompts.length })));
@@ -194,7 +196,12 @@ const server = Bun.serve({
     },
     "/api/room": async (req, server) => {
       const accountId = await accountIdOf(req.cookies.get(SESSION));
-      if (server.upgrade(req, { data: { accountId, language: languageOf(req), send() {} } })) return;
+      const known = req.cookies.get(BROWSER);
+      const browser = known ?? crypto.randomUUID();
+      const headers = known
+        ? undefined
+        : { "Set-Cookie": new Bun.Cookie(BROWSER, browser, { httpOnly: true, sameSite: "lax", secure: PRODUCTION, path: "/", maxAge: 400 * 24 * 60 * 60 }).serialize() };
+      if (server.upgrade(req, { headers, data: { accountId, browser, language: languageOf(req), send() {} } })) return;
       return new Response("Expected a WebSocket", { status: 400 });
     },
     "/api/dev/answer": {

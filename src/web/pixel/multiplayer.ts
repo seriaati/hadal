@@ -25,6 +25,7 @@ const REFUSALS: Record<Refusal, Where> = {
   "not-ready": "start",
   "no-packs": "start",
   "no-prompts": "start",
+  banned: "code",
 };
 
 /** The air is set in steps of this many seconds. */
@@ -61,6 +62,9 @@ export class MultiplayerPanel {
   private linked = "";
   /** Each diver's hearts in the dive, as the server last said. */
   private hearts = new Map<number, number>();
+  /** The player whose step the host has open, and which of "Remove" and "Ban" one more press does. */
+  private picked: number | null = null;
+  private doomed: "" | "remove" | "ban" = "";
   /** Who was ready, by room code and id, as the server last said. */
   private ready = new Map<string, boolean>();
   /**
@@ -68,7 +72,7 @@ export class MultiplayerPanel {
    * the haul up takes, in seconds. At the surface the end screen opens; closing it goes back to the room.
    */
   ending: { log: RoomLog; follow: number; you: number; at: number; rise: number } | null = null;
-  /** The room closed, or the connection was lost, while the end screen was open: closing it goes back to the first step. */
+  /** The player was taken out of the room, or the connection was lost, while the end screen was open: closing it goes back to the first step. */
   private gone = false;
   /**
    * The player's own chaos dive was lost: when, in seconds, and the dive and divers as they were then. Until its last
@@ -104,6 +108,10 @@ export class MultiplayerPanel {
     if (this.diving || this.ending) return;
     if (!this.ui.holds(this.first)) this.client.close();
     else if (this.client.view && !this.ui.holds(this.room)) this.client.leave();
+    // The player has left, or the crown has passed: their step has nothing more to do.
+    const view = this.client.view;
+    const host = view?.players.find((player) => player.id === view.you)?.host;
+    if (this.ui.top === this.playerStep && (!host || !view!.players.some((player) => player.id === this.picked))) this.ui.back();
   }
 
   /**
@@ -282,11 +290,11 @@ export class MultiplayerPanel {
     } else if (entering) {
       this.refused = ["end", t().noAnswer];
     } else if (this.ending) {
-      // The end screen stays open; closing it leads out of the room that is gone.
-      this.note = message.type === "closed" ? t().rooms.closed : t().rooms.lost;
+      // The end screen stays open; closing it leads out of the room.
+      this.note = this.goneNote(message);
       this.gone = true;
     } else if (this.diving || this.ui.holds(this.room)) {
-      this.note = message.type === "closed" ? t().rooms.closed : t().rooms.lost;
+      this.note = this.goneNote(message);
       if (this.diving) {
         this.diving = false;
         this.ui.close();
@@ -294,6 +302,12 @@ export class MultiplayerPanel {
       }
       while (this.ui.top !== this.first) this.ui.back();
     }
+  }
+
+  private goneNote(message: Heard): string {
+    const words = t().rooms;
+    if (message.type === "removed") return message.banned ? words.bannedYou : words.removedYou;
+    return words.lost;
   }
 
   /** The camera follows the player's own diver up, or the winner for one who only watched. */
@@ -407,12 +421,18 @@ export class MultiplayerPanel {
     const depthOf = (id: number) => view.last?.divers.find((diver) => diver.id === id)?.depth;
     const rows: Part[] = view.players.map((player) => {
       const depth = depthOf(player.id);
+      const pick = () => {
+        this.picked = player.id;
+        this.doomed = "";
+        this.open(this.playerStep);
+      };
       return {
         kind: "player",
         name: player.nickname,
         color: SUIT_COLORS[player.suit]!,
         host: player.host,
         note: [player.ready ? words.ready : "", depth === undefined ? "" : formatMeters(depth)].filter(Boolean).join(" ~ "),
+        ...(you.host && player.id !== you.id ? { id: `player:${player.id}`, press: pick, says: words.playerSays(player.nickname) } : {}),
       };
     });
     const winners = view.players.filter((player) => view.last?.divers.some((diver) => diver.id === player.id && diver.won)).map((player) => player.nickname);
@@ -536,5 +556,42 @@ export class MultiplayerPanel {
     const words = t().rooms;
     if (!settings) return { title: words.builtIn, rows: [] };
     return { title: words.builtIn, rows: [...builtInRows(this.choice(settings)), ...this.refusal("settings")] };
+  };
+
+  /** Removing and banning ask first: the second press in a row is the one that does it. The focus goes to what took the player's place. */
+  private remove(player: RoomPlayer, ban: boolean) {
+    const what = ban ? "ban" : "remove";
+    if (this.doomed !== what) return void (this.doomed = what);
+    this.doomed = "";
+    this.client.send({ type: "remove", id: player.id, ban });
+    const view = this.client.view!;
+    const others = view.players.filter((one) => one.id !== view.you);
+    const at = others.indexOf(player);
+    const next = others[at + 1] ?? others[at - 1];
+    this.ui.back();
+    this.ui.focus(next ? `player:${next.id}` : "start");
+  }
+
+  /** What the host may do to another player of the room. */
+  private playerStep = (): Step => {
+    const words = t().rooms;
+    const player = this.client.view?.players.find((one) => one.id === this.picked);
+    if (!player) return { title: words.room, rows: [] };
+    const sure = t().packs.sure;
+    const crown = () => {
+      this.client.send({ type: "host", id: player.id });
+      this.ui.back();
+    };
+    return {
+      title: player.nickname,
+      rows: [
+        { kind: "press", id: "crown", label: words.makeHost, press: crown },
+        { kind: "gap" },
+        { kind: "press", id: "remove", label: this.doomed === "remove" ? sure : words.remove, danger: this.doomed === "remove", press: () => this.remove(player, false), left: () => (this.doomed = "") },
+        { kind: "note", text: words.removeHow },
+        { kind: "press", id: "ban", label: this.doomed === "ban" ? sure : words.ban, danger: this.doomed === "ban", press: () => this.remove(player, true), left: () => (this.doomed = "") },
+        { kind: "note", text: words.banHow },
+      ],
+    };
   };
 }

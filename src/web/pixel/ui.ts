@@ -35,9 +35,10 @@ export type Field = { kind: "field"; id: string; label: string; max: number; dot
 export type Slider = { kind: "slider"; id: string; label: string; value: number; set: (value: number) => void; steps?: number; colors?: number[]; text?: string };
 export type Note = { kind: "note"; text: string; bad?: boolean };
 export type Wait = { kind: "wait"; text: string; done: number; of: number };
-export type Player = { kind: "player"; name: string; color: number; note: string; host?: boolean };
+/** One of the people in a room. Only read, unless it has `press`: the host's way to the step of another player. */
+export type Player = { kind: "player"; name: string; color: number; note: string; host?: boolean; id?: string; press?: () => void; says?: string };
 export type Part = Press | Field | Slider | Note | Wait | Player | { kind: "gap" };
-type Control = Press | Field | Slider;
+type Control = Press | Field | Slider | (Player & { id: string; press: () => void });
 /**
  * While `busy`, presses wait. `escape` replaces going one step back on Escape. `code` follows
  * the name in pale letters: a room's code, which has to be read out, and which a press copies.
@@ -57,8 +58,9 @@ const STEPS = 20;
 const MARK = ["a..", "aa.", "aaa", "aa.", "a.."];
 const CROWN = [".....", "..x..", "x.x.x", "xxxxx", "xxxxx"];
 
-const isControl = (part: Part): part is Control => part.kind === "press" || part.kind === "field" || part.kind === "slider";
-const kindOf = (part: Control) => (part.kind === "press" ? (part.file ? "file" : part.submit ? "submit" : "press") : part.kind);
+const isControl = (part: Part): part is Control =>
+  part.kind === "press" || part.kind === "field" || part.kind === "slider" || (part.kind === "player" && !!part.id && !!part.press);
+const kindOf = (part: Control) => (part.kind === "press" ? (part.file ? "file" : part.submit ? "submit" : "press") : part.kind === "player" ? "press" : part.kind);
 const natural = (part: Part) => INDENT + (part.kind === "press" ? measure(FONTS.tiny, plain(part.label)) : 0) + 2;
 
 export function drawMark(frame: Frame, x: number, y: number) {
@@ -83,7 +85,7 @@ export function lay(step: Step, width: number, line: number): { placed: Placed[]
       let lines: string[] = [];
       let h = line;
       if (part.kind === "gap") h = 8;
-      else if (part.kind === "player") h = 9;
+      else if (part.kind === "player") h = part.press ? line : 9;
       else if (part.kind === "field") h = line + 10;
       else if (part.kind === "note" || part.kind === "wait") {
         const text = plain(part.text);
@@ -226,7 +228,7 @@ export class Ui {
 
   private act(id: string) {
     const part = this.parts.get(id);
-    if (part?.kind !== "press" || this.step.busy) return;
+    if ((part?.kind !== "press" && part?.kind !== "player") || this.step.busy) return;
     part.press?.();
     this.sync();
   }
@@ -251,7 +253,7 @@ export class Ui {
     let before: Element = this.copier;
     for (const part of parts) {
       const control = this.controls.get(part.id) ?? this.make(part);
-      control.ariaLabel = part.kind === "press" ? (part.says ?? part.label) : part.label;
+      control.ariaLabel = part.kind === "press" ? (part.says ?? part.label) : part.kind === "player" ? (part.says ?? part.name) : part.label;
       if (part.kind === "slider" && Number(control.value) !== part.value) control.value = String(part.value);
       if (part.kind === "field" && control instanceof HTMLInputElement) control.autocomplete = part.autocomplete as AutoFill;
       // The controls stand in the page in reading order. One that is already in place is left alone: moving it would cost it the focus.
@@ -293,7 +295,7 @@ export class Ui {
         const now = this.parts.get(id);
         if (now?.kind === "slider") now.set(Number(control.value));
       });
-    } else {
+    } else if (part.kind === "field") {
       Object.assign(control, { type: part.password ? "password" : "text", maxLength: part.max, autocapitalize: "off", spellcheck: false });
       control.value = this.kept.get(id) ?? part.start ?? "";
       this.kept.delete(id);
@@ -334,14 +336,14 @@ export class Ui {
       if (!this.step.busy) here.part.shift(event.key === "ArrowLeft" ? -1 : 1);
       this.sync();
     }
-    else if (here.part.kind === "press" && event.key === "ArrowLeft") {
+    else if ((here.part.kind === "press" || here.part.kind === "player") && event.key === "ArrowLeft") {
       if (move(this.placed, here, "left")) go("left");
       else {
         event.preventDefault();
         this.back();
       }
     }
-    else if (here.part.kind === "press" && event.key === "ArrowRight") go("right");
+    else if ((here.part.kind === "press" || here.part.kind === "player") && event.key === "ArrowRight") go("right");
     else if (here.part.kind === "field" && event.key === "Enter") {
       // Enter in a field goes on to the next field, or after the last one presses what follows.
       event.preventDefault();
@@ -525,14 +527,18 @@ export class Ui {
         frame.emit = 0;
         cover(control!, track, py, end - track - 1, h);
       } else if (part.kind === "player") {
-        for (let j = 0; j < 15; j++) frame.put(tx + (j % 3), py + 2 + Math.floor(j / 3), part.color);
-        let end = say(plain(part.name), tx + 6, py + 2, 7) + 4;
+        mark(ty);
+        for (let j = 0; j < 15; j++) frame.put(tx + (j % 3), ty + Math.floor(j / 3), part.color);
+        frame.emit = on ? 70 : 0;
+        let end = say(plain(part.name), tx + 6, ty, on ? 16 : 7) + 4;
+        frame.emit = 0;
         if (part.host) {
-          drawCrown(frame, end, py + 2, 6);
-          scene.cover(end, end + 5, py + 2, py + 8);
+          drawCrown(frame, end, ty, 6);
+          scene.cover(end, end + 5, ty, ty + 6);
           end += 9;
         }
-        say(plain(part.note), end, py + 2, 6);
+        say(plain(part.note), end, ty, 6);
+        if (control) cover(control, px, py, w, h);
       } else if (part.kind === "note" || part.kind === "wait") {
         const gap = pitch(tiny, plain(part.text), 8);
         lines.forEach((line, i) => say(line, tx, py + 1 + i * gap, part.kind === "wait" ? 7 : part.bad ? 18 : 6));
