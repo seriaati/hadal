@@ -41,9 +41,10 @@ export type Part = Press | Field | Slider | Note | Wait | Player | { kind: "gap"
 type Control = Press | Field | Slider | (Player & { id: string; press: () => void });
 /**
  * While `busy`, presses wait. `back` replaces going one step back when the player asks to (by
- * Escape, Left, the `‹` or a press outside), and `escape` replaces it on Escape alone. `code`
+ * Escape, Left, the `‹` or a press outside; `head` when it was on the `‹`), and `escape` replaces it on Escape alone. `code`
  * follows the name in pale letters: a room's code, which has to be read out, and which a press copies.
  * `foot` comes after the rows; when the step is too long for its room it stays at the bottom and only the rows scroll.
+ * With `sure`, the name asks "Sure?" in its place, and `sure` is called when the focus leaves it.
  */
 export type Step = {
   title: string;
@@ -51,8 +52,9 @@ export type Step = {
   rows: (Part | Part[])[];
   foot?: (Part | Part[])[];
   busy?: boolean;
-  back?: () => void;
+  back?: (head: boolean) => void;
   escape?: () => void;
+  sure?: () => void;
 };
 
 /** Where a part is, from the top left of its step. */
@@ -210,10 +212,15 @@ export class Ui {
     // A press on the form between its lines would take the focus from the line that has it.
     form.addEventListener("mousedown", (event) => event.target === form && event.preventDefault());
     this.leave.addEventListener("click", () => {
+      this.retreat(true);
+      this.sync();
+      if (this.step.sure) return void this.leave.focus({ preventScroll: true });
       // The focus goes to the step it leads back to, not to the name of that step.
+      if (document.activeElement !== this.leave) return;
       this.leave.blur();
-      this.retreat();
+      this.sync();
     });
+    this.leave.addEventListener("blur", () => this.step.sure?.());
     this.copier.addEventListener("click", () => {
       this.copier.focus({ preventScroll: true });
       this.step.code?.copy();
@@ -249,8 +256,8 @@ export class Ui {
   }
 
   /** The player asks to go one step back. */
-  private retreat() {
-    if (this.step.back) this.step.back();
+  private retreat(head = false) {
+    if (this.step.back) this.step.back(head);
     else this.back();
   }
 
@@ -304,7 +311,7 @@ export class Ui {
     const parts = [...this.step.rows, ...(this.step.foot ?? [])].flat().filter(isControl);
     this.parts = new Map(parts.map((part) => [part.id, part]));
     this.copier.hidden = !this.step.code;
-    this.leave.ariaLabel = t().page.back;
+    this.leave.ariaLabel = this.step.sure ? t().packs.sure : t().page.back;
     this.copier.ariaLabel = t().page.copyLink(this.step.code?.text ?? "");
     for (const [id, control] of this.controls) {
       const part = this.parts.get(id);
@@ -432,7 +439,7 @@ export class Ui {
       to.focus({ preventScroll: true });
     } else if (event.key === "ArrowLeft" && !code) {
       event.preventDefault();
-      this.retreat();
+      this.retreat(true);
     }
   }
 
@@ -524,9 +531,10 @@ export class Ui {
     const blink = Math.floor(time * 2.5) % 2 === 0;
 
     const back = this.leave === document.activeElement;
-    frame.emit = back ? 70 : 0;
-    say("‹", left + 1, top + 1, back ? 16 : 6);
-    const named = say(plain(this.step.title), left + INDENT, top + 1, back ? 16 : 6);
+    const head = this.step.sure ? 18 : back ? 16 : 6;
+    frame.emit = back && !this.step.sure ? 70 : 0;
+    say("‹", left + 1, top + 1, head);
+    const named = say(plain(this.step.sure ? t().packs.sure : this.step.title), left + INDENT, top + 1, head);
     cover(this.leave, left - 3, top - 3, named - left + 5, 13);
     if (this.step.code) {
       const copying = this.copier === document.activeElement;

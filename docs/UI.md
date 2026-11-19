@@ -47,7 +47,7 @@ a row.
 | Under the pointer | The same as in focus: moving the pointer over a thing gives it the focus, so there is never a second highlight. A field is the one exception: it takes the focus, and its caret, only when it is clicked or reached by the keys (owner, 2026-11-18, after play) |
 | Pressed | Nothing of its own: a press acts at once |
 | Busy | The mark blinks, and presses wait until the answer has come |
-| About to destroy | The line's words turn rose and ask "Sure?" |
+| About to destroy | The line's words turn rose and ask "Sure?" (the step's name, when it was the `‹` that was pressed) |
 | Refused | A message in rose, where the thing was tried, saying what happened and what to do |
 | Warned | A note in rose under what it warns of, such as the horror of chaos mode |
 
@@ -86,8 +86,10 @@ The same in every panel.
   message that comes and goes moves nothing. This holds for every panel, without its own code.
 - **Scrolling.** A thing the keys give the focus to is scrolled into view. One the pointer
   gives it to is under the pointer already, and nothing moves.
-- **Leaving a room** asks the same way: every way out (Escape, Left, the `‹`, a click outside,
-  "Leave the room") first turns "Leave the room" into "Sure?" and puts the focus on it.
+- **Leaving a room** asks the same way: every way out (Escape, Left, a click outside,
+  "Leave the room") first turns "Leave the room" into "Sure?" and puts the focus on it. A
+  press on the `‹` (or Left from it) asks there instead: the room's name turns into a rose
+  "Sure?", and a second press leaves.
 - **The cursor is a hand** over everything that can be pressed: the title menu's lines, the
   cog, and every line, field and slider of a panel.
 - **No key hints are drawn.** The keys are the ones every game uses.
