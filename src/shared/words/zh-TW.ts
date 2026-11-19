@@ -29,6 +29,7 @@ export const zhTW: Words = {
     customHow: "從你選的題庫中出 10 道題，兩種模式任選",
     noPacks: "還沒有選擇題庫，請在上面選擇",
   },
+  horror: "注意：含輕微恐怖元素",
   about: { madeBy: "Hadal 由 seria 製作", source: "在 GitHub 上檢視原始碼" },
   leaving: {
     title: "離開這次下潛？",

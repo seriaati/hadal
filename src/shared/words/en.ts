@@ -35,6 +35,8 @@ export const en = {
     customHow: "10 prompts from the packs you choose, in either mode",
     noPacks: "no pack is chosen: choose some above",
   },
+  /** Under the description of chaos mode, in rose. */
+  horror: "Warning: minor horror elements",
   about: { madeBy: "Hadal is made by seria", source: "Open the source code on GitHub" },
   leaving: {
     title: "Leave the dive?",

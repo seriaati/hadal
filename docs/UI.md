@@ -45,6 +45,7 @@ a row.
 | Busy | The mark blinks, and presses wait until the answer has come |
 | About to destroy | The line's words turn rose and ask "Sure?" |
 | Refused | A message in rose, where the thing was tried, saying what happened and what to do |
+| Warned | A note in rose under what it warns of, such as the horror of chaos mode |
 
 Something always has the focus while a panel is open, and it is always shown this one way:
 by a shape and by a change of light, never by colour alone.

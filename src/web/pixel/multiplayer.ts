@@ -569,6 +569,7 @@ export class MultiplayerPanel {
         return [
           { kind: "press", id: `mode:${mode}`, label: name, value: chosen ? words.chosen : undefined, on: chosen ? true : undefined, press: choose },
           { kind: "note", text: how },
+          ...(mode === "chaos" ? [{ kind: "note", text: t().horror, bad: true } as Part] : []),
         ];
       }),
     };

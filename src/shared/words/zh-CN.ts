@@ -29,6 +29,7 @@ export const zhCN: Words = {
     customHow: "从你选的题库中出 10 道题，两种模式任选",
     noPacks: "还没有选择题库，请在上面选择",
   },
+  horror: "注意：含轻微恐怖元素",
   about: { madeBy: "Hadal 由 seria 制作", source: "在 GitHub 上查看源代码" },
   leaving: {
     title: "离开这次下潜？",

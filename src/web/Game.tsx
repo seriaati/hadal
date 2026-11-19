@@ -62,6 +62,7 @@ export function Game() {
         { kind: "note", text: t().single.descendHow(AIR_SECONDS) },
         { kind: "press", id: "mode:chaos", label: t().single.chaos, press: () => dive(true) },
         { kind: "note", text: t().single.chaosHow(CHAOS_AIR_SECONDS) },
+        { kind: "note", text: t().horror, bad: true },
         { kind: "press", id: "mode:custom", label: t().single.custom, press: () => custom.show() },
         { kind: "note", text: t().single.customHow },
       ],
