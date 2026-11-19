@@ -31,6 +31,9 @@ export const en = {
     descendHow: (air: number) => `10 prompts with ${air} s of air each: rarer answers go deeper, and an empty tank only loses that prompt`,
     chaos: "Chaos",
     chaosHow: (air: number) => `10 prompts with ${air} s of air each: rarer answers go deeper, and the first empty tank ends the dive`,
+    custom: "Custom",
+    customHow: "10 prompts from the packs you choose, in either mode",
+    noPacks: "no pack is chosen: choose some above",
   },
   about: { madeBy: "Hadal is made by seria", source: "Open the source code on GitHub" },
   leaving: {

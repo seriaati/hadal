@@ -3,8 +3,9 @@ import { MAX_ANSWER_LENGTH, type Config } from "../shared/types";
 import { DevMenu, type DevTools } from "./DevMenu";
 import { t } from "./language";
 import { Sound } from "./sound";
-import { AIR_SECONDS, CHAOS_AIR_SECONDS, createGame, leave, lostDive, pressEnter, start, tick, type Phase } from "./state";
+import { AIR_SECONDS, CHAOS_AIR_SECONDS, createGame, leave, lostDive, pressEnter, start, tick, type Chosen, type Phase } from "./state";
 import { AccountPanel } from "./pixel/account";
+import { CustomPanel } from "./pixel/choice";
 import { drawable } from "./pixel/other";
 import { Ending, FADE_SECONDS, type Log } from "./pixel/ending";
 import { Display, Frame, type Light } from "./pixel/frame";
@@ -38,7 +39,7 @@ export function Game() {
     const ui = new Ui(form.current!, input);
     const settings = () => settingsStep(sound);
     const account: AccountPanel = new AccountPanel(ui, () => void packs.load());
-    const packs = new PacksPanel(ui, account, sound, (pack) => void start(game, pack));
+    const packs = new PacksPanel(ui, account, sound, (pack) => void start(game, { builtIn: [], own: [pack] }));
     const multiplayer = new MultiplayerPanel(ui, account, sound);
     // Wait for the account so the signed-in name can be filled in.
     const linked = new URLSearchParams(location.search).get("room");
@@ -49,10 +50,11 @@ export function Game() {
     let ending: Ending | null = null;
     const closeEnding = () => (multiplayer.ending ? multiplayer.closeEnding() : pressEnter(game));
     let shown = game;
-    const dive = (chaos: boolean) => {
+    const dive = (chaos: boolean, packs?: Chosen) => {
       ui.close();
-      void start(game, undefined, chaos);
+      void start(game, packs, chaos);
     };
+    const custom = new CustomPanel(ui, account, (packs, chaos) => dive(chaos, packs));
     const single = (): Step => ({
       title: t().title.single,
       rows: [
@@ -60,6 +62,8 @@ export function Game() {
         { kind: "note", text: t().single.descendHow(AIR_SECONDS) },
         { kind: "press", id: "mode:chaos", label: t().single.chaos, press: () => dive(true) },
         { kind: "note", text: t().single.chaosHow(CHAOS_AIR_SECONDS) },
+        { kind: "press", id: "mode:custom", label: t().single.custom, press: () => custom.show() },
+        { kind: "note", text: t().single.customHow },
       ],
     });
     const about = (): Step => ({
@@ -104,7 +108,7 @@ export function Game() {
       if (shown.phase === "title") ui.go(settings);
       else if (shown.phase === "drop" || shown.phase === "ask" || shown.phase === "verdict") ui.go(leaving);
     };
-    if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game, scene, frame, display, sound, glitch, ui, account, packs, multiplayer, room: multiplayer.client } });
+    if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game, scene, frame, display, sound, glitch, ui, account, packs, custom, multiplayer, room: multiplayer.client } });
 
     void fetch("/api/config")
       .then((res) => res.json() as Promise<Config>)

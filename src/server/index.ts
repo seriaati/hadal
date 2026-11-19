@@ -4,7 +4,7 @@ import { LANGUAGES, LANGUAGE_COOKIE, isLanguage, wordsIn, type Language } from "
 import { MAX_PACK_BYTES, PROVIDERS, type Config, type Pack, type PackSummary, type Provider } from "../shared/types";
 import type { Words } from "../shared/words/en";
 import { SESSION_DAYS, accountIdOf, accountOf, signInFrom, signOut, signUp, type Entry } from "./accounts";
-import { listPacks, loadPack, removePack, savePack } from "./custom";
+import { MAX_PACKS, listPacks, loadPack, removePack, savePack } from "./custom";
 import { migrate } from "./db";
 import { OWN, buildIndex, judge, nearestAnswer, pickPrompts, type PromptIndex } from "./game";
 import { writePack } from "./generate";
@@ -57,14 +57,17 @@ function addressOf(req: Request, server: Server<Member>) {
   return req.headers.get("cf-connecting-ip") ?? server.requestIP(req)?.address ?? "";
 }
 
-async function ownIndex(req: BunRequest, packId: string): Promise<PromptIndex> {
+/** Of the player's own packs, those named that they have. */
+async function ownIndex(req: BunRequest, packIds: string[]): Promise<PromptIndex> {
   const accountId = await accountIdOf(req.cookies.get(SESSION));
-  const pack = accountId && (await loadPack(accountId, packId));
-  return pack ? buildIndex([pack], OWN) : new Map();
+  if (!accountId) return new Map();
+  const ids = [...new Set(packIds)].slice(0, MAX_PACKS);
+  const packs = await Promise.all(ids.map((id) => loadPack(accountId, id)));
+  return buildIndex(packs.filter((pack) => pack !== null), OWN);
 }
 
 async function indexOf(req: BunRequest, promptId: string): Promise<PromptIndex> {
-  return promptId.startsWith(OWN) ? ownIndex(req, promptId.slice(OWN.length).split("/")[0]!) : prompts;
+  return promptId.startsWith(OWN) ? ownIndex(req, [promptId.slice(OWN.length).split("/")[0]!]) : prompts;
 }
 
 async function packs(req: BunRequest, change?: (accountId: string) => Promise<string[] | void>) {
@@ -101,9 +104,16 @@ const server = Bun.serve({
       GET: (req) => Response.json(summaries[languageOf(req)]),
     },
     "/api/game": {
+      // Without `builtIn` or `own` (pack ids joined by commas) the dive draws from the built-in packs of the player's language.
       GET: async (req) => {
-        const pack = new URL(req.url).searchParams.get("pack");
-        const index = pack === null ? promptsIn[languageOf(req)] : await ownIndex(req, pack);
+        const query = new URL(req.url).searchParams;
+        const ids = (name: string) => query.get(name)?.split(",").filter(Boolean) ?? [];
+        let index = promptsIn[languageOf(req)];
+        if (query.has("builtIn") || query.has("own")) {
+          const builtInIds = ids("builtIn");
+          const built = [...prompts].filter(([id]) => builtInIds.includes(id.slice(0, id.indexOf("/"))));
+          index = new Map([...built, ...(await ownIndex(req, ids("own")))]);
+        }
         if (!index.size) return new Response("Unknown pack", { status: 404 });
         return Response.json({ prompts: pickPrompts(index, PROMPTS_PER_GAME) });
       },

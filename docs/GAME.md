@@ -12,9 +12,10 @@ player types one answer.
   zones down to the hadal zone (a perfect dive reaches 11,000 m).
 
 Prompts are grouped into themed packs. A single player dives through 10 prompts, in normal
-mode or in chaos mode (less air, and the first empty tank ends the dive). Multiplayer is
-private rooms joined by a code or a link. Players can also add packs of their own, have
-Claude write one, and have answers a pack does not list judged live with their own API key.
+mode or in chaos mode (less air, and the first empty tank ends the dive), from the built-in
+packs of their language or from the packs they choose. Multiplayer is private rooms joined by
+a code or a link. Players can also add packs of their own, have Claude write one, and have
+answers a pack does not list judged live with their own API key.
 
 The game speaks English, Simplified Chinese and Traditional Chinese (as written in Taiwan). It
 starts in the browser's language, and the settings change it; Claude writes a player's packs in

@@ -8,6 +8,7 @@ import { RoomDive } from "../roomdive";
 import type { Sound } from "../sound";
 import { LOST_SECONDS, ascentSeconds, createGame, type Game } from "../state";
 import type { AccountPanel } from "./account";
+import { builtInRows, packRows, type PackChoice } from "./choice";
 import { SUIT_COLORS, type Crew, type Turn } from "./scene";
 import type { Part, Step, Ui } from "./ui";
 
@@ -513,67 +514,27 @@ export class MultiplayerPanel {
     };
   };
 
+  private choice(settings: RoomSettings): PackChoice {
+    return {
+      builtIn: this.builtIn,
+      own: this.packs,
+      chosen: { builtIn: settings.builtIn, own: settings.ownPacks },
+      signedIn: !!this.account.account,
+      choose: ({ builtIn, own }) => this.change({ builtIn, ownPacks: own }),
+    };
+  }
+
   private packsStep = (): Step => {
     const settings = this.client.view?.settings;
     const words = t().rooms;
     if (!settings) return { title: words.packs, rows: [] };
-    const own = settings.ownPacks;
-    const built = settings.builtIn.length;
-    const all = this.builtIn.length;
-    // Left and Right turn them all on, or all off.
-    const flip = () => this.change({ builtIn: built === all ? [] : this.builtIn.map((pack) => pack.id) });
-    return {
-      title: words.packs,
-      rows: [
-        {
-          kind: "press",
-          id: "builtin",
-          label: words.builtIn,
-          value: built === all ? words.all : built ? t().count(built, all) : words.none,
-          on: built > 0,
-          press: () => this.open(this.builtInStep),
-          shift: flip,
-        },
-        ...this.packs.map((pack): Part => {
-          const on = own.includes(pack.id);
-          return {
-            kind: "press",
-            id: `pack:${pack.id}`,
-            label: pack.name,
-            value: on ? words.on : words.off,
-            on,
-            press: () => this.change({ ownPacks: on ? own.filter((id) => id !== pack.id) : [...own, pack.id] }),
-          };
-        }),
-        ...(this.account.account ? [] : [{ kind: "note", text: words.signInForOwn } as Part]),
-        ...this.refusal("settings"),
-      ],
-    };
+    return { title: words.packs, rows: [...packRows(this.choice(settings), () => this.open(this.builtInStep)), ...this.refusal("settings")] };
   };
 
   private builtInStep = (): Step => {
     const settings = this.client.view?.settings;
     const words = t().rooms;
     if (!settings) return { title: words.builtIn, rows: [] };
-    const chosen = settings.builtIn;
-    const all = chosen.length === this.builtIn.length;
-    return {
-      title: words.builtIn,
-      rows: [
-        { kind: "press", id: "builtin:all", label: words.allLine, value: all ? words.on : words.off, on: all, press: () => this.change({ builtIn: all ? [] : this.builtIn.map((pack) => pack.id) }) },
-        ...this.builtIn.map((pack): Part => {
-          const on = chosen.includes(pack.id);
-          return {
-            kind: "press",
-            id: `builtin:${pack.id}`,
-            label: pack.name,
-            value: on ? words.on : words.off,
-            on,
-            press: () => this.change({ builtIn: on ? chosen.filter((id) => id !== pack.id) : [...chosen, pack.id] }),
-          };
-        }),
-        ...this.refusal("settings"),
-      ],
-    };
+    return { title: words.builtIn, rows: [...builtInRows(this.choice(settings)), ...this.refusal("settings")] };
   };
 }
