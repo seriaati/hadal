@@ -105,6 +105,8 @@ export class Sound {
   private faults = 0;
   private losses = 0;
   private turns = 0;
+  /** The prompt of a room's dive last heard, counted from 0. */
+  private round = 0;
   private klaxon = 0;
   private off = false;
   /** In the audio clock's seconds. */
@@ -207,6 +209,12 @@ export class Sound {
       if (game.chaos) this.bell(311, 0.22, 3);
     }
     this.phase = game.phase;
+    // In a room the prompt changes by itself: two rising pings say so.
+    if (scene.turn && game.round > this.round) {
+      this.note("effects", "sine", 740, 720, 0.16, 0.5);
+      this.note("effects", "sine", 988, 960, 0.16, 0.7, 0.005, 0.12);
+    }
+    this.round = scene.turn ? game.round : 0;
     if (glitch) this.tape(game, scene, glitch);
 
     if (game.rejected && game.rejected !== this.rejected) this.note("effects", "triangle", 320, 110, 0.35, 0.25);
