@@ -1,4 +1,4 @@
-import { MAX_PACK_BYTES, MAX_TOPIC_LENGTH, WRITTEN_PROMPTS, type PackSummary } from "../../shared/types";
+import { MAX_INSTRUCTIONS_LENGTH, MAX_PACK_BYTES, MAX_TOPIC_LENGTH, WRITTEN_PROMPTS, type PackSummary, type WriteOrder } from "../../shared/types";
 import { t } from "../language";
 import type { Sound } from "../sound";
 import type { AccountPanel } from "./account";
@@ -34,7 +34,10 @@ export class PacksPanel {
   private refused: string[] = [];
   /** Whether what was refused was a file, so that another can be chosen. */
   private refusedFile = false;
-  private writing: { topic: string; done: number; stop: AbortController } | null = null;
+  private writing: { topic: string; done: number; of: number; stop: AbortController } | null = null;
+  /** What the next pack is asked to be, besides its topic and the notes. */
+  private prompts = WRITTEN_PROMPTS[0]!;
+  private search = false;
   /** Why the last pack was not written. */
   private unwritten = "";
 
@@ -137,7 +140,7 @@ export class PacksPanel {
       return {
         title,
         rows: [
-          { kind: "wait", text: words.writing(writing.topic), done: writing.done, of: WRITTEN_PROMPTS },
+          { kind: "wait", text: words.writing(writing.topic), done: writing.done, of: writing.of },
           { kind: "gap" },
           { kind: "press", id: "stop", label: words.stop, press: () => writing.stop.abort() },
         ],
@@ -153,10 +156,17 @@ export class PacksPanel {
         ],
       };
     }
+    const shift = (way: -1 | 1) => {
+      const at = WRITTEN_PROMPTS.indexOf(this.prompts) + way;
+      this.prompts = WRITTEN_PROMPTS[(at + WRITTEN_PROMPTS.length) % WRITTEN_PROMPTS.length]!;
+    };
     return {
       title,
       rows: [
         { kind: "field", id: "topic", label: words.topic, max: MAX_TOPIC_LENGTH, autocomplete: "off" },
+        { kind: "field", id: "instructions", label: words.instructions, max: MAX_INSTRUCTIONS_LENGTH, autocomplete: "off" },
+        { kind: "press", id: "count", label: words.count, value: String(this.prompts), press: () => shift(1), shift },
+        { kind: "press", id: "search", label: words.search, value: this.search ? t().rooms.on : t().rooms.off, on: this.search, press: () => (this.search = !this.search) },
         this.unwritten
           ? { kind: "note", text: words.unwritten(this.unwritten), bad: true }
           : { kind: "note", text: words.how },
@@ -217,10 +227,11 @@ export class PacksPanel {
     if (!topic) return;
     const had = new Set(this.packs.map((pack) => pack.id));
     const stop = new AbortController();
-    const writing = (this.writing = { topic, done: 0, stop });
+    const order: WriteOrder = { topic, instructions: this.ui.value("instructions").trim(), prompts: this.prompts, search: this.search };
+    const writing = (this.writing = { topic, done: 0, of: order.prompts, stop });
     let problems = [t().noAnswer];
     try {
-      const res = await fetch("/api/write", { method: "POST", body: JSON.stringify({ topic }), signal: stop.signal });
+      const res = await fetch("/api/write", { method: "POST", body: JSON.stringify(order), signal: stop.signal });
       // The answer comes a line at a time: how many prompts are written so far, and at the end the packs or what went wrong.
       const reader = res.body!.pipeThrough(new TextDecoderStream()).getReader();
       for (let rest = ""; ; ) {
@@ -247,6 +258,7 @@ export class PacksPanel {
     this.sound.written(!this.unwritten);
     if (this.unwritten) return;
     this.ui.clear("topic");
+    this.ui.clear("instructions");
     if (this.ui.top !== this.write) return;
     this.ui.back();
     const fresh = this.packs.find((pack) => !had.has(pack.id));

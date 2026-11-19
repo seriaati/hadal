@@ -543,15 +543,17 @@ export class Ui {
         const gap = pitch(tiny, plain(part.text), 8);
         lines.forEach((line, i) => say(line, tx, py + 1 + i * gap, part.kind === "wait" ? 7 : part.bad ? 18 : 6));
         if (part.kind === "note") continue;
-        // One pip for each piece of the work that is done, and the next one blinks.
+        // One pip for each piece of the work that is done, and the next one blinks. Past 10 pieces a pip stands for a tenth of the work.
         const pips = py + lines.length * gap + 5;
-        for (let i = 0; i < part.of; i++) {
-          const color = i < part.done ? 10 : i === part.done && blink ? 9 : 4;
+        const count = Math.min(part.of, 10);
+        const done = Math.floor((part.done * count) / part.of);
+        for (let i = 0; i < count; i++) {
+          const color = i < done ? 10 : i === done && blink ? 9 : 4;
           frame.emit = color === 4 ? 0 : 150;
           for (let j = 0; j < 12; j++) frame.put(tx + i * 6 + (j & 3), pips + (j >> 2), color);
         }
         frame.emit = 0;
-        say(t().packs.progress(Math.min(part.of, part.done + 1), part.of), tx + part.of * 6 + 4, pips - 1, 6);
+        say(t().packs.progress(Math.min(part.of, part.done + 1), part.of), tx + count * 6 + 4, pips - 1, 6);
       }
     }
   }

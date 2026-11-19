@@ -29,7 +29,7 @@ Every panel is built from these, and each has one look.
 | Setting | A line that stands for a choice | Its label, and the choice against the right edge ("Deepest", "built-in + 2"), with a pip before it if it is on or off. Left and Right change it, like a slider; Enter flips an on or off one |
 | Player | One of the people in a room | A pip of their suit's colour, the name, and a dim word ("ready"). The host has a dim crown after the name instead, the same crown that stands before their name over their diver. To the host every other player is pressed like a line, and opens what the host can do to them; to the others it is only read, and the focus passes over it |
 | Message | Words that are only read | Dim words, wrapped |
-| Wait | Something that takes long | Words, then one pip per piece of the work, then "prompt 4 of 10" |
+| Wait | Something that takes long | Words, then one pip per piece of the work, then "prompt 4 of 10". Past 10 pieces a pip stands for a tenth of the work |
 
 A password or a key is typed as dots. A field always sits alone on its line. Lines may share
 a row.

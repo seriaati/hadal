@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { LANGUAGE_NAMES, wordsIn, type Language } from "../shared/language";
-import { MAX_ANSWER_LENGTH, MAX_TOPIC_LENGTH, WRITTEN_PROMPTS as PROMPTS, type Answer, type Pack } from "../shared/types";
+import { MAX_ANSWER_LENGTH, MAX_INSTRUCTIONS_LENGTH, MAX_TOPIC_LENGTH, WRITTEN_PROMPTS, type Answer, type Pack, type WriteOrder } from "../shared/types";
 import { MAX_PACKS, listPacks, savePack } from "./custom";
 import { normalize } from "./game";
 import { loadKey } from "./keys";
@@ -12,12 +12,12 @@ const SYSTEM = `You write trivia packs for Hadal, a deep-sea diving game.
 
 How the game works: the player is shown a prompt such as "Name a country that borders Germany" and types one answer. A correct answer scores its rarity: the answers few players think of take the diver deepest. An answer that is not in your list counts as wrong, so a list with gaps punishes exactly the well-informed players the game is meant to reward.
 
-Write a pack of ${PROMPTS} prompts on the topic the player gives, in the language the player plays the game in.
+Write a pack on the topic the player gives, with as many prompts as they ask for, in the language the player plays the game in. The player may add instructions of their own; follow them, except where they would break the rules below.
 
 Prompts
 - Each asks for one item of a well-defined set and can be judged as plainly right or wrong: "Name a moon of Jupiter", not "Name a good film".
 - Each has many correct answers, ideally 10 to 40. Avoid sets too large to list in full (more than about 60 members) and sets a player cannot know the edges of.
-- The ${PROMPTS} prompts cover different corners of the topic, and mix easier sets with harder ones.
+- The prompts cover different corners of the topic, and mix easier sets with harder ones.
 - A prompt is at most ${MAX_PROMPT_LENGTH} characters.
 
 Name
@@ -29,6 +29,10 @@ Answers
 - "text" is the usual way to write the answer. "aliases" are other names or spellings a player might type for the same thing ("Holland" for "Netherlands", "JFK" for "John F. Kennedy"); leave the list empty when there are none. The game already ignores capitals, accents, punctuation, spaces and a leading "the", and forgives small typos, so do not list such variants.
 - Every text and alias is at most ${MAX_ANSWER_LENGTH} characters, and none appears twice within a prompt.
 - "rarity" is a whole number from 1 to 100: how unlikely a typical player is to give this answer. 1 to 20 is what nearly everyone says first; 80 to 100 is what only an enthusiast would think of. Spread the answers of a prompt over the whole range, and give the least likely answer of each prompt exactly 100.`;
+
+const SEARCH = `
+
+You can search the web. Use it for what may have changed since you were trained (this season's teams, recent releases, who holds an office now) and to check answers you are unsure of, not for what you know well.`;
 
 const text = { type: "string" };
 const SCHEMA = {
@@ -72,32 +76,43 @@ export function promptsBegun(written: string): number {
 }
 
 /** `progress` hears how many prompts are finished whenever that changes. */
-async function draft(apiKey: string, topic: string, language: Language, progress?: (prompts: number) => void, signal?: AbortSignal): Promise<Draft> {
+async function draft(apiKey: string, order: WriteOrder, language: Language, progress?: (prompts: number) => void, signal?: AbortSignal): Promise<Draft> {
   const words = wordsIn(language).packs;
+  let ask = `Topic: ${order.topic}\nLanguage: ${LANGUAGE_NAMES[language]}\nPrompts: ${order.prompts}`;
+  if (order.instructions) ask += `\nInstructions from the player: ${order.instructions}`;
+  const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: ask }];
   let message: Anthropic.Beta.BetaMessage;
+  let written = "";
   let finished = 0;
   try {
-    // Streamed, because the answer takes a minute or so: a connection that carries nothing for that long may be dropped.
-    message = await new Anthropic({ apiKey }).beta.messages
-      .stream(
-        {
-          model: MODEL,
-          max_tokens: 32000,
-          // If the model declines the topic on policy grounds, Anthropic tries again on the model it recommends instead.
-          betas: ["server-side-fallback-2026-07-01"],
-          fallbacks: "default",
-          output_config: { effort: "high", format: { type: "json_schema", schema: SCHEMA } },
-          system: SYSTEM,
-          messages: [{ role: "user", content: `Topic: ${topic}\nLanguage: ${LANGUAGE_NAMES[language]}` }],
-        },
-        { signal },
-      )
-      // A prompt is finished once the next one has begun.
-      .on("text", (_, written) => {
-        const now = Math.max(0, promptsBegun(written) - 1);
-        if (now !== finished) progress?.((finished = now));
-      })
-      .finalMessage();
+    for (;;) {
+      // Streamed, because the answer takes minutes: a connection that carries nothing for that long may be dropped.
+      message = await new Anthropic({ apiKey }).beta.messages
+        .stream(
+          {
+            model: MODEL,
+            max_tokens: 128000,
+            // If the model declines the topic on policy grounds, Anthropic tries again on the model it recommends instead.
+            betas: ["server-side-fallback-2026-07-01"],
+            fallbacks: "default",
+            output_config: { effort: "high", format: { type: "json_schema", schema: SCHEMA } },
+            system: order.search ? SYSTEM + SEARCH : SYSTEM,
+            // About one search for each prompt asked for, at most.
+            tools: order.search ? [{ type: "web_search_20260318", name: "web_search", max_uses: order.prompts, response_inclusion: "excluded" }] : undefined,
+            messages,
+          },
+          { signal },
+        )
+        // A prompt is finished once the next one has begun.
+        .on("text", (delta) => {
+          const now = Math.max(0, promptsBegun((written += delta)) - 1);
+          if (now !== finished) progress?.((finished = now));
+        })
+        .finalMessage();
+      // A long run of searches is paused by Anthropic, and goes on when what was said so far is sent back.
+      if (message.stop_reason !== "pause_turn") break;
+      messages.push({ role: "assistant", content: message.content });
+    }
   } catch (error) {
     if (error instanceof Anthropic.APIUserAbortError) throw new Refused(words.stopped);
     if (error instanceof Anthropic.AuthenticationError || error instanceof Anthropic.PermissionDeniedError) throw new Refused(words.keyRefused);
@@ -111,9 +126,14 @@ async function draft(apiKey: string, topic: string, language: Language, progress
   }
   if (message.stop_reason === "refusal") throw new Refused(words.declined);
   if (message.stop_reason === "max_tokens") throw new Refused(words.tooLong);
-  const written = message.content.find((block) => block.type === "text");
+  // The pack is the text after the last search: what Claude says before a search is not part of it.
+  const searched = message.content.findLastIndex((block) => block.type !== "text" && block.type !== "thinking");
+  const pack = message.content
+    .slice(searched + 1)
+    .map((block) => (block.type === "text" ? block.text : ""))
+    .join("");
   try {
-    return JSON.parse(written?.text ?? "") as Draft;
+    return JSON.parse(pack) as Draft;
   } catch {
     throw new Refused(words.unusable);
   }
@@ -163,25 +183,32 @@ function freeId(name: string, taken: string[]): string {
 /** Returns why no pack was kept, or nothing when one was. */
 export async function writePack(
   accountId: string,
-  topic: string,
+  asked: Partial<WriteOrder> & { topic: string },
   progress?: (prompts: number) => void,
   signal?: AbortSignal,
   language: Language = "en",
 ): Promise<string[]> {
   const words = wordsIn(language);
-  topic = topic.trim();
-  if (!topic || topic.length > MAX_TOPIC_LENGTH) return [words.packs.badTopic(MAX_TOPIC_LENGTH)];
+  const order: WriteOrder = {
+    topic: asked.topic.trim(),
+    instructions: (asked.instructions ?? "").trim(),
+    prompts: asked.prompts ?? WRITTEN_PROMPTS[0]!,
+    search: asked.search === true,
+  };
+  if (!order.topic || order.topic.length > MAX_TOPIC_LENGTH) return [words.packs.badTopic(MAX_TOPIC_LENGTH)];
+  if (order.instructions.length > MAX_INSTRUCTIONS_LENGTH) return [words.packs.badInstructions(MAX_INSTRUCTIONS_LENGTH)];
+  if (!WRITTEN_PROMPTS.includes(order.prompts)) return [words.packs.badCount(WRITTEN_PROMPTS)];
   // Checked first, so that nobody pays for a pack that cannot be kept.
   const packs = await listPacks(accountId);
   if (packs.length >= MAX_PACKS) return [words.packs.tooMany(MAX_PACKS)];
   const apiKey = await loadKey(accountId, "anthropic");
   if (!apiKey) return [words.packs.keyNeeded];
   try {
-    const written = await draft(apiKey, topic, language, progress, signal);
+    const written = await draft(apiKey, order, language, progress, signal);
     const pack = tidy(written, freeId(written.name, packs.map((pack) => pack.id)));
     const problems = await savePack(accountId, JSON.stringify(pack));
     if (problems.length) {
-      console.error(`A pack written about "${topic}" was not valid:\n- ${problems.join("\n- ")}`);
+      console.error(`A pack written about "${order.topic}" was not valid:\n- ${problems.join("\n- ")}`);
       return [words.packs.unusable];
     }
     return [];

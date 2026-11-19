@@ -36,8 +36,11 @@ export type KeyFailure = "refused" | "limited" | "unanswered";
 export type Account = { username: string; keys: Record<Provider, boolean>; failed: Record<Provider, KeyFailure | null> };
 export const MAX_KEY_LENGTH = 300;
 export const MAX_TOPIC_LENGTH = 60;
-/** As many as one dive asks. */
-export const WRITTEN_PROMPTS = 10;
+export const MAX_INSTRUCTIONS_LENGTH = 300;
+/** How many prompts a player may ask Claude for. A dive asks 10 of them, picked at random. */
+export const WRITTEN_PROMPTS = [10, 20, 30, 40, 50];
+/** What a player asks Claude for: `instructions` are their own words on top of the game's. */
+export type WriteOrder = { topic: string; instructions: string; prompts: number; search: boolean };
 /** Lower-case letters and digits only: what the pixel fonts can draw. */
 export const USERNAME = /^[a-z0-9]{3,16}$/;
 export const USERNAME_MAX = 16;

@@ -1,7 +1,7 @@
 import app from "../web/index.html";
 import type { BunRequest, Server } from "bun";
 import { LANGUAGES, LANGUAGE_COOKIE, isLanguage, wordsIn, type Language } from "../shared/language";
-import { MAX_PACK_BYTES, PROVIDERS, type Config, type Pack, type PackSummary, type Provider } from "../shared/types";
+import { MAX_PACK_BYTES, PROVIDERS, type Config, type Pack, type PackSummary, type Provider, type WriteOrder } from "../shared/types";
 import type { Words } from "../shared/words/en";
 import { SESSION_DAYS, accountIdOf, accountOf, signInFrom, signOut, signUp, type Entry } from "./accounts";
 import { MAX_PACKS, listPacks, loadPack, removePack, savePack } from "./custom";
@@ -173,7 +173,8 @@ const server = Bun.serve({
         // Writing a pack takes a minute or so, and Bun closes a request that is silent for ten seconds unless told otherwise.
         server.timeout(req, 0);
         const accountId = await accountIdOf(req.cookies.get(SESSION));
-        const topic = String(((await req.json()) as { topic: string }).topic ?? "");
+        const asked = (await req.json()) as Partial<WriteOrder>;
+        const order = { ...asked, topic: String(asked.topic ?? ""), instructions: String(asked.instructions ?? "") };
         // If the player stops the writing, or leaves, the request to Anthropic is ended too.
         const stop = new AbortController();
         req.signal.addEventListener("abort", () => stop.abort());
@@ -184,7 +185,7 @@ const server = Bun.serve({
               if (!stop.signal.aborted) controller.enqueue(encoder.encode(`${JSON.stringify(line)}\n`));
             };
             const problems = accountId
-              ? await writePack(accountId, topic, (prompts) => say({ prompts }), stop.signal, languageOf(req))
+              ? await writePack(accountId, order, (prompts) => say({ prompts }), stop.signal, languageOf(req))
               : [wordsOf(req).packs.signInFirst];
             say(problems.length || !accountId ? { problems } : { packs: await listPacks(accountId) });
             if (!stop.signal.aborted) controller.close();

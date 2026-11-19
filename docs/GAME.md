@@ -17,8 +17,9 @@ packs of their language or from the packs they choose. Multiplayer is private ro
 a code or a link. The host may pass the crown to another player, remove a player (who may
 come back with the code) or ban one (until the room closes). When the host leaves, the crown
 passes to the next player; the room closes when the last one leaves. Players can also add
-packs of their own, have Claude write one, and have answers a pack does not list judged live
-with their own API key.
+packs of their own, have Claude write one (10 to 50 prompts on a topic, with notes of their
+own, searching the web if they turn that on), and have answers a pack does not list judged
+live with their own API key.
 
 The game speaks English, Simplified Chinese and Traditional Chinese (as written in Taiwan). It
 starts in the browser's language, and the settings change it; Claude writes a player's packs in
