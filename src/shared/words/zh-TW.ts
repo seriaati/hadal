@@ -19,6 +19,7 @@ export const zhTW: Words = {
     signIn: "登入",
     account: "帳號",
     about: "關於",
+    update: "更新遊戲",
   },
   single: {
     descend: "下潛",

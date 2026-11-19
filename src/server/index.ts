@@ -23,6 +23,15 @@ const PRODUCTION = process.env.NODE_ENV === "production";
 const SESSION = "session";
 /** A random id the browser keeps, so that a room's ban holds a guest without an account. */
 const BROWSER = "browser";
+/** A digest of the code the browser runs, so that a page still open from before a release can tell that it is out of date. */
+async function versionOf(): Promise<string> {
+  const root = `${import.meta.dir}/..`;
+  const paths = (await Array.fromAsync(new Bun.Glob("{web,shared}/**/*").scan(root))).sort();
+  const hasher = new Bun.CryptoHasher("sha256");
+  for (const path of paths) hasher.update(path).update(await Bun.file(`${root}/${path}`).bytes());
+  return hasher.digest("hex").slice(0, 12);
+}
+const VERSION = await versionOf();
 const builtIn = await loadBuiltIn();
 const inEach = <T>(make: (packs: Pack[]) => T) => Object.fromEntries(LANGUAGES.map((language) => [language, make(builtIn[language])])) as Record<Language, T>;
 const summaries = inEach((packs): PackSummary[] => packs.map((pack) => ({ id: pack.id, name: pack.name, prompts: pack.prompts.length })));
@@ -100,7 +109,7 @@ const server = Bun.serve({
     // The link preview, at an address that does not change, as the page's og:image names it.
     "/og-2.png": () => new Response(Bun.file(`${import.meta.dir}/../web/og-2.png`)),
     "/api/config": {
-      GET: () => Response.json({ devMode: DEV_MODE } satisfies Config),
+      GET: () => Response.json({ devMode: DEV_MODE, version: VERSION } satisfies Config, { headers: { "cache-control": "no-store" } }),
     },
     "/api/builtin": {
       GET: (req) => Response.json(summaries[languageOf(req)]),

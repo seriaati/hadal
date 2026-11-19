@@ -903,14 +903,16 @@ export class Scene {
       if (covered) return;
       const font = fit([huge, large], "HADAL", room);
       const tall = font.height;
-      frame.emit = 110;
-      say(font, "HADAL", x, base - 4, amber(tall));
-      frame.emit = 0;
       // On a narrow screen the line under the title runs on to a second one.
       const note = menu.note ?? t().title.tagline;
       const under = wrap(tiny, note, room);
       const gap = pitch(tiny, note, 8);
-      const top = base + tall + 2 + rise(tiny, note);
+      // On a short screen the title stands higher, as far as it must for its last line to fit.
+      const lift = Math.max(0, Math.min(base - 8, base + tall + 2 + rise(tiny, note) + 4 + under.length * gap + menu.items.length * MENU_ROW - 4 - H));
+      frame.emit = 110;
+      say(font, "HADAL", x, base - 4 - lift, amber(tall));
+      frame.emit = 0;
+      const top = base + tall + 2 + rise(tiny, note) - lift;
       under.forEach((line, i) => say(tiny, line, x, top + i * gap, menu.note ? 18 : 6));
       this.menuLeft = x;
       this.menuTop = top + 4 + under.length * gap;

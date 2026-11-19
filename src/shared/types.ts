@@ -16,7 +16,8 @@ export type GamePrompt = { id: string; text: string; pack: string };
 /** `answer` is the pack's spelling of a correct answer, or null when wrong (rarity 0). */
 export type Verdict = { answer: string | null; rarity: number };
 
-export type Config = { devMode: boolean };
+/** `version` changes whenever the game's own code does: an open page that sees a new one offers to update. */
+export type Config = { devMode: boolean; version: string };
 
 /** A correct answer scores its rarity in points; each point is this many metres. */
 export const METERS_PER_POINT = 11;

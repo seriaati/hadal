@@ -19,6 +19,7 @@ export const zhCN: Words = {
     signIn: "登录",
     account: "账号",
     about: "关于",
+    update: "更新游戏",
   },
   single: {
     descend: "下潜",

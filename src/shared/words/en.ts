@@ -25,6 +25,8 @@ export const en = {
     signIn: "Sign in",
     account: "Account",
     about: "About",
+    /** Shown only once a newer version of the game is out; it reloads the page. */
+    update: "Update the game",
   },
   single: {
     descend: "Descend",

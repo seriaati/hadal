@@ -17,6 +17,8 @@ import { drawCog, overCog, settingsStep } from "./pixel/settings";
 import { Ui, type Part, type Step } from "./pixel/ui";
 
 const REPO = "https://github.com/seriaati/hadal";
+/** How often an open page asks whether a newer version of the game is out, in milliseconds. */
+const VERSION_EVERY = 5 * 60 * 1000;
 const ARROWS: Record<string, "up" | "down" | "left" | "right"> = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right" };
 
 /** The whole game is drawn on canvas. A hidden text field takes the typing, so phones get a keyboard. */
@@ -74,9 +76,12 @@ export function Game() {
         { kind: "press", id: "source", label: "github.com/seriaati/hadal", says: t().about.source, press: () => open(REPO, "_blank", "noopener") },
       ],
     });
+    /** The version the page was loaded with, and whether a newer one is out: a running game is never reloaded unasked. */
+    let version = "";
+    let newer = false;
     const menuItems = () => {
       const words = t().title;
-      return [words.single, words.multiplayer, words.packs, account.account ? words.account : words.signIn, words.about];
+      return [words.single, words.multiplayer, words.packs, account.account ? words.account : words.signIn, words.about, ...(newer ? [words.update] : [])];
     };
     const menu: Menu = { items: menuItems(), choice: 0 };
     const choose = (line: number) => {
@@ -84,7 +89,8 @@ export function Game() {
       else if (line === 1) multiplayer.show();
       else if (line === 2) packs.show();
       else if (line === 3) account.show();
-      else ui.go(about);
+      else if (line === 4) ui.go(about);
+      else location.reload();
     };
     /** Opened with Escape, the step says what a second Escape does. */
     let byEscape = false;
@@ -111,9 +117,16 @@ export function Game() {
     };
     if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game, scene, frame, display, sound, glitch, ui, account, packs, custom, multiplayer, room: multiplayer.client } });
 
-    void fetch("/api/config")
-      .then((res) => res.json() as Promise<Config>)
-      .then((config) => config.devMode && setDev({ game, scene, frame, multiplayer }));
+    const config = () => fetch("/api/config", { cache: "no-store" }).then((res) => res.json() as Promise<Config>);
+    void config().then((config) => {
+      version = config.version;
+      if (config.devMode) setDev({ game, scene, frame, multiplayer });
+    });
+    const checkVersion = () => {
+      if (version && !newer && document.visibilityState === "visible") void config().then((config) => (newer = config.version !== version), () => {});
+    };
+    const checking = setInterval(checkVersion, VERSION_EVERY);
+    document.addEventListener("visibilitychange", checkVersion);
 
     const onKey = (event: KeyboardEvent) => {
       // While a keyboard is still composing a letter (as for Japanese or Chinese), Enter picks the letter; it sends nothing.
@@ -251,6 +264,8 @@ export function Game() {
 
     return () => {
       cancelAnimationFrame(request);
+      clearInterval(checking);
+      document.removeEventListener("visibilitychange", checkVersion);
       input.removeEventListener("keydown", onKey);
       removeEventListener("mousedown", keepFocus);
       canvas.removeEventListener("pointerdown", onPointer);
