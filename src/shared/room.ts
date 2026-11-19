@@ -25,6 +25,12 @@ export const DEFAULT_SETTINGS: Omit<RoomSettings, "builtIn"> = { mode: "deepest"
 export const DIVE_PROMPTS = 10;
 /** Seconds everyone sees a verdict before the next turn. */
 export const PAUSE_SECONDS = 2.5;
+/**
+ * Seconds the server waits after a turn's air runs out. The diver's own browser counts the air
+ * from when it heard of the turn, a little behind the server, and says when it ran out, with
+ * what was typed; the server ends the turn without it only if that does not come in time.
+ */
+export const GRACE_SECONDS = 1;
 /** Seconds the submarines of a chaos dive take to let the divers go, before the first turn. */
 export const DROP_SECONDS = 4;
 /** In "longest", the hearts a diver starts with, the most they can have, and the points of rarity that fill the bar and give one more. In "chaos" a diver has one heart, and wins no more. */
@@ -100,6 +106,7 @@ export type ClientMessage =
   | { type: "start" }
   | { type: "typing"; text: string }
   | { type: "answer"; text: string }
+  | { type: "out"; text: string }
   | { type: "host"; id: number }
   | { type: "remove"; id: number; ban: boolean }
   | { type: "leave" };

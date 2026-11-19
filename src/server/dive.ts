@@ -1,4 +1,4 @@
-import { DROP_SECONDS, MAX_HEARTS, PAUSE_SECONDS, START_HEARTS, type DiveView, type DiverView, type Finish, type Mode, type Said } from "../shared/room";
+import { DROP_SECONDS, GRACE_SECONDS, MAX_HEARTS, PAUSE_SECONDS, START_HEARTS, type DiveView, type DiverView, type Finish, type Mode, type Said } from "../shared/room";
 import { MAX_ANSWER_LENGTH, METERS_PER_POINT, type GamePrompt, type Verdict } from "../shared/types";
 import { judge, type PromptEntry, type PromptIndex } from "./game";
 
@@ -127,6 +127,14 @@ export class Dive {
     if (typed) await this.attempt(typed);
   }
 
+  /** The diver's own browser says their air ran out, with what they had typed. */
+  out(id: number, text: string) {
+    if (this.over || id !== this.turn || this.deadline === null) return;
+    this.typing = String(text ?? "").slice(0, MAX_ANSWER_LENGTH);
+    this.cancel();
+    this.expire();
+  }
+
   /** A diver left the room. */
   drop(id: number) {
     if (this.over || !this.divers.some((diver) => diver.id === id)) return;
@@ -162,7 +170,7 @@ export class Dive {
     const turn = this.turns;
     this.left = seconds;
     this.deadline = this.setup.clock.now() + seconds * 1000;
-    this.cancel = this.setup.clock.after(seconds * 1000, () => turn === this.turns && this.expire());
+    this.cancel = this.setup.clock.after((seconds + GRACE_SECONDS) * 1000, () => turn === this.turns && this.expire());
   }
 
   private stop() {

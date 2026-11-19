@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { BAR_FULL, DROP_SECONDS, PAUSE_SECONDS, type Finish, type Mode } from "../shared/room";
+import { BAR_FULL, DROP_SECONDS, GRACE_SECONDS, PAUSE_SECONDS, type Finish, type Mode } from "../shared/room";
 import type { Pack, Verdict } from "../shared/types";
 import { Dive, enoughFor, type Clock, type Live } from "./dive";
 import { buildIndex } from "./game";
@@ -157,14 +157,33 @@ test("the air stands still while the live judge rules", async () => {
 test("when the air runs out what is typed gets one last try, and nothing typed is a dead lamp", async () => {
   const { dive: d, clock, view } = dive([1, 2]);
   d.type(1, "blue");
-  await clock.pass(AIR);
+  await clock.pass(AIR + GRACE_SECONDS);
   expect(view().verdict).toEqual({ answer: "Blue", rarity: 30 });
   await clock.pass(PAUSE_SECONDS);
   d.type(2, "pink");
-  await clock.pass(AIR);
+  await clock.pass(AIR + GRACE_SECONDS);
   expect(view().refused?.text).toBe("pink");
   expect(view().verdict).toEqual({ answer: null, rarity: 0 });
   expect(view().divers[1]).toMatchObject({ id: 2, depth: 0, lamps: [{ depth: 0, lit: false }], hearts: 2, out: false });
+});
+
+test("an answer that comes just after the air ran out, within the grace, still counts", async () => {
+  const { dive: d, clock, view } = dive([1, 2]);
+  await clock.pass(AIR + GRACE_SECONDS / 2);
+  expect(view().air).toBe(0);
+  expect(view().verdict).toBeNull();
+  await d.answer(1, "green");
+  expect(view().verdict).toEqual({ answer: "Green", rarity: 60 });
+});
+
+test("the diver's browser saying the air ran out ends the turn at once, with what it typed", async () => {
+  const { dive: d, clock, view } = dive([1, 2]);
+  d.out(2, "red");
+  expect(view().verdict).toBeNull();
+  await clock.pass(AIR - 0.2);
+  d.out(1, "red");
+  await clock.pass(0);
+  expect(view().verdict).toEqual({ answer: "Red", rarity: 10 });
 });
 
 test("only the diver whose turn it is types and answers", async () => {
@@ -219,7 +238,7 @@ const MANY = [...index.values(), ...index.values()].map((entry) => entry.prompt)
 
 test("in longest, a turn lost costs a heart, and one with none left is out and skipped", async () => {
   const { dive: d, clock, view } = dive([1, 2, 3], WRONG, "longest", MANY);
-  await clock.pass(AIR);
+  await clock.pass(AIR + GRACE_SECONDS);
   expect(view().divers[0]).toMatchObject({ hearts: 1, out: false });
   await clock.pass(PAUSE_SECONDS);
   await d.answer(2, "red");
@@ -232,7 +251,7 @@ test("in longest, a turn lost costs a heart, and one with none left is out and s
   await d.answer(3, "azure");
   await clock.pass(PAUSE_SECONDS);
   expect(view().turn).toBe(1);
-  await clock.pass(AIR);
+  await clock.pass(AIR + GRACE_SECONDS);
   expect(view().divers[0]).toMatchObject({ hearts: 0, out: true });
   expect(view().order).toEqual([2, 3]);
   await clock.pass(PAUSE_SECONDS);
@@ -284,7 +303,7 @@ test("in longest, nobody answers twice in a row as divers go out", async () => {
   for (let i = 0; i < 9 && view().order.length > 1; i++) {
     turns.push(view().turn);
     // 3 never answers, and goes out after two turns.
-    if (view().turn === 3) await clock.pass(AIR);
+    if (view().turn === 3) await clock.pass(AIR + GRACE_SECONDS);
     else await d.answer(view().turn, answers[i]!);
     await clock.pass(PAUSE_SECONDS);
   }
@@ -297,7 +316,7 @@ test("in longest, the dive ends when one is left, and they win", async () => {
   await d.answer(1, "green");
   await clock.pass(PAUSE_SECONDS);
   for (let i = 0; i < 2; i++) {
-    await clock.pass(AIR + PAUSE_SECONDS);
+    await clock.pass(AIR + GRACE_SECONDS + PAUSE_SECONDS);
     await d.answer(1, ["azure", "red"][i]!);
     await clock.pass(PAUSE_SECONDS);
   }
@@ -311,13 +330,13 @@ test("in longest, when the prompts run out the deepest of those still in wins", 
   // Prompt one: 1 dives deepest of all, then goes out on prompt two after losing a heart on each.
   for (const [turn, answer] of [[1, ""], [2, "blue"], [3, "red"]] as const) {
     if (answer) await d.answer(turn, answer);
-    else await clock.pass(AIR);
+    else await clock.pass(AIR + GRACE_SECONDS);
     await clock.pass(PAUSE_SECONDS);
   }
   expect(view().turn).toBe(2);
   for (const [turn, answer] of [[2, "grey"], [3, "blue"], [1, ""]] as const) {
     if (answer) await d.answer(turn, answer);
-    else await clock.pass(AIR);
+    else await clock.pass(AIR + GRACE_SECONDS);
     await clock.pass(PAUSE_SECONDS);
   }
   expect(ended[0]!.map(({ id, depth, won, place, out }) => ({ id, depth, won, place, out }))).toEqual([
@@ -348,7 +367,7 @@ test("in chaos, one empty tank puts a diver out, and the last one in wins", asyn
   await clock.pass(DROP_SECONDS);
   await d.answer(1, "red");
   await clock.pass(PAUSE_SECONDS);
-  await clock.pass(AIR);
+  await clock.pass(AIR + GRACE_SECONDS);
   expect(view().divers[1]).toMatchObject({ hearts: 0, out: true });
   expect(view().order).toEqual([1, 3]);
   await clock.pass(PAUSE_SECONDS);
@@ -356,7 +375,7 @@ test("in chaos, one empty tank puts a diver out, and the last one in wins", asyn
   await clock.pass(PAUSE_SECONDS);
   // Prompt two: 1 goes first, since 3 answered last and nobody answers twice in a row.
   expect(view().turn).toBe(1);
-  await clock.pass(AIR + PAUSE_SECONDS);
+  await clock.pass(AIR + GRACE_SECONDS + PAUSE_SECONDS);
   expect(ended).toHaveLength(1);
   expect(ended[0]!.map(({ id, won, place, out }) => ({ id, won, place, out }))).toEqual([
     { id: 1, won: false, place: 2, out: 2 },

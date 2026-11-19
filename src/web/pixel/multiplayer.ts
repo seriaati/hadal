@@ -53,6 +53,8 @@ export class MultiplayerPanel {
   private dive = new RoomDive();
   /** What the player last sent as typed, on their turn. */
   private typed = "";
+  /** The turn ("round:diver") whose air ran out on the player's own clock. */
+  private spent = "";
   /** The air the host has just set, until the room comes back with it. */
   private air: number | null = null;
   private packs: PackSummary[] = [];
@@ -227,6 +229,11 @@ export class MultiplayerPanel {
     if (!dive) return null;
     const chaos = view.settings.mode === "chaos";
     const game = this.dive.update(dive, this.sent, now, chaos);
+    // The player's air runs out by their own clock, which the server waits a moment for, so the last letters typed count.
+    if (this.yours && dive.running && game.air <= 0) {
+      this.client.send({ type: "out", text: this.typed });
+      this.spent = `${dive.round}:${dive.turn}`;
+    }
     // The player's own diver has just gone out of a chaos dive: their screen dies as a single player's does.
     if (chaos && !this.lost && dive.verdict && dive.divers.find((diver) => diver.id === view.you)?.out) {
       // It is their turn, so theirs is the diver in focus; their lantern goes out.
@@ -263,7 +270,8 @@ export class MultiplayerPanel {
   /** Whether it is the player's turn to answer, and an answer is wanted. */
   get yours(): boolean {
     const view = this.client.view;
-    return !!view?.dive && this.diving && view.dive.turn === view.you && !view.dive.verdict && !view.dive.drop && !this.dying;
+    const dive = view?.dive;
+    return !!dive && this.diving && dive.turn === view.you && !dive.verdict && !dive.drop && !this.dying && this.spent !== `${dive.round}:${dive.turn}`;
   }
 
   type(text: string) {

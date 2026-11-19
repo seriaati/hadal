@@ -226,9 +226,10 @@ export async function receive(member: Member, text: string) {
   else if (message?.type === "start" && room) refuse(await start(member, room));
   else if (message?.type === "host" && room) crown(member, room, message.id);
   else if (message?.type === "remove" && room) remove(member, room, message.id, message.ban === true);
-  else if ((message?.type === "typing" || message?.type === "answer") && room?.dive) {
+  else if ((message?.type === "typing" || message?.type === "answer" || message?.type === "out") && room?.dive) {
     const id = room.players.find((player) => player.member === member)!.id;
     if (message.type === "typing") room.dive.type(id, message.text);
+    else if (message.type === "out") room.dive.out(id, message.text);
     else await room.dive.answer(id, message.text);
   } else if (message?.type === "ready" && room) {
     const player = room.players.find((player) => player.member === member)!;
