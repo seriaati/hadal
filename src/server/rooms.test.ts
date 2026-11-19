@@ -211,7 +211,9 @@ test("when the host goes the crown passes to the player after them, and the room
   const { host, others: [ben, cal], code } = await room(null, "ben", "cal");
   await say(cal!, { type: "ready", ready: true });
   await say(host, { type: "host", id: seen(cal!).you });
+  const calId = seen(cal!).you;
   leave(cal!);
+  expect(ben!.sent.at(-2)).toEqual({ type: "gone", id: calId, how: "left" });
   // After the last player comes the first.
   expect(seen(ben!).players.map(({ nickname, host }) => [nickname, host])).toEqual([["host", true], ["ben", false]]);
   leave(host);
@@ -260,8 +262,11 @@ test("the host removes a player, who may come back with the code", async () => {
   const { host, others: [ben], code } = await room(null, "ben");
   await say(ben!, { type: "remove", id: seen(host).you, ban: false });
   expect(names(host)).toEqual(["host", "ben"]);
-  await say(host, { type: "remove", id: seen(ben!).you, ban: false });
+  const benId = seen(ben!).you;
+  await say(host, { type: "remove", id: benId, ban: false });
   expect(ben!.sent.at(-1)).toEqual({ type: "removed", banned: false });
+  // The others are told how ben went, then sent the room without him.
+  expect(host.sent.at(-2)).toEqual({ type: "gone", id: benId, how: "removed" });
   expect(names(host)).toEqual(["host"]);
   await say(ben!, { type: "join", code, nickname: "ben", suit: 0 });
   expect(names(host)).toEqual(["host", "ben"]);
@@ -274,6 +279,7 @@ test("a banned player cannot come back, by another name or another connection, u
   await say(ben, { type: "join", code, nickname: "ben", suit: 0 });
   await say(host, { type: "remove", id: seen(ben).you, ban: true });
   expect(ben.sent.at(-1)).toEqual({ type: "removed", banned: true });
+  expect(host.sent.at(-2)).toMatchObject({ type: "gone", how: "banned" });
   const again = async (who: Fake, to = code) => {
     await say(who, { type: "join", code: to, nickname: "notben", suit: 0 });
     return who.sent.at(-1);

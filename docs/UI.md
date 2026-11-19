@@ -97,6 +97,9 @@ field rule 4 (15 in focus), caret 16, pips 6 on and 4 off (15 on in focus), wait
 
 - Sound and light answer for the interface where they can: a slider's step is heard at its
   new level.
+- What happens to the people of a room is seen in the sea. One who leaves is hauled up their line
+  into the boat; one removed is jolted and yanked up; one banned has their line snap and sinks
+  into the dark. The crown flies from the old host's name to the new one's and glints there.
 
 ## Wording
 

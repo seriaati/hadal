@@ -1,6 +1,6 @@
 import {
   AIR_MAX, AIR_MIN, DEFAULT_AIR, DEFAULT_SETTINGS, DIVE_PROMPTS, MAX_PLAYERS, MODES, ROOM_CODE_LENGTH, SUITS,
-  type ClientMessage, type Refusal, type RoomPlayer, type RoomSettings, type RoomView, type ServerMessage,
+  type ClientMessage, type Gone, type Refusal, type RoomPlayer, type RoomSettings, type RoomView, type ServerMessage,
 } from "../shared/room";
 import type { Language } from "../shared/language";
 import { USERNAME, type Pack } from "../shared/types";
@@ -175,6 +175,10 @@ function crown(member: Member, room: Room, id: number) {
   tell(room);
 }
 
+function farewell(room: Room, id: number, how: Gone) {
+  for (const { member } of room.players) member.send({ type: "gone", id, how });
+}
+
 /** The host takes a player out of the room. One banned cannot come back while the room lasts. */
 function remove(member: Member, room: Room, id: number, ban: boolean) {
   const player = room.players.find((one) => one.id === id);
@@ -183,6 +187,7 @@ function remove(member: Member, room: Room, id: number, ban: boolean) {
   room.players = room.players.filter((one) => one !== player);
   places.delete(player.member);
   player.member.send({ type: "removed", banned: ban });
+  farewell(room, player.id, ban ? "banned" : "removed");
   tell(room);
 }
 
@@ -197,6 +202,7 @@ export function leave(member: Member) {
     rooms.delete(room.code);
     return room.dive?.close();
   }
+  farewell(room, gone!.id, "left");
   if (gone!.host) pass(room, room.players[at % room.players.length]!);
   room.dive?.drop(gone!.id);
   tell(room);

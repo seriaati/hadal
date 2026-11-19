@@ -101,8 +101,15 @@ export type ClientMessage =
   | { type: "leave" };
 
 export type Refusal = "no-room" | "full" | "name-taken" | "bad-name" | "bad-suit" | "not-host" | "bad-settings" | "not-ready" | "no-packs" | "no-prompts" | "banned";
+/** How a player went out of a room: of their own accord, or taken out by the host, with or without a ban. */
+export type Gone = "left" | "removed" | "banned";
 /**
  * `room` is the whole room again, sent after every change to it. `removed` means the host took the player out of the
- * room, and with `banned` they cannot come back to it.
+ * room, and with `banned` they cannot come back to it. `gone` tells the others how a player went, just before the room
+ * without them.
  */
-export type ServerMessage = { type: "room"; room: RoomView } | { type: "refused"; reason: Refusal } | { type: "removed"; banned: boolean };
+export type ServerMessage =
+  | { type: "room"; room: RoomView }
+  | { type: "refused"; reason: Refusal }
+  | { type: "removed"; banned: boolean }
+  | { type: "gone"; id: number; how: Gone };

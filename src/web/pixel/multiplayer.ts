@@ -1,4 +1,4 @@
-import { AIR_MAX, AIR_MIN, MODES, ROOM_CODE_LENGTH, SUITS, type Refusal, type RoomPlayer, type RoomSettings, type RoomView } from "../../shared/room";
+import { AIR_MAX, AIR_MIN, MODES, ROOM_CODE_LENGTH, SUITS, type Gone, type Refusal, type RoomPlayer, type RoomSettings, type RoomView } from "../../shared/room";
 import { USERNAME_MAX, type PackSummary } from "../../shared/types";
 import { formatMeters } from "../depth";
 import { t } from "../language";
@@ -9,7 +9,7 @@ import type { Sound } from "../sound";
 import { LOST_SECONDS, ascentSeconds, createGame, type Game } from "../state";
 import type { AccountPanel } from "./account";
 import { builtInRows, packRows, type PackChoice } from "./choice";
-import { SUIT_COLORS, type Crew, type Turn } from "./scene";
+import { CROWN_SECONDS, GLINT_SECONDS, GOING_SECONDS, SUIT_COLORS, type Crew, type Turn } from "./scene";
 import type { Part, Step, Ui } from "./ui";
 
 /** Where in the panel a refusal is said: under the field it is about, before the last line, in the room's set-up, under "Copy the link" or under "Start the dive". */
@@ -65,6 +65,13 @@ export class MultiplayerPanel {
   /** The player whose step the host has open, and which of "Remove" and "Ban" one more press does. */
   private picked: number | null = null;
   private doomed: "" | "remove" | "ban" = "";
+  /** Divers who have just gone out of the room, as they were last seen, how they went and when, in seconds. */
+  private ghosts: { crew: Crew; how: Gone; at: number }[] = [];
+  /** The divers as last shown, so that one who goes is seen off from where they were. */
+  private shown: Crew[] = [];
+  /** The room's host as the server last said, and the last time the crown passed: to whom, from whom, and when. */
+  private host: { code: string; id: number; name: string } | null = null;
+  private crowned: { id: number; from: string; at: number } | null = null;
   /** Who was ready, by room code and id, as the server last said. */
   private ready = new Map<string, boolean>();
   /**
@@ -134,19 +141,47 @@ export class MultiplayerPanel {
     const dive = this.diving && view?.dive;
     if (dive) {
       const longest = view.settings.mode === "longest";
-      return dive.divers.flatMap((diver, slot) => {
+      const divers = dive.divers.flatMap((diver, slot): Crew[] => {
         const player = view.players.find((one) => one.id === diver.id);
         const turn = diver.id === dive.turn;
         const { depth, lamps } = diver;
         // One who has just gone out is still seen through the verdict, and hauled up when the turn passes.
         const out = diver.out && !turn;
-        return player ? [{ slot, suit: player.suit, name: player.nickname, lit: turn, focus: turn, depth, lamps, label: diver.id !== view.you, hearts: longest ? diver.hearts : undefined, out, host: player.host }] : [];
+        const crowned = this.crownedOf(diver.id);
+        return player ? [{ slot, suit: player.suit, name: player.nickname, lit: turn, focus: turn, depth, lamps, label: diver.id !== view.you, hearts: longest ? diver.hearts : undefined, out, host: player.host, crowned }] : [];
       });
+      return this.place(divers);
     }
     if (!this.ui.holds(this.first)) return null;
     if (!view) return [{ slot: 0, suit: this.suit, name: "", lit: true, focus: true, depth: 0 }];
     // The host has no ready of their own: starting the dive is it.
-    return view.players.map((player, slot) => ({ slot, suit: player.suit, name: player.nickname, lit: player.host || player.ready, focus: player.id === view.you, depth: 0, host: player.host }));
+    return this.place(
+      view.players.map((player, slot) => ({ slot, suit: player.suit, name: player.nickname, lit: player.host || player.ready, focus: player.id === view.you, depth: 0, host: player.host, crowned: this.crownedOf(player.id) })),
+    );
+  }
+
+  /** Each diver's place along the boat: one going keeps theirs until they are gone, and those after them then slide over. */
+  private place(crew: Crew[]): Crew[] {
+    const now = performance.now() / 1000;
+    this.ghosts = this.ghosts.filter((ghost) => now - ghost.at < GOING_SECONDS[ghost.how]);
+    const order = [...crew];
+    for (const ghost of this.ghosts.toSorted((a, b) => a.crew.slot - b.crew.slot)) {
+      order.splice(Math.min(ghost.crew.slot, order.length), 0, { ...ghost.crew, going: { how: ghost.how, t: now - ghost.at } });
+    }
+    return (this.shown = order.map((diver, slot) => ({ ...diver, slot })));
+  }
+
+  /** Another player went out of the room: their diver is seen going. */
+  private ghost(id: number, how: Gone) {
+    const name = this.client.view?.players.find((player) => player.id === id)?.nickname;
+    const diver = this.shown.find((one) => one.name === name && !one.going);
+    if (diver) this.ghosts.push({ crew: { ...diver, focus: false, label: false, host: false, crowned: undefined }, how, at: performance.now() / 1000 });
+  }
+
+  private crownedOf(id: number): Crew["crowned"] {
+    if (this.crowned?.id !== id) return undefined;
+    const t = performance.now() / 1000 - this.crowned.at;
+    return t < CROWN_SECONDS + GLINT_SECONDS ? { from: this.crowned.from, t } : undefined;
   }
 
   private open(step: () => Step) {
@@ -252,11 +287,16 @@ export class MultiplayerPanel {
   }
 
   private hear(message: Heard) {
+    if (message.type === "gone") return this.ghost(message.id, message.how);
     this.busy = false;
     const entering = this.ui.top === this.create || this.ui.top === this.join;
     if (message.type === "room") {
       this.air = null;
       this.sent = performance.now() / 1000;
+      const { code, players } = message.room;
+      const host = players.find((player) => player.host);
+      if (host && this.host?.code === code && this.host.id !== host.id) this.crowned = { id: host.id, from: this.host.name, at: this.sent };
+      this.host = host ? { code, id: host.id, name: host.nickname } : null;
       // A dive takes the screen as it begins, and gives it back to the room when it ends.
       const diving = message.room.dive !== null;
       this.hearLanterns(message.room, diving !== this.diving);
