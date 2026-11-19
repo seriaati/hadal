@@ -140,8 +140,9 @@ export class Display {
   /** Size the canvases to the window at a whole-number pixel scale, and the frame to match. */
   fit(frame: Frame) {
     const scale = Math.max(2, Math.floor(Math.min(innerWidth / 240, innerHeight / 180)));
-    const width = Math.ceil(innerWidth / scale);
-    const height = Math.ceil(innerHeight / scale);
+    // A window with no size (as some phones report for a moment) keeps the frame of one pixel: an empty image cannot be made.
+    const width = Math.max(1, Math.ceil(innerWidth / scale));
+    const height = Math.max(1, Math.ceil(innerHeight / scale));
     if (width === this.pixels.width && height === this.pixels.height) return;
     frame.resize(width, height);
     this.pixels.width = this.shadeCanvas.width = this.bloomCanvas.width = width;

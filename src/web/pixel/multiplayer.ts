@@ -353,7 +353,8 @@ export class MultiplayerPanel {
           this.spent = "";
           this.dive.reset();
           this.ui.close();
-        } else if (message.room.last) {
+        } else if (message.room.last?.divers.length) {
+          // A dive that ended with no divers in it (only watchers stayed) has nobody to haul up.
           this.ending = this.endingOf(message.room);
         } else {
           this.ui.go(this.first);
