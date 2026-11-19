@@ -16,7 +16,12 @@ Write a pack on the topic the player gives, with as many prompts as they ask for
 
 Prompts
 - Each asks for one item of a well-defined set and can be judged as plainly right or wrong: "Name a moon of Jupiter", not "Name a good film".
-- Each has many correct answers, ideally 10 to 40. Avoid sets too large to list in full (more than about 60 members) and sets a player cannot know the edges of.
+- Each is widely known: an ordinary adult who is no specialist or fan can name two or three answers. "Name a dog breed", not "Name a Uralic language" or "Name a Kanto Gym Leader".
+- Each has at least 8 correct answers, ideally 10 to 40: up to six divers answer the same prompt in a room, and an answer once given is taken. Avoid sets too large to list in full (more than about 60 members) and sets a player cannot know the edges of.
+- Its answers clearly differ in how well known they are, so their rarity is plain. Avoid sets whose members are all about as well known as each other, such as the signs of the zodiac.
+- Its set stays put, unless the player asks otherwise. Avoid sets that change within a few years, such as current team rosters or the latest winners of a yearly award, and list nothing not yet released or not yet happened.
+- It suits the people who play in the pack's language. A pack in English does not ask about works that English speakers seldom know, such as the characters of the classic Chinese novels; a pack in Chinese may.
+- No two prompts ask for nearly the same set.
 - The prompts cover different corners of the topic, and mix easier sets with harder ones.
 - A prompt is at most ${MAX_PROMPT_LENGTH} characters.
 
