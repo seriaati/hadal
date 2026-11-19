@@ -22,9 +22,9 @@ export const zhCN: Words = {
   },
   single: {
     descend: "下潜",
-    descendHow: (air: number) => `10 道题，每题 ${air} 秒氧气：答案越冷门，潜得越深；氧气耗尽只会失去这一题`,
+    descendHow: (air: number) => `10 道题，每题 ${air} 秒氧气：氧气耗尽只会失去这一题`,
     chaos: "混乱",
-    chaosHow: (air: number) => `10 道题，每题 ${air} 秒氧气：答案越冷门，潜得越深；第一次氧气耗尽，下潜就结束了`,
+    chaosHow: (air: number) => `10 道题，每题 ${air} 秒氧气：第一次氧气耗尽，下潜就结束了`,
     custom: "自选",
     customHow: "从你选的题库中出 10 道题，两种模式任选",
     noPacks: "还没有选择题库，请在上面选择",
