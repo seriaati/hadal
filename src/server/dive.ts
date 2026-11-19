@@ -1,4 +1,4 @@
-import { BAR_FULL, DROP_SECONDS, MAX_HEARTS, PAUSE_SECONDS, START_HEARTS, type DiveView, type DiverView, type Finish, type Mode, type Said } from "../shared/room";
+import { DROP_SECONDS, MAX_HEARTS, PAUSE_SECONDS, START_HEARTS, type DiveView, type DiverView, type Finish, type Mode, type Said } from "../shared/room";
 import { MAX_ANSWER_LENGTH, METERS_PER_POINT, type GamePrompt, type Verdict } from "../shared/types";
 import { judge, type PromptEntry, type PromptIndex } from "./game";
 
@@ -20,6 +20,8 @@ export type DiveSetup = {
   prompts: GamePrompt[];
   order: number[];
   air: number;
+  /** In "longest", the points of rarity that fill the bar and give one more heart. */
+  barFull: number;
   live: Live;
   clock: Clock;
   changed: () => void;
@@ -208,8 +210,8 @@ export class Dive {
       this.taken.push(verdict.answer!);
       if (longest) diver.bar += verdict.rarity;
       // A full bar is one more heart; what is over goes into the next bar. With the most hearts there is no bar to fill.
-      while (longest && diver.bar >= BAR_FULL && diver.hearts < MAX_HEARTS) {
-        diver.bar -= BAR_FULL;
+      while (longest && diver.bar >= this.setup.barFull && diver.hearts < MAX_HEARTS) {
+        diver.bar -= this.setup.barFull;
         diver.hearts++;
       }
       if (diver.hearts === MAX_HEARTS) diver.bar = 0;

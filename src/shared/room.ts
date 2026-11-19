@@ -12,10 +12,14 @@ export const AIR_MIN = 5;
 export const AIR_MAX = 60;
 export const DEFAULT_AIR: Record<Mode, number> = { deepest: 30, longest: 15, chaos: 8 };
 
+/** How easily a diver wins a new heart in "longest". */
+export type Hearts = "easy" | "medium" | "hard";
+export const HEARTS: Hearts[] = ["easy", "medium", "hard"];
+
 /** `builtIn` and `ownPacks` hold the ids of the built-in packs and of the host's own packs that the prompts come from. */
-export type RoomSettings = { mode: Mode; air: number; builtIn: string[]; ownPacks: string[]; judging: boolean };
+export type RoomSettings = { mode: Mode; air: number; hearts: Hearts; builtIn: string[]; ownPacks: string[]; judging: boolean };
 /** A new room plays every built-in pack, which only the server knows. */
-export const DEFAULT_SETTINGS: Omit<RoomSettings, "builtIn"> = { mode: "deepest", air: DEFAULT_AIR.deepest, ownPacks: [], judging: false };
+export const DEFAULT_SETTINGS: Omit<RoomSettings, "builtIn"> = { mode: "deepest", air: DEFAULT_AIR.deepest, hearts: "medium", ownPacks: [], judging: false };
 
 /** How many prompts a dive in "deepest" mode asks. */
 export const DIVE_PROMPTS = 10;
@@ -26,8 +30,8 @@ export const DROP_SECONDS = 4;
 /** In "longest", the hearts a diver starts with, the most they can have, and the points of rarity that fill the bar and give one more. In "chaos" a diver has one heart, and wins no more. */
 export const START_HEARTS = 2;
 export const MAX_HEARTS = 5;
-/** As much rarity as the rarest answer to four prompts: one rare answer alone is not a heart. */
-export const BAR_FULL = 400;
+/** The points that fill the bar, by how easily hearts are won. At every level one rare answer alone is not a heart. */
+export const BAR_FULL: Record<Hearts, number> = { easy: 175, medium: 275, hard: 400 };
 
 export type RoomPlayer = { id: number; nickname: string; suit: number; ready: boolean; host: boolean };
 /**

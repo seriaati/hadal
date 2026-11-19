@@ -1,5 +1,5 @@
 import {
-  AIR_MAX, AIR_MIN, DEFAULT_AIR, DEFAULT_SETTINGS, DIVE_PROMPTS, MAX_PLAYERS, MODES, ROOM_CODE_LENGTH, SUITS,
+  AIR_MAX, AIR_MIN, BAR_FULL, DEFAULT_AIR, HEARTS, DEFAULT_SETTINGS, DIVE_PROMPTS, MAX_PLAYERS, MODES, ROOM_CODE_LENGTH, SUITS,
   type ClientMessage, type Gone, type Refusal, type RoomPlayer, type RoomSettings, type RoomView, type ServerMessage,
 } from "../shared/room";
 import type { Language } from "../shared/language";
@@ -97,13 +97,14 @@ async function change(member: Member, room: Room, changes: Partial<RoomSettings>
   const settings: RoomSettings = {
     mode: changes.mode ?? old.mode,
     air: changes.air ?? (changes.mode ? DEFAULT_AIR[changes.mode] : old.air),
+    hearts: changes.hearts ?? old.hearts,
     builtIn: changes.builtIn ?? old.builtIn,
     ownPacks: changes.ownPacks ?? old.ownPacks,
     judging: changes.judging ?? old.judging,
   };
   const sound =
     MODES.includes(settings.mode) && Number.isInteger(settings.air) && settings.air >= AIR_MIN && settings.air <= AIR_MAX &&
-    typeof settings.judging === "boolean" &&
+    HEARTS.includes(settings.hearts) && typeof settings.judging === "boolean" &&
     Array.isArray(settings.builtIn) && new Set(settings.builtIn).size === settings.builtIn.length && settings.builtIn.every((id) => builtInPacks.includes(id)) &&
     Array.isArray(settings.ownPacks) && new Set(settings.ownPacks).size === settings.ownPacks.length;
   if (!sound) return "bad-settings";
@@ -140,6 +141,7 @@ async function start(member: Member, room: Room): Promise<Refusal | void> {
     prompts: pickPrompts(index, mode === "deepest" ? DIVE_PROMPTS : index.size),
     order: shuffle(room.players.map((player) => player.id)),
     air: room.settings.air,
+    barFull: BAR_FULL[room.settings.hearts],
     // A host who leaves takes their key with them.
     live: (entry, typed) => judgeLive(entry, typed, isHost(member, room) ? judgeAs : null),
     clock,

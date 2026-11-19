@@ -1,4 +1,4 @@
-import { AIR_MAX, AIR_MIN, MODES, ROOM_CODE_LENGTH, SUITS, type Gone, type Refusal, type RoomPlayer, type RoomSettings, type RoomView } from "../../shared/room";
+import { AIR_MAX, AIR_MIN, BAR_FULL, HEARTS, MODES, ROOM_CODE_LENGTH, SUITS, type Gone, type Refusal, type RoomPlayer, type RoomSettings, type RoomView } from "../../shared/room";
 import { USERNAME_MAX, type PackSummary } from "../../shared/types";
 import { formatMeters } from "../depth";
 import { t } from "../language";
@@ -256,6 +256,7 @@ export class MultiplayerPanel {
       watcher: !dive.order.includes(view.you),
       hearts: counted ? mine.hearts : null,
       bar: mine?.bar ?? 0,
+      barFull: BAR_FULL[view.settings.hearts],
     };
   }
 
@@ -486,7 +487,7 @@ export class MultiplayerPanel {
       if (refused && (!early || waiting.length)) rows.push({ kind: "note", text: early ? words.waitingFor(refused, t().list(waiting)) : refused, bad: true });
       rows.push({ kind: "press", id: "setup", label: words.setUp, press: () => this.open(this.setup) });
     } else {
-      const { mode, air, judging } = view.settings;
+      const { mode, air, hearts, judging } = view.settings;
       rows.push(
         {
           kind: "press",
@@ -495,7 +496,7 @@ export class MultiplayerPanel {
           says: you.ready ? words.putOutSays : words.lightSays,
           press: () => this.client.send({ type: "ready", ready: !you.ready }),
         },
-        { kind: "note", text: [words.modes[mode][0], words.air(air), packsOf(view.settings, this.builtIn.length, true), judging ? words.liveJudging : ""].filter(Boolean).join(" ~ ") },
+        { kind: "note", text: [words.modes[mode][0], words.air(air), mode === "longest" ? words.newHearts(words.hearts[hearts]) : "", packsOf(view.settings, this.builtIn.length, true), judging ? words.liveJudging : ""].filter(Boolean).join(" ~ ") },
       );
     }
     const copy = () => this.copy(view.code);
@@ -516,6 +517,9 @@ export class MultiplayerPanel {
     const keyed = this.account.account?.keys.anthropic || this.account.account?.keys.jev;
     const shift = (way: -1 | 1) => this.change({ mode: MODES[(MODES.indexOf(settings.mode) + way + MODES.length) % MODES.length] });
     const judging = () => this.change({ judging: !settings.judging });
+    // Pressed, the hearts go round from easy to hard; Left and Right stop at either end.
+    const level = HEARTS.indexOf(settings.hearts);
+    const hearts = (to: number) => to !== level && this.change({ hearts: HEARTS[to]! });
     return {
       title: words.setUp,
       rows: [
@@ -534,6 +538,9 @@ export class MultiplayerPanel {
             this.change({ air: next });
           },
         },
+        ...(settings.mode === "longest"
+          ? [{ kind: "press", id: "hearts", label: words.heartsLabel, value: words.hearts[settings.hearts], press: () => hearts((level + 1) % HEARTS.length), shift: (way: -1 | 1) => hearts(Math.max(0, Math.min(HEARTS.length - 1, level + way))) } as Part]
+          : []),
         {
           kind: "press",
           id: "packs",

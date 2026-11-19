@@ -1,4 +1,4 @@
-import { MAX_PLAYERS, type Mode, type Refusal } from "../room";
+import { MAX_PLAYERS, type Hearts, type Mode, type Refusal } from "../room";
 import { USERNAME_MAX } from "../types";
 
 /**
@@ -262,6 +262,10 @@ export const en = {
     mode: "Mode",
     airLabel: "Air",
     seconds: (seconds: number) => `${seconds} s`,
+    /** How easily a new heart is won in "longest". */
+    heartsLabel: "New hearts",
+    hearts: { easy: "easy", medium: "medium", hard: "hard" } as Record<Hearts, string>,
+    newHearts: (level: string) => `new hearts ${level}`,
     packs: "Packs",
     on: "on",
     off: "off",

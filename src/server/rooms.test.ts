@@ -137,9 +137,16 @@ test("a new mode brings its own air unless the air is given too", async () => {
   expect(seen(host).settings).toMatchObject({ mode: "deepest", air: 45 });
 });
 
+test("the host sets how easily new hearts are won, medium at first", async () => {
+  const { host } = await room();
+  expect(seen(host).settings.hearts).toBe("medium");
+  await say(host, { type: "settings", settings: { hearts: "hard" } });
+  expect(seen(host).settings.hearts).toBe("hard");
+});
+
 test("settings that cannot be are refused and change nothing", async () => {
   const { host } = await room();
-  const bad = [{ air: 4 }, { air: 61 }, { air: 20.5 }, { air: "20" }, { mode: "widest" }, { builtIn: false }, { builtIn: "yes" }, { builtIn: ["rivers"] }, { builtIn: [1] }, { builtIn: ["seas", "seas"] }, { ownPacks: "rivers" }, { judging: 1 }];
+  const bad = [{ air: 4 }, { air: 61 }, { air: 20.5 }, { air: "20" }, { mode: "widest" }, { builtIn: false }, { builtIn: "yes" }, { builtIn: ["rivers"] }, { builtIn: [1] }, { builtIn: ["seas", "seas"] }, { ownPacks: "rivers" }, { judging: 1 }, { hearts: "extreme" }, { hearts: 2 }];
   for (const settings of bad) {
     await say(host, { type: "settings", settings: settings as never });
     expect(host.sent.at(-1)).toEqual({ type: "refused", reason: "bad-settings" });

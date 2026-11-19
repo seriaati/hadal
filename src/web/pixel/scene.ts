@@ -1,4 +1,4 @@
-import { BAR_FULL, MAX_HEARTS, START_HEARTS, type Gone } from "../../shared/room";
+import { MAX_HEARTS, START_HEARTS, type Gone } from "../../shared/room";
 import { METERS_PER_POINT } from "../../shared/types";
 import { ZONES, formatMeters, lightOf } from "../depth";
 import { t } from "../language";
@@ -198,7 +198,7 @@ function faded(rows: string[], fade: number): string[] {
  * player's own, the answers already given to the prompt, whether the answer just refused was
  * taken, the player's own depth while someone else's diver is on screen (null for one who only watches),
  * how many in the room only watch, and whether the player is one of them. In "longest", the player's own
- * hearts while they are in (null otherwise) and the points in their bar.
+ * hearts while they are in (null otherwise), the points in their bar, and the points that fill it.
  */
 export type Turn = {
   air: number;
@@ -210,6 +210,7 @@ export type Turn = {
   watcher: boolean;
   hearts: number | null;
   bar: number;
+  barFull: number;
 };
 const LINE_GAP = 64;
 const KELP_ROWS = rowOf(600);
@@ -935,7 +936,7 @@ export class Scene {
     if (hearts != null && hearts < MAX_HEARTS) {
       const start = 8 + heartsWidth(hearts) + 4;
       const pitch = W >= 300 ? 4 : 3;
-      const full = Math.floor((this.turn!.bar / BAR_FULL) * 10);
+      const full = Math.floor((this.turn!.bar / this.turn!.barFull) * 10);
       for (let i = 0; i < 10; i++) {
         frame.emit = i < full ? 140 : 0;
         for (let j = 0; j < 3; j++) for (let k = 0; k < pitch - 1; k++) frame.put(start + i * pitch + k, H - 12 + j, i < full ? 9 : 3);

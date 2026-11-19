@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { DROP_SECONDS, PAUSE_SECONDS, type Finish, type Mode } from "../shared/room";
+import { BAR_FULL, DROP_SECONDS, PAUSE_SECONDS, type Finish, type Mode } from "../shared/room";
 import type { Pack, Verdict } from "../shared/types";
 import { Dive, enoughFor, type Clock, type Live } from "./dive";
 import { buildIndex } from "./game";
@@ -54,10 +54,10 @@ function handClock() {
 const WRONG = async () => ({ answer: null, rarity: 0 });
 
 /** A dive of the divers named by id, in that order, over the two prompts with three answers (or the prompts given). */
-function dive(order: number[], live: Live = WRONG, mode: Mode = "deepest", prompts = [index.get("colours/flag")!.prompt, index.get("colours/sky")!.prompt]) {
+function dive(order: number[], live: Live = WRONG, mode: Mode = "deepest", prompts = [index.get("colours/flag")!.prompt, index.get("colours/sky")!.prompt], barFull = BAR_FULL.medium) {
   const clock = handClock();
   const ended: Finish[][] = [];
-  const running = new Dive({ mode, index, prompts, order, air: AIR, live, clock, changed: () => {}, ended: (finish) => ended.push(finish) });
+  const running = new Dive({ mode, index, prompts, order, air: AIR, barFull, live, clock, changed: () => {}, ended: (finish) => ended.push(finish) });
   running.start();
   return { dive: running, clock, ended, view: () => running.view() };
 }
@@ -252,10 +252,21 @@ async function rare(d: Dive, clock: ReturnType<typeof handClock>, prompts: numbe
 
 test("in longest, rarity fills the bar, and a full bar is one more heart, with what is over carried on", async () => {
   const { dive: d, clock, view } = dive([1, 2], WRONG, "longest", [...MANY, ...MANY]);
-  await rare(d, clock, 4);
-  expect(view().divers[0]).toMatchObject({ hearts: 2, bar: 320 });
   await rare(d, clock, 2);
-  expect(view().divers[0]).toMatchObject({ hearts: 3, bar: 80 });
+  expect(view().divers[0]).toMatchObject({ hearts: 2, bar: 160 });
+  await rare(d, clock, 2);
+  expect(view().divers[0]).toMatchObject({ hearts: 3, bar: 45 });
+});
+
+test("in longest, an easy room fills the bar sooner and a hard one later", async () => {
+  const easy = dive([1, 2], WRONG, "longest", [...MANY, ...MANY], BAR_FULL.easy);
+  await rare(easy.dive, easy.clock, 4);
+  expect(easy.view().divers[0]).toMatchObject({ hearts: 3, bar: 145 });
+  const hard = dive([1, 2], WRONG, "longest", [...MANY, ...MANY], BAR_FULL.hard);
+  await rare(hard.dive, hard.clock, 4);
+  expect(hard.view().divers[0]).toMatchObject({ hearts: 2, bar: 320 });
+  await rare(hard.dive, hard.clock, 4);
+  expect(hard.view().divers[0]).toMatchObject({ hearts: 3, bar: 240 });
 });
 
 test("in longest, a diver has at most five hearts, and with five the bar stays empty", async () => {
