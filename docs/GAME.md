@@ -28,7 +28,9 @@ live with their own API key.
 The game speaks English, Simplified Chinese and Traditional Chinese (as written in Taiwan). It
 starts in the browser's language, and the settings change it; Claude writes a player's packs in
 their language. Each language has built-in packs of its own: the Chinese ones are the English
-packs translated, and their answers also take the English names; the traditional ones use
+packs translated, and their answers also take the English names. Where a prompt is about Chinese
+works that English speakers seldom know (the classic novels), the English pack asks another
+instead; the traditional ones use
 Taiwan's names and also take the mainland's. A room starts with the packs of its host's
 language, and the host may add any others. An answer may be typed in either simplified or
 traditional characters: 關 and 关 are the same answer.
