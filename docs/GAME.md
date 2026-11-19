@@ -14,7 +14,12 @@ player types one answer.
 Prompts are grouped into themed packs. A single player dives through 10 prompts, in normal
 mode or in chaos mode (less air, and the first empty tank ends the dive), from the built-in
 packs of their language or from the packs they choose. Multiplayer is private rooms joined by
-a code or a link; in a room a player may press their own name to change their suit. The host may pass the crown to another player, remove a player (who may
+a code or a link. A player joins in the suit they chose, or in one nobody in the room wears yet if
+it is taken, and in the room may press their own name to change it. A new room starts with the
+settings of the last room its host's browser set up. A player whose connection drops keeps their
+place for 30 seconds while the page connects again; if the server has restarted meanwhile (a new
+version), the room opens again under its code, without the dive that was under way. A page left
+open across a new version keeps running it, and the title offers to update. The host may pass the crown to another player, remove a player (who may
 come back with the code) or ban one (until the room closes). When the host leaves, the crown
 passes to the next player; the room closes when the last one leaves. A room asks no prompt
 twice until it has asked every one. While another diver answers, a player may type their own
