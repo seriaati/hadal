@@ -79,7 +79,7 @@ test("the divers answer in turn, and who goes first moves on by one with each pr
   expect(turns).toEqual([7, 3, 5, 3, 5, 7]);
 });
 
-test("two divers take turns: nobody answers twice in a row", async () => {
+test("two divers take turns going first", async () => {
   const { dive: d, clock, view } = dive([7, 3]);
   const turns: number[] = [];
   for (let i = 0; i < 4; i++) {
@@ -87,18 +87,17 @@ test("two divers take turns: nobody answers twice in a row", async () => {
     await d.answer(view().turn, ["red", "blue", "grey", "azure"][i]!);
     await clock.pass(PAUSE_SECONDS);
   }
-  expect(turns).toEqual([7, 3, 7, 3]);
+  expect(turns).toEqual([7, 3, 3, 7]);
 });
 
-test("when a diver leaves, the turns still never fall to the same diver twice in a row", async () => {
+test("when a diver leaves, who goes first still moves on by one", async () => {
   const { dive: d, clock, view } = dive([7, 3, 5]);
   for (const answer of ["red", "blue"]) {
     await d.answer(view().turn, answer);
     await clock.pass(PAUSE_SECONDS);
   }
   d.drop(5);
-  // 3 answered last; the next prompt would have begun with 3, so it begins with 7.
-  expect(view().turn).toBe(7);
+  expect(view().turn).toBe(3);
 });
 
 test("a lit lamp takes the diver deeper, and everyone sees the verdict for a pause", async () => {
@@ -211,7 +210,7 @@ test("a diver who leaves on their turn passes it on at once, and a ruling that c
 
 test("after the last prompt the dive ends with every diver's depth, place, points and answers", async () => {
   const { dive: d, clock, ended, view } = dive([1, 2]);
-  for (const answer of ["red", "blue", "grey", "azure"]) {
+  for (const answer of ["red", "blue", "azure", "grey"]) {
     await d.answer(view().turn, answer);
     await clock.pass(PAUSE_SECONDS);
   }
@@ -259,12 +258,12 @@ test("in longest, a turn lost costs a heart, and one with none left is out and s
   expect(view().turn).not.toBe(1);
 });
 
-/** Diver 1 answers first on every prompt (flag, then sky, over and over): green (60) to the flag, azure (100) to the sky. */
+/** Over flag, then sky, again and again: diver 1 says green (60) to the flag and azure (100) to the sky, diver 2 red and grey. */
 async function rare(d: Dive, clock: ReturnType<typeof handClock>, prompts: number) {
-  for (let i = 0; i < prompts; i++) {
-    await d.answer(1, i % 2 ? "azure" : "green");
-    await clock.pass(PAUSE_SECONDS);
-    await d.answer(2, i % 2 ? "grey" : "red");
+  for (let i = 0; i < prompts * 2; i++) {
+    const { turn, prompt } = d.view();
+    const sky = prompt.id === "colours/sky";
+    await d.answer(turn, turn === 1 ? (sky ? "azure" : "green") : sky ? "grey" : "red");
     await clock.pass(PAUSE_SECONDS);
   }
 }
@@ -294,21 +293,6 @@ test("in longest, a diver has at most five hearts, and with five the bar stays e
   expect(view().divers[0]).toMatchObject({ hearts: 5, bar: 0 });
   await d.answer(1, "green");
   expect(view().divers[0]).toMatchObject({ hearts: 5, bar: 0 });
-});
-
-test("in longest, nobody answers twice in a row as divers go out", async () => {
-  const { dive: d, clock, view } = dive([1, 2, 3], WRONG, "longest", MANY);
-  const turns: number[] = [];
-  const answers = ["red", "blue", "green", "blue", "grey", "azure", "red", "blue", "green"];
-  for (let i = 0; i < 9 && view().order.length > 1; i++) {
-    turns.push(view().turn);
-    // 3 never answers, and goes out after two turns.
-    if (view().turn === 3) await clock.pass(AIR + GRACE_SECONDS);
-    else await d.answer(view().turn, answers[i]!);
-    await clock.pass(PAUSE_SECONDS);
-  }
-  expect(turns.some((turn, i) => turn === turns[i - 1])).toBe(false);
-  expect(view().divers[2]).toMatchObject({ out: true });
 });
 
 test("in longest, the dive ends when one is left, and they win", async () => {
@@ -373,8 +357,9 @@ test("in chaos, one empty tank puts a diver out, and the last one in wins", asyn
   await clock.pass(PAUSE_SECONDS);
   await d.answer(3, "blue");
   await clock.pass(PAUSE_SECONDS);
-  // Prompt two: 1 goes first, since 3 answered last and nobody answers twice in a row.
-  expect(view().turn).toBe(1);
+  // Prompt two: 3 goes first, since 2, who would have, is out.
+  await d.answer(3, "grey");
+  await clock.pass(PAUSE_SECONDS);
   await clock.pass(AIR + GRACE_SECONDS + PAUSE_SECONDS);
   expect(ended).toHaveLength(1);
   expect(ended[0]!.map(({ id, won, place, out }) => ({ id, won, place, out }))).toEqual([

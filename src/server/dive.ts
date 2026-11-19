@@ -50,9 +50,8 @@ export class Dive {
   private said = new Map<number, Said[]>();
   /** Who is still to answer this prompt; the diver whose turn it is comes first. */
   private queue: number[] = [];
-  /** Who answered this prompt first, and who answered last of all. */
+  /** Who answered this prompt first. */
   private first = 0;
-  private last: number | null = null;
   private divers: DiverView[];
   private taken: string[] = [];
   private typing = "";
@@ -232,7 +231,6 @@ export class Dive {
     const said = this.said.get(diver.id) ?? [];
     said.push({ prompt: this.setup.prompts[this.round]!.text, answer: verdict?.answer ?? null, rarity: verdict?.rarity ?? 0 });
     this.said.set(diver.id, said);
-    this.last = diver.id;
     this.verdict = verdict ?? WRONG;
     const turn = this.turns;
     this.cancel = this.setup.clock.after(PAUSE_SECONDS * 1000, () => {
@@ -249,11 +247,8 @@ export class Dive {
       this.round++;
       this.taken = [];
       if (this.round >= this.setup.prompts.length) return this.finish();
-      // The first answer moves on by one with each prompt, but nobody answers twice in a row: two divers simply take turns.
-      let first = this.after(this.first);
-      if (first === this.last) first = this.after(first);
-      this.first = first;
-      const at = this.present.indexOf(first);
+      this.first = this.after(this.first);
+      const at = this.present.indexOf(this.first);
       this.queue = [...this.present.slice(at), ...this.present.slice(0, at)];
     }
     this.begin();
