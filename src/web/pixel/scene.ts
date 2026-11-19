@@ -23,10 +23,14 @@ const LAMP_X = 76;
 const DIVER_X = 84;
 /** World rows count down from the diver's position at 0 m. The waterline is just above it. */
 const SURFACE_ROW = -14;
-const FLOOR_ROW = rowOf(11000) + 26;
 /** Rows of rock generated above row 0, so that array indices stay positive. */
 const PAD = 300;
-const ROWS = PAD + FLOOR_ROW + 300;
+const ROWS = PAD + rowOf(11000) + 300;
+/** Where a world row's rock is found. There is no floor: below the rock that was generated, the trench repeats. */
+function rockAt(row: number): number {
+  const r = row + PAD;
+  return r < 1 ? 1 : r <= ROWS - 3 ? r : PAD + ((r - PAD) % (ROWS - 3 - PAD));
+}
 
 /** A `note` of something that went wrong is said in place of the line under the title. */
 export type Menu = { items: string[]; choice: number; note?: string };
@@ -519,7 +523,7 @@ export class Scene {
     for (let y = 0; y < H; y++) {
       const row = rowAt(y);
       if (row <= SURFACE_ROW) continue;
-      const reach = this.rock.far[Math.min(ROWS - 1, row + PAD)]!;
+      const reach = this.rock.far[rockAt(row)]!;
       for (let x = W + Math.max(...slots) * LINE_GAP - across - reach; x < end; x++) frame.put(x, y, Math.max(0, water[y]! - 1));
     }
 
@@ -569,11 +573,7 @@ export class Scene {
     frame.block = 224;
     for (let y = 0; y < H; y++) {
       const row = rowAt(y);
-      if (row >= FLOOR_ROW) {
-        for (let x = 0; x < W; x++) frame.put(x, y, row === FLOOR_ROW ? (hash(x, 3) < 0.35 ? 5 : 3) : hash(x >> 1, row) < 0.12 ? 1 : 0);
-        continue;
-      }
-      const r = Math.max(1, Math.min(ROWS - 2, row + PAD));
+      const r = rockAt(row);
       const edge = this.rock.edge[r]! + shift;
       const above = this.rock.edge[r - 1]! + shift;
       const below = this.rock.edge[r + 1]! + shift;
@@ -642,7 +642,6 @@ export class Scene {
       const snapped = line.going?.how === "banned" && line.going.t >= SNAP;
       for (let y = Math.max(0, snapped ? line.y + 2 : surface); y < H; y++) {
         const row = rowAt(y);
-        if (row >= FLOOR_ROW) break;
         if (behindWords(x, y)) continue;
         let near = 99;
         for (const l of warm) if (Math.abs(l.x - x) < 30) near = Math.min(near, Math.abs(y - l.y) / (l.i < 1 ? l.i * 0.9 + 0.2 : 2.2));
