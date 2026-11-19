@@ -1,4 +1,4 @@
-import type { CreatureKind } from "./pixel/creatures";
+import { SCARE, type CreatureKind } from "./pixel/creatures";
 import { DARK_AT, OFF_AT, type Glitch } from "./pixel/glitch";
 import type { Scene } from "./pixel/scene";
 import type { Game, Phase } from "./state";
@@ -100,6 +100,8 @@ export class Sound {
   private bubble = 0;
   private typed = "";
   private seen = new WeakSet<object>();
+  /** The giant anglerfish whose face has come back at the screen. */
+  private scares = new WeakSet<object>();
   private faults = 0;
   private losses = 0;
   private turns = 0;
@@ -258,10 +260,30 @@ export class Sound {
       } else if (kind === "whale") {
         this.note("ambient", "sine", 140, 210, 0.12, 3, 1.5);
         this.note("ambient", "sine", 210, 110, 0.1, 5, 2, 3);
+      } else if (kind === "leviathan") {
+        // A groan a semitone apart, swelling as it comes, and something calling far off.
+        this.note("ambient", "triangle", 73, 69, 0.3, 13, 9);
+        this.note("ambient", "triangle", 78, 73, 0.3, 13, 9);
+        this.note("ambient", "sine", 180, 120, 0.08, 4, 1.5, 6);
       } else if (kind === "eyes") {
         this.note("ambient", "sine", 1480, 1480, 0.03, 4.5, 1.5);
         this.note("ambient", "sine", 1487, 1487, 0.03, 4.5, 1.5);
       }
+    }
+    this.leviathan(scene, hidden);
+  }
+
+  /** The scream as the giant anglerfish's face comes back out of the silent dark. */
+  private leviathan(scene: Scene, hidden: boolean) {
+    for (const creature of scene.ambient.creatures) {
+      if (creature.kind !== "leviathan" || creature.age < SCARE || this.scares.has(creature)) continue;
+      this.scares.add(creature);
+      if (hidden) continue;
+      this.burst("highpass", 1000, 0.5, 0.45);
+      this.note("effects", "triangle", 160, 40, 0.4, 0.5, 0.005, 0.38); // the jaws shut
+      this.note("effects", "sawtooth", 330, 60, 0.08, 0.9, 0.005);
+      this.note("effects", "sawtooth", 349, 63, 0.08, 0.9, 0.005);
+      this.note("effects", "triangle", 90, 30, 0.45, 1.6);
     }
   }
 

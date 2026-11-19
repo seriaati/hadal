@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { Ambient } from "./creatures";
+import { Ambient, SCARE, WIDE } from "./creatures";
 import { Frame, type Light } from "./frame";
 
 test("when no kind of creature can arrive, nothing does", () => {
@@ -40,4 +40,43 @@ test("a whale is never drawn above the water", () => {
   ambient.draw(frame, new Uint8Array(height).fill(4), 0, [], () => false);
   expect(frame.color.subarray(0, 60 * width).some((color) => color !== 0)).toBe(false);
   expect(frame.color.subarray(60 * width).some((color) => color !== 0)).toBe(true);
+});
+
+test("the giant anglerfish comes in every chaos dive, and lets the diver go", () => {
+  const [width, height] = [300, 200];
+  const ambient = new Ambient();
+  ambient.chaos = true;
+  ambient.diving = true;
+  let came = false;
+  for (let second = 0; second < 20; second++) {
+    ambient.update(1, 100, 0, width, height, 0);
+    came ||= ambient.creatures.some((creature) => creature.kind === "leviathan");
+  }
+  expect(came).toBe(true);
+  for (let second = 0; second < 20; second++) ambient.update(1, 100, 0, width, height, 0);
+  expect(ambient.creatures.some((creature) => creature.kind === "leviathan")).toBe(false);
+});
+
+test("the giant anglerfish never comes to a normal dive, however deep", () => {
+  const ambient = new Ambient();
+  ambient.diving = true;
+  for (let second = 0; second < 120; second++) ambient.update(1, 9000, 0, 300, 200, 0);
+  expect(ambient.creatures.some((creature) => creature.kind === "leviathan")).toBe(false);
+});
+
+test("the screen cuts to dark once its mouth is wide open, and its face comes back out of the dark", () => {
+  const [width, height] = [300, 200];
+  const frame = new Frame();
+  frame.resize(width, height);
+  const ambient = new Ambient();
+  ambient.chaos = true;
+  ambient.spawn("leviathan", width, height, 7000);
+  ambient.update(WIDE + 0.3, 7000, 0, width, height, 0);
+  frame.color.fill(5);
+  ambient.drawNear(frame, new Uint8Array(height), [], () => false);
+  expect(frame.color.every((color) => color === 0)).toBe(true);
+  expect(frame.shade.every((shade) => shade === 255)).toBe(true);
+  ambient.update(SCARE + 0.1 - (WIDE + 0.3), 7000, 0, width, height, 0);
+  ambient.drawNear(frame, new Uint8Array(height), [], () => false);
+  expect(frame.color.some((color) => color !== 0)).toBe(true);
 });

@@ -10,11 +10,13 @@ type Angler = Turning & { kind: "angler"; x: number; y: number; age: number; lif
 /** `way` is -1 for left. */
 type Shoal = Turning & { kind: "fish"; x: number; y: number; age: number; way: number; speed: number; fish: { dx: number; dy: number; phase: number }[] };
 type Whale = Turning & { kind: "whale"; x: number; y: number; age: number; scale: number };
-type Creature = Eyes | Serpent | Angler | Shoal | Whale;
+/** `x` and `y` are where its lure is first seen. */
+type Leviathan = Turning & { kind: "leviathan"; x: number; y: number; age: number };
+type Creature = Eyes | Serpent | Angler | Shoal | Whale | Leviathan;
 export type CreatureKind = Creature["kind"];
 
 /** How far each kind sits behind the diver: 1 moves with the wall, 0 would not move at all. */
-const PARALLAX = { eyes: 0.6, serpent: 0.35, angler: 0.5, fish: 0.8, whale: 0.3 };
+const PARALLAX = { eyes: 0.6, serpent: 0.35, angler: 0.5, fish: 0.8, whale: 0.3, leviathan: 0 };
 /** The depth in metres above which the life of the upper sea can appear: shoals in the sunlit water, a whale down to the twilight. */
 const SHALLOW = { fish: 500, whale: 1100 };
 /** The depth in metres below which each kind can appear. */
@@ -22,6 +24,21 @@ const HOME = { angler: 1000, eyes: 1500, serpent: 2500 };
 const CHAOS_HOME = { angler: 300, eyes: 0, serpent: 800 };
 /** How much larger a creature grows when it turns. */
 const GROWN = 1.7;
+
+/** The giant anglerfish comes once in every chaos dive, and only there, after this many seconds of it. */
+const LEVIATHAN_AFTER = [8, 18];
+/**
+ * The giant anglerfish, in seconds from when its lure is first seen far off: the lure nears until `GLIDE`, then its face
+ * glides in, mouth opening, until it is wide open round the diver at `WIDE`, when the screen cuts to dark. At `SCARE`
+ * its face comes back at the screen for `SCARE_SECONDS` and its jaws shut on it, and the dark thins away from `LET_GO`
+ * to `LET_GO + THIN`.
+ */
+const GLIDE = 7;
+export const WIDE = 12;
+export const SCARE = WIDE + 0.9;
+const SCARE_SECONDS = 0.55;
+const LET_GO = SCARE + SCARE_SECONDS + 0.3;
+const THIN = 1.4;
 
 export class Ambient {
   creatures: Creature[] = [];
@@ -32,10 +49,16 @@ export class Ambient {
   private whaleWait = 12;
   /** The first row of water on screen: the life of the upper sea is never drawn in the sky. */
   private top = 0;
+  /** Where the diver is on screen, and whether a dive is under way: the giant anglerfish comes for them. */
+  focus = { x: 0, y: 0 };
+  diving = false;
+  /** Whether this dive's giant anglerfish has been set to come, and the seconds of the dive left before it does. */
+  private fated = false;
+  private leviathanIn: number | null = null;
 
   /** A glitch: something in view that has not yet turned begins to. Says whether anything did. */
   jolt(width: number, height: number): boolean {
-    const shown = this.creatures.filter((creature) => creature.kind !== "fish" && creature.kind !== "whale" && !creature.turned && creature.flick <= 0 && creature.x < width && creature.x > -40 && creature.y > -20 && creature.y < height);
+    const shown = this.creatures.filter((creature) => creature.kind !== "fish" && creature.kind !== "whale" && creature.kind !== "leviathan" && !creature.turned && creature.flick <= 0 && creature.x < width && creature.x > -40 && creature.y > -20 && creature.y < height);
     const creature = shown[Math.floor(Math.random() * shown.length)];
     if (!creature) return false;
     creature.flick = 0.5;
@@ -65,6 +88,11 @@ export class Ambient {
       const x = 110 + Math.random() * (width - 120);
       const y = 8 + Math.random() * (height - 16);
       this.creatures.push({ kind, x, y, age: 0, life: 5 + Math.random() * 4, gap: 2 + Math.floor(Math.random() * 3), turned: false, flick: 0 });
+    } else if (kind === "leviathan") {
+      // It rises from the dark below the diver.
+      const x = this.focus.x + 20 + Math.random() * 60;
+      const y = this.focus.y + (height - this.focus.y) * (0.55 + Math.random() * 0.3);
+      this.creatures.push({ kind, x, y, age: 0, turned: false, flick: 0 });
     } else if (kind === "serpent") {
       const scale = depth > 6000 ? 1.4 + Math.random() * 0.8 : 1 + Math.random() * 0.4;
       this.creatures.push({ kind, x: width + 10, y: height * (0.5 + Math.random() * 0.4), age: 0, scale, turned: false, flick: 0 });
@@ -96,6 +124,7 @@ export class Ambient {
       }
     }
     this.creatures = this.creatures.filter((creature) => {
+      if (creature.kind === "leviathan") return creature.age < LET_GO + THIN;
       if (creature.kind === "whale") return creature.x + WHALE_LENGTH * creature.scale > 0 && creature.y + WHALE_HEIGHT * creature.scale > -20 && creature.y < height + 20;
       if (creature.y < -80 || creature.y > height + 80) return false;
       if (creature.kind === "eyes") return creature.age < creature.life;
@@ -104,12 +133,15 @@ export class Ambient {
       return creature.x < width + 8;
     });
 
+    this.fate(dt, depth, width, height);
+    // While the giant anglerfish is about, nothing else comes.
+    const giant = this.creatures.some((creature) => creature.kind === "leviathan");
     this.shoalWait -= dt;
     this.whaleWait -= dt;
-    const big = this.creatures.some((creature) => creature.kind === "angler" || creature.kind === "serpent" || creature.kind === "whale");
+    const big = giant || this.creatures.some((creature) => creature.kind === "angler" || creature.kind === "serpent" || creature.kind === "whale");
     if (this.shoalWait <= 0) {
       this.shoalWait = 3 + Math.random() * 6;
-      if (depth < SHALLOW.fish && this.creatures.filter((creature) => creature.kind === "fish").length < 3) this.spawn("fish", width, height, depth);
+      if (depth < SHALLOW.fish && !giant && this.creatures.filter((creature) => creature.kind === "fish").length < 3) this.spawn("fish", width, height, depth);
     }
     if (this.whaleWait <= 0) {
       this.whaleWait = 30 + Math.random() * 30;
@@ -118,7 +150,7 @@ export class Ambient {
 
     this.wait -= dt;
     const home = this.chaos ? CHAOS_HOME : HOME;
-    if (this.wait > 0 || depth < Math.min(...Object.values(home))) return;
+    if (this.wait > 0 || giant || depth < Math.min(...Object.values(home))) return;
     // The deeper the diver is, the less time passes between visitors; in a chaos dive, less again.
     this.wait = (20 - 12 * Math.min(1, depth / 9000)) * (0.6 + Math.random() * 0.8) * (this.chaos ? 0.5 : 1);
     const kinds = (Object.keys(home) as (keyof typeof home)[]).filter((kind) => depth >= home[kind] && (kind === "eyes" || !big));
@@ -126,6 +158,24 @@ export class Ambient {
     if (!kind) return;
     const count = kind === "eyes" ? 1 + Math.floor(Math.random() * (this.chaos ? 5 : 3)) : 1;
     for (let i = 0; i < count; i++) this.spawn(kind, width, height, depth);
+  }
+
+  /** Each chaos dive has the giant anglerfish come once. */
+  private fate(dt: number, depth: number, width: number, height: number) {
+    if (!this.diving) {
+      this.fated = false;
+      this.leviathanIn = null;
+      return;
+    }
+    if (!this.fated && this.chaos) {
+      this.fated = true;
+      const [soonest, latest] = LEVIATHAN_AFTER;
+      this.leviathanIn = soonest! + Math.random() * (latest! - soonest!);
+    }
+    if (this.leviathanIn !== null && (this.leviathanIn -= dt) <= 0) {
+      this.leviathanIn = null;
+      this.spawn("leviathan", width, height, depth);
+    }
   }
 
   /** `water` is the water colour of each row of the frame. */
@@ -137,7 +187,15 @@ export class Ambient {
       else if (creature.kind === "serpent") drawSerpent(frame, creature, water, time, worse);
       else if (creature.kind === "fish") drawShoal(frame, creature, water, this.top);
       else if (creature.kind === "whale") drawWhale(frame, creature, water, this.top, behindWords);
-      else drawAngler(frame, creature, water, time, lights, worse);
+      else if (creature.kind === "angler") drawAngler(frame, creature, water, time, lights, worse);
+      else if (creature.age < WIDE) drawLeviathan(frame, creature, this.focus, water, lights, behindWords);
+    }
+  }
+
+  /** What covers the diver: the dark of the giant anglerfish, and its face. Drawn over the world, under the words. */
+  drawNear(frame: Frame, water: Uint8Array, lights: Light[], behindWords: (x: number, y: number) => boolean) {
+    for (const creature of this.creatures) {
+      if (creature.kind === "leviathan" && creature.age >= WIDE) drawLeviathan(frame, creature, this.focus, water, lights, behindWords);
     }
   }
 }
@@ -407,4 +465,186 @@ function drawAngler(frame: Frame, fish: Angler, water: Uint8Array, time: number,
   }
   frame.emit = 0;
   lights.push({ x: lureX + 0.5, y: lureY + 0.5, radius: 26 * s, rgb: [235, 70, 100], strength: 0.42 + 0.1 * Math.sin(time * 6) });
+}
+
+const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
+const smooth = (x: number) => clamp01(x) ** 2 * (3 - 2 * clamp01(x));
+
+/** How far off the giant anglerfish is, in widths of its head's half: its size on screen goes as one over this. */
+function distance(age: number): number {
+  if (age < GLIDE) return 30 * (5 / 30) ** (age / GLIDE);
+  return 5 - 3.4 * (1 - (1 - Math.min(1, (age - GLIDE) / (WIDE - GLIDE))) ** 2);
+}
+
+/**
+ * How the giant anglerfish's face is drawn at a moment: the middle of its mouth on screen, how far off it is, how open
+ * its mouth and how much of it and of its eyes shows, and whether it is nearer than the diver.
+ */
+type Pose = { cx: number; cy: number; away: number; open: number; reveal: number; eyes: number; near: boolean };
+type Behind = (x: number, y: number) => boolean;
+
+/**
+ * The giant anglerfish, face on, coming at the diver, bloodied. Far off it is only its red lure; nearer, the lure lights
+ * its face, then its eyes, and its mouth opens round the diver. Then the screen goes dark.
+ */
+function drawLeviathan(frame: Frame, fish: Leviathan, focus: { x: number; y: number }, water: Uint8Array, lights: Light[], behindWords: Behind) {
+  const { width: W, height: H } = frame;
+  if (fish.age >= WIDE) {
+    const dark = 1 - clamp01((fish.age - LET_GO) / THIN);
+    frame.block = 255;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (dither(x, y, dark)) frame.put(x, y, 0);
+    frame.block = -1;
+    // Its face slams back at the screen out of the dark, shaking, and its jaws shut on it.
+    const k = (fish.age - SCARE) / SCARE_SECONDS;
+    if (k >= 0 && k < 1) {
+      const shake = (seed: number) => (hash(Math.floor(fish.age * 40), seed) - 0.5) * 8 * (1 - k);
+      const pose = { cx: W / 2 + shake(1), cy: H * 0.55 + shake(2), away: 1 - 0.3 * clamp01(k * 4), open: Math.max(0.08, 1 - clamp01((k - 0.55) / 0.25)), reveal: 1, eyes: 1, near: true };
+      drawFace(frame, fish, pose, water, lights, behindWords);
+    }
+    return;
+  }
+  const away = distance(fish.age);
+  const toward = smooth(fish.age / WIDE);
+  drawFace(frame, fish, {
+    cx: fish.x + (focus.x - fish.x) * toward,
+    cy: fish.y + (focus.y - fish.y) * toward,
+    away,
+    open: 0.3 + 0.7 * smooth((5 - away) / 3.4) + 0.04 * Math.sin(fish.age * 1.7),
+    reveal: clamp01((9 - away) / 5),
+    eyes: clamp01((4 - away) / 1.5),
+    near: false,
+  }, water, lights, behindWords);
+}
+
+/** The face, in units of half its head's width, from the middle of its mouth. */
+function drawFace(frame: Frame, fish: Leviathan, { cx, cy, away, open, reveal, eyes, near }: Pose, water: Uint8Array, lights: Light[], behindWords: Behind) {
+  const { width: W, height: H } = frame;
+  const s = (H * 0.5) / away;
+  const lureU = 0.08 + 0.05 * Math.sin(fish.age * 1.1);
+  const lureV = -0.55 + 0.03 * Math.sin(fish.age * 1.6);
+  const lure = { x: cx + lureU * s, y: cy + lureV * s };
+  const reach = 6 + 0.95 * s;
+  const lit = (x: number, y: number) => clamp01(1 - Math.hypot(x - lure.x, y - lure.y) / reach) ** 1.3 * reveal;
+  // Behind the words it is never brighter than the water near the surface, so they stay readable.
+  const put = (x: number, y: number, color: number) => frame.put(x, y, behindWords(x, y) ? Math.min(color, 4) : color);
+  const shown = (x: number, y: number) => near || dither(x, y, reveal);
+  const mouthY = 0.08;
+  const mouthH = 0.55 * open;
+  const lip = (u: number) => mouthH * Math.sqrt(Math.max(0, 1 - (u / 0.92) ** 2));
+
+  // The head, and the mouth: dark, with the gums red where the lure reaches.
+  if (reveal > 0) {
+    const [left, right] = [Math.max(0, Math.floor(cx - 1.4 * s)), Math.min(W - 1, Math.ceil(cx + 1.4 * s))];
+    const [top, bottom] = [Math.max(0, Math.floor(cy - 1.3 * s)), Math.min(H - 1, Math.ceil(cy + 1 * s))];
+    for (let y = top; y <= bottom; y++) {
+      const hide = Math.max(1, (water[y] ?? 0) - 1);
+      for (let x = left; x <= right; x++) {
+        if (!shown(x, y)) continue;
+        const u = (x + 0.5 - cx) / s;
+        const v = (y + 0.5 - cy) / s;
+        const mouth = (u / 0.92) ** 2 + ((v - mouthY) / mouthH) ** 2;
+        // The throat swallows the light that falls into it.
+        if (mouth <= 1) {
+          frame.block = 255;
+          // The gums are bloody and the throat glows a dark red.
+          const gums = mouth > 0.75 && lit(x, y) > 0.12 && dither(x, y, 0.6);
+          put(x, y, gums ? 18 : dither(x, y, (0.3 - mouth) * 1.3) ? 12 : 0);
+          frame.block = near ? 224 : -1;
+          continue;
+        }
+        // A ragged outline: warts and flaps of skin, and a lower jaw that juts out wider than the head.
+        const angle = Math.atan2(v, u);
+        const rag = 1 + 0.07 * (hash(Math.floor((angle + 4) * 9), 21) - 0.5) + 0.04 * Math.sin(angle * 13);
+        const head = ((u / (1.25 * rag)) ** 2 + ((v + 0.15) / (1.05 * rag)) ** 2) <= 1;
+        const jaw = ((u / (1.12 * rag)) ** 2 + ((v - 0.32) / (0.58 * rag)) ** 2) <= 1;
+        if (!head && !jaw) continue;
+        if (near) frame.block = 224;
+        // Mottled skin, in specks that keep to the fish.
+        const mottled = hash(Math.floor((x - Math.round(cx)) / 2), Math.floor((y - Math.round(cy)) / 2)) < 0.2;
+        const light = lit(x, y) * (mottled ? 0.55 : 1);
+        put(x, y, light > 0.38 || (light > 0.18 && dither(x, y, (light - 0.18) / 0.2)) ? 12 : light > 0.08 ? 3 : hide);
+      }
+    }
+  }
+
+  // Needle teeth: the upper ones hang in, the longer lower ones splay out.
+  if (near) frame.block = 224;
+  if (reveal > 0.3) {
+    for (const upper of [true, false]) {
+      const count = upper ? 12 : 9;
+      for (let i = 0; i < count; i++) {
+        const u = -0.84 + (1.68 * (i + 0.5)) / count + (hash(i, upper ? 11 : 12) - 0.5) * 0.06;
+        const rootV = mouthY + (upper ? -lip(u) : lip(u));
+        const long = (upper ? 0.16 + 0.2 * hash(i, 13) : 0.22 + 0.3 * hash(i, 14)) * (1 - 0.45 * Math.abs(u)) * (0.6 + 0.4 * open);
+        const lean = upper ? -u * 0.3 : u * 0.35;
+        const steps = Math.ceil(long * s * 1.5) + 1;
+        const wide = Math.max(0.5, 0.035 * s);
+        for (let k = 0; k <= steps; k++) {
+          const t = k / steps;
+          const x = cx + (u + lean * t * long) * s;
+          const y = Math.round(cy + (rootV + (upper ? t : -t) * long) * s);
+          const light = lit(x, y);
+          // Stained red from the gums.
+          const color = t < 0.35 ? (light > 0.15 ? 18 : 12) : light > 0.35 ? 16 : light > 0.15 ? 7 : light > 0.05 ? 6 : 5;
+          const half = wide * (1 - t);
+          for (let px = Math.round(x - half); px <= Math.round(x + half); px++) if (shown(px, y)) put(px, y, color);
+        }
+        // And blood drips from the tips of some of the upper ones, longer as it comes.
+        if (upper && hash(i, 15) < 0.5) {
+          const tipX = Math.round(cx + (u + lean * long) * s);
+          const tipY = Math.round(cy + (rootV + long) * s);
+          const drip = Math.floor((0.05 + 0.15 * hash(i, 16)) * s * clamp01((fish.age - 6) / 5));
+          for (let j = 1; j <= drip; j++) if (shown(tipX, tipY + j)) put(tipX, tipY + j, j === drip ? 18 : 12);
+        }
+      }
+    }
+  }
+
+  // Small bloodshot eyes, each slit by a black pupil, and blood running down from them: the last thing to show.
+  if (eyes > 0) {
+    const r = Math.max(1, 0.065 * s);
+    for (const side of [-1, 1]) {
+      const ex = cx + side * 0.58 * s;
+      const ey = cy - 0.5 * s;
+      frame.emit = 200;
+      for (let y = Math.floor(ey - r); y <= Math.ceil(ey + r); y++) {
+        for (let x = Math.floor(ex - r); x <= Math.ceil(ex + r); x++) {
+          const dx = (x + 0.5 - ex) / r;
+          const d = Math.hypot(dx, (y + 0.5 - ey) / r);
+          if (d <= 1 && dither(x, y, eyes)) put(x, y, r >= 2 && Math.abs(dx) < 0.22 && d < 0.8 ? 0 : d > 0.75 ? 12 : 18);
+        }
+      }
+      frame.emit = 0;
+      const run = Math.floor(0.35 * s * eyes);
+      const bx = Math.round(ex + side * r * 0.3);
+      for (let j = 1; j <= run; j++) put(bx, Math.round(ey + r) + j, j === run ? 18 : 12);
+    }
+  }
+
+  // The stalk, rising from the top of the head and arching forward, down to the lure that hangs before the face.
+  const steps = Math.ceil(2 * s) + 4;
+  const thick = Math.round(0.02 * s);
+  for (let k = 0; k <= steps; k++) {
+    const t = k / steps;
+    const u = 2 * t * (1 - t) * 0.45 + t * t * lureU;
+    const v = (1 - t) ** 2 * -1.15 + 2 * t * (1 - t) * -1.9 + t * t * lureV;
+    const x = Math.round(cx + u * s);
+    const y = Math.round(cy + v * s);
+    const light = lit(x, y);
+    for (let i = -thick; i <= thick; i++) if (shown(x + i, y)) put(x + i, y, light > 0.4 ? 5 : light > 0.15 ? 4 : 3);
+  }
+  frame.block = -1;
+
+  // The lure: a spark far off that grows and brightens as it nears.
+  const r = 0.07 * s;
+  frame.emit = 255;
+  for (let y = Math.floor(lure.y - r); y <= Math.ceil(lure.y + r); y++) {
+    for (let x = Math.floor(lure.x - r); x <= Math.ceil(lure.x + r); x++) {
+      const d = Math.hypot(x + 0.5 - lure.x, y + 0.5 - lure.y);
+      if (behindWords(x, y) || (r >= 1 ? d > r : x !== Math.round(lure.x) || y !== Math.round(lure.y))) continue;
+      frame.put(x, y, r < 1 ? (away > 18 ? 13 : 18) : d < r * 0.5 ? 16 : 18);
+    }
+  }
+  frame.emit = 0;
+  lights.push({ x: lure.x + 0.5, y: lure.y + 0.5, radius: reach, rgb: [235, 50, 60], strength: Math.min(0.6, 0.15 + 1.8 / away) });
 }

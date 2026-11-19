@@ -61,5 +61,6 @@ dive, summon a creature. Its "Hide" button folds it away, and the browser rememb
 - The project owner is new to web development: build in small stages and explain tradeoffs.
 - Everything in the game view is drawn on one pixel grid with the 22-colour palette. Keep the
   screen clean: a new on-screen element must earn its place or live in the world.
-- Creatures are scenery. They never attack the diver or affect the score.
+- Creatures are scenery. They never harm the diver or affect the score (the giant anglerfish
+  only seems to swallow them).
 - In development the game is reachable from the browser console as `window.hadal`.

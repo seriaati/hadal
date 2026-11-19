@@ -37,7 +37,12 @@ traditional characters: 關 and 关 are the same answer.
   fonts, and soft light laid over the crisp pixels.
 - **Subtle deep-sea horror.** The sea is dark, lonely and lit only by the diver's lamps and
   by things that glow. Unsettling creatures appear in the deep: they are scenery, never
-  attack and never affect the score. The unease is the player's own.
+  harm the diver and never affect the score. The unease is the player's own. Once in every
+  chaos dive, and only there, a giant anglerfish comes straight at the diver, bloodied: first
+  only its red lure, a light growing out of the dark, then its face, its eyes and its mouth,
+  wide open round the diver. The screen cuts to dark; after a moment its face slams back at
+  the screen as its jaws shut, then the dark lifts and the dive goes on.
+  Chaos mode warns of its minor horror.
 - **Clean screen.** Only what matters is shown: the prompt, the air left, what is being
   typed, the verdict, the depth. Anything else earns its place or lives in the world.
 - **Quiet sound.** Sparse ambience, small effects and music made up as it plays, all in one
