@@ -75,6 +75,8 @@ The same in every panel.
   Left and Right always belong to its caret. There is no editing mode.
 - **Removing** takes two presses: "Remove" turns into "Sure?", and moving the focus away
   takes the question back. There is never a hold.
+- **Leaving a room** asks the same way: every way out (Escape, Left, the `‹`, a click outside,
+  "Leave the room") first turns "Leave the room" into "Sure?" and puts the focus on it.
 - **The cursor is a hand** over everything that can be pressed: the title menu's lines, the
   cog, and every line, field and slider of a panel.
 - **No key hints are drawn.** The keys are the ones every game uses.

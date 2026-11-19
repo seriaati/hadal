@@ -40,10 +40,18 @@ export type Player = { kind: "player"; name: string; color: number; note: string
 export type Part = Press | Field | Slider | Note | Wait | Player | { kind: "gap" };
 type Control = Press | Field | Slider | (Player & { id: string; press: () => void });
 /**
- * While `busy`, presses wait. `escape` replaces going one step back on Escape. `code` follows
- * the name in pale letters: a room's code, which has to be read out, and which a press copies.
+ * While `busy`, presses wait. `back` replaces going one step back when the player asks to (by
+ * Escape, Left, the `‹` or a press outside), and `escape` replaces it on Escape alone. `code`
+ * follows the name in pale letters: a room's code, which has to be read out, and which a press copies.
  */
-export type Step = { title: string; code?: { text: string; copy: () => void }; rows: (Part | Part[])[]; busy?: boolean; escape?: () => void };
+export type Step = {
+  title: string;
+  code?: { text: string; copy: () => void };
+  rows: (Part | Part[])[];
+  busy?: boolean;
+  back?: () => void;
+  escape?: () => void;
+};
 
 /** Where a part is, from the top left of its step. */
 export type Placed = { part: Part; row: number; x: number; y: number; w: number; h: number; lines: string[] };
@@ -155,7 +163,7 @@ export class Ui {
     this.leave.addEventListener("click", () => {
       // The focus goes to the step it leads back to, not to the name of that step.
       this.leave.blur();
-      this.back();
+      this.retreat();
     });
     this.copier.addEventListener("click", () => {
       this.copier.focus();
@@ -191,6 +199,12 @@ export class Ui {
     this.sync();
   }
 
+  /** The player asks to go one step back. */
+  private retreat() {
+    if (this.step.back) this.step.back();
+    else this.back();
+  }
+
   back() {
     this.steps.pop();
     const top = this.steps.at(-1);
@@ -223,7 +237,7 @@ export class Ui {
   /** A press outside the panel's words goes one step back. */
   press(x: number, y: number) {
     const { x: left, y: top, w, h } = this.box;
-    if (x < left - 14 || x >= left + w + 12 || y < top - 10 || y >= top + h + 10) this.back();
+    if (x < left - 14 || x >= left + w + 12 || y < top - 10 || y >= top + h + 10) this.retreat();
   }
 
   private act(id: string) {
@@ -317,7 +331,7 @@ export class Ui {
       event.preventDefault();
       // A key that is held down acts once: the second Escape of a pair must be meant.
       if (event.repeat) return;
-      return this.step.escape ? this.step.escape() : this.back();
+      return this.step.escape ? this.step.escape() : this.retreat();
     }
     const head = [this.leave, this.copier].indexOf(document.activeElement as HTMLButtonElement);
     if (head >= 0) return this.headKey(event, head === 1);
@@ -340,7 +354,7 @@ export class Ui {
       if (move(this.placed, here, "left")) go("left");
       else {
         event.preventDefault();
-        this.back();
+        this.retreat();
       }
     }
     else if ((here.part.kind === "press" || here.part.kind === "player") && event.key === "ArrowRight") go("right");
@@ -369,7 +383,7 @@ export class Ui {
       to.focus();
     } else if (event.key === "ArrowLeft" && !code) {
       event.preventDefault();
-      this.back();
+      this.retreat();
     }
   }
 

@@ -67,6 +67,8 @@ export class MultiplayerPanel {
   /** The player whose step the host has open, and which of "Remove" and "Ban" one more press does. */
   private picked: number | null = null;
   private doomed: "" | "remove" | "ban" = "";
+  /** "Leave the room" asks "Sure?": one more way out leaves. */
+  private leaving = false;
   /** Divers who have just gone out of the room, as they were last seen, how they went and when, in seconds. */
   private ghosts: { crew: Crew; how: Gone; at: number }[] = [];
   /** The divers as last shown, so that one who goes is seen off from where they were. */
@@ -320,6 +322,7 @@ export class MultiplayerPanel {
       if (diving !== this.diving) {
         this.diving = diving;
         this.refused = null;
+        this.leaving = false;
         if (diving) {
           this.lost = null;
           this.dive.reset();
@@ -336,6 +339,7 @@ export class MultiplayerPanel {
       // The room is made or joined: it takes the place of the step that asked for it.
       this.refused = null;
       this.linked = "";
+      this.leaving = false;
       this.ui.back();
       this.ui.go(this.room);
     } else if (message.type === "refused") {
@@ -519,10 +523,21 @@ export class MultiplayerPanel {
     rows.push(
       { kind: "press", id: "copy", label: copied ? words.copied : words.copy, says: t().page.copyLink(view.code), press: copy },
       ...this.refusal("copy"),
-      { kind: "press", id: "leave", label: words.leave, press: () => this.ui.back() },
+      { kind: "press", id: "leave", label: this.leaving ? t().packs.sure : words.leave, danger: this.leaving, press: () => this.leaveRoom(), left: () => (this.leaving = false) },
     );
-    return { title: words.room, code: { text: view.code, copy }, rows };
+    return { title: words.room, code: { text: view.code, copy }, rows, back: () => this.leaveRoom() };
   };
+
+  /** Every way out of the room asks first, on the line that leaves it. */
+  private leaveRoom() {
+    if (!this.leaving) {
+      this.leaving = true;
+      this.ui.focus("leave");
+      return;
+    }
+    this.leaving = false;
+    this.ui.back();
+  }
 
   private setup = (): Step => {
     const settings = this.client.view?.settings;
