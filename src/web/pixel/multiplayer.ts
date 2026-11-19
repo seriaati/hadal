@@ -325,6 +325,7 @@ export class MultiplayerPanel {
         this.leaving = false;
         if (diving) {
           this.lost = null;
+          this.spent = "";
           this.dive.reset();
           this.ui.close();
         } else if (message.room.last) {
