@@ -107,6 +107,7 @@ export class Sound {
   private off = false;
   /** In the audio clock's seconds. */
   private stung = -Infinity;
+  private turned = -Infinity;
   private typedOut = 0;
   private scared = false;
   // Seconds until the next chord and note, and which they are.
@@ -284,16 +285,18 @@ export class Sound {
       this.burst("highpass", 6000, 0.08, 0.03);
     }
     this.faults = glitch.count;
-    // The loss-of-signal sting is shrill, so it is heard at most every 30 seconds.
+    // The loss-of-signal sting is harsh, so it is heard at most every 30 seconds.
     if (glitch.losses > this.losses && rig.context.currentTime - this.stung >= 30) {
       this.stung = rig.context.currentTime;
       this.burst("highpass", 1000, 0.35, 0.3);
-      this.note("effects", "sine", 1600, 120, 0.05, 0.9);
+      this.note("effects", "sine", 400, 60, 0.07, 0.9);
     }
     this.losses = glitch.losses;
-    if (scene.ambient.turns > this.turns && !glitch.blackout) {
-      this.note("effects", "sawtooth", 1400, 220, 0.05, 1.2, 0.02);
-      this.note("effects", "sawtooth", 1460, 205, 0.05, 1.2, 0.02);
+    // Glitches turn creatures often, so a turn is heard at most every 15 seconds.
+    if (scene.ambient.turns > this.turns && !glitch.blackout && rig.context.currentTime - this.turned >= 15) {
+      this.turned = rig.context.currentTime;
+      this.note("effects", "sawtooth", 260, 65, 0.05, 1.2, 0.02);
+      this.note("effects", "sawtooth", 276, 69, 0.05, 1.2, 0.02);
       this.note("effects", "triangle", 90, 38, 0.3, 1.6);
     }
     this.turns = scene.ambient.turns;
@@ -317,8 +320,9 @@ export class Sound {
     // Unlike a loss of signal, this sting is never held back.
     if (glitch.scared && !this.scared) {
       this.burst("highpass", 1000, 0.45, 0.4);
-      this.note("effects", "sine", 1600, 120, 0.07, 0.9);
-      this.note("effects", "sawtooth", 1400, 200, 0.05, 0.9, 0.01);
+      this.note("effects", "sine", 400, 50, 0.1, 0.9);
+      this.note("effects", "sawtooth", 260, 50, 0.06, 0.9, 0.01);
+      this.note("effects", "sawtooth", 276, 53, 0.06, 0.9, 0.01);
       this.note("effects", "triangle", 80, 30, 0.4, 1.8);
     }
     this.scared = glitch.scared;
