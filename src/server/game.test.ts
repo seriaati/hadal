@@ -57,6 +57,27 @@ test("pickPrompts returns distinct prompts", () => {
   expect(new Set(prompts.map((prompt) => prompt.id)).size).toBe(10);
 });
 
+test("pickPrompts gives every pack a place, the big ones most, and a tiny pack seldom a second", () => {
+  const pack = (id: string, size: number): Pack => ({
+    id,
+    name: id,
+    prompts: Array.from({ length: size }, (_, n) => ({ id: `p${n}`, text: "Name one", answers: [{ text: "a", rarity: 0 }] })),
+  });
+  const dives = (packs: Pack[]) => {
+    const many = buildIndex(packs);
+    return Array.from({ length: 2000 }, () => pickPrompts(many, 10).map((prompt) => prompt.id.split("/")[0]!));
+  };
+  const average = (all: string[][], id: string) => all.reduce((sum, ids) => sum + ids.filter((one) => one === id).length, 0) / all.length;
+
+  const lopsided = dives([pack("big", 50), pack("a", 10), pack("b", 10), pack("c", 10), pack("d", 10)]);
+  expect(lopsided.every((ids) => new Set(ids).size === 5)).toBe(true);
+  expect(average(lopsided, "big")).toBeGreaterThan(3);
+  expect(average(lopsided, "a")).toBeLessThan(2);
+
+  const tiny = dives([pack("big1", 30), pack("big2", 30), pack("big3", 30), pack("tiny", 3)]);
+  expect(average(tiny, "tiny")).toBeLessThan(1.4);
+});
+
 test("typos counts letters added, dropped, changed and swapped", () => {
   expect(typos("spaghetti", "spaghetti")).toBe(0);
   expect(typos("spaghetti", "spagetti")).toBe(1);

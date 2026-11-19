@@ -48,8 +48,34 @@ export function shuffle<T>(things: T[]): T[] {
   return shuffled;
 }
 
+/**
+ * Every pack gives one prompt first, while the dive has room for them all (when it has not, a bigger
+ * pack is likelier to get a place). After that a pack's chance is the prompts it has left, divided by
+ * one more than the prompts it has given: big packs give the most, but each prompt they give makes
+ * the next one less likely, and a tiny pack seldom gives a second.
+ */
 export function pickPrompts(index: PromptIndex, count: number): GamePrompt[] {
-  return shuffle([...index.values()].map((entry) => entry.prompt)).slice(0, count);
+  const byPack = new Map<string, GamePrompt[]>();
+  for (const [id, { prompt }] of index) {
+    const pack = id.slice(0, id.indexOf("/"));
+    byPack.set(pack, [...(byPack.get(pack) ?? []), prompt]);
+  }
+  const packs = [...byPack.values()].map((prompts) => ({ left: shuffle(prompts), given: 0 }));
+  const firstRound = Math.min(count, packs.length);
+  const picked: GamePrompt[] = [];
+  while (picked.length < count && packs.some((pack) => pack.left.length)) {
+    const weights = packs.map((pack) =>
+      picked.length < firstRound ? (pack.given ? 0 : pack.left.length) : pack.left.length / (1 + pack.given),
+    );
+    let roll = Math.random() * weights.reduce((sum, weight) => sum + weight, 0);
+    let i = 0;
+    while (roll >= weights[i]! || !packs[i]!.left.length) roll -= weights[i++]!;
+    const pack = packs[i]!;
+    picked.push(pack.left.pop()!);
+    pack.given++;
+  }
+  // Otherwise the one-from-each round would always open the dive.
+  return shuffle(picked);
 }
 
 export function nearestAnswer(index: PromptIndex, promptId: string, rarity: number): string | null {
