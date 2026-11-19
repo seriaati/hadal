@@ -16,7 +16,11 @@ mode or in chaos mode (less air, and the first empty tank ends the dive), from t
 packs of their language or from the packs they choose. Multiplayer is private rooms joined by
 a code or a link. The host may pass the crown to another player, remove a player (who may
 come back with the code) or ban one (until the room closes). When the host leaves, the crown
-passes to the next player; the room closes when the last one leaves. Players can also add
+passes to the next player; the room closes when the last one leaves. A room asks no prompt
+twice until it has asked every one. While another diver answers, a player may type their own
+answer ahead, and send it when their turn comes. A diver's air runs out by their own browser's
+clock, which the server waits a moment for, so the last letters typed before it ran out still
+count. Players can also add
 packs of their own, have Claude write one (10 to 50 prompts on a topic, with notes of their
 own, searching the web if they turn that on), and have answers a pack does not list judged
 live with their own API key.
