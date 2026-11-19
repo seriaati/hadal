@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { lay, move, type Part, type Step } from "./ui";
+import { lay, move, view, type Part, type Step } from "./ui";
 
 const press = (id: string, right = false): Part => ({ kind: "press", id, label: id, right });
 const STEP: Step = {
@@ -108,4 +108,17 @@ test("words said after a line keep their room once they are gone, so the lines a
   expect(said).toBeGreaterThan(before);
   expect(y(room(false))).toBe(said);
   expect(y(room(true))).toBe(said);
+});
+
+test("a step too long for its room stays where it stands and scrolls, no further than its end", () => {
+  expect(view(100, 60, 60, 300, 0)).toEqual({ top: 60, scroll: 0 });
+  expect(view(400, 60, 60, 300, 0)).toEqual({ top: 60, scroll: 0 });
+  expect(view(400, 60, 60, 300, 500)).toEqual({ top: 60, scroll: 160 });
+});
+
+test("the line in focus stays put: a short step moves, a long one scrolls", () => {
+  expect(view(100, 60, 60, 300, 0, { top: 60, by: 10 })).toEqual({ top: 60, scroll: 0 });
+  expect(view(100, 60, 60, 300, 0, { top: 80, by: 10 })).toEqual({ top: 70, scroll: 0 });
+  expect(view(400, 60, 60, 300, 30, { top: 60, by: 10 })).toEqual({ top: 60, scroll: 40 });
+  expect(view(400, 60, 60, 300, 30, { top: 60, by: -10 })).toEqual({ top: 60, scroll: 20 });
 });

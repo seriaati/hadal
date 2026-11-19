@@ -45,16 +45,30 @@ body {
 
 /* The form of whatever panel is open: invisible, each control laid over where the game draws it. */
 .panel {
+  position: fixed;
   opacity: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overflow-anchor: none;
+  scrollbar-width: none;
+}
+
+.panel::-webkit-scrollbar {
+  display: none;
 }
 
 .panel > * {
-  position: fixed;
+  position: absolute;
   margin: 0;
   padding: 0;
   border: 0;
   font-size: 16px;
   cursor: pointer;
+}
+
+.panel > .sizer {
+  width: 1px;
+  pointer-events: none;
 }
 
 /* A slider's knob is a hair wide, so that a press on a pip of the drawing sets the level to that pip. */

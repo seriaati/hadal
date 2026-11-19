@@ -64,6 +64,9 @@ export class Frame {
   emit = 0;
   /** Shade (0-255) given to pixels drawn from now on, or -1 to leave the shade as it is. */
   block = -1;
+  /** Rows above `clipTop` and from `clipBottom` down are not drawn on. */
+  clipTop = 0;
+  clipBottom = Infinity;
 
   resize(width: number, height: number) {
     if (width === this.width && height === this.height) return;
@@ -86,7 +89,7 @@ export class Frame {
   put(x: number, y: number, color: number) {
     x |= 0;
     y |= 0;
-    if (x < 0 || y < 0 || x >= this.width || y >= this.height) return;
+    if (x < 0 || y < 0 || x >= this.width || y >= this.height || y < this.clipTop || y >= this.clipBottom) return;
     const i = y * this.width + x;
     this.color[i] = color;
     this.glowColor[i] = this.emit ? color + 1 : 0;

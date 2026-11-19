@@ -60,6 +60,10 @@ export type Move = "up" | "down" | "left" | "right" | "next" | "previous";
 /** The height of a line on a large screen. */
 const LINE = 12;
 const HEAD = 14;
+/** Rows scrolled above this line of a step are hidden: the step's name stays. */
+const INSET = 12;
+/** A step climbs over the diver only to keep this much room on a screen too short for it. */
+const ROOM = 64;
 /** Room before the words of a line for the mark of the focus. */
 const INDENT = 7;
 const STEPS = 20;
@@ -152,6 +156,17 @@ export function move(placed: Placed[], from: Placed, way: Move): Placed | undefi
 }
 
 /**
+ * Where the top of a step stands, between `ceiling` and `bottom`, and how far it is scrolled.
+ * `held` is where the step stood last frame and how far the line in focus has moved down in it
+ * since: the step moves, or else scrolls, so that the line stays where it was.
+ */
+export function view(height: number, wish: number, ceiling: number, bottom: number, scroll: number, held?: { top: number; by: number }) {
+  const top = Math.max(ceiling, Math.min(held ? held.top - held.by : wish, bottom - height));
+  const most = Math.max(0, height - (bottom - top));
+  return { top, scroll: Math.max(0, Math.min(most, scroll + (held ? top - held.top + held.by : 0))) };
+}
+
+/**
  * Whatever panel is open. A panel is a stack of steps, each a function that says what the
  * step holds right now; it is asked again every frame, so a panel only keeps its own state.
  * Every control is a real but invisible HTML control laid over its drawing, so the focus on
@@ -173,6 +188,12 @@ export class Ui {
   /** The step's name, which goes back, and the code after it, which copies it. */
   private leave = document.createElement("button");
   private copier = document.createElement("button");
+  /** The form is the box a long step scrolls in; this gives it the step's height. */
+  private sizer = document.createElement("div");
+  /** The control the pointer gave the focus to, which is not scrolled to: it is under the pointer already. */
+  private pointed: Element | null = null;
+  /** The control that had the focus when the step was last drawn. */
+  private seen = "";
 
   /** `typing` is what takes the keys while no panel is open. */
   constructor(
@@ -181,18 +202,23 @@ export class Ui {
   ) {
     Object.assign(this.leave, { type: "button", tabIndex: -1 });
     Object.assign(this.copier, { type: "button", tabIndex: -1 });
+    // The step's name and code stand above the box that scrolls.
+    this.leave.style.position = this.copier.style.position = "fixed";
+    this.sizer.className = "sizer";
+    // A press on the form between its lines would take the focus from the line that has it.
+    form.addEventListener("mousedown", (event) => event.target === form && event.preventDefault());
     this.leave.addEventListener("click", () => {
       // The focus goes to the step it leads back to, not to the name of that step.
       this.leave.blur();
       this.retreat();
     });
     this.copier.addEventListener("click", () => {
-      this.copier.focus();
+      this.copier.focus({ preventScroll: true });
       this.step.code?.copy();
       this.sync();
     });
-    for (const control of [this.leave, this.copier]) hover(control);
-    form.append(this.leave, this.copier);
+    for (const control of [this.leave, this.copier]) this.hover(control);
+    form.append(this.sizer, this.leave, this.copier);
     form.addEventListener("keydown", (event) => this.key(event));
     form.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -298,8 +324,8 @@ export class Ui {
     const wanted = this.controls.get(this.wanted);
     this.wanted = "";
     const active = document.activeElement;
-    if (wanted) wanted.focus();
-    else if (top && active?.parentElement !== this.form) this.controls.get(parts[0]?.id ?? "")?.focus();
+    if (wanted) wanted.focus({ preventScroll: true });
+    else if (top && active?.parentElement !== this.form) this.controls.get(parts[0]?.id ?? "")?.focus({ preventScroll: true });
   }
 
   private make(part: Control) {
@@ -312,7 +338,7 @@ export class Ui {
       control.type = kind === "submit" ? "submit" : "button";
       // A tap does not give a button the focus on every phone; the mark should follow the finger.
       control.addEventListener("click", () => {
-        control.focus();
+        control.focus({ preventScroll: true });
         if (kind === "press") this.act(id);
       });
     } else if (part.kind === "press") {
@@ -336,7 +362,7 @@ export class Ui {
       this.kept.delete(id);
     }
     // A field takes the focus only when it is clicked (or reached by the keys): typing must be asked for (owner, after play).
-    if (kind !== "field") hover(control);
+    if (kind !== "field") this.hover(control);
     control.addEventListener("blur", () => {
       const now = this.parts.get(id);
       if (now?.kind === "press") now.left?.();
@@ -361,7 +387,7 @@ export class Ui {
     const go = (way: Move) => {
       event.preventDefault();
       const to = move(this.placed, here, way)?.part;
-      if (to && isControl(to)) this.controls.get(to.id)?.focus();
+      if (to && isControl(to)) this.controls.get(to.id)?.focus({ preventScroll: true });
     };
     if (event.key === "Tab") go(event.shiftKey ? "previous" : "next");
     else if (event.key === "ArrowUp") go("up");
@@ -385,7 +411,7 @@ export class Ui {
       const after = this.placed.slice(this.placed.indexOf(here) + 1).map((spot) => spot.part).filter(isControl);
       const next = after[0]?.kind === "field" ? after[0] : after.find((part) => part.kind === "press");
       const control = next && this.controls.get(next.id);
-      if (next?.kind === "field") control?.focus();
+      if (next?.kind === "field") control?.focus({ preventScroll: true });
       else control?.click();
     }
   }
@@ -401,7 +427,7 @@ export class Ui {
       : undefined;
     if (to) {
       event.preventDefault();
-      to.focus();
+      to.focus({ preventScroll: true });
     } else if (event.key === "ArrowLeft" && !code) {
       event.preventDefault();
       this.retreat();
@@ -420,32 +446,48 @@ export class Ui {
     const left = wide ? (scene.crew ? 184 : 170) : 10;
     const width = W - left - (wide ? 8 : 10);
     const bottom = H - (dive ? 28 : 8);
-    // A line is tall enough for a fingertip (40 screen pixels) wherever the step then still fits the screen.
     const step = this.steps.at(-1)!;
-    let laid = lay(this.step, width, Math.max(LINE, Math.ceil(40 / scale)), step.kept);
-    if (laid.height > bottom - 8) laid = lay(this.step, width, LINE, step.kept);
     const under = dive ? scene.hudBottom + 8 : 0;
     const wish = wide ? Math.max(dive ? 50 : scene.base - 4, under) : Math.max(scene.base + 38, under);
-    let top = Math.max(8, Math.min(wish, bottom - laid.height));
+    const ceiling = Math.max(8, Math.min(wish, bottom - ROOM));
+    // A line is tall enough for a fingertip (40 screen pixels), unless smaller lines spare the step from scrolling.
+    let laid = lay(this.step, width, Math.max(LINE, Math.ceil(40 / scale)), step.kept);
+    const small = laid.height > bottom - ceiling ? lay(this.step, width, LINE, step.kept) : null;
+    if (small && small.height <= bottom - ceiling) laid = small;
     // While a step is open the line in focus stays where it is when the step changes, so that what the pointer is
-    // over does not move away from it. On a narrow screen the step never climbs over the diver to do so.
-    const held = this.held;
-    if (held?.step === step && held.left === left && held.bottom === bottom) {
-      const id = (document.activeElement as HTMLElement | null)?.dataset.id ?? "";
-      const was = held.at.get(id);
-      const now = laid.placed.find((spot) => isControl(spot.part) && spot.part.id === id)?.y;
-      const highest = wide ? Math.min(top, Math.max(8, under)) : top;
-      top = Math.max(highest, Math.min(was !== undefined && now !== undefined ? held.top + was - now : held.top, bottom - laid.height));
+    // over does not move away from it: the step moves within its room, or else scrolls.
+    const held = this.held?.step === step && this.held.left === left && this.held.bottom === bottom ? this.held : null;
+    const active = document.activeElement;
+    const id = (active as HTMLElement | null)?.dataset.id ?? "";
+    const focused = laid.placed.find((spot) => isControl(spot.part) && spot.part.id === id);
+    const was = held?.at.get(id);
+    const by = focused && was !== undefined ? focused.y - was : 0;
+    const where = view(laid.height, wish, ceiling, bottom, held ? this.form.scrollTop / scale : 0, held ? { top: held.top, by } : undefined);
+    const top = where.top;
+    let scroll = where.scroll;
+    // A line given the focus by the keys is brought into view; one the pointer gave it to is in view already.
+    if (focused && (id !== this.seen || !held)) {
+      if (active !== this.pointed) scroll = Math.max(focused.y + focused.h - (bottom - top), Math.min(scroll, focused.y - INSET));
+      this.pointed = null;
     }
+    this.seen = id;
+    const shown = Math.min(laid.height, bottom - top);
     this.held = { step, left, bottom, top, at: new Map(laid.placed.flatMap((spot) => (isControl(spot.part) ? [[spot.part.id, spot.y]] : []))) };
     this.placed = laid.placed;
-    this.box = { x: left, y: top, w: width, h: laid.height };
-    if (!wide) scene.hush = [top - 12, top + laid.height + 8];
+    this.box = { x: left, y: top, w: width, h: shown };
+    if (!wide) scene.hush = [top - 12, top + shown + 8];
+
+    // The form is laid over the rows of the step and scrolls them: the wheel, a finger and a screen reader move it.
+    const from = wide ? left - 12 : 0;
+    Object.assign(this.form.style, { left: `${from * scale}px`, top: `${(top + INSET) * scale}px`, width: `${(W - from) * scale}px`, height: `${(shown - INSET) * scale}px` });
+    this.sizer.style.height = `${(laid.height - INSET) * scale}px`;
+    if (scroll !== this.form.scrollTop / scale) this.form.scrollTop = scroll * scale;
+    const shift = Math.round(scroll);
 
     // The water behind the words goes two shades darker, with a soft edge.
     const x0 = wide ? left - 12 : -99;
     const y0 = top - 10;
-    const y1 = top + laid.height + 10;
+    const y1 = top + shown + 10;
     for (let y = Math.max(0, y0); y < Math.min(H, y1); y++) {
       for (let x = Math.max(0, x0); x < W; x++) {
         const depth = Math.min(x - x0, y - y0, y1 - 1 - y);
@@ -457,7 +499,7 @@ export class Ui {
 
     const say = (text: string, x: number, y: number, color: number) => {
       const end = drawText(frame, tiny, text, x, y, color);
-      scene.cover(x, end, y, y + 6);
+      if (y + 6 >= frame.clipTop && y < frame.clipBottom) scene.cover(x, end, y, y + 6);
       return end;
     };
     const cover = (control: HTMLElement, x: number, y: number, w: number, h: number) =>
@@ -477,9 +519,11 @@ export class Ui {
     }
     frame.emit = 0;
 
+    frame.clipTop = top + INSET;
+    frame.clipBottom = bottom;
     for (const { part, x, y, w, h, lines } of laid.placed) {
       const px = left + x;
-      const py = top + y;
+      const py = top + y - shift;
       const tx = px + INDENT;
       const ty = py + ((h - 5) >> 1);
       const control = isControl(part) ? this.controls.get(part.id) : undefined;
@@ -511,7 +555,7 @@ export class Ui {
           }
           frame.emit = 0;
         }
-        cover(control!, px, py, w, h);
+        cover(control!, px - from, y - INSET, w, h);
       } else if (part.kind === "field") {
         const value = plain(control!.value);
         const caret = (control as HTMLInputElement).selectionStart ?? value.length;
@@ -536,7 +580,7 @@ export class Ui {
         frame.emit = 200;
         if (on && blink) for (let j = -1; j < 6; j++) frame.put(at, typed + j, 16);
         frame.emit = 0;
-        cover(control!, px, py, w, h);
+        cover(control!, px - from, y - INSET, w, h);
       } else if (part.kind === "slider") {
         const steps = part.steps ?? STEPS;
         const chosen = Math.round(part.value * steps);
@@ -553,7 +597,7 @@ export class Ui {
             for (let k = -2; k < 7; k++) for (const j of [-2, 6]) frame.put(x + k, ty + j, on ? 15 : 7), frame.put(x + j, ty + k, on ? 15 : 7);
             frame.emit = 0;
           });
-          cover(control!, track - 2, py, part.colors.length * 9, h);
+          cover(control!, track - 2 - from, y - INSET, part.colors.length * 9, h);
           continue;
         }
         const text = plain(part.text ?? "");
@@ -572,7 +616,7 @@ export class Ui {
           for (let j = 0; j < tall * 2; j++) frame.put(track + i * 3 + (j & 1), py + ((h - tall) >> 1) + (j >> 1), full ? (on ? 15 : 6) : 4);
         }
         frame.emit = 0;
-        cover(control!, track, py, end - track - 1, h);
+        cover(control!, track - from, y - INSET, end - track - 1, h);
       } else if (part.kind === "player") {
         mark(ty);
         for (let j = 0; j < 15; j++) frame.put(tx + (j % 3), ty + Math.floor(j / 3), part.color);
@@ -581,11 +625,11 @@ export class Ui {
         frame.emit = 0;
         if (part.host) {
           drawCrown(frame, end, ty, 6);
-          scene.cover(end, end + 5, ty, ty + 6);
+          if (ty + 6 >= frame.clipTop && ty < frame.clipBottom) scene.cover(end, end + 5, ty, ty + 6);
           end += 9;
         }
         say(plain(part.note), end, ty, 6);
-        if (control) cover(control, px, py, w, h);
+        if (control) cover(control, px - from, y - INSET, w, h);
       } else if (part.kind === "note" || part.kind === "wait") {
         const gap = pitch(tiny, plain(part.text), 8);
         lines.forEach((line, i) => say(line, tx, py + 1 + i * gap, part.kind === "wait" ? 7 : part.bad ? 18 : 6));
@@ -603,12 +647,23 @@ export class Ui {
         say(t().packs.progress(Math.min(part.of, part.done + 1), part.of), tx + count * 6 + 4, pips - 1, 6);
       }
     }
+    // A step too long for its room has a bar at the right edge that shows how far it is scrolled.
+    if (laid.height > shown) {
+      const room = bottom - top - INSET;
+      const thumb = Math.max(4, Math.round((room * room) / (laid.height - INSET)));
+      const at = top + INSET + Math.round(((room - thumb) * scroll) / (laid.height - shown));
+      for (let y = top + INSET; y < bottom; y++) frame.put(left + width + 3, y, y >= at && y < at + thumb ? 6 : 4);
+    }
+    frame.clipTop = 0;
+    frame.clipBottom = Infinity;
   }
-}
 
-/** A pointer that only rests over a control does not take the focus back from the keys. */
-function hover(control: HTMLElement) {
-  control.addEventListener("pointermove", (event) => {
-    if (event.pointerType === "mouse" && (event.movementX || event.movementY) && document.activeElement !== control) control.focus();
-  });
+  /** A pointer that only rests over a control does not take the focus back from the keys. */
+  private hover(control: HTMLElement) {
+    control.addEventListener("pointermove", (event) => {
+      if (!(event.pointerType === "mouse" && (event.movementX || event.movementY) && document.activeElement !== control)) return;
+      this.pointed = control;
+      control.focus({ preventScroll: true });
+    });
+  }
 }

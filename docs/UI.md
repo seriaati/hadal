@@ -11,8 +11,9 @@ letters read. Nothing is framed and the sea is not dimmed: the game goes on in f
 
 - On a wide screen (300 game pixels or more) the words take the column to the right of the
   diver. On a narrow one they lie under the diver, across the whole width.
-- The words never cover the diver or the lantern. Only a list too long for the screen may
-  climb over them.
+- The words never cover the diver or the lantern. A step too long for its room scrolls under
+  its name, and a thin bar at the right edge shows how far. Only on a screen too short to
+  hold a few lines does a step climb over the diver.
 - While a panel is open the title's own words are not drawn, and in a dive the answer being
   typed is not drawn. The prompt, the air and the depth stay.
 
@@ -62,7 +63,8 @@ The same in every panel.
 | Enter | Press what has the focus. In a field: go to the next field, or press the first line after the last one |
 | Escape | One step back. With nothing open: at the title it opens the settings, in a dive it asks whether to leave the dive |
 | Pointer | Moving over a thing gives it the focus; a click presses it. A click outside the words, or on the `‹`, goes one step back |
-| Touch | A tap presses. The `‹` goes back |
+| Wheel | Scrolls a step too long for its room |
+| Touch | A tap presses, a drag scrolls. The `‹` goes back |
 
 - **Back** is always one step: from "Write a pack" to the list, from the list to the title.
   Escape, Left from the leftmost line, the `‹` and a click outside the words all mean it.
@@ -76,9 +78,11 @@ The same in every panel.
 - **Removing** takes two presses: "Remove" turns into "Sure?", and moving the focus away
   takes the question back. There is never a hold.
 - **Nothing jumps.** While a step is open, the line in focus stays where it is when the step
-  changes (a message, a player joining), and the step moves around it as far as the screen
-  allows. Words said under a line keep their room after they go until the step closes, so a
+  changes (a message, a player joining), and the step moves, or scrolls, around it as far as
+  the screen allows. Words said under a line keep their room after they go until the step closes, so a
   message that comes and goes moves nothing. This holds for every panel, without its own code.
+- **Scrolling.** A thing the keys give the focus to is scrolled into view. One the pointer
+  gives it to is under the pointer already, and nothing moves.
 - **Leaving a room** asks the same way: every way out (Escape, Left, the `‹`, a click outside,
   "Leave the room") first turns "Leave the room" into "Sure?" and puts the focus on it.
 - **The cursor is a hand** over everything that can be pressed: the title menu's lines, the
@@ -89,8 +93,8 @@ The same in every panel.
 ## Sizes
 
 - A line is 12 game pixels tall, or as many as it takes to be 40 screen pixels tall (20 on a
-  phone, where one game pixel is two screen pixels): room for a fingertip. If a step does
-  not fit the screen at that height, it falls back to 12.
+  phone, where one game pixel is two screen pixels): room for a fingertip. If a step would
+  have to scroll at that height but fits at 12, it falls back to 12.
 - 12 pixels is also what a line in another script needs (the bundled font is 10 tall).
 - A slider's track is 60 pixels: 20 pips of 2, a pixel apart.
 - Text is the 3 by 5 capitals throughout; a long name loses its end.
@@ -98,7 +102,8 @@ The same in every panel.
 ## Colours (palette indices)
 
 Step name 6, line 7, lesser line 6, message 6, in focus 16 with the mark in 15, rose 18,
-field rule 4 (15 in focus), caret 16, pips 6 on and 4 off (15 on in focus), wait pips 10.
+field rule 4 (15 in focus), caret 16, pips 6 on and 4 off (15 on in focus), wait pips 10, scroll bar 4 with the part in
+view 6.
 
 ## The world
 
