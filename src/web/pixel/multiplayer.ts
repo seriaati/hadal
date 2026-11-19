@@ -500,17 +500,17 @@ export class MultiplayerPanel {
     });
     const winners = view.players.filter((player) => view.last?.divers.some((diver) => diver.id === player.id && diver.won)).map((player) => player.nickname);
     if (view.last && winners.length) rows.push({ kind: "note", text: t().ending.won(t().list(winners), view.last.mode === "deepest") });
-    rows.push({ kind: "gap" });
+    const foot: Part[] = [{ kind: "gap" }];
     if (you.host) {
-      rows.push({ kind: "press", id: "start", label: words.start, press: () => this.start() });
+      foot.push({ kind: "press", id: "start", label: words.start, press: () => this.start() });
       const refused = this.refused?.[0] === "start" ? this.refused[1] : "";
       // Not ready is said for as long as somebody is not.
       const early = refused === words.refusals["not-ready"];
-      if (refused && (!early || waiting.length)) rows.push({ kind: "note", text: early ? words.waitingFor(refused, t().list(waiting)) : refused, bad: true });
-      rows.push({ kind: "press", id: "setup", label: words.setUp, press: () => this.open(this.setup) });
+      if (refused && (!early || waiting.length)) foot.push({ kind: "note", text: early ? words.waitingFor(refused, t().list(waiting)) : refused, bad: true });
+      foot.push({ kind: "press", id: "setup", label: words.setUp, press: () => this.open(this.setup) });
     } else {
       const { mode, air, hearts, judging } = view.settings;
-      rows.push(
+      foot.push(
         {
           kind: "press",
           id: "ready",
@@ -523,12 +523,12 @@ export class MultiplayerPanel {
     }
     const copy = () => this.copy(view.code);
     const copied = performance.now() - this.copiedAt < COPIED_FOR;
-    rows.push(
+    foot.push(
       { kind: "press", id: "copy", label: copied ? words.copied : words.copy, says: t().page.copyLink(view.code), press: copy },
       ...this.refusal("copy"),
       { kind: "press", id: "leave", label: this.leaving ? t().packs.sure : words.leave, danger: this.leaving, press: () => this.leaveRoom(), left: () => (this.leaving = false) },
     );
-    return { title: words.room, code: { text: view.code, copy }, rows, back: () => this.leaveRoom() };
+    return { title: words.room, code: { text: view.code, copy }, rows, foot, back: () => this.leaveRoom() };
   };
 
   /** Every way out of the room asks first, on the line that leaves it. */

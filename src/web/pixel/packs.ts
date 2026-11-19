@@ -109,8 +109,8 @@ export class PacksPanel {
     return {
       title: words.title,
       busy: this.busy,
-      rows: [
-        ...(rows.length ? rows : [{ kind: "note", text: words.none } as Part]),
+      rows: rows.length ? rows : [{ kind: "note", text: words.none }],
+      foot: [
         { kind: "gap" },
         [
           { kind: "press", id: "add", label: words.add, file: (file) => void this.add(file) },
@@ -125,6 +125,8 @@ export class PacksPanel {
     rows: [
       { kind: "note", text: this.refused[0] ?? "", bad: true },
       ...this.refused.slice(1).map((text): Part => ({ kind: "note", text })),
+    ],
+    foot: [
       { kind: "gap" },
       this.refusedFile
         ? { kind: "press", id: "again", label: t().packs.anotherFile, file: (file) => void this.add(file) }

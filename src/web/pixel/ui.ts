@@ -43,11 +43,13 @@ type Control = Press | Field | Slider | (Player & { id: string; press: () => voi
  * While `busy`, presses wait. `back` replaces going one step back when the player asks to (by
  * Escape, Left, the `‹` or a press outside), and `escape` replaces it on Escape alone. `code`
  * follows the name in pale letters: a room's code, which has to be read out, and which a press copies.
+ * `foot` comes after the rows; when the step is too long for its room it stays at the bottom and only the rows scroll.
  */
 export type Step = {
   title: string;
   code?: { text: string; copy: () => void };
   rows: (Part | Part[])[];
+  foot?: (Part | Part[])[];
   busy?: boolean;
   back?: () => void;
   escape?: () => void;
@@ -173,7 +175,7 @@ export function view(height: number, wish: number, ceiling: number, bottom: numb
  * screen is the browser's own, and passwords, phone keyboards and screen readers work.
  */
 export class Ui {
-  private steps: { build: () => Step; focus: string; kept: Map<string, number> }[] = [];
+  private steps: { build: () => Step; focus: string; kept: Map<string, number>; footKept: Map<string, number> }[] = [];
   private step: Step = { title: "", rows: [] };
   private parts = new Map<string, Control>();
   private controls = new Map<string, HTMLInputElement | HTMLButtonElement>();
@@ -241,7 +243,7 @@ export class Ui {
   go(build: () => Step, focus = "") {
     const top = this.steps.at(-1);
     if (top) top.focus = (document.activeElement as HTMLElement | null)?.dataset.id ?? "";
-    this.steps.push({ build, focus: "", kept: new Map() });
+    this.steps.push({ build, focus: "", kept: new Map(), footKept: new Map() });
     this.wanted = focus;
     this.sync();
   }
@@ -299,7 +301,7 @@ export class Ui {
     const top = this.steps.at(-1);
     this.form.hidden = !top;
     this.step = top?.build() ?? { title: "", rows: [] };
-    const parts = this.step.rows.flat().filter(isControl);
+    const parts = [...this.step.rows, ...(this.step.foot ?? [])].flat().filter(isControl);
     this.parts = new Map(parts.map((part) => [part.id, part]));
     this.copier.hidden = !this.step.code;
     this.leave.ariaLabel = t().page.back;
@@ -451,9 +453,22 @@ export class Ui {
     const wish = wide ? Math.max(dive ? 50 : scene.base - 4, under) : Math.max(scene.base + 38, under);
     const ceiling = Math.max(8, Math.min(wish, bottom - ROOM));
     // A line is tall enough for a fingertip (40 screen pixels), unless smaller lines spare the step from scrolling.
-    let laid = lay(this.step, width, Math.max(LINE, Math.ceil(40 / scale)), step.kept);
-    const small = laid.height > bottom - ceiling ? lay(this.step, width, LINE, step.kept) : null;
-    if (small && small.height <= bottom - ceiling) laid = small;
+    const whole = { ...this.step, rows: [...this.step.rows, ...(this.step.foot ?? [])] };
+    let line = Math.max(LINE, Math.ceil(40 / scale));
+    let laid = lay(whole, width, line, step.kept);
+    const small = laid.height > bottom - ceiling ? lay(whole, width, LINE, step.kept) : null;
+    if (small && small.height <= bottom - ceiling) [laid, line] = [small, LINE];
+    // A step that still has to scroll keeps its foot at the bottom, unless that would leave the rows above it too little room.
+    let foot: Placed[] = [];
+    let footHeight = 0;
+    if (this.step.foot?.length && laid.height > bottom - ceiling) {
+      const under = lay({ title: "", rows: this.step.foot }, width, line, step.footKept);
+      if (bottom - ceiling - INSET - (under.height - HEAD) >= 2 * line) {
+        laid = lay(this.step, width, line, step.kept);
+        foot = under.placed.map((spot) => ({ ...spot, row: spot.row + this.step.rows.length }));
+        footHeight = under.height - HEAD;
+      }
+    }
     // While a step is open the line in focus stays where it is when the step changes, so that what the pointer is
     // over does not move away from it: the step moves within its room, or else scrolls.
     const held = this.held?.step === step && this.held.left === left && this.held.bottom === bottom ? this.held : null;
@@ -462,24 +477,26 @@ export class Ui {
     const focused = laid.placed.find((spot) => isControl(spot.part) && spot.part.id === id);
     const was = held?.at.get(id);
     const by = focused && was !== undefined ? focused.y - was : 0;
-    const where = view(laid.height, wish, ceiling, bottom, held ? this.form.scrollTop / scale : 0, held ? { top: held.top, by } : undefined);
+    const where = view(laid.height + footHeight, wish, ceiling, bottom, held ? this.form.scrollTop / scale : 0, held ? { top: held.top, by } : undefined);
     const top = where.top;
     let scroll = where.scroll;
+    const shown = Math.min(laid.height + footHeight, bottom - top);
+    /** Where the rows that scroll end, and the foot begins. */
+    const fold = top + shown - footHeight;
     // A line given the focus by the keys is brought into view; one the pointer gave it to is in view already.
     if (focused && (id !== this.seen || !held)) {
-      if (active !== this.pointed) scroll = Math.max(focused.y + focused.h - (bottom - top), Math.min(scroll, focused.y - INSET));
+      if (active !== this.pointed) scroll = Math.max(focused.y + focused.h - (fold - top), Math.min(scroll, focused.y - INSET));
       this.pointed = null;
     }
     this.seen = id;
-    const shown = Math.min(laid.height, bottom - top);
     this.held = { step, left, bottom, top, at: new Map(laid.placed.flatMap((spot) => (isControl(spot.part) ? [[spot.part.id, spot.y]] : []))) };
-    this.placed = laid.placed;
+    this.placed = [...laid.placed, ...foot];
     this.box = { x: left, y: top, w: width, h: shown };
     if (!wide) scene.hush = [top - 12, top + shown + 8];
 
     // The form is laid over the rows of the step and scrolls them: the wheel, a finger and a screen reader move it.
     const from = wide ? left - 12 : 0;
-    Object.assign(this.form.style, { left: `${from * scale}px`, top: `${(top + INSET) * scale}px`, width: `${(W - from) * scale}px`, height: `${(shown - INSET) * scale}px` });
+    Object.assign(this.form.style, { left: `${from * scale}px`, top: `${(top + INSET) * scale}px`, width: `${(W - from) * scale}px`, height: `${(fold - top - INSET) * scale}px` });
     this.sizer.style.height = `${(laid.height - INSET) * scale}px`;
     if (scroll !== this.form.scrollTop / scale) this.form.scrollTop = scroll * scale;
     const shift = Math.round(scroll);
@@ -519,11 +536,17 @@ export class Ui {
     }
     frame.emit = 0;
 
-    frame.clipTop = top + INSET;
-    frame.clipBottom = bottom;
-    for (const { part, x, y, w, h, lines } of laid.placed) {
+    const spots = [...laid.placed.map((spot) => ({ ...spot, py: top + spot.y - shift, pinned: false })), ...foot.map((spot) => ({ ...spot, py: fold + spot.y - HEAD, pinned: true }))];
+    for (const { part, x, y, w, h, lines, py, pinned } of spots) {
+      frame.clipTop = pinned ? fold : top + INSET;
+      frame.clipBottom = pinned ? bottom : fold;
+      // The controls of the rows scroll with the form; those of a foot that stays are fixed where they are drawn.
+      const place = (control: HTMLElement, x: number, w: number) => {
+        control.style.position = pinned ? "fixed" : "";
+        if (pinned) cover(control, x, py, w, h);
+        else cover(control, x - from, y - INSET, w, h);
+      };
       const px = left + x;
-      const py = top + y - shift;
       const tx = px + INDENT;
       const ty = py + ((h - 5) >> 1);
       const control = isControl(part) ? this.controls.get(part.id) : undefined;
@@ -555,7 +578,7 @@ export class Ui {
           }
           frame.emit = 0;
         }
-        cover(control!, px - from, y - INSET, w, h);
+        place(control!, px, w);
       } else if (part.kind === "field") {
         const value = plain(control!.value);
         const caret = (control as HTMLInputElement).selectionStart ?? value.length;
@@ -580,7 +603,7 @@ export class Ui {
         frame.emit = 200;
         if (on && blink) for (let j = -1; j < 6; j++) frame.put(at, typed + j, 16);
         frame.emit = 0;
-        cover(control!, px - from, y - INSET, w, h);
+        place(control!, px, w);
       } else if (part.kind === "slider") {
         const steps = part.steps ?? STEPS;
         const chosen = Math.round(part.value * steps);
@@ -597,7 +620,7 @@ export class Ui {
             for (let k = -2; k < 7; k++) for (const j of [-2, 6]) frame.put(x + k, ty + j, on ? 15 : 7), frame.put(x + j, ty + k, on ? 15 : 7);
             frame.emit = 0;
           });
-          cover(control!, track - 2 - from, y - INSET, part.colors.length * 9, h);
+          place(control!, track - 2, part.colors.length * 9);
           continue;
         }
         const text = plain(part.text ?? "");
@@ -616,7 +639,7 @@ export class Ui {
           for (let j = 0; j < tall * 2; j++) frame.put(track + i * 3 + (j & 1), py + ((h - tall) >> 1) + (j >> 1), full ? (on ? 15 : 6) : 4);
         }
         frame.emit = 0;
-        cover(control!, track - from, y - INSET, end - track - 1, h);
+        place(control!, track, end - track - 1);
       } else if (part.kind === "player") {
         mark(ty);
         for (let j = 0; j < 15; j++) frame.put(tx + (j % 3), ty + Math.floor(j / 3), part.color);
@@ -629,7 +652,7 @@ export class Ui {
           end += 9;
         }
         say(plain(part.note), end, ty, 6);
-        if (control) cover(control, px - from, y - INSET, w, h);
+        if (control) place(control, px, w);
       } else if (part.kind === "note" || part.kind === "wait") {
         const gap = pitch(tiny, plain(part.text), 8);
         lines.forEach((line, i) => say(line, tx, py + 1 + i * gap, part.kind === "wait" ? 7 : part.bad ? 18 : 6));
@@ -648,11 +671,11 @@ export class Ui {
       }
     }
     // A step too long for its room has a bar at the right edge that shows how far it is scrolled.
-    if (laid.height > shown) {
-      const room = bottom - top - INSET;
+    if (laid.height > fold - top) {
+      const room = fold - top - INSET;
       const thumb = Math.max(4, Math.round((room * room) / (laid.height - INSET)));
-      const at = top + INSET + Math.round(((room - thumb) * scroll) / (laid.height - shown));
-      for (let y = top + INSET; y < bottom; y++) frame.put(left + width + 3, y, y >= at && y < at + thumb ? 6 : 4);
+      const at = top + INSET + Math.round(((room - thumb) * scroll) / (laid.height - (fold - top)));
+      for (let y = top + INSET; y < fold; y++) frame.put(left + width + 3, y, y >= at && y < at + thumb ? 6 : 4);
     }
     frame.clipTop = 0;
     frame.clipBottom = Infinity;

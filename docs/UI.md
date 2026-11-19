@@ -12,8 +12,11 @@ letters read. Nothing is framed and the sea is not dimmed: the game goes on in f
 - On a wide screen (300 game pixels or more) the words take the column to the right of the
   diver. On a narrow one they lie under the diver, across the whole width.
 - The words never cover the diver or the lantern. A step too long for its room scrolls under
-  its name, and a thin bar at the right edge shows how far. Only on a screen too short to
-  hold a few lines does a step climb over the diver.
+  its name, and a thin bar at the right edge shows how far. What acts on a list (its lines,
+  such as "Add a pack" and "Write a pack") stands at the step's foot: when the step scrolls,
+  the foot stays at the bottom and only the list above it moves, unless that would leave the
+  list less than two lines. Only on a screen too short to hold a few lines does a step climb
+  over the diver.
 - While a panel is open the title's own words are not drawn, and in a dive the answer being
   typed is not drawn. The prompt, the air and the depth stay.
 

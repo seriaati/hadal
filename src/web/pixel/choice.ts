@@ -109,8 +109,8 @@ export class CustomPanel {
     const words = t().single;
     return {
       title: words.custom,
-      rows: [
-        ...packRows(this.choice(), () => this.ui.go(this.builtInStep)),
+      rows: packRows(this.choice(), () => this.ui.go(this.builtInStep)),
+      foot: [
         { kind: "gap" },
         [
           { kind: "press", id: "custom:descend", label: words.descend, press: () => this.start(false) },
