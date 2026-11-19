@@ -1,0 +1,83 @@
+---
+name: write-hadal-pack
+description: Write or fix a trivia pack for Hadal, the deep-sea diving trivia game, as a JSON file the player uploads in the game. Use when the user asks for a Hadal pack, a pack of prompts and answers for Hadal, or pastes problems Hadal reported about a pack.
+---
+
+# Writing a Hadal pack
+
+Hadal shows the player a prompt such as "Name a country that borders Germany" and they type one
+answer. A correct answer scores its rarity: the answers few players think of take the diver
+deepest. An answer that is not in the pack counts as wrong, so a list with gaps punishes exactly
+the well-informed players the game is meant to reward.
+
+Write the pack in the language the player plays the game in, with as many prompts as they ask
+for. Give back one JSON file named after the pack's id, such as `rivers-of-europe.json`.
+
+## Format
+
+```json
+{
+  "id": "geography",
+  "name": "Geography",
+  "prompts": [
+    {
+      "id": "germany-borders",
+      "text": "Name a country that borders Germany",
+      "answers": [
+        { "text": "France", "rarity": 5 },
+        { "text": "Netherlands", "aliases": ["Holland"], "rarity": 25 },
+        { "text": "Luxembourg", "rarity": 100 }
+      ]
+    }
+  ]
+}
+```
+
+Hadal refuses a pack that breaks any of these:
+
+- No fields other than the ones above. `aliases` may be left out when there are none.
+- `id` (the pack's and each prompt's) is lower-case letters and digits joined by single hyphens,
+  at most 40 characters. Prompt ids are unique within the pack.
+- `name` is at most 24 characters; a prompt's `text` at most 80.
+- At least one prompt, and at least two answers per prompt.
+- `rarity` is a whole number from 1 to 100, and the rarest answer of every prompt has exactly 100.
+- Every spelling (an answer's `text` and each alias) is at most 40 characters, has at least one
+  letter or digit, and matches no other spelling in the same prompt. Spellings that differ only in
+  capitals, accents, punctuation, spaces, a leading "the", or simplified against traditional
+  Chinese characters count as the same.
+- The file is at most 200 KB.
+
+## Making it good
+
+Prompts
+- Each asks for one item of a well-defined set and can be judged plainly right or wrong: "Name a
+  moon of Jupiter", not "Name a good film".
+- Each has many correct answers, ideally 10 to 40. Avoid sets too large to list in full (more
+  than about 60) and sets whose edges a player cannot know.
+- Cover different corners of the topic, and mix easier sets with harder ones.
+
+Name
+- Say plainly what the pack is about, the way a player would put it: "Programming", "Rivers of
+  Europe". Leave the sea and the game out of it: no "Depths", "Abyss", "Dive" or other wordplay.
+
+Answers
+- List every correct answer, not a selection. Check each one: a wrong answer in the list is worse
+  than a missing one.
+- `text` is the usual way to write the answer. `aliases` are other names or spellings a player
+  might type for the same thing ("Holland" for "Netherlands", "JFK" for "John F. Kennedy"). The
+  game already ignores capitals, accents, punctuation, spaces and a leading "the", and forgives
+  small typos, so do not list such variants.
+- `rarity` is how unlikely a typical player is to give the answer: 1 to 20 is what nearly everyone
+  says first, 80 to 100 what only an enthusiast would think of. Spread each prompt's answers over
+  the whole range.
+
+## Before handing it over
+
+Go through the rules under "Format" one by one against the file, especially the 100 in every
+prompt, the length limits and spellings repeated within a prompt.
+
+## Fixing a pack
+
+When the player uploads the pack, Hadal lists every problem it finds at once. If they paste that
+list back, fix all of it and give the whole file again. Keep the pack's `id` unchanged: uploading
+a pack with the id of one the player already has replaces that pack.

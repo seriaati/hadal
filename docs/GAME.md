@@ -81,3 +81,6 @@ built-in pack is not valid. Uploaded packs go through the same check.
   or digit, and matches no other spelling of the prompt (spellings that differ only in simplified
   and traditional characters match).
 - An uploaded file is at most 200 KB.
+
+`skills/write-hadal-pack/SKILL.md` restates these rules for players' own AI tools; change it with
+them.
