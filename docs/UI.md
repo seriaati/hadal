@@ -75,6 +75,10 @@ The same in every panel.
   Left and Right always belong to its caret. There is no editing mode.
 - **Removing** takes two presses: "Remove" turns into "Sure?", and moving the focus away
   takes the question back. There is never a hold.
+- **Nothing jumps.** While a step is open, the line in focus stays where it is when the step
+  changes (a message, a player joining), and the step moves around it as far as the screen
+  allows. Words said under a line keep their room after they go until the step closes, so a
+  message that comes and goes moves nothing. This holds for every panel, without its own code.
 - **Leaving a room** asks the same way: every way out (Escape, Left, the `‹`, a click outside,
   "Leave the room") first turns "Leave the room" into "Sure?" and puts the focus on it.
 - **The cursor is a hand** over everything that can be pressed: the title menu's lines, the

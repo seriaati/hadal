@@ -95,3 +95,17 @@ test("two things marked `right` stand side by side against the right edge, in th
   expect(download!.x + download!.w).toBe(remove!.x - 8);
   expect(name!.x + name!.w).toBe(download!.x - 4);
 });
+
+test("words said after a line keep their room once they are gone, so the lines after them stay put", () => {
+  const room = (refused: boolean): Step => ({
+    title: "Room",
+    rows: [press("start"), ...(refused ? [{ kind: "note", text: "Not everyone is ready", bad: true } as Part] : []), press("setup")],
+  });
+  const kept = new Map<string, number>();
+  const y = (step: Step) => lay(step, 140, 12, kept).placed.find((spot) => "id" in spot.part && spot.part.id === "setup")!.y;
+  const before = y(room(false));
+  const said = y(room(true));
+  expect(said).toBeGreaterThan(before);
+  expect(y(room(false))).toBe(said);
+  expect(y(room(true))).toBe(said);
+});

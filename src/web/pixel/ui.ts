@@ -82,11 +82,27 @@ export function drawCrown(frame: Frame, x: number, y: number, color: number) {
   CROWN.forEach((row, j) => [...row].forEach((char, i) => char === "x" && frame.put(x + i, y + j, color)));
 }
 
-export function lay(step: Step, width: number, line: number): { placed: Placed[]; height: number } {
+/**
+ * `kept` holds, by the control the words follow, the most room the words after each control
+ * have taken while the step is open: what is said there and then goes keeps its room, so the
+ * lines after it do not jump back and forth.
+ */
+export function lay(step: Step, width: number, line: number, kept?: Map<string, number>): { placed: Placed[]; height: number } {
   const placed: Placed[] = [];
   let y = HEAD + ((line - LINE) >> 1);
+  let after = "";
+  let said = 0;
+  const keep = () => {
+    if (!kept) return;
+    const room = Math.max(kept.get(after) ?? 0, said);
+    kept.set(after, room);
+    y += room - said;
+    said = 0;
+  };
   step.rows.forEach((row, index) => {
     const parts = Array.isArray(row) ? row : [row];
+    const words = parts.every((part) => part.kind === "note");
+    if (!words) keep();
     let x = 0;
     let tall = 0;
     parts.forEach((part, i) => {
@@ -114,7 +130,10 @@ export function lay(step: Step, width: number, line: number): { placed: Placed[]
       tall = Math.max(tall, h);
     });
     y += tall;
+    if (words) said += tall;
+    else after = parts.find(isControl)?.id ?? after;
   });
+  keep();
   return { placed, height: y };
 }
 
@@ -139,7 +158,7 @@ export function move(placed: Placed[], from: Placed, way: Move): Placed | undefi
  * screen is the browser's own, and passwords, phone keyboards and screen readers work.
  */
 export class Ui {
-  private steps: { build: () => Step; focus: string }[] = [];
+  private steps: { build: () => Step; focus: string; kept: Map<string, number> }[] = [];
   private step: Step = { title: "", rows: [] };
   private parts = new Map<string, Control>();
   private controls = new Map<string, HTMLInputElement | HTMLButtonElement>();
@@ -147,6 +166,8 @@ export class Ui {
   private kept = new Map<string, string>();
   private placed: Placed[] = [];
   private box = { x: 0, y: 0, w: 0, h: 0 };
+  /** Where the step on screen was last drawn: its top, and where each of its controls stood in it. */
+  private held: { step: object; left: number; bottom: number; top: number; at: Map<string, number> } | null = null;
   /** The control to give the focus as soon as it exists. */
   private wanted = "";
   /** The step's name, which goes back, and the code after it, which copies it. */
@@ -194,7 +215,7 @@ export class Ui {
   go(build: () => Step, focus = "") {
     const top = this.steps.at(-1);
     if (top) top.focus = (document.activeElement as HTMLElement | null)?.dataset.id ?? "";
-    this.steps.push({ build, focus: "" });
+    this.steps.push({ build, focus: "", kept: new Map() });
     this.wanted = focus;
     this.sync();
   }
@@ -400,11 +421,23 @@ export class Ui {
     const width = W - left - (wide ? 8 : 10);
     const bottom = H - (dive ? 28 : 8);
     // A line is tall enough for a fingertip (40 screen pixels) wherever the step then still fits the screen.
-    let laid = lay(this.step, width, Math.max(LINE, Math.ceil(40 / scale)));
-    if (laid.height > bottom - 8) laid = lay(this.step, width, LINE);
+    const step = this.steps.at(-1)!;
+    let laid = lay(this.step, width, Math.max(LINE, Math.ceil(40 / scale)), step.kept);
+    if (laid.height > bottom - 8) laid = lay(this.step, width, LINE, step.kept);
     const under = dive ? scene.hudBottom + 8 : 0;
     const wish = wide ? Math.max(dive ? 50 : scene.base - 4, under) : Math.max(scene.base + 38, under);
-    const top = Math.max(8, Math.min(wish, bottom - laid.height));
+    let top = Math.max(8, Math.min(wish, bottom - laid.height));
+    // While a step is open the line in focus stays where it is when the step changes, so that what the pointer is
+    // over does not move away from it. On a narrow screen the step never climbs over the diver to do so.
+    const held = this.held;
+    if (held?.step === step && held.left === left && held.bottom === bottom) {
+      const id = (document.activeElement as HTMLElement | null)?.dataset.id ?? "";
+      const was = held.at.get(id);
+      const now = laid.placed.find((spot) => isControl(spot.part) && spot.part.id === id)?.y;
+      const highest = wide ? Math.min(top, Math.max(8, under)) : top;
+      top = Math.max(highest, Math.min(was !== undefined && now !== undefined ? held.top + was - now : held.top, bottom - laid.height));
+    }
+    this.held = { step, left, bottom, top, at: new Map(laid.placed.flatMap((spot) => (isControl(spot.part) ? [[spot.part.id, spot.y]] : []))) };
     this.placed = laid.placed;
     this.box = { x: left, y: top, w: width, h: laid.height };
     if (!wide) scene.hush = [top - 12, top + laid.height + 8];
