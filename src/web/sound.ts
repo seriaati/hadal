@@ -239,10 +239,12 @@ export class Sound {
       this.note("ambient", "sine", blip, blip * 1.7, 0.035, 0.07);
     }
 
-    // A kind is heard once, however many of it arrived together.
+    // A kind is heard once, however many of it arrived together. Creatures that come once the sea is hidden (a lost
+    // dive gone dark, or the end screen) are not heard.
+    const hidden = glitch?.blackout || game.phase === "done";
     const arrived = new Set<CreatureKind>();
     for (const creature of scene.ambient.creatures) {
-      if (!this.seen.has(creature)) arrived.add(creature.kind);
+      if (!this.seen.has(creature) && !hidden) arrived.add(creature.kind);
       this.seen.add(creature);
     }
     for (const kind of arrived) {
@@ -289,7 +291,7 @@ export class Sound {
       this.note("effects", "sine", 1600, 120, 0.05, 0.9);
     }
     this.losses = glitch.losses;
-    if (scene.ambient.turns > this.turns) {
+    if (scene.ambient.turns > this.turns && !glitch.blackout) {
       this.note("effects", "sawtooth", 1400, 220, 0.05, 1.2, 0.02);
       this.note("effects", "sawtooth", 1460, 205, 0.05, 1.2, 0.02);
       this.note("effects", "triangle", 90, 38, 0.3, 1.6);
