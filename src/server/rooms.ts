@@ -87,7 +87,11 @@ function enter(member: Member, message: { nickname: string; suit: number }, code
   if (marks(member).some((mark) => room.banned.has(mark))) return "banned";
   if (room.players.length >= MAX_PLAYERS) return "full";
   if (room.players.some((player) => player.nickname === nickname)) return "name-taken";
-  room.players.push({ id: room.nextId++, nickname, suit: message.suit, ready: false, host: !room.players.length, member });
+  // The suit asked for, if nobody wears it yet; otherwise one nobody wears, at random.
+  const worn = new Set(room.players.map((player) => player.suit));
+  const free = Array.from({ length: SUITS }, (_, suit) => suit).filter((suit) => !worn.has(suit));
+  const suit = worn.has(message.suit) ? free[Math.floor(Math.random() * free.length)]! : message.suit;
+  room.players.push({ id: room.nextId++, nickname, suit, ready: false, host: !room.players.length, member });
   rooms.set(room.code, room);
   places.set(member, room);
   tell(room);

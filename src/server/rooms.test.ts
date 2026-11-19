@@ -127,6 +127,18 @@ test("a guest says they are ready; the host has no ready to give", async () => {
   expect(seen(host).players.map((player) => player.ready)).toEqual([false, false]);
 });
 
+test("a player joins in the suit they chose if nobody wears it, otherwise in one nobody wears", async () => {
+  const { host, code } = await room(null, "ben", "cal");
+  expect(seen(host).players.map((player) => player.suit)).toEqual([0, 1, expect.any(Number)]);
+  const free = [0, 1, 2, 3, 4, 5].find((suit) => !seen(host).players.some((player) => player.suit === suit))!;
+  const dan = member();
+  await say(dan, { type: "join", code, nickname: "dan", suit: free });
+  const suits = seen(host).players.map((player) => player.suit);
+  expect(suits[3]).toBe(free);
+  expect(new Set(suits).size).toBe(4);
+  leave(host);
+});
+
 test("a player changes their suit in the room, but not during a dive", async () => {
   const { host, others: [ben] } = await room(null, "ben");
   await say(ben!, { type: "suit", suit: 4 });
