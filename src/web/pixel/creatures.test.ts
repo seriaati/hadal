@@ -124,3 +124,17 @@ test("a creature NekuMeow drew is never drawn above the water", () => {
   expect(frame.color.subarray(0, 60 * width).some((color) => color !== 0)).toBe(false);
   expect(frame.color.subarray(60 * width).some((color) => color !== 0)).toBe(true);
 });
+
+test("the dumbo octopus only looks in for a while, then backs away", () => {
+  const [width, height] = [320, 180];
+  const ambient = new Ambient();
+  ambient.spawn("dumbo", width, height, 5000);
+  const dumbo = ambient.creatures[0]!;
+  for (let second = 0; second < 9; second++) ambient.update(1, 5000, 0, width, height, 0);
+  const resting = dumbo.x;
+  expect(resting).toBeLessThan(width - 20);
+  ambient.update(0.5, 5000, 0, width, height, 0);
+  expect(dumbo.x).toBe(resting);
+  for (let second = 0; second < 30; second++) ambient.update(1, 5000, 0, width, height, 0);
+  expect(ambient.creatures.includes(dumbo)).toBe(false);
+});

@@ -14,7 +14,8 @@ type Whale = Turning & { kind: "whale"; x: number; y: number; age: number; scale
 /** `x` and `y` are where its lure is first seen. */
 type Leviathan = Turning & { kind: "leviathan"; x: number; y: number; age: number };
 /** One of the creatures NekuMeow drew, shown frame by frame from `drawn.ts`. */
-type Drawn = Turning & { kind: DrawnKind; x: number; y: number; age: number };
+/** `rest` and `life`: where the dumbo octopus stops to look in, and for how many seconds, before it backs away. */
+type Drawn = Turning & { kind: DrawnKind; x: number; y: number; age: number; rest?: number; life?: number };
 type Creature = Eyes | Serpent | Angler | Shoal | Whale | Leviathan | Drawn;
 export type CreatureKind = Creature["kind"];
 
@@ -94,6 +95,7 @@ export class Ambient {
       // The nautilus comes in shell first from the left; the squid and the sea angel rise from below; the rest drift in from the right.
       if (drawn === "nautilus") this.creatures.push({ kind: drawn, x: -w, y, age: 0, turned: false, flick: 0 });
       else if (drawn === "squid" || drawn === "angel") this.creatures.push({ kind: drawn, x: width * 0.45 + Math.random() * Math.max(0, width * 0.5 - w), y: height + 2, age: 0, turned: false, flick: 0 });
+      else if (drawn === "dumbo") this.creatures.push({ kind: drawn, x: width + 2, y, age: 0, rest: width - w - 8 - Math.random() * 24, life: 10 + Math.random() * 6, turned: false, flick: 0 });
       else this.creatures.push({ kind: drawn, x: width + 2, y, age: 0, turned: false, flick: 0 });
     } else if (kind === "fish") {
       const way = Math.random() < 0.5 ? -1 : 1;
@@ -148,8 +150,12 @@ export class Ambient {
         creature.y -= 9 * dt;
       } else if (creature.kind === "angel") {
         creature.y -= 8 * dt;
-      } else if (creature.kind === "dumbo" || creature.kind === "dragon") {
-        creature.x -= (creature.kind === "dumbo" ? 8 : 7) * dt;
+      } else if (creature.kind === "dumbo") {
+        // Like the anglerfish, it only looks in for a while, then backs away the way it came.
+        if (creature.age > creature.life!) creature.x += 10 * dt;
+        else creature.x = Math.max(creature.rest!, creature.x - 8 * dt);
+      } else if (creature.kind === "dragon") {
+        creature.x -= 7 * dt;
       }
     }
     this.creatures = this.creatures.filter((creature) => {
