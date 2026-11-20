@@ -1,4 +1,3 @@
-// Written by `bun design/creatures/game.ts` from the shapes in design/creatures/new.ts: change those, not this.
 import type { Light } from "./frame";
 
 export type DrawnKind = "nautilus" | "squid" | "dumbo" | "angel" | "dragon";
