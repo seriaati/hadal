@@ -42,8 +42,6 @@ export const en = {
   about: { madeBy: "Hadal is made by seria", source: "Open the source code on GitHub" },
   leaving: {
     title: "Leave the dive?",
-    escape: "Esc again leaves the dive. It is not logged",
-    escapeRoom: "Esc again leaves the dive and the room",
     stay: "Keep diving",
     leave: "Leave the dive",
   },

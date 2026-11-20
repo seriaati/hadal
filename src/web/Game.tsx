@@ -14,7 +14,7 @@ import { MultiplayerPanel } from "./pixel/multiplayer";
 import { PacksPanel } from "./pixel/packs";
 import { Scene, type Menu } from "./pixel/scene";
 import { drawCog, overCog, settingsStep } from "./pixel/settings";
-import { Ui, type Part, type Step } from "./pixel/ui";
+import { Ui, type Step } from "./pixel/ui";
 
 const REPO = "https://github.com/seriaati/hadal";
 /** How often an open page asks whether a newer version of the game is out, in milliseconds. */
@@ -94,8 +94,6 @@ export function Game() {
       else if (line === 4) ui.go(about);
       else location.reload();
     };
-    /** Opened with Escape, the step says what a second Escape does. */
-    let byEscape = false;
     const leaveDive = () => {
       ui.close();
       if (multiplayer.diving) multiplayer.leaveDive();
@@ -106,14 +104,12 @@ export function Game() {
       title: t().leaving.title,
       escape: leaveDive,
       rows: [
-        ...(byEscape ? [{ kind: "note", text: multiplayer.diving ? t().leaving.escapeRoom : t().leaving.escape } as Part] : []),
         { kind: "press", id: "stay", label: t().leaving.stay, press: () => ui.back() },
         { kind: "press", id: "settings", label: t().settings.title, press: () => ui.go(settings) },
         { kind: "press", id: "leave", label: t().leaving.leave, press: leaveDive },
       ],
     });
-    const openMenu = (escape: boolean) => {
-      byEscape = escape;
+    const openMenu = () => {
       if (shown.phase === "title") ui.go(settings);
       else if (shown.phase === "drop" || shown.phase === "ask" || shown.phase === "verdict") ui.go(leaving);
     };
@@ -146,7 +142,7 @@ export function Game() {
       if (event.key !== "Enter" && event.key !== "Escape") return;
       event.preventDefault();
       if (ending) return event.repeat ? undefined : closeEnding();
-      if (event.key === "Escape") return event.repeat ? undefined : openMenu(true);
+      if (event.key === "Escape") return event.repeat ? undefined : openMenu();
       if (multiplayer.diving) {
         if (multiplayer.answer(input.value)) input.value = "";
         return;
@@ -184,7 +180,7 @@ export function Game() {
         if (line >= 0 && event.pointerType === "mouse" && (event.movementX || event.movementY)) menu.choice = line;
       } else if (cog) {
         if (ui.top === settings || ui.top === leaving) ui.back();
-        else openMenu(false);
+        else openMenu();
       } else if (ui.open) ui.press(x, y);
       else if (line >= 0) choose(line);
       // A press anywhere does what Enter does after a verdict: a phone's keyboard may be closed.

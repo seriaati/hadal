@@ -34,8 +34,6 @@ export const zhTW: Words = {
   about: { madeBy: "Hadal 由 seria 製作", source: "在 GitHub 上檢視原始碼" },
   leaving: {
     title: "離開這次下潛？",
-    escape: "再按 Esc 離開下潛，本次不會記錄",
-    escapeRoom: "再按 Esc 離開下潛和房間",
     stay: "繼續下潛",
     leave: "離開下潛",
   },
