@@ -28,7 +28,7 @@ const CHAOS_HOME = { angler: 300, eyes: 0, serpent: 800 };
 /** Where each creature NekuMeow drew lives, in metres: there, the water is the water it was drawn on. */
 const RANGE: Record<DrawnKind, [from: number, to: number]> = { dragon: [100, 500], angel: [100, 800], nautilus: [150, 700], squid: [1000, 3900], dumbo: [4000, 7000] };
 /** Frames a second of their tentacles' sway. */
-const SWAY = 6;
+const SWAY = 12;
 const isDrawn = (creature: Creature): creature is Drawn => creature.kind in DRAWN;
 const drawnSize = (kind: DrawnKind) => [DRAWN[kind].frames[0]![0]!.length, DRAWN[kind].frames[0]!.length] as const;
 
@@ -143,13 +143,13 @@ export class Ambient {
         creature.x -= (10 + 3 * Math.max(0, Math.sin(creature.age * WHALE_STROKE - 0.6))) * dt;
       } else if (creature.kind === "nautilus") {
         // It swims backwards, shell first, in pulses of its jet.
-        creature.x += (3 + 5 * Math.max(0, Math.sin(creature.age * 1.3)) ** 2) * dt;
+        creature.x += (6 + 8 * Math.max(0, Math.sin(creature.age * 1.3)) ** 2) * dt;
       } else if (creature.kind === "squid") {
-        creature.y -= (3 + 12 * Math.max(0, Math.sin(creature.age * 1.4)) ** 3) * dt;
+        creature.y -= 9 * dt;
       } else if (creature.kind === "angel") {
-        creature.y -= 4 * dt;
+        creature.y -= 8 * dt;
       } else if (creature.kind === "dumbo" || creature.kind === "dragon") {
-        creature.x -= (creature.kind === "dumbo" ? 4 : 3) * dt;
+        creature.x -= (creature.kind === "dumbo" ? 8 : 7) * dt;
       }
     }
     this.creatures = this.creatures.filter((creature) => {
@@ -246,18 +246,19 @@ export class Ambient {
 function drawDrawn(frame: Frame, creature: Drawn, top: number, lights: Light[]) {
   const { frames, glow, strength, lights: own } = DRAWN[creature.kind];
   const rows = frames[Math.floor(creature.age * SWAY) % frames.length]!;
-  // The drifters bob as they go, and the sea angel sways from side to side as it rises.
-  const bob = creature.kind === "dumbo" || creature.kind === "dragon" ? Math.sin(creature.age * 1.2) * 1.5 : 0;
+  // The sea angel sways from side to side as it rises.
   const sway = creature.kind === "angel" ? Math.sin(creature.age * 0.9) * 3 : 0;
   const x = Math.round(creature.x + sway);
-  const y = Math.round(creature.y + bob);
+  const y = Math.round(creature.y);
   const clip = frame.clipTop;
   frame.clipTop = Math.max(clip, top);
   frame.emit = strength;
   frame.sprite(rows, x, y, glow);
   frame.emit = 0;
   frame.clipTop = clip;
-  for (const light of own) lights.push({ ...light, x: x + light.x, y: y + light.y });
+  // Their light swells and fades, slower and softer than the anglerfish's lure.
+  const swell = 1 + 0.25 * Math.sin(creature.age * 2);
+  for (const light of own) lights.push({ ...light, x: x + light.x, y: y + light.y, strength: light.strength * swell });
 }
 
 /** Faces left. */
