@@ -8,8 +8,8 @@ import type { Sound } from "../sound";
 import { LOST_SECONDS, ascentSeconds, createGame, type Game } from "../state";
 import type { AccountPanel } from "./account";
 import { builtInRows, packRows, type PackChoice } from "./choice";
-import { CROWN_SECONDS, GLINT_SECONDS, GOING_SECONDS, SUIT_COLORS, type Crew, type Turn } from "./scene";
-import type { Part, Step, Ui } from "./ui";
+import { CROWN_SECONDS, GLINT_SECONDS, GOING_SECONDS, LANTERN, LANTERN_OUT, SUIT_COLORS, type Crew, type Turn } from "./scene";
+import type { Diver, Part, Step, Ui } from "./ui";
 
 /** Where in the panel a refusal is said: under the field it is about, before the last line, in the room's set-up, under "Copy the link" or under "Start the dive". */
 type Where = "code" | "name" | "end" | "settings" | "copy" | "start";
@@ -26,6 +26,9 @@ const REFUSALS: Record<Refusal, Where> = {
   "no-prompts": "start",
   banned: "code",
 };
+
+/** A lantern that is out, as the line that lights it shows it: a little paler than in the sea, so it reads on the dark. */
+const COLD_LANTERN = LANTERN_OUT.map((row) => row.replace(/[rR34]/g, (char) => ({ r: "5", R: "6", "3": "4", "4": "5" })[char]!));
 
 /** The air is set in steps of this many seconds. */
 const AIR_STEP = 5;
@@ -80,8 +83,8 @@ export class MultiplayerPanel {
   /** The player whose step the host has open, and which of "Remove" and "Ban" one more press does. */
   private picked: number | null = null;
   private doomed: "" | "remove" | "ban" = "";
-  /** Where leaving the room asks "Sure?": on "Leave the room", or on the `‹` when that was pressed. One more way out leaves. */
-  private leaving: "" | "line" | "head" = "";
+  /** Leaving the room asks "Sure?" on the step's name: one more way out leaves. */
+  private leaving = false;
   /** Divers who have just gone out of the room, as they were last seen, how they went and when, in seconds. */
   private ghosts: { crew: Crew; how: Gone; at: number }[] = [];
   /** The divers as last shown, so that one who goes is seen off from where they were. */
@@ -233,7 +236,7 @@ export class MultiplayerPanel {
     this.ending = null;
     this.ui.go(this.first);
     if (this.gone) this.gone = false;
-    else this.ui.go(this.room);
+    else this.ui.go(this.room, "act");
   }
 
   /** The dive of the room as a game the scene can draw, while there is one; at its end, the depth unwinding as the divers come up. */
@@ -352,7 +355,7 @@ export class MultiplayerPanel {
       if (diving !== this.diving) {
         this.diving = diving;
         this.refused = null;
-        this.leaving = "";
+        this.leaving = false;
         if (diving) {
           this.lost = null;
           this.spent = "";
@@ -363,7 +366,7 @@ export class MultiplayerPanel {
           this.ending = this.endingOf(message.room);
         } else {
           this.ui.go(this.first);
-          this.ui.go(this.room);
+          this.ui.go(this.room, "act");
         }
         return;
       }
@@ -371,9 +374,9 @@ export class MultiplayerPanel {
       // The room is made or joined: it takes the place of the step that asked for it.
       this.refused = null;
       this.linked = "";
-      this.leaving = "";
+      this.leaving = false;
       this.ui.back();
-      this.ui.go(this.room);
+      this.ui.go(this.room, "act");
     } else if (message.type === "refused") {
       this.air = null;
       this.changing = false;
@@ -509,69 +512,60 @@ export class MultiplayerPanel {
   private room = (): Step => {
     const view = this.client.view;
     const words = t().rooms;
-    if (!view) return { title: words.room, rows: [] };
+    if (!view) return { title: words.leave, exit: true, rows: [] };
     const you = view.players.find((player) => player.id === view.you)!;
     const waiting = view.players.filter((player) => !player.host && !player.ready).map((player) => player.nickname);
-    const rows: Part[] = view.players.map((player) => {
+    // A diver is pressed where they hang: one's own opens their suit, and to the host another's opens what the host can do to them.
+    const world = view.players.flatMap((player): Diver[] => {
+      const id = `player:${player.id}`;
+      if (player.id === you.id) return [{ kind: "diver", id, name: player.nickname, press: () => this.pickSuit(player), says: words.suitSays(player.nickname) }];
+      if (!you.host) return [];
       const pick = () => {
         this.picked = player.id;
         this.doomed = "";
         this.open(this.playerStep);
       };
-      return {
-        kind: "player",
-        name: player.nickname,
-        color: SUIT_COLORS[player.suit]!,
-        host: player.host,
-        note: player.ready ? words.ready : "",
-        ...(player.id === you.id ? { id: `player:${player.id}`, press: () => this.pickSuit(player), says: words.suitSays(player.nickname) }
-        : you.host ? { id: `player:${player.id}`, press: pick, says: words.playerSays(player.nickname) }
-        : {}),
-      };
+      return [{ kind: "diver", id, name: player.nickname, press: pick, says: words.playerSays(player.nickname) }];
     });
-    const winners = view.players.filter((player) => view.last?.divers.some((diver) => diver.id === player.id && diver.won)).map((player) => player.nickname);
-    if (view.last && winners.length) rows.push({ kind: "note", text: t().ending.won(t().list(winners), view.last.mode === "deepest") });
-    const foot: Part[] = [{ kind: "gap" }];
+    const { mode, air, hearts, judging } = view.settings;
+    const facts = [words.modes[mode][0], words.air(air), mode === "longest" ? words.newHearts(words.hearts[hearts]) : "", packsOf(view.settings, this.builtIn.length, true), judging ? words.liveJudging : ""]
+      .filter(Boolean)
+      .map((text) => ({ text }));
+    const rows: Part[] = [
+      ...this.refusal("copy"),
+      you.host ? { kind: "summary", id: "setup", facts, value: words.change, says: words.setUp, press: () => this.open(this.setup) } : { kind: "summary", facts },
+      { kind: "gap" },
+    ];
     if (you.host) {
-      foot.push({ kind: "press", id: "start", label: words.start, press: () => this.start() });
+      rows.push({ kind: "action", id: "act", label: words.start, dim: waiting.length > 0, press: () => this.start() });
       const refused = this.refused?.[0] === "start" ? this.refused[1] : "";
       // Not ready is said for as long as somebody is not.
       const early = refused === words.refusals["not-ready"];
-      if (refused && (!early || waiting.length)) foot.push({ kind: "note", text: early ? words.waitingFor(refused, t().list(waiting)) : refused, bad: true });
-      foot.push({ kind: "press", id: "setup", label: words.setUp, press: () => this.open(this.setup) });
+      if (refused && (!early || waiting.length)) rows.push({ kind: "note", text: early ? words.waitingFor(refused, t().list(waiting)) : refused, bad: true });
     } else {
-      const { mode, air, hearts, judging } = view.settings;
-      foot.push(
-        {
-          kind: "press",
-          id: "ready",
-          label: you.ready ? words.putOut : words.light,
-          says: you.ready ? words.putOutSays : words.lightSays,
-          press: () => this.client.send({ type: "ready", ready: !you.ready }),
-        },
-        { kind: "note", text: [words.modes[mode][0], words.air(air), mode === "longest" ? words.newHearts(words.hearts[hearts]) : "", packsOf(view.settings, this.builtIn.length, true), judging ? words.liveJudging : ""].filter(Boolean).join(" ~ ") },
-      );
+      rows.push({
+        kind: "action",
+        id: "act",
+        label: you.ready ? words.putOut : words.light,
+        says: you.ready ? words.putOutSays : words.lightSays,
+        icon: you.ready ? { rows: LANTERN, glow: "ac" } : { rows: COLD_LANTERN },
+        press: () => this.client.send({ type: "ready", ready: !you.ready }),
+      });
     }
     const copy = () => this.copy(view.code);
     const copied = performance.now() - this.copiedAt < COPIED_FOR;
-    const asking = this.leaving === "line";
-    foot.push(
-      { kind: "press", id: "copy", label: copied ? words.copied : words.copy, says: t().page.copyLink(view.code), press: copy },
-      ...this.refusal("copy"),
-      { kind: "press", id: "leave", label: asking ? t().packs.sure : words.leave, danger: asking, press: () => this.leaveRoom(false), left: () => asking && (this.leaving = "") },
-    );
-    const sure = this.leaving === "head" ? () => (this.leaving = "") : undefined;
-    return { title: words.room, code: { text: view.code, copy }, rows, foot, back: (head) => this.leaveRoom(head), sure };
+    const sure = this.leaving ? () => (this.leaving = false) : undefined;
+    return { title: words.leave, exit: true, code: { text: view.code, copy, copied }, world, rows, back: () => this.leaveRoom(), sure };
   };
 
-  /** Every way out of the room asks first: on the `‹` if that was pressed, otherwise on the line that leaves it. */
-  private leaveRoom(head: boolean) {
+  /** Every way out of the room asks first, on the step's name: one more way out leaves. */
+  private leaveRoom() {
     if (!this.leaving) {
-      this.leaving = head ? "head" : "line";
-      if (!head) this.ui.focus("leave");
+      this.leaving = true;
+      this.ui.focusBack();
       return;
     }
-    this.leaving = "";
+    this.leaving = false;
     this.ui.back();
   }
 
@@ -705,7 +699,7 @@ export class MultiplayerPanel {
     const at = others.indexOf(player);
     const next = others[at + 1] ?? others[at - 1];
     this.ui.back();
-    this.ui.focus(next ? `player:${next.id}` : "start");
+    this.ui.focus(next ? `player:${next.id}` : "act");
   }
 
   /** What the host may do to another player of the room. */

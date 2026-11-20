@@ -35,20 +35,28 @@ export type Field = { kind: "field"; id: string; label: string; max: number; dot
 export type Slider = { kind: "slider"; id: string; label: string; value: number; set: (value: number) => void; steps?: number; colors?: number[]; text?: string };
 export type Note = { kind: "note"; text: string; bad?: boolean };
 export type Wait = { kind: "wait"; text: string; done: number; of: number };
-/** One of the people in a room. Only read, unless it has `press`: the host's way to the step of another player. */
-export type Player = { kind: "player"; name: string; color: number; note: string; host?: boolean; id?: string; press?: () => void; says?: string };
-export type Part = Press | Field | Slider | Note | Wait | Player | { kind: "gap" };
-type Control = Press | Field | Slider | (Player & { id: string; press: () => void });
+/** Facts read together, such as how a room is set up. They wrap only between facts, and a `hot` one glows. With `press` it is a line, `value` at its right. */
+export type Summary = { kind: "summary"; facts: { text: string; hot?: boolean }[]; id?: string; press?: () => void; says?: string; value?: string };
+/** The one thing a step is for, in large letters in the middle of its row, after its `icon`; `dim` while it cannot be done yet. */
+export type Action = { kind: "action"; id: string; label: string; press: () => void; says?: string; icon?: { rows: string[]; glow?: string }; dim?: boolean };
+/** One of the divers of a room, pressed where they hang in the sea; `name` is the one the scene knows them by. */
+export type Diver = { kind: "diver"; id: string; name: string; press: () => void; says: string };
+export type Part = Press | Field | Slider | Note | Wait | Summary | Action | { kind: "gap" };
+type Control = Press | Field | Slider | Action | Diver | (Summary & { id: string; press: () => void });
 /**
  * While `busy`, presses wait. `back` replaces going one step back when the player asks to (by
  * Escape, Left, the `‹` or a press outside; `head` when it was on the `‹`), and `escape` replaces it on Escape alone. `code`
  * follows the name in pale letters: a room's code, which has to be read out, and which a press copies.
  * `foot` comes after the rows; when the step is too long for its room it stays at the bottom and only the rows scroll.
  * With `sure`, the name asks "Sure?" in its place, and `sure` is called when the focus leaves it.
+ * With `exit`, going back leaves something (a room): the name has an exit mark in place of the `‹`, and the code stands
+ * against the right edge, saying it was `copied` for a moment. `world` are the divers pressed where they hang.
  */
 export type Step = {
   title: string;
-  code?: { text: string; copy: () => void };
+  code?: { text: string; copy: () => void; copied?: boolean };
+  exit?: boolean;
+  world?: Diver[];
   rows: (Part | Part[])[];
   foot?: (Part | Part[])[];
   busy?: boolean;
@@ -58,7 +66,7 @@ export type Step = {
 };
 
 /** Where a part is, from the top left of its step. */
-export type Placed = { part: Part; row: number; x: number; y: number; w: number; h: number; lines: string[] };
+export type Placed = { part: Part | Diver; row: number; x: number; y: number; w: number; h: number; lines: string[] };
 export type Move = "up" | "down" | "left" | "right" | "next" | "previous";
 
 /** The height of a line on a large screen. */
@@ -72,11 +80,14 @@ const ROOM = 64;
 const INDENT = 7;
 const STEPS = 20;
 const MARK = ["a..", "aa.", "aaa", "aa.", "a.."];
+const EXIT = ["##.....", "#....#.", "#.#####", "#....#.", "##....."];
 const CROWN = [".....", "..x..", "x.x.x", "xxxxx", "xxxxx"];
 
-const isControl = (part: Part): part is Control =>
-  part.kind === "press" || part.kind === "field" || part.kind === "slider" || (part.kind === "player" && !!part.id && !!part.press);
-const kindOf = (part: Control) => (part.kind === "press" ? (part.file ? "file" : part.submit ? "submit" : "press") : part.kind === "player" ? "press" : part.kind);
+const isControl = <T extends Part | Diver>(part: T): part is T & Control =>
+  part.kind === "press" || part.kind === "field" || part.kind === "slider" || part.kind === "action" || part.kind === "diver" || (part.kind === "summary" && !!part.id && !!part.press);
+/** The controls that are pressed, as a button is. */
+const pressed = (part: Control) => part.kind === "press" || part.kind === "action" || part.kind === "diver" || part.kind === "summary";
+const kindOf = (part: Control) => (part.kind === "press" ? (part.file ? "file" : part.submit ? "submit" : "press") : pressed(part) ? "press" : part.kind);
 const natural = (part: Part) => INDENT + (part.kind === "press" ? measure(FONTS.tiny, plain(part.label)) : 0) + 2;
 
 export function drawMark(frame: Frame, x: number, y: number) {
@@ -89,6 +100,28 @@ export function drawMark(frame: Frame, x: number, y: number) {
 export function drawCrown(frame: Frame, x: number, y: number, color: number) {
   CROWN.forEach((row, j) => [...row].forEach((char, i) => char === "x" && frame.put(x + i, y + j, color)));
 }
+
+/** Which facts of a summary stand on each line, in `width`: a fact is never broken. */
+export function factLines(facts: Summary["facts"], width: number): number[][] {
+  const lines: number[][] = [];
+  const between = measure(FONTS.tiny, " ~ ");
+  let used = 0;
+  facts.forEach((fact, i) => {
+    const w = measure(FONTS.tiny, plain(fact.text));
+    const line = lines.at(-1);
+    if (line && used + between + w <= width) {
+      line.push(i);
+      used += between + w;
+    } else {
+      lines.push([i]);
+      used = w;
+    }
+  });
+  return lines;
+}
+
+/** How much a summary's `value` takes of its line. */
+const valueRoom = (part: Summary) => (part.value ? measure(FONTS.tiny, plain(part.value)) + 8 : 0);
 
 /**
  * `kept` holds, by the control the words follow, the most room the words after each control
@@ -117,8 +150,9 @@ export function lay(step: Step, width: number, line: number, kept?: Map<string, 
       let lines: string[] = [];
       let h = line;
       if (part.kind === "gap") h = 8;
-      else if (part.kind === "player") h = part.press ? line : 9;
       else if (part.kind === "field") h = line + 10;
+      else if (part.kind === "action") h = line + 8;
+      else if (part.kind === "summary") h = Math.max(line, factLines(part.facts, width - INDENT - valueRoom(part)).length * 8 + 4);
       else if (part.kind === "note" || part.kind === "wait") {
         const text = plain(part.text);
         lines = wrap(FONTS.tiny, text, width - INDENT);
@@ -189,6 +223,8 @@ export class Ui {
   private held: { step: object; left: number; bottom: number; top: number; at: Map<string, number> } | null = null;
   /** The control to give the focus as soon as it exists. */
   private wanted = "";
+  /** The divers of the step, where they were last laid over the sea. */
+  private world: Placed[] = [];
   /** The step's name, which goes back, and the code after it, which copies it. */
   private leave = document.createElement("button");
   private copier = document.createElement("button");
@@ -280,6 +316,11 @@ export class Ui {
     this.wanted = id;
   }
 
+  /** Give the focus to the step's name, as when it asks "Sure?". */
+  focusBack() {
+    this.leave.focus({ preventScroll: true });
+  }
+
   value(id: string): string {
     return this.controls.get(id)?.value ?? this.kept.get(id) ?? "";
   }
@@ -298,8 +339,8 @@ export class Ui {
 
   private act(id: string) {
     const part = this.parts.get(id);
-    if ((part?.kind !== "press" && part?.kind !== "player") || this.step.busy) return;
-    part.press?.();
+    if (!part || !pressed(part) || this.step.busy) return;
+    if ("press" in part) part.press?.();
     this.sync();
   }
 
@@ -308,10 +349,10 @@ export class Ui {
     const top = this.steps.at(-1);
     this.form.hidden = !top;
     this.step = top?.build() ?? { title: "", rows: [] };
-    const parts = [...this.step.rows, ...(this.step.foot ?? [])].flat().filter(isControl);
+    const parts = [...(this.step.world ?? []), ...[...this.step.rows, ...(this.step.foot ?? [])].flat()].filter(isControl);
     this.parts = new Map(parts.map((part) => [part.id, part]));
     this.copier.hidden = !this.step.code;
-    this.leave.ariaLabel = this.step.sure ? t().packs.sure : t().page.back;
+    this.leave.ariaLabel = this.step.sure ? t().packs.sure : this.step.exit ? this.step.title : t().page.back;
     this.copier.ariaLabel = t().page.copyLink(this.step.code?.text ?? "");
     for (const [id, control] of this.controls) {
       const part = this.parts.get(id);
@@ -323,7 +364,7 @@ export class Ui {
     let before: Element = this.copier;
     for (const part of parts) {
       const control = this.controls.get(part.id) ?? this.make(part);
-      control.ariaLabel = part.kind === "press" ? (part.says ?? part.label) : part.kind === "player" ? (part.says ?? part.name) : part.label;
+      control.ariaLabel = part.kind === "diver" ? part.says : part.kind === "summary" ? (part.says ?? "") : part.kind === "press" || part.kind === "action" ? (part.says ?? part.label) : part.label;
       if (part.kind === "slider" && Number(control.value) !== part.value) control.value = String(part.value);
       if (part.kind === "field" && control instanceof HTMLInputElement) control.autocomplete = part.autocomplete as AutoFill;
       // The controls stand in the page in reading order. One that is already in place is left alone: moving it would cost it the focus.
@@ -391,11 +432,11 @@ export class Ui {
     }
     const head = [this.leave, this.copier].indexOf(document.activeElement as HTMLButtonElement);
     if (head >= 0) return this.headKey(event, head === 1);
-    const here = this.placed.find((spot) => isControl(spot.part) && this.controls.get(spot.part.id) === document.activeElement);
+    const here = [...this.world, ...this.placed].find((spot) => isControl(spot.part) && this.controls.get(spot.part.id) === document.activeElement);
     if (!here) return;
     const go = (way: Move) => {
       event.preventDefault();
-      const to = move(this.placed, here, way)?.part;
+      const to = move([...this.world, ...this.placed], here, way)?.part;
       if (to && isControl(to)) this.controls.get(to.id)?.focus({ preventScroll: true });
     };
     if (event.key === "Tab") go(event.shiftKey ? "previous" : "next");
@@ -406,14 +447,14 @@ export class Ui {
       if (!this.step.busy) here.part.shift(event.key === "ArrowLeft" ? -1 : 1);
       this.sync();
     }
-    else if ((here.part.kind === "press" || here.part.kind === "player") && event.key === "ArrowLeft") {
-      if (move(this.placed, here, "left")) go("left");
+    else if (isControl(here.part) && pressed(here.part) && event.key === "ArrowLeft") {
+      if (move([...this.world, ...this.placed], here, "left")) go("left");
       else {
         event.preventDefault();
         this.retreat();
       }
     }
-    else if ((here.part.kind === "press" || here.part.kind === "player") && event.key === "ArrowRight") go("right");
+    else if (isControl(here.part) && pressed(here.part) && event.key === "ArrowRight") go("right");
     else if (here.part.kind === "field" && event.key === "Enter") {
       // Enter in a field goes on to the next field, or after the last one presses what follows.
       event.preventDefault();
@@ -428,8 +469,11 @@ export class Ui {
   /** Enter needs no handling here: the name and the code are buttons. */
   private headKey(event: KeyboardEvent, code: boolean) {
     const controls = this.placed.map((spot) => spot.part).filter(isControl);
+    // Up from the name goes to the divers over it, if there are any.
+    const over = this.world[0]?.part;
     const to =
       event.key === "ArrowDown" || (event.key === "Tab" && !event.shiftKey) ? this.controls.get(controls[0]?.id ?? "")
+      : event.key === "ArrowUp" && over && isControl(over) ? this.controls.get(over.id)
       : event.key === "ArrowUp" || event.key === "Tab" ? this.controls.get(controls.at(-1)?.id ?? "")
       : event.key === "ArrowRight" && !code && this.step.code ? this.copier
       : event.key === "ArrowLeft" && code ? this.leave
@@ -538,16 +582,34 @@ export class Ui {
     const back = this.leave === document.activeElement;
     const head = this.step.sure ? 18 : back ? 16 : 6;
     frame.emit = back && !this.step.sure ? 70 : 0;
-    say("‹", left + 1, top + 1, head);
-    const named = say(plain(this.step.sure ? t().packs.sure : this.step.title), left + INDENT, top + 1, head);
+    if (this.step.exit) EXIT.forEach((row, j) => [...row].forEach((char, i) => char === "#" && frame.put(left + i, top + 1 + j, head)));
+    else say("‹", left + 1, top + 1, head);
+    const indent = this.step.exit ? 10 : INDENT;
+    const named = say(plain(this.step.sure ? t().packs.sure : this.step.title), left + indent, top + 1, head);
     cover(this.leave, left - 3, top - 3, named - left + 5, 13);
     if (this.step.code) {
       const copying = this.copier === document.activeElement;
+      const code = this.step.code.copied ? plain(t().rooms.copied) : this.step.code.text;
+      const from = this.step.exit ? left + width - measure(tiny, code) : named + 3;
       frame.emit = copying ? 70 : 0;
-      const end = say(this.step.code.text, named + 3, top + 1, copying ? 16 : 7);
-      cover(this.copier, named + 2, top - 3, end - named + 3, 13);
+      const end = say(code, from, top + 1, copying ? 16 : 7);
+      cover(this.copier, from - 1, top - 3, end - from + 3, 13);
     }
     frame.emit = 0;
+
+    // The divers are drawn by the scene; their controls are fixed over them, and the one in focus is marked there.
+    this.world = (this.step.world ?? []).flatMap((part) => {
+      const at = scene.places.get(part.name);
+      return at ? [{ part, row: -1, x: at.x - left, y: at.y, w: at.w, h: at.h, lines: [] }] : [];
+    });
+    scene.chosen = null;
+    for (const spot of this.world) {
+      const control = isControl(spot.part) ? this.controls.get(spot.part.id) : undefined;
+      if (!control || spot.part.kind !== "diver") continue;
+      control.style.position = "fixed";
+      cover(control, spot.x + left, spot.y, spot.w, spot.h);
+      if (control === document.activeElement) scene.chosen = spot.part.name;
+    }
 
     const spots = [...laid.placed.map((spot) => ({ ...spot, py: top + spot.y - shift, pinned: false })), ...foot.map((spot) => ({ ...spot, py: fold + spot.y - HEAD, pinned: true }))];
     for (const { part, x, y, w, h, lines, py, pinned } of spots) {
@@ -653,19 +715,37 @@ export class Ui {
         }
         frame.emit = 0;
         place(control!, track, end - track - 1);
-      } else if (part.kind === "player") {
-        mark(ty);
-        for (let j = 0; j < 15; j++) frame.put(tx + (j % 3), ty + Math.floor(j / 3), part.color);
-        frame.emit = on ? 70 : 0;
-        let end = say(plain(part.name), tx + 6, ty, on ? 16 : 7) + 4;
-        frame.emit = 0;
-        if (part.host) {
-          drawCrown(frame, end, ty, 6);
-          if (ty + 6 >= frame.clipTop && ty < frame.clipBottom) scene.cover(end, end + 5, ty, ty + 6);
-          end += 9;
-        }
-        say(plain(part.note), end, ty, 6);
+      } else if (part.kind === "summary") {
+        const value = plain(part.value ?? "");
+        const lines = factLines(part.facts, w - INDENT - valueRoom(part));
+        const first = lines.length === 1 ? ty : py + 2;
+        mark(first);
+        lines.forEach((line, j) => {
+          let x = tx;
+          line.forEach((i, k) => {
+            if (k) x = say(" ~ ", x, first + j * 8, 6);
+            const fact = part.facts[i]!;
+            frame.emit = fact.hot || on ? 70 : 0;
+            x = say(plain(fact.text), x, first + j * 8, fact.hot ? 15 : on ? 16 : 7);
+            frame.emit = 0;
+          });
+        });
+        if (value) say(value, px + w - measure(tiny, value), first, on ? 16 : 6);
         if (control) place(control, px, w);
+      } else if (part.kind === "action") {
+        const { medium } = FONTS;
+        const label = plain(part.label);
+        const icon = part.icon ? part.icon.rows[0]!.length + 4 : 0;
+        const wide = icon + measure(medium, label);
+        const x = px + ((w - wide) >> 1);
+        const y = py + ((h - medium.height) >> 1);
+        if (on && (!this.step.busy || blink)) drawMark(frame, x - 8, y + 1);
+        if (part.icon) frame.sprite(part.icon.rows, x, y, part.icon.glow);
+        frame.emit = on ? 90 : part.dim ? 0 : 40;
+        const end = drawText(frame, medium, label, x + icon, y, part.dim ? (on ? 7 : 5) : on ? 16 : 15);
+        frame.emit = 0;
+        if (y + medium.height >= frame.clipTop && y < frame.clipBottom) scene.cover(x, end, y, y + medium.height);
+        place(control!, x - 10, wide + 20);
       } else if (part.kind === "note" || part.kind === "wait") {
         const gap = pitch(tiny, plain(part.text), 8);
         lines.forEach((line, i) => say(line, tx, py + 1 + i * gap, part.kind === "wait" ? 7 : part.bad ? 18 : 6));

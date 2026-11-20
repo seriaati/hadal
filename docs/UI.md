@@ -29,12 +29,14 @@ Every panel is built from these, and each has one look.
 
 | Part | What it is | Look |
 |---|---|---|
-| Step | One screen of a panel | Its name at the top in dim letters, with a `‹` before it. Under the pointer the `‹` and the name light up like a line in focus, since a press there goes back. A room's step has its code after the name, in pale letters, since it is read out to others; a press on the code copies the room's link, and it lights up the same way |
+| Step | One screen of a panel | Its name at the top in dim letters, with a `‹` before it. Under the pointer the `‹` and the name light up like a line in focus, since a press there goes back. A step that leaves something (a room) has an exit mark in place of the `‹`, and its name says so ("Leave"). A room's step has its code against the right edge, in pale letters, since it is read out to others; a press on the code copies the room's link, it lights up the same way, and it says the link was copied for a moment |
 | Line | Anything pressed: a row of a list, a button, a link | Pale words. A lesser line beside another ("Download", "Remove") is dim; two of them stand side by side against the right edge |
 | Field | A line of typing | Its label in dim letters, the typing under it, a rule under that |
 | Slider | A level from 0 to 1 | Its label, and 20 pips at the right of the line, like the air gauge. It may have fewer steps (the air of a room: 12, with "30 s" after the pips), or be a choice of colours, one pip of each (a suit) |
 | Setting | A line that stands for a choice | Its label, and the choice against the right edge ("Deepest", "built-in + 2"), with a pip before it if it is on or off. Left and Right change it, like a slider; Enter flips an on or off one |
-| Player | One of the people in a room | A pip of their suit's colour, the name, and a dim word ("ready"). The host has a dim crown after the name instead, the same crown that stands before their name over their diver. A player's own name is pressed like a line, and opens their suit. To the host every other player is pressed too, and opens what the host can do to them; to the others they are only read, and the focus passes over them |
+| Action | The one thing a step is for (lighting the lantern in a room, starting the dive) | The larger letters, in amber, in the middle of its row, after an icon if it has one. Dim while it cannot be done yet, though it may still be pressed to hear why. The focus lands on it when its step opens |
+| Summary | Facts read together, such as how a room is set up | Pale facts with a dim `~` between them, wrapped only between facts. A fact that has just changed glows amber. Where it can be changed it is pressed like a line, with a dim word at the right edge ("Change") |
+| Diver | One of the people in a room, pressed where they hang in the sea | Drawn by the sea, not the panel. A player's own diver opens their suit; to the host every other diver opens what the host can do to them. To the others another diver is only seen, and the focus passes over them. The divers are a row over the panel's: Up from its first row reaches them |
 | Message | Words that are only read | Dim words, wrapped |
 | Wait | Something that takes long | Words, then one pip per piece of the work, then "prompt 4 of 10". Past 10 pieces a pip stands for a tenth of the work |
 
@@ -89,10 +91,9 @@ The same in every panel.
   message that comes and goes moves nothing. This holds for every panel, without its own code.
 - **Scrolling.** A thing the keys give the focus to is scrolled into view. One the pointer
   gives it to is under the pointer already, and nothing moves.
-- **Leaving a room** asks the same way: every way out (Escape, Left, a click outside,
-  "Leave the room") first turns "Leave the room" into "Sure?" and puts the focus on it. A
-  press on the `‹` (or Left from it) asks there instead: the room's name turns into a rose
-  "Sure?", and a second press leaves.
+- **Leaving a room** asks the same way: every way out (Escape, Left, a click outside, a
+  press on "Leave") first turns "Leave" into a rose "Sure?" and puts the focus on it. A
+  second way out leaves.
 - **The cursor is a hand** over everything that can be pressed: the title menu's lines, the
   cog, and every line, field and slider of a panel.
 - **No key hints are drawn.** The keys are the ones every game uses.
@@ -113,7 +114,7 @@ The same in every panel.
 
 ## Colours (palette indices)
 
-Step name 6, line 7, lesser line 6, message 6, in focus 16 with the mark in 15, rose 18,
+Step name 6, line 7, lesser line 6, message 6, action 15 (5 while dim), in focus 16 with the mark in 15, rose 18,
 field rule 4 (15 in focus), caret 16, pips 6 on and 4 off (15 on in focus), wait pips 10, scroll bar 4 with the part in
 view 6.
 

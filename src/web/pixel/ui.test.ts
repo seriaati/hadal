@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { lay, move, view, type Part, type Step } from "./ui";
+import { factLines, lay, move, view, type Part, type Placed, type Step } from "./ui";
 
 const press = (id: string, right = false): Part => ({ kind: "press", id, label: id, right });
 const STEP: Step = {
@@ -53,39 +53,32 @@ test("Tab goes through everything in reading order, round and round", () => {
   expect(from("rivers", "previous")).toBe("write");
 });
 
-test("the people of a room are read, not reached: the focus passes over them", () => {
-  const room: Step = {
-    title: "Room",
-    code: { text: "KXWRT", copy: () => {} },
-    rows: [
-      { kind: "player", name: "ana", color: 5, note: "", host: true },
-      { kind: "player", name: "ben", color: 9, note: "" },
-      { kind: "gap" },
-      press("start"),
-      press("leave"),
-    ],
-  };
-  const laid = lay(room, 140, 12).placed;
-  const spot = (id: string) => laid.find((placed) => "id" in placed.part && placed.part.id === id)!;
-  expect(laid[1]!.y - laid[0]!.y).toBe(9);
-  expect((move(laid, spot("start"), "up")?.part as { id: string }).id).toBe("leave");
-  expect((move(laid, spot("leave"), "down")?.part as { id: string }).id).toBe("start");
+const FACTS = [{ text: "Deepest" }, { text: "30 s of air" }, { text: "built-in packs" }];
+const act = (): Part => ({ kind: "action", id: "act", label: "Light the lantern", press: () => {} });
+const idOf = (part: Placed["part"] | undefined) => (part && "id" in part ? part.id : undefined);
+
+test("a summary wraps only between its facts, and takes the lines it needs", () => {
+  expect(factLines(FACTS, 300)).toEqual([[0, 1, 2]]);
+  expect(factLines(FACTS, 90)).toEqual([[0, 1], [2]]);
+  const { placed } = lay({ title: "Room", rows: [{ kind: "summary", facts: FACTS }, act()] }, 90, 12);
+  expect(placed[0]!.h).toBe(2 * 8 + 4);
+  expect(placed[1]!.y).toBe(placed[0]!.y + placed[0]!.h);
 });
 
-test("to the host, another player of the room is a line: the focus reaches it", () => {
-  const room: Step = {
-    title: "Room",
-    rows: [
-      { kind: "player", name: "ana", color: 5, note: "", host: true },
-      { kind: "player", name: "ben", color: 9, note: "", id: "player:1", press: () => {} },
-      { kind: "gap" },
-      press("start"),
-    ],
-  };
-  const laid = lay(room, 140, 12).placed;
-  const spot = (id: string) => laid.find((placed) => "id" in placed.part && placed.part.id === id)!;
-  expect(spot("player:1").h).toBe(12);
-  expect((move(laid, spot("start"), "up")?.part as { id: string }).id).toBe("player:1");
+test("a summary is only read, unless it is pressed: then the focus reaches it", () => {
+  const read = lay({ title: "Room", rows: [{ kind: "summary", facts: FACTS }, act(), press("leave")] }, 140, 12).placed;
+  expect(idOf(move(read, read[1]!, "up")?.part)).toBe("leave");
+  const host = lay({ title: "Room", rows: [{ kind: "summary", facts: FACTS, id: "setup", press: () => {}, value: "Change" }, act()] }, 140, 12).placed;
+  expect(idOf(move(host, host[1]!, "up")?.part)).toBe("setup");
+});
+
+test("the divers of a room are a row over the step: Up and Down reach them", () => {
+  const diver = (name: string, x: number): Placed => ({ part: { kind: "diver", id: name, name, press: () => {}, says: name }, row: -1, x, y: 40, w: 30, h: 36, lines: [] });
+  const laid = lay({ title: "Room", rows: [{ kind: "summary", facts: FACTS, id: "setup", press: () => {} }, act()] }, 140, 12).placed;
+  const all = [diver("ana", 0), diver("ben", 53), ...laid];
+  expect(idOf(move(all, laid[0]!, "up")?.part)).toBe("ana");
+  expect(idOf(move(all, all[1]!, "down")?.part)).toBe("setup");
+  expect(idOf(move(all, all[0]!, "right")?.part)).toBe("ben");
 });
 
 test("two things marked `right` stand side by side against the right edge, in their order", () => {

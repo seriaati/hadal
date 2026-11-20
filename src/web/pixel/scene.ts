@@ -38,8 +38,8 @@ const MENU_ROW = 13;
 
 export const LAMP_LIT = [".rRo.", "rRRRo", ".aca.", ".ccc.", ".aca.", "rRRRo"];
 export const LAMP_DEAD = [".555.", "56665", "5...5", "5.x..", "5...5", "56665"];
-const LANTERN = [".rRo.", "rRRRo", ".aca.", "accca", ".aca.", "rRRRo", ".rRo."];
-const LANTERN_OUT = [".rrR.", "rrrrR", ".434.", "43334", ".434.", "rrrrR", ".rrR."];
+export const LANTERN = [".rRo.", "rRRRo", ".aca.", "accca", ".aca.", "rRRRo", ".rRo."];
+export const LANTERN_OUT = [".rrR.", "rrrrR", ".434.", "43334", ".434.", "rrrrR", ".rrR."];
 /** A small light that stays with the lamp it woke at. */
 export const FRY = [".m.", "mwm", "T.T"];
 const ARROW = ["77777", ".777.", "..7.."];
@@ -352,6 +352,9 @@ export class Scene {
   lobby = false;
   dock = Infinity;
   floor = 0;
+  /** Where each diver of a room stands on the frame, by name, as last drawn, and the one whose control has the focus. */
+  places = new Map<string, { x: number; y: number; w: number; h: number }>();
+  chosen: string | null = null;
   /** How far the room's places are spread out, from 0 (as in a dive) to 1 (all in view), and the dock as shown. */
   private spread = 0;
   private gap = LINE_GAP;
@@ -833,6 +836,7 @@ export class Scene {
     const heartsRight = this.turn?.hearts == null ? 0 : 8 + this.ownWidth(W);
     /** Where each name's crown is, or would be. */
     const crowns = new Map<string, { x: number; y: number }>();
+    this.places.clear();
     for (const line of lines) {
       if (!line.name) continue;
       // One going is named on the way, fading with them, until they are in the boat or out of view.
@@ -868,15 +872,20 @@ export class Scene {
       const y = under ? line.y + 29 : line.y - 9;
       frame.emit = line.lit ? 70 : 0;
       const name = this.lobby ? clip(line.name, room - crown) : line.name;
-      const x = at(crown + measure(tiny, name) + hearts);
+      // The diver in focus has the mark before the name, which moves over only if the screen's edge leaves it no room.
+      const chosen = this.lobby && this.chosen === line.name;
+      const x = Math.max(chosen ? 8 : 2, at(crown + measure(tiny, name) + hearts));
       crowns.set(line.name, { x, y });
+      if (this.lobby) this.places.set(line.name, { x: line.x - 4, y: y - 4, w: 30, h: line.y + 28 - (y - 4) });
+      if (chosen) drawMark(frame, x - 6, y);
       if (line.host && !flying) {
         if (glint) frame.emit = Math.round(255 * glint);
         drawCrown(frame, x, y, line.lit || glint ? 16 : 6);
         if (glint > 0.5) for (const [i, j] of [[2, -4], [2, -2], [1, -3], [3, -3]] as const) frame.put(x + i, y + j, 16);
         frame.emit = line.lit ? 70 : 0;
       }
-      const end = drawText(frame, tiny, name, x + crown, y, line.lit ? 16 : 6);
+      if (chosen) frame.emit = 70;
+      const end = drawText(frame, tiny, name, x + crown, y, line.lit || chosen ? 16 : 6);
       frame.emit = 0;
       if (line.hearts !== undefined) drawHearts(frame, line.hearts, end + 2, y);
       if (tag) drawText(frame, tiny, tag, at(measure(tiny, tag)), under ? y + 8 : y - 8, 6);

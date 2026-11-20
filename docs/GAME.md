@@ -15,7 +15,7 @@ Prompts are grouped into themed packs. A single player dives through 10 prompts,
 mode or in chaos mode (less air, and the first empty tank ends the dive), from the built-in
 packs of their language or from the packs they choose. Multiplayer is private rooms joined by
 a code or a link. A player joins in the suit they chose, or in one nobody in the room wears yet if
-it is taken, and in the room may press their own name to change it. A new room starts with the
+it is taken, and in the room may press their own diver to change it. A new room starts with the
 settings of the last room its host's browser set up. A player whose connection drops keeps their
 place for 30 seconds while the page connects again; if the server has restarted meanwhile (a new
 version), the room opens again under its code, without the dive that was under way. A page left
