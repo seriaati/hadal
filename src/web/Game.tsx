@@ -8,7 +8,7 @@ import { AccountPanel } from "./pixel/account";
 import { CustomPanel } from "./pixel/choice";
 import { drawable } from "./pixel/other";
 import { Ending, FADE_SECONDS, type Log } from "./pixel/ending";
-import { Display, Frame, type Light } from "./pixel/frame";
+import { Display, Frame, visible, type Light } from "./pixel/frame";
 import { Glitch, strength } from "./pixel/glitch";
 import { MultiplayerPanel } from "./pixel/multiplayer";
 import { PacksPanel } from "./pixel/packs";
@@ -23,6 +23,7 @@ const ARROWS: Record<string, "up" | "down" | "left" | "right"> = { ArrowUp: "up"
 
 /** The whole game is drawn on canvas. A hidden text field takes the typing, so phones get a keyboard. */
 export function Game() {
+  const stage = useRef<HTMLElement>(null);
   const pixels = useRef<HTMLCanvasElement>(null);
   const glow = useRef<HTMLCanvasElement>(null);
   const keys = useRef<HTMLInputElement>(null);
@@ -162,9 +163,9 @@ export function Game() {
     };
     // The cog and the title menu are drawn, not page controls, so the pointer is tested against them here.
     const onPointer = (event: PointerEvent) => {
-      const scale = canvas.clientWidth / frame.width;
-      const x = event.clientX / scale;
-      const y = event.clientY / scale;
+      const at = canvas.getBoundingClientRect();
+      const x = (event.clientX - at.left) / display.scale;
+      const y = (event.clientY - at.top) / display.scale;
       if (ending && done) {
         const spot = ending.at(x, y);
         canvas.style.cursor = spot ? "pointer" : "";
@@ -222,6 +223,9 @@ export function Game() {
         done = up;
         doneAt = now / 1000;
       }
+      // The game stands in the part of the page that can be seen: a phone's keyboard hides the rest, and may have scrolled it.
+      const seen = visible();
+      Object.assign(stage.current!.style, { width: `${seen.width}px`, height: `${seen.height}px`, transform: `translate(${seen.left}px, ${seen.top}px)` });
       display.fit(frame);
       menu.items = menuItems();
       input.ariaLabel = t().page.answer;
@@ -257,7 +261,7 @@ export function Game() {
       glitch.apply(frame, closing ? closing.wordsFrom : scene.wordsFrom, closing ? closing.wordsTo : scene.wordsTo, now / 1000, focus, !closing);
       if (glitch.blackout) lights.length = 0;
       if (!closing) drawCog(frame);
-      ui.draw(frame, scene, canvas.clientWidth / frame.width, now / 1000, shown.phase !== "title");
+      ui.draw(frame, scene, display.scale, now / 1000, shown.phase !== "title");
       display.present(frame, lights);
       sound.update(shown, scene, dt, glitch);
     });
@@ -275,7 +279,7 @@ export function Game() {
   }, []);
 
   return (
-    <main className="stage">
+    <main ref={stage} className="stage">
       <canvas ref={pixels} className="pixels" />
       <canvas ref={glow} className="glow" />
       <input ref={keys} className="keys" maxLength={MAX_ANSWER_LENGTH} autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} />

@@ -112,6 +112,13 @@ export class Frame {
   }
 }
 
+/** The part of the window that can be seen, in screen pixels from the top left of the page: a phone's keyboard hides the rest. */
+export function visible() {
+  const view = window.visualViewport;
+  if (!view) return { width: innerWidth, height: innerHeight, left: 0, top: 0 };
+  return { width: Math.round(view.width), height: Math.round(view.height), left: view.offsetLeft, top: view.offsetTop };
+}
+
 /** The soft-light layer is drawn at this multiple of the frame's resolution. */
 const GLOW_SCALE = 2;
 /** How a light fades from its centre (0) to its edge (1). */
@@ -137,12 +144,26 @@ export class Display {
     this.glowContext = glow.getContext("2d")!;
   }
 
-  /** Size the canvases to the window at a whole-number pixel scale, and the frame to match. */
+  /** Screen pixels per pixel of the frame. */
+  scale = 2;
+  /** The tallest the window has been at its present width. */
+  private tallest = { width: 0, height: 0 };
+
+  /**
+   * Size the canvases to the part of the window that can be seen (above a phone's keyboard) at a whole-number pixel
+   * scale, and the frame to match.
+   */
   fit(frame: Frame) {
-    const scale = Math.max(2, Math.floor(Math.min(innerWidth / 240, innerHeight / 180)));
+    const { width: seen, height: tall } = visible();
+    // A phone's keyboard takes height away: the scale stays what it was, and only fewer rows of the frame are seen.
+    if (seen !== this.tallest.width || !matchMedia("(pointer: coarse)").matches) this.tallest = { width: seen, height: tall };
+    this.tallest.height = Math.max(this.tallest.height, tall);
+    const full = this.tallest.height;
+    const scale = Math.max(2, Math.floor(Math.min(seen / 240, full / 180)));
+    this.scale = scale;
     // A window with no size (as some phones report for a moment) keeps the frame of one pixel: an empty image cannot be made.
-    const width = Math.max(1, Math.ceil(innerWidth / scale));
-    const height = Math.max(1, Math.ceil(innerHeight / scale));
+    const width = Math.max(1, Math.ceil(seen / scale));
+    const height = Math.max(1, Math.ceil(tall / scale));
     if (width === this.pixels.width && height === this.pixels.height) return;
     frame.resize(width, height);
     this.pixels.width = this.shadeCanvas.width = this.bloomCanvas.width = width;
