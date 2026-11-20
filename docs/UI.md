@@ -32,7 +32,7 @@ Every panel is built from these, and each has one look.
 | Step | One screen of a panel | Its name at the top in dim letters, with a `‹` before it. Under the pointer the `‹` and the name light up like a line in focus, since a press there goes back. A step that leaves something (a room) has an exit mark in place of the `‹`, and its name says so ("Leave"). A room's step has its code against the right edge, in pale letters, since it is read out to others; a press on the code copies the room's link, it lights up the same way, and it says the link was copied for a moment |
 | Line | Anything pressed: a row of a list, a button, a link | Pale words. A lesser line beside another ("Download", "Remove") is dim; two of them stand side by side against the right edge |
 | Field | A line of typing | Its label in dim letters, the typing under it, a rule under that |
-| Slider | A level from 0 to 1 | Its label, and 20 pips at the right of the line, like the air gauge. It may have fewer steps (the air of a room: 12, with "30 s" after the pips), or be a choice of colours, one pip of each (a suit) |
+| Slider | A level from 0 to 1 | Its label, and 20 pips at the right of the line, like the air gauge. It may have fewer steps (the air of a room: 12, with "30 s" after the pips), or be a choice of colours, one pip of each (a suit). On a touch screen a level is a counter instead: a minus, the level ("50%", "30 s") and a plus |
 | Setting | A line that stands for a choice | Its label, and the choice against the right edge ("Deepest", "built-in + 2"), with a pip before it if it is on or off. Left and Right change it, like a slider; Enter flips an on or off one |
 | Action | The one thing a step is for (lighting the lantern in a room, starting the dive) | The larger letters, in amber, in the middle of its row, after an icon if it has one. Dim while it cannot be done yet, though it may still be pressed to hear why. The focus lands on it when its step opens |
 | Summary | Facts read together, such as how a room is set up | Pale facts with a dim `~` between them, wrapped only between facts. A fact that has just changed glows amber. Where it can be changed it is pressed like a line, with a dim word at the right edge ("Change") |
@@ -70,9 +70,9 @@ The same in every panel.
 | Tab, Shift+Tab | The next or the previous thing in reading order, round and round inside the panel |
 | Enter | Press what has the focus. In a field: go to the next field, or press the first line after the last one |
 | Escape | One step back. With nothing open: at the title it opens the settings, in a dive it asks whether to leave the dive |
-| Pointer | Moving over a thing gives it the focus; a click presses it. A click outside the words, or on the `‹`, goes one step back |
+| Pointer | Moving over a thing gives it the focus; a click presses it. A click outside the words, or on the `‹`, goes one step back. On a slider, a press on a pip sets the level there, a click on the label sets it to the lowest (owner, 2026-11-20), and a drag anywhere along the row moves it a step for each pip it passes |
 | Wheel | Scrolls a step too long for its room |
-| Touch | A tap presses, a drag scrolls. The `‹` goes back. In a dive a tap anywhere opens the keyboard, and after a verdict it goes on, like Enter |
+| Touch | A tap presses, a drag scrolls. On a counter, a tap on the minus or the plus moves it one step. The `‹` goes back. In a dive a tap anywhere opens the keyboard, and after a verdict it goes on, like Enter |
 
 - **Back** is always one step: from "Write a pack" to the list, from the list to the title.
   Escape, Left from the leftmost line, the `‹` and a click outside the words all mean it.

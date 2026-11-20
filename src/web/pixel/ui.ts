@@ -42,6 +42,12 @@ export type Summary = { kind: "summary"; facts: { text: string; hot?: boolean }[
 export type Action = { kind: "action"; id: string; label: string; press: () => void; says?: string; icon?: { rows: string[]; glow?: string }; dim?: boolean };
 /** One of the divers of a room, pressed where they hang in the sea; `name` is the one the scene knows them by. */
 export type Diver = { kind: "diver"; id: string; name: string; press: () => void; says: string };
+/**
+ * Where the parts of a slider were drawn, in pixels of the frame from the left of its row. The label is everything before
+ * `label`. On the track, the cell `i` from `first`, `pitch` wide, sets the level `i + lift`; on a touch screen the track
+ * is a counter, whose minus ends at `less` and whose plus begins at `more`. A drag moves the level a step per `pitch`.
+ */
+type Grip = { label: number; pitch: number } & ({ first: number; lift: number; end: number } | { less: number; more: number });
 export type Part = Press | Field | Slider | Note | Wait | Summary | Action | { kind: "gap" };
 type Control = Press | Field | Slider | Action | Diver | (Summary & { id: string; press: () => void });
 /**
@@ -83,6 +89,8 @@ const STEPS = 20;
 const MARK = ["a..", "aa.", "aaa", "aa.", "a.."];
 const EXIT = ["##.....", "#....#.", "#.#####", "#....#.", "##....."];
 const CROWN = [".....", "..x..", "x.x.x", "xxxxx", "xxxxx"];
+const MINUS = [".....", ".....", "#####", ".....", "....."];
+const PLUS = ["..#..", "..#..", "#####", "..#..", "..#.."];
 
 const isControl = <T extends Part | Diver>(part: T): part is T & Control =>
   part.kind === "press" || part.kind === "field" || part.kind === "slider" || part.kind === "action" || part.kind === "diver" || (part.kind === "summary" && !!part.id && !!part.press);
@@ -239,6 +247,13 @@ export class Ui {
   private pressing = "";
   /** The step waits for work given to `wait`. */
   private waiting = false;
+  /** Where the parts of each slider were last drawn, by its id. */
+  private grips = new Map<string, Grip>();
+  /** A slider held down by the pointer: where and at what level, and whether it has been dragged since. */
+  private gripped: { id: string; x: number; level: number; label: boolean; dragged: boolean } | null = null;
+  /** The browser's own pointer handling of a range input is ignored: the pointer is read here, from the drawing. */
+  private pointing = false;
+  private scale = 1;
 
   /** `takeKeys` hands the keys back to the game when the panel closes. */
   constructor(
@@ -433,9 +448,13 @@ export class Ui {
       // Counted in whole steps: a fractional step such as 1/6 is never met exactly, and the browser calls the value invalid.
       Object.assign(control, { type: "range", min: "0", max: String(part.steps ?? STEPS), step: "1" });
       control.addEventListener("input", () => {
-        const now = this.parts.get(id);
-        if (now?.kind === "slider") now.set(Number(control.value) / (now.steps ?? STEPS));
+        if (!this.pointing) this.level(id, Number(control.value));
       });
+      control.addEventListener("keydown", () => (this.pointing = false));
+      control.addEventListener("pointerdown", (event) => this.grab(control, id, event));
+      control.addEventListener("pointermove", (event) => this.drag(control, id, event));
+      control.addEventListener("pointerup", (event) => this.drop(control, id, event));
+      control.addEventListener("pointercancel", () => (this.gripped = null));
     } else if (part.kind === "field") {
       Object.assign(control, { type: part.password ? "password" : "text", maxLength: part.max, autocapitalize: "off", spellcheck: false });
       control.value = this.kept.get(id) ?? part.start ?? "";
@@ -521,6 +540,7 @@ export class Ui {
   draw(frame: Frame, scene: Scene, scale: number, time: number, dive: boolean) {
     scene.hush = null;
     scene.shade = null;
+    this.scale = scale;
     if (!this.open) return;
     this.sync();
     const { tiny } = FONTS;
@@ -708,6 +728,8 @@ export class Ui {
       } else if (part.kind === "slider") {
         const steps = part.steps ?? STEPS;
         const chosen = Math.round(part.value * steps);
+        // The control takes the whole row, so the label is pressed and hovered too.
+        place(control!, px, w);
         mark(ty);
         lit(part.label, 7);
         if (part.colors) {
@@ -721,10 +743,33 @@ export class Ui {
             for (let k = -2; k < 7; k++) for (const j of [-2, 6]) frame.put(x + k, ty + j, on ? 15 : 7), frame.put(x + j, ty + k, on ? 15 : 7);
             frame.emit = 0;
           });
-          place(control!, track - 2, part.colors.length * 9);
+          const first = track - 2 - px;
+          this.grips.set(part.id, { label: first, pitch: 9, first, lift: 0, end: first + part.colors.length * 9 });
           continue;
         }
         const text = plain(part.text ?? "");
+        if (scene.touch) {
+          // On a touch screen a level is a counter: a tap on the minus or the plus moves it one step.
+          const value = text || `${Math.round((chosen / steps) * 100)}%`;
+          const zone = Math.max(10, Math.ceil(40 / scale));
+          const room = Math.max(measure(tiny, value), measure(tiny, "100%")) + 4;
+          const more = px + w - zone;
+          const less = more - room - zone;
+          const sign = (rows: string[], x: number, live: boolean) => {
+            const at = x + ((zone - 5) >> 1);
+            frame.emit = on && live ? 150 : 0;
+            rows.forEach((row, j) => [...row].forEach((char, i) => char === "#" && frame.put(at + i, ty + j, !live ? 4 : on ? 15 : 6)));
+            frame.emit = 0;
+            if (ty + 5 >= frame.clipTop && ty < frame.clipBottom) scene.cover(at, at + 5, ty, ty + 5);
+          };
+          sign(MINUS, less, chosen > 0);
+          sign(PLUS, more, chosen < steps);
+          frame.emit = on ? 70 : 0;
+          say(value, less + zone + ((room - measure(tiny, value)) >> 1), ty, on ? 16 : 7);
+          frame.emit = 0;
+          this.grips.set(part.id, { label: less - px, pitch: 3, less: less + zone - px, more: more - px });
+          continue;
+        }
         let end = px + w;
         if (text) {
           frame.emit = on ? 70 : 0;
@@ -740,7 +785,8 @@ export class Ui {
           for (let j = 0; j < tall * 2; j++) frame.put(track + i * 3 + (j & 1), py + ((h - tall) >> 1) + (j >> 1), full ? (on ? 15 : 6) : 4);
         }
         frame.emit = 0;
-        place(control!, track, end - track - 1);
+        // A press just before the first pip empties the track.
+        this.grips.set(part.id, { label: track - 3 - px, pitch: 3, first: track - px, lift: 1, end: end - px });
       } else if (part.kind === "summary") {
         const value = plain(part.value ?? "");
         const lines = factLines(part.facts, w - INDENT - valueRoom(part));
@@ -799,6 +845,56 @@ export class Ui {
     }
     frame.clipTop = 0;
     frame.clipBottom = Infinity;
+  }
+
+  private level(id: string, to: number) {
+    const part = this.parts.get(id);
+    if (part?.kind !== "slider") return;
+    const steps = part.steps ?? STEPS;
+    const level = Math.max(0, Math.min(steps, to));
+    if (level !== Math.round(part.value * steps)) part.set(level / steps);
+  }
+
+  /** Where the pointer is along a slider's row, in pixels of the frame. */
+  private along(control: HTMLElement, event: PointerEvent) {
+    return (event.clientX - control.getBoundingClientRect().left) / this.scale;
+  }
+
+  /** A press on the track sets the level at once; anywhere else waits to see whether it is a click or a drag. */
+  private grab(control: HTMLElement, id: string, event: PointerEvent) {
+    const grip = this.grips.get(id);
+    const part = this.parts.get(id);
+    if (!grip || part?.kind !== "slider" || event.button !== 0) return;
+    this.pointing = true;
+    control.focus({ preventScroll: true });
+    control.setPointerCapture(event.pointerId);
+    const x = this.along(control, event);
+    // A counter waits for the finger to be lifted, which it may not be if the step is scrolled instead.
+    if ("first" in grip && x >= grip.label && x < grip.end) this.level(id, Math.floor((x - grip.first) / grip.pitch) + grip.lift);
+    const now = this.parts.get(id) as Slider;
+    this.gripped = { id, x, level: Math.round(now.value * (now.steps ?? STEPS)), label: x < grip.label, dragged: false };
+  }
+
+  private drag(control: HTMLElement, id: string, event: PointerEvent) {
+    const grip = this.grips.get(id);
+    const gripped = this.gripped;
+    if (!grip || gripped?.id !== id) return;
+    const by = Math.round((this.along(control, event) - gripped.x) / grip.pitch);
+    if (!by && !gripped.dragged) return;
+    gripped.dragged = true;
+    this.level(id, gripped.level + by);
+  }
+
+  /** A click on the label sets the lowest level (the owner's wish), and one on a counter's minus or plus moves it a step. */
+  private drop(control: HTMLElement, id: string, event: PointerEvent) {
+    const grip = this.grips.get(id);
+    const gripped = this.gripped;
+    this.gripped = null;
+    if (!grip || gripped?.id !== id || gripped.dragged) return;
+    const x = this.along(control, event);
+    if (gripped.label) this.level(id, 0);
+    else if ("less" in grip && x < grip.less) this.level(id, gripped.level - 1);
+    else if ("less" in grip && x >= grip.more) this.level(id, gripped.level + 1);
   }
 
   /** A pointer that only rests over a control does not take the focus back from the keys. */

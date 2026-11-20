@@ -77,21 +77,17 @@ body {
   pointer-events: none;
 }
 
-/* A slider's knob is a hair wide, so that a press on a pip of the drawing sets the level to that pip. */
+/* A slider is worked by the game, from its drawing: the browser's own pointer handling is ignored. */
 .panel [type="range"] {
   appearance: none;
   touch-action: none;
 }
 
-.panel [type="range"]::-webkit-slider-thumb {
-  appearance: none;
-  width: 1px;
-  height: 100%;
-}
-
-.panel [type="range"]::-moz-range-thumb {
-  width: 1px;
-  border: 0;
+/* On a touch screen a slider is a counter, which a finger may scroll the step over. */
+@media (pointer: coarse) {
+  .panel [type="range"] {
+    touch-action: pan-y;
+  }
 }
 
 /* The developer menu: a plain panel over everything, in a corner the game leaves dark. */
