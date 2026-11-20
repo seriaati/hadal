@@ -235,6 +235,10 @@ export class Ui {
   private pointed: Element | null = null;
   /** The control that had the focus when the step was last drawn. */
   private seen = "";
+  /** The control last pressed. */
+  private pressing = "";
+  /** The step waits for work given to `wait`. */
+  private waiting = false;
 
   /** `takeKeys` hands the keys back to the game when the panel closes. */
   constructor(
@@ -338,9 +342,29 @@ export class Ui {
     if (x < left - 14 || x >= left + w + 12 || y < top - 10 || y >= top + h + 10) this.retreat();
   }
 
+  /**
+   * Presses wait until `work` says whether it went well. Meanwhile the focus may be elsewhere (a phone's keyboard opens
+   * only for a field focused during a press); if it went badly, the focus comes back to the line that was pressed.
+   */
+  async wait(work: Promise<boolean>): Promise<boolean> {
+    this.waiting = true;
+    const done = await work.catch(() => false);
+    this.waiting = false;
+    if (!done) {
+      this.wanted = this.pressing;
+      this.sync();
+    }
+    return done;
+  }
+
+  private get busy(): boolean {
+    return !!this.step.busy || this.waiting;
+  }
+
   private act(id: string) {
     const part = this.parts.get(id);
-    if (!part || !pressed(part) || this.step.busy) return;
+    if (!part || !pressed(part) || this.busy) return;
+    this.pressing = id;
     if ("press" in part) part.press?.();
     this.sync();
   }
@@ -376,7 +400,7 @@ export class Ui {
     this.wanted = "";
     const active = document.activeElement;
     if (wanted) wanted.focus({ preventScroll: true });
-    else if (top && active?.parentElement !== this.form) this.controls.get(parts[0]?.id ?? "")?.focus({ preventScroll: true });
+    else if (top && !this.waiting && active?.parentElement !== this.form) this.controls.get(parts[0]?.id ?? "")?.focus({ preventScroll: true });
   }
 
   private make(part: Control) {
@@ -445,7 +469,7 @@ export class Ui {
     else if (event.key === "ArrowDown") go("down");
     else if (here.part.kind === "press" && here.part.shift && (event.key === "ArrowLeft" || event.key === "ArrowRight")) {
       event.preventDefault();
-      if (!this.step.busy) here.part.shift(event.key === "ArrowLeft" ? -1 : 1);
+      if (!this.busy) here.part.shift(event.key === "ArrowLeft" ? -1 : 1);
       this.sync();
     }
     else if (isControl(here.part) && pressed(here.part) && event.key === "ArrowLeft") {
@@ -615,7 +639,7 @@ export class Ui {
       const ty = py + ((h - 5) >> 1);
       const control = isControl(part) ? this.controls.get(part.id) : undefined;
       const on = control !== undefined && control === document.activeElement;
-      const mark = (at: number) => on && (!this.step.busy || blink) && drawMark(frame, px + 1, at);
+      const mark = (at: number) => on && (!this.busy || blink) && drawMark(frame, px + 1, at);
       const lit = (text: string, color: number) => {
         frame.emit = on ? 70 : 0;
         say(text, tx, ty, on ? 16 : color);
@@ -728,7 +752,7 @@ export class Ui {
         const wide = icon + measure(medium, label);
         const x = px + ((w - wide) >> 1);
         const y = py + ((h - medium.height) >> 1);
-        if (on && (!this.step.busy || blink)) drawMark(frame, x - 8, y + 1);
+        if (on && (!this.busy || blink)) drawMark(frame, x - 8, y + 1);
         if (part.icon) frame.sprite(part.icon.rows, x, y, part.icon.glow);
         frame.emit = on ? 90 : part.dim ? 0 : 40;
         const end = drawText(frame, medium, label, x + icon, y, part.dim ? (on ? 7 : 5) : on ? 16 : 15);

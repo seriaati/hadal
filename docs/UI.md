@@ -51,7 +51,7 @@ a row.
 | In focus | An amber mark `▸` before it, and its words turn cream and glow a little. A field's rule turns amber and its caret blinks. A slider's lit pips turn amber |
 | Under the pointer | The same as in focus: moving the pointer over a thing gives it the focus, so there is never a second highlight. A field is the one exception: it takes the focus, and its caret, only when it is clicked or reached by the keys (owner, 2026-11-18, after play) |
 | Pressed | Nothing of its own: a press acts at once |
-| Busy | The mark blinks, and presses wait until the answer has come |
+| Busy | The mark blinks, and presses wait until the answer has come. A panel that leads into a dive stays until the dive has begun |
 | About to destroy | The line's words turn rose and ask "Sure?" (the step's name, when it was the `‹` that was pressed) |
 | Refused | A message in rose, where the thing was tried, saying what happened and what to do |
 | Warned | A note in rose under what it warns of, such as the horror of chaos mode. A note of what a change will cost, said before it is made, is amber and stands at the top of the step ("changing these puts out 2 lanterns") |

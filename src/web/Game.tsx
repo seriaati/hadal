@@ -59,10 +59,10 @@ export function Game() {
       if (!scene.touch || (!ending && (multiplayer.diving || game.phase !== "title"))) input.focus();
     };
     takeKeys();
+    // The panel stays until the prompts have come, so the title does not show in between.
     const dive = (chaos: boolean, packs?: Chosen) => {
-      ui.close();
       input.focus();
-      void start(game, packs, chaos);
+      void ui.wait(start(game, packs, chaos)).then((started) => started && ui.close());
     };
     const custom = new CustomPanel(ui, account, (packs, chaos) => dive(chaos, packs));
     const single = (): Step => ({
@@ -142,7 +142,8 @@ export function Game() {
         ending.move(way, frame);
         return;
       }
-      // These keys come here only while no panel is open: an open panel has the focus and its own keys.
+      // An open panel has the focus and its own keys; these come here while it waits for a dive to begin, and are not for the title.
+      if (ui.open) return;
       if (shown.phase === "title" && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
         menu.choice = (menu.choice + (event.key === "ArrowUp" ? -1 : 1) + menu.items.length) % menu.items.length;
       }

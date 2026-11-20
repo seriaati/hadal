@@ -67,13 +67,14 @@ function finish(game: Game, result: Result) {
 /** The ids of the built-in packs and of the player's own packs a dive draws from. */
 export type Chosen = { builtIn: string[]; own: string[] };
 
-/** Without `packs`, the dive draws from the built-in packs of the player's language. */
-export async function start(game: Game, packs?: Chosen, chaos = false) {
+/** Without `packs`, the dive draws from the built-in packs of the player's language. Says whether the dive began. */
+export async function start(game: Game, packs?: Chosen, chaos = false): Promise<boolean> {
   const res = await fetch(packs ? `/api/game?${new URLSearchParams({ builtIn: packs.builtIn.join(","), own: packs.own.join(",") })}` : "/api/game");
-  if (!res.ok) return;
+  if (!res.ok) return false;
   const { prompts } = (await res.json()) as { prompts: GamePrompt[] };
   Object.assign(game, createGame(), { prompts, chaos, air: chaos ? CHAOS_AIR_SECONDS : AIR_SECONDS });
   enter(game, chaos ? "drop" : "ask");
+  return true;
 }
 
 function fail(game: Game) {
