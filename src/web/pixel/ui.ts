@@ -390,7 +390,10 @@ export class Ui {
     for (const part of parts) {
       const control = this.controls.get(part.id) ?? this.make(part);
       control.ariaLabel = part.kind === "diver" ? part.says : part.kind === "summary" ? (part.says ?? "") : part.kind === "press" || part.kind === "action" ? (part.says ?? part.label) : part.label;
-      if (part.kind === "slider" && Number(control.value) !== part.value) control.value = String(part.value);
+      if (part.kind === "slider") {
+        const at = String(Math.round(part.value * (part.steps ?? STEPS)));
+        if (control.value !== at) control.value = at;
+      }
       if (part.kind === "field" && control instanceof HTMLInputElement) control.autocomplete = part.autocomplete as AutoFill;
       // The controls stand in the page in reading order. One that is already in place is left alone: moving it would cost it the focus.
       if (control.previousElementSibling !== before) before.after(control);
@@ -427,10 +430,11 @@ export class Ui {
         this.sync();
       });
     } else if (part.kind === "slider") {
-      Object.assign(control, { type: "range", min: "0", max: "1", step: String(1 / (part.steps ?? STEPS)) });
+      // Counted in whole steps: a fractional step such as 1/6 is never met exactly, and the browser calls the value invalid.
+      Object.assign(control, { type: "range", min: "0", max: String(part.steps ?? STEPS), step: "1" });
       control.addEventListener("input", () => {
         const now = this.parts.get(id);
-        if (now?.kind === "slider") now.set(Number(control.value));
+        if (now?.kind === "slider") now.set(Number(control.value) / (now.steps ?? STEPS));
       });
     } else if (part.kind === "field") {
       Object.assign(control, { type: part.password ? "password" : "text", maxLength: part.max, autocapitalize: "off", spellcheck: false });
