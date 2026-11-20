@@ -131,34 +131,34 @@ const WORN = SUITS.map((suit) =>
   ),
 );
 
-/**
- * A diver of a room: on line `slot`, counted from the left (the first hangs where the single-player diver does), at
- * `depth` metres, with the lamps they have hung. The camera follows the one in `focus`. With `label`, their depth
- * stands over their name: another player's, in a dive. The `host` of the room has a crown before their name. In
- * "longest" their `hearts` follow the name, and one who is `out` has been hauled up: their line and lamps stay, and they
- * are named at the top of the screen. One being `hauled` up at the end of a dive is shown exactly at `depth`, which is
- * given afresh every frame.
- */
+/** A diver of a room. */
 export type Crew = {
+  /** The line they hang on, counted from the left; the first hangs where the single-player diver does. */
   slot: number;
   suit: number;
   name: string;
   lit: boolean;
+  /** The camera follows this one. */
   focus: boolean;
+  /** Metres. */
   depth: number;
   lamps?: Lamp[];
-  label?: boolean;
+  /** Their depth stands over their name: another player's, in a dive. */
+  depthLabel?: boolean;
   hearts?: number;
+  /** Hauled up in "longest": their line and lamps stay, and they are named at the top of the screen. */
   out?: boolean;
+  /** Being hauled up at the end of a dive: shown exactly at `depth`, which is given afresh every frame. */
   hauled?: boolean;
   host?: boolean;
   /** They went out of the room `t` seconds ago, and are seen going: hauled up their line, yanked up it, or cut loose. */
   going?: { how: Gone; t: number };
   /** The crown came to them `t` seconds ago, from the diver named `from`. */
   crowned?: { from: string; t: number };
-  /** In a room before a dive: the player's own diver, marked over the name, and how deep they went in the last dive. */
+  /** In a room before a dive: the player's own diver, marked over the name. */
   you?: boolean;
-  last?: number;
+  /** In a room before a dive: how deep they went in the last dive. */
+  lastDepth?: number;
 };
 /** How long a diver who went out of the room is seen going, in seconds. */
 export const GOING_SECONDS: Record<Gone, number> = { left: 1.4, removed: 1, banned: 2.6 };
@@ -200,21 +200,20 @@ function faded(rows: string[], fade: number): string[] {
     }),
   );
 }
-/**
- * What a dive in a room adds to the words: the room's air in seconds, whether the turn is the
- * player's own, the answers already given to the prompt, whether the answer just refused was
- * taken, the player's own depth while someone else's diver is on screen (null for one who only watches),
- * how many in the room only watch, and whether the player is one of them. In "longest", the player's own
- * hearts while they are in (null otherwise), the points in their bar, and the points that fill it.
- */
+/** What a dive in a room adds to the words. */
 export type Turn = {
+  /** Seconds. */
   air: number;
   yours: boolean;
+  /** The answers already given to the prompt. */
   taken: string[];
   refusedTaken: boolean;
-  depth: number | null;
+  /** Shown while someone else's diver is on screen; null for one who only watches. */
+  ownDepth: number | null;
+  /** How many in the room only watch. */
   watching: number;
   watcher: boolean;
+  /** In "longest", while the player is in; null otherwise. */
   hearts: number | null;
   bar: number;
   barFull: number;
@@ -853,7 +852,7 @@ export class Scene {
         crowns.set(line.name, { x: line.x + 10 - (measure(tiny, line.name) >> 1) - 7, y: line.y - 9 });
         continue;
       }
-      const tag = line.label && !line.out ? formatMeters(line.depth) : "";
+      const tag = line.depthLabel && !line.out ? formatMeters(line.depth) : "";
       const hearts = line.hearts === undefined ? 0 : 2 + heartsWidth(line.hearts);
       const crown = line.host ? 7 : 0;
       // While the crown flies to them it is not yet on their head; as it lands it glints.
@@ -902,8 +901,8 @@ export class Scene {
         frame.sprite(CARET, ((x + crown + end) >> 1) - 2, y - 6 + Math.round(Math.sin(time * 2.4)), "a");
         frame.emit = 0;
       }
-      if (line.last !== undefined) {
-        const last = formatMeters(line.last);
+      if (line.lastDepth !== undefined) {
+        const last = formatMeters(line.lastDepth);
         drawText(frame, tiny, last, at(measure(tiny, last)), line.y + 27, 5);
       }
     }
@@ -965,7 +964,7 @@ export class Scene {
 
   /** The depth at the bottom right. In a room it is the player's own, whoever is on screen; one who only watches sees the depth of the diver in focus. */
   private get reading(): number {
-    return this.turn ? (this.turn.depth ?? this.held) : this.depth;
+    return this.turn ? (this.turn.ownDepth ?? this.held) : this.depth;
   }
 
   /** How wide the player's own hearts and bar are at the bottom left. */

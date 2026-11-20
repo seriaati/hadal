@@ -11,7 +11,7 @@ const sound = { heart() {}, lantern() {} } as unknown as Sound;
 const dive = (air: number): DiveView => ({
   prompt: { id: "p/a", text: "Name an ocean", pack: "Seas" },
   round: 0,
-  of: 3,
+  rounds: 3,
   order: [0, 1],
   turn: 0,
   air,
@@ -22,7 +22,7 @@ const dive = (air: number): DiveView => ({
   refused: null,
   verdict: null,
   divers: [0, 1].map((id) => ({ id, depth: 0, lamps: [], hearts: 3, bar: 0, out: false })),
-  drop: 0,
+  dropLeft: 0,
 });
 const room = (dive: DiveView | null): RoomView => ({
   code: "ACDEF",

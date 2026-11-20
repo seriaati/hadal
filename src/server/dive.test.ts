@@ -219,12 +219,12 @@ test("after the last prompt the dive ends with every diver's depth, place, point
   expect(ended).toEqual([
     [
       {
-        id: 1, depth: 110 + 880, won: false, place: 2, points: 90, out: null,
+        id: 1, depth: 110 + 880, won: false, place: 2, points: 90, outAt: null,
         lamps: [{ depth: 110, lit: true }, { depth: 990, lit: true }],
         said: [{ prompt: flag, answer: "Red", rarity: 10 }, { prompt: sky, answer: "Grey", rarity: 80 }],
       },
       {
-        id: 2, depth: 330 + 1100, won: true, place: 1, points: 130, out: null,
+        id: 2, depth: 330 + 1100, won: true, place: 1, points: 130, outAt: null,
         lamps: [{ depth: 330, lit: true }, { depth: 1430, lit: true }],
         said: [{ prompt: flag, answer: "Blue", rarity: 30 }, { prompt: sky, answer: "Azure", rarity: 100 }],
       },
@@ -323,10 +323,10 @@ test("in longest, when the prompts run out the deepest of those still in wins", 
     else await clock.pass(AIR + GRACE_SECONDS);
     await clock.pass(PAUSE_SECONDS);
   }
-  expect(ended[0]!.map(({ id, depth, won, place, out }) => ({ id, depth, won, place, out }))).toEqual([
-    { id: 1, depth: 0, won: false, place: 3, out: 2 },
-    { id: 2, depth: 330 + 880, won: true, place: 1, out: null },
-    { id: 3, depth: 110 + 550, won: false, place: 2, out: null },
+  expect(ended[0]!.map(({ id, depth, won, place, outAt }) => ({ id, depth, won, place, outAt }))).toEqual([
+    { id: 1, depth: 0, won: false, place: 3, outAt: 2 },
+    { id: 2, depth: 330 + 880, won: true, place: 1, outAt: null },
+    { id: 3, depth: 110 + 550, won: false, place: 2, outAt: null },
   ]);
   expect(ended[0]![0]!.said).toEqual([
     { prompt: "Name a colour of a flag", answer: null, rarity: 0 },
@@ -336,12 +336,12 @@ test("in longest, when the prompts run out the deepest of those still in wins", 
 
 test("in chaos, no air runs and nothing is taken while the divers are dropped off", async () => {
   const { dive: d, clock, view } = dive([1, 2], WRONG, "chaos", MANY);
-  expect(view()).toMatchObject({ drop: DROP_SECONDS, running: false, air: AIR });
+  expect(view()).toMatchObject({ dropLeft: DROP_SECONDS, running: false, air: AIR });
   await d.answer(1, "red");
   d.type(1, "re");
   expect(view()).toMatchObject({ verdict: null, typing: "" });
   await clock.pass(DROP_SECONDS);
-  expect(view()).toMatchObject({ drop: 0, running: true });
+  expect(view()).toMatchObject({ dropLeft: 0, running: true });
   await d.answer(1, "red");
   expect(view().verdict?.answer).toBe("Red");
 });
@@ -362,10 +362,10 @@ test("in chaos, one empty tank puts a diver out, and the last one in wins", asyn
   await clock.pass(PAUSE_SECONDS);
   await clock.pass(AIR + GRACE_SECONDS + PAUSE_SECONDS);
   expect(ended).toHaveLength(1);
-  expect(ended[0]!.map(({ id, won, place, out }) => ({ id, won, place, out }))).toEqual([
-    { id: 1, won: false, place: 2, out: 2 },
-    { id: 2, won: false, place: 3, out: 1 },
-    { id: 3, won: true, place: 1, out: null },
+  expect(ended[0]!.map(({ id, won, place, outAt }) => ({ id, won, place, outAt }))).toEqual([
+    { id: 1, won: false, place: 2, outAt: 2 },
+    { id: 2, won: false, place: 3, outAt: 1 },
+    { id: 3, won: true, place: 1, outAt: null },
   ]);
 });
 

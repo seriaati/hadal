@@ -452,7 +452,7 @@ test("a dive starts once every guest is ready, from prompts with an answer for e
   await say(host, { type: "start" });
   const dive = seen(guest).dive!;
   expect(dive.prompt.text).toBe("Name an ocean");
-  expect(dive.of).toBe(1);
+  expect(dive.rounds).toBe(1);
   expect(dive.order.toSorted()).toEqual(seen(host).players.map((player) => player.id).toSorted());
   // In a dive the room's settings stand still, and only the diver whose turn it is is heard.
   await say(host, { type: "settings", settings: { air: 20 } });
@@ -474,7 +474,7 @@ test("a dive in deepest asks 10 prompts, and one in longest every prompt there i
   const play = async () => {
     await say(others[0]!, { type: "ready", ready: true });
     await say(host, { type: "start" });
-    return seen(host).dive!.of;
+    return seen(host).dive!.rounds;
   };
   expect(await play()).toBe(10);
   leave(others[0]!);
@@ -483,7 +483,7 @@ test("a dive in deepest asks 10 prompts, and one in longest every prompt there i
   await say(again.host, { type: "settings", settings: { mode: "longest" } });
   await say(again.others[0]!, { type: "ready", ready: true });
   await say(again.host, { type: "start" });
-  expect(seen(again.host).dive!.of).toBe(14);
+  expect(seen(again.host).dive!.rounds).toBe(14);
   leave(again.host);
 });
 

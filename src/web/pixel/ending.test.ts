@@ -59,7 +59,7 @@ test("a dive with nothing asked has only the line back", () => {
 
 test("in a room the rows go by place, and the focus starts in the row of the diver followed", () => {
   const diver = (id: number, place: number, rarities: number[]): RoomLog["divers"][number] => ({
-    id, place, name: `d${id}`, suit: 0, depth: 0, won: place === 1, points: 0, out: null,
+    id, place, name: `d${id}`, suit: 0, depth: 0, won: place === 1, points: 0, outAt: null,
     lamps: rarities.map((rarity) => ({ depth: 0, lit: rarity > 0 })),
     said: rarities.map((rarity) => ({ prompt: "p", answer: rarity ? "a" : null, rarity })),
   });

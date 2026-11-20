@@ -45,45 +45,42 @@ export type RoomPlayer = { id: number; nickname: string; suit: number; ready: bo
  * their hearts, the points in their bar, and whether they are out of the dive (no hearts left).
  */
 export type DiverView = { id: number; depth: number; lamps: { depth: number; lit: boolean }[]; hearts: number; bar: number; out: boolean };
-/**
- * The dive under way, as it stood when it was sent. `round` counts prompts from 0. `air` is
- * the seconds left to the diver whose turn it is, and runs down from the moment of sending
- * while `running`. `refused` is the latest answer of this turn that lit nothing, numbered so
- * that a repeat of the same words is still news. `verdict`, during the pause after a turn, is
- * how it ended: `answer` is null when the air ran out. `drop` is the seconds left, when it was sent, of a chaos
- * dive's drop-off, before the first turn's air starts to run.
- */
+/** The dive under way, as it stood when it was sent. */
 export type DiveView = {
   prompt: GamePrompt;
+  /** Counts from 0. */
   round: number;
-  of: number;
+  rounds: number;
   order: number[];
   turn: number;
+  /** Seconds left to the diver whose turn it is; runs down from the moment of sending while `running`. */
   air: number;
   running: boolean;
   typing: string;
   judging: string | null;
   taken: string[];
+  /** The latest answer of this turn that lit nothing, numbered so that a repeat of the same words is still news. */
   refused: { text: string; taken: boolean; count: number } | null;
+  /** How the turn ended, during the pause after it. */
   verdict: Verdict | null;
   divers: DiverView[];
-  drop: number;
+  /** Seconds of a chaos dive's drop-off left when this was sent, before the first turn's air starts to run. */
+  dropLeft: number;
 };
 /** `answer` is the pack's answer, null when the air ran out. */
 export type Said = { prompt: string; answer: string | null; rarity: number };
-/**
- * `place` counts from 1. `points` is the sum of the rarities of their lit lamps. `out` is, in "longest" and "chaos",
- * the prompt they went out at (counted from 1; null for one still in).
- */
 export type Finish = {
   id: number;
   depth: number;
   won: boolean;
+  /** Counts from 1. */
   place: number;
+  /** The sum of the rarities of their lit lamps. */
   points: number;
   lamps: DiverView["lamps"];
   said: Said[];
-  out: number | null;
+  /** In "longest" and "chaos", the prompt they went out at, counted from 1; null for one still in. */
+  outAt: number | null;
 };
 /**
  * A room as one browser is sent it. `you` is the id of that browser's player. `last` is the

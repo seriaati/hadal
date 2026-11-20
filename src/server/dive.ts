@@ -97,7 +97,7 @@ export class Dive {
     return {
       prompt: this.setup.prompts[this.round]!,
       round: this.round,
-      of: this.setup.prompts.length,
+      rounds: this.setup.prompts.length,
       order: this.present,
       turn: this.turn,
       air: this.air(),
@@ -108,7 +108,7 @@ export class Dive {
       refused: this.refused,
       verdict: this.verdict,
       divers: this.divers,
-      drop: this.dropEnd === null ? 0 : Math.max(0, (this.dropEnd - this.setup.clock.now()) / 1000),
+      dropLeft: this.dropEnd === null ? 0 : Math.max(0, (this.dropEnd - this.setup.clock.now()) / 1000),
     };
   }
 
@@ -285,10 +285,10 @@ export class Dive {
       const said = this.said.get(id) ?? [];
       const out = this.setup.mode !== "deepest" && this.outAt.has(id) ? this.outAt.get(id)! + 1 : null;
       const won = depth === deepest && contenders.some((diver) => diver.id === id);
-      return { id, depth, won, place: 0, points: said.reduce((sum, one) => sum + one.rarity, 0), lamps, said, out };
+      return { id, depth, won, place: 0, points: said.reduce((sum, one) => sum + one.rarity, 0), lamps, said, outAt: out };
     });
     // Deepest first; in "longest" and "chaos" the winners, then those still in, then the others by how long they lasted.
-    const lasted = (one: Finish) => (one.won ? 2 : one.out === null ? 1 : one.out / (this.setup.prompts.length + 1));
+    const lasted = (one: Finish) => (one.won ? 2 : one.outAt === null ? 1 : one.outAt / (this.setup.prompts.length + 1));
     finish
       .toSorted((a, b) => (this.setup.mode !== "deepest" ? lasted(b) - lasted(a) : 0) || b.depth - a.depth)
       .forEach((one, i) => (one.place = i + 1));

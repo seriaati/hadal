@@ -165,9 +165,9 @@ export class MultiplayerPanel {
       const { log, follow, you } = this.ending;
       const left = 1 - this.risen();
       return log.divers.map((diver, slot) => {
-        const out = diver.out !== null;
+        const out = diver.outAt !== null;
         const host = view?.players.find((player) => player.id === diver.id)?.host;
-        return { slot, suit: diver.suit, name: diver.name, lit: !out, focus: diver.id === follow, depth: diver.depth * left, lamps: diver.lamps, label: diver.id !== you, out, hauled: true, host };
+        return { slot, suit: diver.suit, name: diver.name, lit: !out, focus: diver.id === follow, depth: diver.depth * left, lamps: diver.lamps, depthLabel: diver.id !== you, out, hauled: true, host };
       });
     }
     const dive = this.diving && view?.dive;
@@ -180,7 +180,7 @@ export class MultiplayerPanel {
         // One who has just gone out is still seen through the verdict, and hauled up when the turn passes.
         const out = diver.out && !turn;
         const crowned = this.crownedOf(diver.id);
-        return player ? [{ slot, suit: player.suit, name: player.nickname, lit: turn, focus: turn, depth, lamps, label: diver.id !== view.you, hearts: longest ? diver.hearts : undefined, out, host: player.host, crowned }] : [];
+        return player ? [{ slot, suit: player.suit, name: player.nickname, lit: turn, focus: turn, depth, lamps, depthLabel: diver.id !== view.you, hearts: longest ? diver.hearts : undefined, out, host: player.host, crowned }] : [];
       });
       return this.place(divers);
     }
@@ -189,7 +189,7 @@ export class MultiplayerPanel {
     // The host has no ready of their own: starting the dive is it.
     const last = (id: number) => view.last?.divers.find((diver) => diver.id === id)?.depth;
     return this.place(
-      view.players.map((player, slot) => ({ slot, suit: player.suit, name: player.nickname, lit: player.host || player.ready, focus: player.id === view.you, depth: 0, host: player.host, crowned: this.crownedOf(player.id), you: player.id === view.you, last: last(player.id) })),
+      view.players.map((player, slot) => ({ slot, suit: player.suit, name: player.nickname, lit: player.host || player.ready, focus: player.id === view.you, depth: 0, host: player.host, crowned: this.crownedOf(player.id), you: player.id === view.you, lastDepth: last(player.id) })),
     );
   }
 
@@ -208,7 +208,7 @@ export class MultiplayerPanel {
   private ghost(id: number, how: Gone) {
     const name = this.client.view?.players.find((player) => player.id === id)?.nickname;
     const diver = this.shown.find((one) => one.name === name && !one.going);
-    if (diver) this.ghosts.push({ crew: { ...diver, focus: false, label: false, host: false, crowned: undefined }, how, at: performance.now() / 1000 });
+    if (diver) this.ghosts.push({ crew: { ...diver, focus: false, depthLabel: false, host: false, crowned: undefined }, how, at: performance.now() / 1000 });
   }
 
   private crownedOf(id: number): Crew["crowned"] {
@@ -289,7 +289,7 @@ export class MultiplayerPanel {
       yours: this.yours,
       taken: dive.taken,
       refusedTaken: !!dive.refused?.taken,
-      depth: own?.depth ?? null,
+      ownDepth: own?.depth ?? null,
       watching,
       watcher: !dive.order.includes(view.you),
       hearts: counted ? mine.hearts : null,
@@ -304,7 +304,7 @@ export class MultiplayerPanel {
   get yours(): boolean {
     const view = this.client.view;
     const dive = view?.dive;
-    return !!dive && this.diving && dive.turn === view.you && !dive.verdict && !dive.drop && !this.dying && this.spent !== `${dive.round}:${dive.turn}`;
+    return !!dive && this.diving && dive.turn === view.you && !dive.verdict && !dive.dropLeft && !this.dying && this.spent !== `${dive.round}:${dive.turn}`;
   }
 
   /** Whether the player may type an answer ahead of their turn: they are in the dive, and it is not their turn. */

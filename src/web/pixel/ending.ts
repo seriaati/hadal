@@ -388,7 +388,7 @@ export class Ending {
     let y = this.detailsTop(frame);
     if (this.divers.length) {
       const diver = this.divers[this.focus.line]!;
-      const out = isRoom(this.log) && this.log.mode !== "deepest" ? (diver.out === null ? t().ending.stillIn : t().ending.outAt(diver.out)) : "";
+      const out = isRoom(this.log) && this.log.mode !== "deepest" ? (diver.outAt === null ? t().ending.stillIn : t().ending.outAt(diver.outAt)) : "";
       y = this.centred(frame, tiny, [plain(diver.name), formatMeters(diver.depth), t().ending.points(diver.points), out].filter(Boolean).join(" ~ "), y, 6);
     } else {
       y = this.centred(frame, tiny, `${plain(hung.pack ?? "")} ~ ${t().count(this.focus.lamp + 1, this.lines[0]!.length)}`, y, 6);
