@@ -1,4 +1,4 @@
-import { MAX_HEARTS, START_HEARTS, type Gone } from "../../shared/room";
+import { MAX_HEARTS, MAX_PLAYERS, START_HEARTS, type Gone } from "../../shared/room";
 import { METERS_PER_POINT } from "../../shared/types";
 import { ZONES, formatMeters, lightOf } from "../depth";
 import { t } from "../language";
@@ -156,6 +156,9 @@ export type Crew = {
   going?: { how: Gone; t: number };
   /** The crown came to them `t` seconds ago, from the diver named `from`. */
   crowned?: { from: string; t: number };
+  /** In a room before a dive: the player's own diver, marked over the name, and how deep they went in the last dive. */
+  you?: boolean;
+  last?: number;
 };
 /** How long a diver who went out of the room is seen going, in seconds. */
 export const GOING_SECONDS: Record<Gone, number> = { left: 1.4, removed: 1, banned: 2.6 };
@@ -219,6 +222,29 @@ export type Turn = {
   ahead: string;
 };
 const LINE_GAP = 64;
+/**
+ * The mark over the player's own diver in a room; how much longer the lines are there, so the mark has room under
+ * the hull; and how far a narrow screen hangs every other diver further down.
+ */
+const CARET = ["aaaaa", ".aaa.", "..a.."];
+const LONGER = 14;
+const STAGGER = 44;
+
+/**
+ * In a room before a dive every place along the boat is in view: as far apart as the screen allows, up to the usual
+ * gap, and centred. `across` is how far the camera has moved to the right for that.
+ */
+export function lobbyPlaces(width: number): { gap: number; across: number } {
+  const gap = Math.min(LINE_GAP, Math.floor(width / MAX_PLAYERS));
+  const first = Math.round((width - MAX_PLAYERS * gap) / 2 + gap / 2);
+  return { gap, across: CHAIN_X + 10 - first };
+}
+
+/** A name cut to fit `width`: a long name loses its end. */
+function clip(name: string, width: number): string {
+  while (name.length > 1 && measure(FONTS.tiny, name) > width) name = name.slice(0, -1);
+  return name;
+}
 const KELP_ROWS = rowOf(600);
 const TRAVEL_SECONDS = 0.75;
 
@@ -318,6 +344,18 @@ export class Scene {
   private flights = new Map<string, { x: number; y: number }>();
   /** The divers of the room the player is in, or is about to make or join. */
   crew: Crew[] | null = null;
+  /**
+   * The player is in a room and no dive is on: every place along the boat is shown. The words lie in a dock at the
+   * foot of the screen from row `dock` down, and the water darkens towards it; `floor` is the row under the lowest
+   * diver, which the dock does not climb over.
+   */
+  lobby = false;
+  dock = Infinity;
+  floor = 0;
+  /** How far the room's places are spread out, from 0 (as in a dive) to 1 (all in view), and the dock as shown. */
+  private spread = 0;
+  private gap = LINE_GAP;
+  private shaded = Infinity;
   turn: Turn | null = null;
   /** The middle of the diver in focus, on the frame, as last drawn. */
   focus = { x: 0, y: 0 };
@@ -334,6 +372,9 @@ export class Scene {
   draw(frame: Frame, game: Game, menu: Menu, dt: number, time: number, covered: boolean): Light[] {
     const { width: W, height: H } = frame;
     const crew = this.crew;
+    const places = lobbyPlaces(W);
+    this.spread = approach(this.spread, this.lobby ? 1 : 0, 1 - Math.exp(-dt * 5), 2 * dt);
+    this.gap = LINE_GAP + (places.gap - LINE_GAP) * this.spread;
     let diving: boolean;
     if (crew) diving = this.follow(crew, dt);
     else {
@@ -359,14 +400,15 @@ export class Scene {
     const camera = rowOf(this.depth);
     const scroll = camera - this.camera;
     this.camera = camera;
-    const across = Math.round(this.across);
+    const across = Math.round(this.across + (places.across - this.across) * this.spread);
     const sideways = across - this.shifted;
     this.shifted = across;
 
     const wide = W >= 300;
     // On a narrow screen the prompt runs across the top, and the diver hangs under it with room below for the answer.
     const asked = !wide && (game.phase === "ask" || game.phase === "verdict") && !!game.prompts[game.round];
-    const goal = asked ? Math.min(Math.max(H * 0.36, this.hudBottom + 12), H - 76) : H * 0.36;
+    // In a room the boat rises a little, to leave open water between the divers and the dock.
+    const goal = asked ? Math.min(Math.max(H * 0.36, this.hudBottom + 12), H - 76) : H * (this.lobby ? (wide ? 0.28 : 0.2) : 0.36);
     this.place = this.place < 0 ? goal : approach(this.place, goal, 1 - Math.exp(-dt * 6), 20 * dt);
     const base = (this.base = Math.round(this.place)); // screen row of the diver's world row
     const rowAt = (y: number) => camera + y - base;
@@ -403,14 +445,17 @@ export class Scene {
       { slot: 0, suit: 0, name: "", lit: game.phase !== "lost", focus: true, depth: game.depth, lamps: game.lamps },
     ];
     const focus = members.find((diver) => diver.focus) ?? members[0]!;
-    const lineX = (slot: number) => Math.round(CHAIN_X + slot * LINE_GAP - across);
+    const lineX = (slot: number) => Math.round(CHAIN_X + slot * this.gap - across);
+    // In a room the lines are longer, and on a narrow screen every other diver hangs lower still, so that names have
+    // room; sliding between places, smoothly.
+    const staggered = (slot: number) => Math.round(this.spread * (LONGER + (wide ? 0 : (STAGGER * (1 - Math.cos(Math.PI * slot))) / 2)));
     const near = (slot: number, to: number) => Math.round(slot) === Math.round(to);
     const lines = members
-      .filter((diver) => (wide || !this.turn ? lineX(diver.slot) > -22 && lineX(diver.slot) + 21 <= (wide ? 172 : W) : near(diver.slot, focus.slot) || near(diver.slot, focus.slot - 1)))
+      .filter((diver) => (this.lobby || wide || !this.turn ? lineX(diver.slot) > -22 && lineX(diver.slot) + 21 <= (wide && !this.lobby ? 172 : W) : near(diver.slot, focus.slot) || near(diver.slot, focus.slot - 1)))
       .map((diver) => {
         const depth = crew ? this.shown.get(diver.name)! : this.depth;
         const settled = diver.focus ? !diving : Math.abs(diver.depth - depth) <= 4;
-        const place = screenY(rowOf(depth)) + (settled ? Math.round(Math.sin(time * 1.3 + diver.slot * 2)) : 0) - held(game);
+        const place = screenY(rowOf(depth)) + (settled ? Math.round(Math.sin(time * 1.3 + diver.slot * 2)) : 0) - held(game) + staggered(diver.slot);
         // Hauled up, a diver is out of sight once their boots are under the hull, or over the top of the screen.
         const away = diver.going ? going(diver.going, place + 26 - Math.max(0, screenY(SURFACE_ROW))) : null;
         const x = lineX(diver.slot) + (away?.dx ?? 0);
@@ -421,6 +466,7 @@ export class Scene {
         return { ...diver, x, y, depth, lit, fade: away?.fade ?? 0, lamps: hang(marks, diver.lamps ?? [], depth, x) };
       });
     const lamps = lines.flatMap((line) => line.lamps);
+    this.floor = Math.max(0, ...lines.map((line) => line.y + 34));
     const lead = lines.find((line) => line.focus);
     if (lead) this.focus = { x: lead.x + 10, y: lead.y + 12 };
     const sub = vessel(game);
@@ -510,12 +556,29 @@ export class Scene {
       }
     }
 
-    // ---- the boat the lines hang from: one hull, a wheelhouse over every line
     const surface = screenY(SURFACE_ROW);
+    // In a room the water darkens down to the dock, two shades by its top, so the sea and the words meet without an edge.
+    this.shaded = this.dock === Infinity || this.shaded === Infinity ? this.dock : approach(this.shaded, this.dock, 1 - Math.exp(-dt * 12), 60 * dt);
+    if (this.shaded < H) {
+      const from = Math.max(surface + 2, this.shaded - 44);
+      for (let y = Math.max(0, Math.round(from)); y < Math.min(H, this.shaded); y++) {
+        const t = (y - from) / (this.shaded - from);
+        const k = t * t * (3 - 2 * t) * 2;
+        for (let x = 0; x < W; x++) {
+          const steps = Math.floor(k) + (dither(x, y, k - Math.floor(k)) ? 1 : 0);
+          const color = frame.color[y * W + x]!;
+          if (steps && color >= 2 && color <= 5) frame.put(x, y, Math.max(1, color - steps));
+        }
+      }
+    }
+
+    // ---- the boat the lines hang from: one hull, a wheelhouse over every line
     const slots = members.map((diver) => diver.slot);
     if (!game.chaos && surface > -20 && surface < H + 20) {
-      const stern = lineX(Math.min(...slots)) - 24;
-      const bow = lineX(Math.max(...slots)) + 50;
+      // In a room the hull runs under every place, taken or not.
+      const hull = this.lobby ? [...slots, 0, MAX_PLAYERS - 1] : slots;
+      const stern = lineX(Math.min(...hull)) - 24;
+      const bow = lineX(Math.max(...hull)) + 50;
       frame.block = 224;
       for (let j = 0; j < 7; j++) for (let x = stern + j; x <= bow - j; x++) frame.put(x, surface - 6 + j, j === 0 ? 3 : 0);
       for (const slot of slots) {
@@ -526,13 +589,15 @@ export class Scene {
       frame.block = -1;
     }
 
-    // ---- the far wall of the trench: a darker dark, at the right of the world. In a room the world goes on past the last line.
-    const end = Math.min(W, W + Math.max(...slots) * LINE_GAP - across);
+    // ---- the far wall of the trench: a darker dark, at the right of the world. In a room the world goes on past the last line,
+    // and before a dive, with every place close together, the wall stands off the screen.
+    const wall = W + Math.max(...slots) * this.gap - across + Math.round(this.spread * W);
+    const end = Math.min(W, wall);
     for (let y = 0; y < H; y++) {
       const row = rowAt(y);
       if (row <= SURFACE_ROW) continue;
       const reach = this.rock.far[rockAt(row)]!;
-      for (let x = W + Math.max(...slots) * LINE_GAP - across - reach; x < end; x++) frame.put(x, y, Math.max(0, water[y]! - 1));
+      for (let x = wall - reach; x < end; x++) frame.put(x, y, Math.max(0, water[y]! - 1));
     }
 
     // ---- far lights: other lives, a long way off
@@ -667,6 +732,18 @@ export class Scene {
         frame.put(x, y, color);
       }
     }
+    // A place nobody has taken: a slack line with its hook.
+    if (this.lobby) {
+      for (let slot = 0; slot < MAX_PLAYERS; slot++) {
+        if (members.some((diver) => Math.round(diver.slot) === slot)) continue;
+        const x = lineX(slot);
+        const hook = screenY(0) - held(game) + staggered(slot) + 8;
+        for (let y = Math.max(0, surface + 1); y < hook; y += 2) frame.put(x, y, 5);
+        frame.put(x, hook, 6);
+        frame.put(x + 1, hook + 1, 6);
+        frame.put(x + 2, hook, 6);
+      }
+    }
     for (const lamp of lamps) {
       for (let x = lamp.x + 5; x < lamp.x + CHAIN_X - LAMP_X; x++) frame.put(x, lamp.y, lamp.lit ? 13 : 5);
       if (lamp.lit) {
@@ -747,7 +824,9 @@ export class Scene {
 
     // ---- in a room, their names over them, and over another player's their depth
     const { tiny, large } = FONTS;
-    const right = wide ? 180 : W - 2;
+    const right = wide && !this.lobby ? 180 : W - 2;
+    // In a room a name has its own place, or two on a narrow screen where its neighbours hang lower.
+    const room = Math.round(this.gap) * (wide ? 1 : 2) - 6;
     // Where the depth at the bottom right begins: a name at the bottom edge goes above it rather than into it.
     const depthLeft = game.phase === "title" ? W : W - 17 - measure(large, formatMeters(this.reading).toUpperCase()) - measure(tiny, t().dive.depth);
     // And where the player's own hearts at the bottom left end.
@@ -788,7 +867,8 @@ export class Scene {
       const under = line.y < (tag ? 18 : 10) || !!sub;
       const y = under ? line.y + 29 : line.y - 9;
       frame.emit = line.lit ? 70 : 0;
-      const x = at(crown + measure(tiny, line.name) + hearts);
+      const name = this.lobby ? clip(line.name, room - crown) : line.name;
+      const x = at(crown + measure(tiny, name) + hearts);
       crowns.set(line.name, { x, y });
       if (line.host && !flying) {
         if (glint) frame.emit = Math.round(255 * glint);
@@ -796,10 +876,19 @@ export class Scene {
         if (glint > 0.5) for (const [i, j] of [[2, -4], [2, -2], [1, -3], [3, -3]] as const) frame.put(x + i, y + j, 16);
         frame.emit = line.lit ? 70 : 0;
       }
-      const end = drawText(frame, tiny, line.name, x + crown, y, line.lit ? 16 : 6);
+      const end = drawText(frame, tiny, name, x + crown, y, line.lit ? 16 : 6);
       frame.emit = 0;
       if (line.hearts !== undefined) drawHearts(frame, line.hearts, end + 2, y);
       if (tag) drawText(frame, tiny, tag, at(measure(tiny, tag)), under ? y + 8 : y - 8, 6);
+      if (line.you) {
+        frame.emit = 90;
+        frame.sprite(CARET, ((x + crown + end) >> 1) - 2, y - 6 + Math.round(Math.sin(time * 2.4)), "a");
+        frame.emit = 0;
+      }
+      if (line.last !== undefined) {
+        const last = formatMeters(line.last);
+        drawText(frame, tiny, last, at(measure(tiny, last)), line.y + 27, 5);
+      }
     }
 
     // The crown lifts off the old host's name and arcs over to the new host's; from above, if the old host is not in view.
@@ -838,7 +927,7 @@ export class Scene {
     }
     const focus = crew.find((diver) => diver.focus) ?? crew[0]!;
     const depth = (this.held = this.shown.get(focus.name)!);
-    const x = this.slots.get(focus.name)! * LINE_GAP;
+    const x = this.slots.get(focus.name)! * this.gap;
     if (this.locked !== focus.name) {
       if (this.travel?.name !== focus.name) this.travel = { name: focus.name, depth: this.depth, across: this.across, time: 0 };
       const travel = this.travel;

@@ -446,19 +446,22 @@ export class Ui {
   /** `scale` is how many screen pixels a pixel of the frame takes. */
   draw(frame: Frame, scene: Scene, scale: number, time: number, dive: boolean) {
     scene.hush = null;
+    scene.dock = Infinity;
     if (!this.open) return;
     this.sync();
     const { tiny } = FONTS;
     const { width: W, height: H } = frame;
-    // On a wide screen the words take the column to the right of the diver (of the divers of a room), on a narrow one the room below.
+    // On a wide screen the words take the column to the right of the diver, on a narrow one the room below. In a room
+    // before a dive they lie in a dock across the foot of the screen, under every diver, and grow upwards as they need.
     const wide = W >= 300;
-    const left = wide ? (scene.crew ? 184 : 170) : 10;
-    const width = W - left - (wide ? 8 : 10);
+    const docked = scene.lobby;
+    const left = docked ? (wide ? 14 : 10) : wide ? (scene.crew ? 184 : 170) : 10;
+    const width = W - left - (docked ? left : wide ? 8 : 10);
     const bottom = H - (dive ? 28 : 8);
     const step = this.steps.at(-1)!;
     const under = dive ? scene.hudBottom + 8 : 0;
-    const wish = wide ? Math.max(dive ? 50 : scene.base - 4, under) : Math.max(scene.base + 38, under);
-    const ceiling = Math.max(8, Math.min(wish, bottom - ROOM));
+    const wish = docked ? H : wide ? Math.max(dive ? 50 : scene.base - 4, under) : Math.max(scene.base + 38, under);
+    const ceiling = Math.max(8, Math.min(docked ? scene.floor + 10 : wish, bottom - ROOM));
     // A line is tall enough for a fingertip (40 screen pixels), unless smaller lines spare the step from scrolling.
     const whole = { ...this.step, rows: [...this.step.rows, ...(this.step.foot ?? [])] };
     let line = Math.max(LINE, Math.ceil(40 / scale));
@@ -499,22 +502,24 @@ export class Ui {
     this.held = { step, left, bottom, top, at: new Map(laid.placed.flatMap((spot) => (isControl(spot.part) ? [[spot.part.id, spot.y]] : []))) };
     this.placed = [...laid.placed, ...foot];
     this.box = { x: left, y: top, w: width, h: shown };
-    if (!wide) scene.hush = [top - 12, top + shown + 8];
+    if (!wide || docked) scene.hush = [top - 12, top + shown + 8];
+    if (docked) scene.dock = top - 10;
 
     // The form is laid over the rows of the step and scrolls them: the wheel, a finger and a screen reader move it.
-    const from = wide ? left - 12 : 0;
+    const from = wide && !docked ? left - 12 : 0;
     Object.assign(this.form.style, { left: `${from * scale}px`, top: `${(top + INSET) * scale}px`, width: `${(W - from) * scale}px`, height: `${(fold - top - INSET) * scale}px` });
     this.sizer.style.height = `${(laid.height - INSET) * scale}px`;
     if (scroll !== this.form.scrollTop / scale) this.form.scrollTop = scroll * scale;
     const shift = Math.round(scroll);
 
     // The water behind the words goes two shades darker, with a soft edge.
-    const x0 = wide ? left - 12 : -99;
+    // In the dock it reaches the bottom of the screen, and its top edge is the water's own darkening (see `Scene.dock`).
+    const x0 = wide && !docked ? left - 12 : -99;
     const y0 = top - 10;
-    const y1 = top + shown + 10;
+    const y1 = docked ? H + 99 : top + shown + 10;
     for (let y = Math.max(0, y0); y < Math.min(H, y1); y++) {
       for (let x = Math.max(0, x0); x < W; x++) {
-        const depth = Math.min(x - x0, y - y0, y1 - 1 - y);
+        const depth = Math.min(x - x0, docked ? 99 : y - y0, y1 - 1 - y);
         if (depth < 10 && !dither(x, y, (depth + 1) / 11)) continue;
         const color = frame.color[y * W + x]!;
         if (color >= 2 && color <= 5) frame.color[y * W + x] = Math.max(1, color - 2);

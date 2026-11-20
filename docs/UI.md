@@ -10,7 +10,10 @@ letters, and the water behind them goes two shades darker with a soft edge so th
 letters read. Nothing is framed and the sea is not dimmed: the game goes on in full view.
 
 - On a wide screen (300 game pixels or more) the words take the column to the right of the
-  diver. On a narrow one they lie under the diver, across the whole width.
+  diver. On a narrow one they lie under the diver, across the whole width. In a room before a
+  dive, every diver hangs along the boat and the words lie in a dock across the foot of the
+  screen, as low as they fit: a deeper step grows it upwards, never over the divers. The water
+  darkens down to the dock, so the two meet without an edge.
 - The words never cover the diver or the lantern. A step too long for its room scrolls under
   its name, and a thin bar at the right edge shows how far. What acts on a list (its lines,
   such as "Add a pack" and "Write a pack") stands at the step's foot: when the step scrolls,

@@ -242,6 +242,7 @@ export function Game() {
       // The diver whose turn it is sees their own typing at once, not as it comes back from the server.
       if (multiplayer.yours) shown.input = input.value;
       scene.crew = multiplayer.crew();
+      scene.lobby = multiplayer.lobby;
       scene.turn = multiplayer.turn(input.value);
       let lights: Light[] = [];
       const closing = done ? ending : null;

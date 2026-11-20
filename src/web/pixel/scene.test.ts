@@ -1,7 +1,8 @@
 import { expect, test } from "bun:test";
 import { createGame } from "../state";
 import { Frame } from "./frame";
-import { Scene, approach, type Crew } from "./scene";
+import { MAX_PLAYERS } from "../../shared/room";
+import { Scene, approach, lobbyPlaces, type Crew } from "./scene";
 
 test("easing takes a share of the way, but never less than the least step, and never overshoots", () => {
   expect(approach(0, 100, 0.5, 10)).toBe(50);
@@ -32,4 +33,17 @@ test("when the turn passes, the camera travels to the next diver in three quarte
   expect(scene.depth).toBe(2400);
   // Lamps already hung when a diver is first seen were reached long ago: they do not ring again.
   expect(scene.lit).toBe(lit);
+});
+
+test("in a room every place along the boat is in view, from the narrowest frame to a wide one", () => {
+  // An upright phone's frame is at least 144 wide; a diver is 21 wide, their line at its left.
+  for (const width of [144, 146, 195, 240, 320, 480]) {
+    const { gap, across } = lobbyPlaces(width);
+    expect(gap).toBeLessThanOrEqual(64);
+    for (let slot = 0; slot < MAX_PLAYERS; slot++) {
+      const x = 84 + slot * gap - across;
+      expect(x).toBeGreaterThanOrEqual(0);
+      expect(x + 21).toBeLessThanOrEqual(width);
+    }
+  }
 });

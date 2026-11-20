@@ -1,6 +1,5 @@
 import { AIR_MAX, AIR_MIN, BAR_FULL, HEARTS, MODES, ROOM_CODE_LENGTH, SUITS, type Gone, type Refusal, type RoomPlayer, type RoomSettings, type RoomView } from "../../shared/room";
 import { NICKNAME_MAX, type PackSummary } from "../../shared/types";
-import { formatMeters } from "../depth";
 import { t } from "../language";
 import type { RoomLog } from "./ending";
 import { RoomClient, type Heard } from "../room";
@@ -128,6 +127,11 @@ export class MultiplayerPanel {
     return `${location.origin}/?room=${code}`;
   }
 
+  /** Whether the player is in a room, with no dive on and no dive's end on screen. */
+  get lobby(): boolean {
+    return !!this.client.view && !this.diving && !this.ending && this.ui.holds(this.room);
+  }
+
   /** Called every frame: leaving the room's step leaves the room, and leaving multiplayer ends the connection. */
   update() {
     if (this.diving || this.ending) return;
@@ -173,8 +177,9 @@ export class MultiplayerPanel {
     if (!this.ui.holds(this.first)) return null;
     if (!view) return [{ slot: 0, suit: this.suit, name: "", lit: true, focus: true, depth: 0 }];
     // The host has no ready of their own: starting the dive is it.
+    const last = (id: number) => view.last?.divers.find((diver) => diver.id === id)?.depth;
     return this.place(
-      view.players.map((player, slot) => ({ slot, suit: player.suit, name: player.nickname, lit: player.host || player.ready, focus: player.id === view.you, depth: 0, host: player.host, crowned: this.crownedOf(player.id) })),
+      view.players.map((player, slot) => ({ slot, suit: player.suit, name: player.nickname, lit: player.host || player.ready, focus: player.id === view.you, depth: 0, host: player.host, crowned: this.crownedOf(player.id), you: player.id === view.you, last: last(player.id) })),
     );
   }
 
@@ -507,9 +512,7 @@ export class MultiplayerPanel {
     if (!view) return { title: words.room, rows: [] };
     const you = view.players.find((player) => player.id === view.you)!;
     const waiting = view.players.filter((player) => !player.host && !player.ready).map((player) => player.nickname);
-    const depthOf = (id: number) => view.last?.divers.find((diver) => diver.id === id)?.depth;
     const rows: Part[] = view.players.map((player) => {
-      const depth = depthOf(player.id);
       const pick = () => {
         this.picked = player.id;
         this.doomed = "";
@@ -520,7 +523,7 @@ export class MultiplayerPanel {
         name: player.nickname,
         color: SUIT_COLORS[player.suit]!,
         host: player.host,
-        note: [player.ready ? words.ready : "", depth === undefined ? "" : formatMeters(depth)].filter(Boolean).join(" ~ "),
+        note: player.ready ? words.ready : "",
         ...(player.id === you.id ? { id: `player:${player.id}`, press: () => this.pickSuit(player), says: words.suitSays(player.nickname) }
         : you.host ? { id: `player:${player.id}`, press: pick, says: words.playerSays(player.nickname) }
         : {}),
