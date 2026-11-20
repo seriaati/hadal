@@ -40,9 +40,9 @@ dive, summon a creature. Its "Hide" button folds it away, and the browser rememb
 - `src/web/`: the game client (served by the same Bun process). `state.ts` holds the rules of
   a run; `sound.ts` makes every sound (there are no sound files); `pixel/` is the renderer
   (frame buffer and soft light, the hand-built fonts and the fetched one for other scripts
-  (`other.ts`), the scene, creatures, the parts and keys every panel shares (`ui.ts`), and
-  the settings, account and packs panels, which only list what they hold, and the screen that
-  ends a dive, `ending.ts`)
+  (`other.ts`), the scene, creatures (those NekuMeow drew are sprite frames in `drawn.ts`), the
+  parts and keys every panel shares (`ui.ts`), and the settings, account and packs panels,
+  which only list what they hold, and the screen that ends a dive, `ending.ts`)
 - `src/shared/`: types and constants used by both sides, and every word the game says, one
   table per language in `words/` (`en.ts` is the model; the compiler holds the others to it)
 - `packs/`: built-in packs, a folder per language with one JSON file each, in the format
@@ -50,6 +50,8 @@ dive, summon a creature. Its "Hide" button folds it away, and the browser rememb
   `src/server/packs.ts`
 - `design/brand/`: the logo (the diver's helmet) and the link preview; `bun design/brand/render.ts`
   draws the icons and `og-2.png` into `src/web/` (the preview needs Google Chrome)
+- `design/creatures/`: NekuMeow's sketches and the shapes that redraw them (`new.ts`);
+  `bun design/creatures/game.ts` writes their frames into `src/web/pixel/drawn.ts`
 
 ## Rules
 

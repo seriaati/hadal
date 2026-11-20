@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
 import { Ambient, SCARE, WIDE } from "./creatures";
+import { DRAWN } from "./drawn";
 import { Frame, type Light } from "./frame";
 
 test("when no kind of creature can arrive, nothing does", () => {
@@ -79,4 +80,47 @@ test("the screen cuts to dark once its mouth is wide open, and its face comes ba
   ambient.update(SCARE + 0.1 - (WIDE + 0.3), 7000, 0, width, height, 0);
   ambient.drawNear(frame, new Uint8Array(height), [], () => false);
   expect(frame.color.some((color) => color !== 0)).toBe(true);
+});
+
+test("the creatures NekuMeow drew keep to their own depths", () => {
+  const seen = (depth: number) => {
+    const ambient = new Ambient();
+    const kinds = new Set<string>();
+    for (let second = 0; second < 600; second++) {
+      ambient.update(1, depth, 0, 320, 180, 0);
+      for (const creature of ambient.creatures) kinds.add(creature.kind);
+    }
+    return kinds;
+  };
+  const shallow = seen(300);
+  expect(["nautilus", "angel", "dragon"].some((kind) => shallow.has(kind))).toBe(true);
+  expect(shallow.has("squid") || shallow.has("dumbo")).toBe(false);
+  const abyss = seen(5000);
+  expect(abyss.has("dumbo")).toBe(true);
+  expect(["nautilus", "angel", "dragon", "squid"].some((kind) => abyss.has(kind))).toBe(false);
+});
+
+test("each creature NekuMeow drew keeps one size through its frames, in the palette's colours", () => {
+  for (const { frames, glow } of Object.values(DRAWN)) {
+    const [width, height] = [frames[0]![0]!.length, frames[0]!.length];
+    for (const rows of frames) {
+      expect(rows).toHaveLength(height);
+      for (const row of rows) expect(row).toMatch(new RegExp(`^[.0-7tTmwrRoacvxgGl]{${width}}$`));
+    }
+    expect(glow).toMatch(/^[0-7tTmwrRoacvxgGl]*$/);
+  }
+});
+
+test("a creature NekuMeow drew is never drawn above the water", () => {
+  const [width, height] = [300, 200];
+  const frame = new Frame();
+  frame.resize(width, height);
+  const ambient = new Ambient();
+  ambient.update(0, 0, 0, width, height, 60);
+  ambient.spawn("nautilus", width, height, 300);
+  ambient.creatures[0]!.x = 20;
+  ambient.creatures[0]!.y = 45;
+  ambient.draw(frame, new Uint8Array(height).fill(3), 0, [], () => false);
+  expect(frame.color.subarray(0, 60 * width).some((color) => color !== 0)).toBe(false);
+  expect(frame.color.subarray(60 * width).some((color) => color !== 0)).toBe(true);
 });

@@ -44,7 +44,7 @@ function endDive(game: Game) {
   game.phaseTime = 0;
 }
 
-const CREATURES: [kind: CreatureKind, name: string][] = [["angler", "Anglerfish"], ["eyes", "Eyes"], ["serpent", "Eel"], ["whale", "Whale"], ["fish", "Fish"], ["leviathan", "Giant anglerfish"]];
+const CREATURES: [kind: CreatureKind, name: string][] = [["angler", "Anglerfish"], ["eyes", "Eyes"], ["serpent", "Eel"], ["whale", "Whale"], ["fish", "Fish"], ["leviathan", "Giant anglerfish"], ["nautilus", "Nautilus"], ["squid", "Squid"], ["dumbo", "Dumbo octopus"], ["angel", "Sea angel"], ["dragon", "Blue dragon"]];
 
 /** Storage may be closed (a private window): then the menu starts open. */
 const FOLDED = "hadal.dev.folded";

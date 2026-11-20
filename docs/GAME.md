@@ -54,6 +54,10 @@ traditional characters: 關 and 关 are the same answer.
   wide open round the diver. The screen cuts to dark; after a moment its face slams back at
   the screen as its jaws shut, then the dark lifts and the dive goes on.
   Chaos mode warns of its minor horror.
+- **Gentler life at its own depths.** Five creatures drawn by NekuMeow swim past, one at a
+  time, each where the water matches the one it was drawn on: a blue dragon and a sea angel
+  near the surface, a nautilus in the twilight, a squid in the deep and a dumbo octopus in
+  the abyss. Flat blocks of colour (a body, a shadow, a lit upper edge), tentacles that sway.
 - **Clean screen.** Only what matters is shown: the prompt, the air left, what is being
   typed, the verdict, the depth. Anything else earns its place or lives in the world.
 - **Quiet sound.** Sparse ambience, small effects and music made up as it plays, all in one

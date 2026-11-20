@@ -1,3 +1,4 @@
+import { DRAWN, type DrawnKind } from "./drawn";
 import { dither, hash, type Frame, type Light } from "./frame";
 
 // Creatures are scenery: they never touch the diver.
@@ -12,16 +13,25 @@ type Shoal = Turning & { kind: "fish"; x: number; y: number; age: number; way: n
 type Whale = Turning & { kind: "whale"; x: number; y: number; age: number; scale: number };
 /** `x` and `y` are where its lure is first seen. */
 type Leviathan = Turning & { kind: "leviathan"; x: number; y: number; age: number };
-type Creature = Eyes | Serpent | Angler | Shoal | Whale | Leviathan;
+/** One of the creatures NekuMeow drew, shown frame by frame from `drawn.ts`. */
+type Drawn = Turning & { kind: DrawnKind; x: number; y: number; age: number };
+type Creature = Eyes | Serpent | Angler | Shoal | Whale | Leviathan | Drawn;
 export type CreatureKind = Creature["kind"];
 
 /** How far each kind sits behind the diver: 1 moves with the wall, 0 would not move at all. */
-const PARALLAX = { eyes: 0.6, serpent: 0.35, angler: 0.5, fish: 0.8, whale: 0.3, leviathan: 0 };
+const PARALLAX = { eyes: 0.6, serpent: 0.35, angler: 0.5, fish: 0.8, whale: 0.3, leviathan: 0, nautilus: 0.7, squid: 0.6, dumbo: 0.5, angel: 0.7, dragon: 0.75 };
 /** The depth in metres above which the life of the upper sea can appear: shoals in the sunlit water, a whale down to the twilight. */
 const SHALLOW = { fish: 500, whale: 1100 };
 /** The depth in metres below which each kind can appear. */
 const HOME = { angler: 1000, eyes: 1500, serpent: 2500 };
 const CHAOS_HOME = { angler: 300, eyes: 0, serpent: 800 };
+/** Where each creature NekuMeow drew lives, in metres: there, the water is the water it was drawn on. */
+const RANGE: Record<DrawnKind, [from: number, to: number]> = { dragon: [100, 500], angel: [100, 800], nautilus: [150, 700], squid: [1000, 3900], dumbo: [4000, 7000] };
+/** Frames a second of their tentacles' sway. */
+const SWAY = 6;
+const isDrawn = (creature: Creature): creature is Drawn => creature.kind in DRAWN;
+const drawnSize = (kind: DrawnKind) => [DRAWN[kind].frames[0]![0]!.length, DRAWN[kind].frames[0]!.length] as const;
+
 /** How much larger a creature grows when it turns. */
 const GROWN = 1.7;
 
@@ -47,6 +57,7 @@ export class Ambient {
   private wait = 6;
   private shoalWait = 1;
   private whaleWait = 12;
+  private drawnWait = 8;
   /** The first row of water on screen: the life of the upper sea is never drawn in the sky. */
   private top = 0;
   /** Where the diver is on screen, and whether a dive is under way: the giant anglerfish comes for them. */
@@ -58,7 +69,7 @@ export class Ambient {
 
   /** A glitch: something in view that has not yet turned begins to. Says whether anything did. */
   jolt(width: number, height: number): boolean {
-    const shown = this.creatures.filter((creature) => creature.kind !== "fish" && creature.kind !== "whale" && creature.kind !== "leviathan" && !creature.turned && creature.flick <= 0 && creature.x < width && creature.x > -40 && creature.y > -20 && creature.y < height);
+    const shown = this.creatures.filter((creature) => creature.kind !== "fish" && creature.kind !== "whale" && creature.kind !== "leviathan" && !isDrawn(creature) && !creature.turned && creature.flick <= 0 && creature.x < width && creature.x > -40 && creature.y > -20 && creature.y < height);
     const creature = shown[Math.floor(Math.random() * shown.length)];
     if (!creature) return false;
     creature.flick = 0.5;
@@ -71,11 +82,20 @@ export class Ambient {
     this.wait = 6;
     this.shoalWait = 1;
     this.whaleWait = 12;
+    this.drawnWait = 8;
   }
 
   spawn(kind: CreatureKind, width: number, height: number, depth: number) {
     const water = Math.max(0, this.top);
-    if (kind === "fish") {
+    if (kind in DRAWN) {
+      const drawn = kind as DrawnKind;
+      const [w, h] = drawnSize(drawn);
+      const y = water + 8 + Math.random() * Math.max(0, height - water - h - 16);
+      // The nautilus comes in shell first from the left; the squid and the sea angel rise from below; the rest drift in from the right.
+      if (drawn === "nautilus") this.creatures.push({ kind: drawn, x: -w, y, age: 0, turned: false, flick: 0 });
+      else if (drawn === "squid" || drawn === "angel") this.creatures.push({ kind: drawn, x: width * 0.45 + Math.random() * Math.max(0, width * 0.5 - w), y: height + 2, age: 0, turned: false, flick: 0 });
+      else this.creatures.push({ kind: drawn, x: width + 2, y, age: 0, turned: false, flick: 0 });
+    } else if (kind === "fish") {
       const way = Math.random() < 0.5 ? -1 : 1;
       const fish = Array.from({ length: 6 + Math.floor(Math.random() * 9) }, () => ({ dx: Math.random() * 26, dy: (Math.random() - 0.5) * 12, phase: Math.random() * 6 }));
       const y = water + 10 + Math.random() * Math.max(0, height - water - 30);
@@ -121,10 +141,23 @@ export class Ambient {
       } else if (creature.kind === "whale") {
         // It surges a little with each downstroke of its flukes, and glides between them.
         creature.x -= (10 + 3 * Math.max(0, Math.sin(creature.age * WHALE_STROKE - 0.6))) * dt;
+      } else if (creature.kind === "nautilus") {
+        // It swims backwards, shell first, in pulses of its jet.
+        creature.x += (3 + 5 * Math.max(0, Math.sin(creature.age * 1.3)) ** 2) * dt;
+      } else if (creature.kind === "squid") {
+        creature.y -= (3 + 12 * Math.max(0, Math.sin(creature.age * 1.4)) ** 3) * dt;
+      } else if (creature.kind === "angel") {
+        creature.y -= 4 * dt;
+      } else if (creature.kind === "dumbo" || creature.kind === "dragon") {
+        creature.x -= (creature.kind === "dumbo" ? 4 : 3) * dt;
       }
     }
     this.creatures = this.creatures.filter((creature) => {
       if (creature.kind === "leviathan") return creature.age < LET_GO + THIN;
+      if (isDrawn(creature)) {
+        const [w, h] = drawnSize(creature.kind);
+        return creature.x > -w - 4 && creature.x < width + 4 && creature.y > -h - 4 && creature.y < height + 4;
+      }
       if (creature.kind === "whale") return creature.x + WHALE_LENGTH * creature.scale > 0 && creature.y + WHALE_HEIGHT * creature.scale > -20 && creature.y < height + 20;
       if (creature.y < -80 || creature.y > height + 80) return false;
       if (creature.kind === "eyes") return creature.age < creature.life;
@@ -146,6 +179,14 @@ export class Ambient {
     if (this.whaleWait <= 0) {
       this.whaleWait = 30 + Math.random() * 30;
       if (depth < SHALLOW.whale && !big) this.spawn("whale", width, height, depth);
+    }
+    // The creatures NekuMeow drew come one at a time, each only at its own depths.
+    this.drawnWait -= dt;
+    if (this.drawnWait <= 0) {
+      this.drawnWait = 18 + Math.random() * 18;
+      const kinds = (Object.keys(RANGE) as DrawnKind[]).filter((kind) => depth >= RANGE[kind][0] && depth < RANGE[kind][1]);
+      const kind = kinds[Math.floor(Math.random() * kinds.length)];
+      if (kind && !giant && !this.creatures.some(isDrawn)) this.spawn(kind, width, height, depth);
     }
 
     this.wait -= dt;
@@ -188,6 +229,7 @@ export class Ambient {
       else if (creature.kind === "fish") drawShoal(frame, creature, water, this.top);
       else if (creature.kind === "whale") drawWhale(frame, creature, water, this.top, behindWords);
       else if (creature.kind === "angler") drawAngler(frame, creature, water, time, lights, worse);
+      else if (isDrawn(creature)) drawDrawn(frame, creature, this.top, lights);
       else if (creature.age < WIDE) drawLeviathan(frame, creature, this.focus, water, lights, behindWords);
     }
   }
@@ -198,6 +240,24 @@ export class Ambient {
       if (creature.kind === "leviathan" && creature.age >= WIDE) drawLeviathan(frame, creature, this.focus, water, lights, behindWords);
     }
   }
+}
+
+/** A creature NekuMeow drew, its tentacles swaying frame by frame, and never drawn in the sky. */
+function drawDrawn(frame: Frame, creature: Drawn, top: number, lights: Light[]) {
+  const { frames, glow, strength, lights: own } = DRAWN[creature.kind];
+  const rows = frames[Math.floor(creature.age * SWAY) % frames.length]!;
+  // The drifters bob as they go, and the sea angel sways from side to side as it rises.
+  const bob = creature.kind === "dumbo" || creature.kind === "dragon" ? Math.sin(creature.age * 1.2) * 1.5 : 0;
+  const sway = creature.kind === "angel" ? Math.sin(creature.age * 0.9) * 3 : 0;
+  const x = Math.round(creature.x + sway);
+  const y = Math.round(creature.y + bob);
+  const clip = frame.clipTop;
+  frame.clipTop = Math.max(clip, top);
+  frame.emit = strength;
+  frame.sprite(rows, x, y, glow);
+  frame.emit = 0;
+  frame.clipTop = clip;
+  for (const light of own) lights.push({ ...light, x: x + light.x, y: y + light.y });
 }
 
 /** Faces left. */
