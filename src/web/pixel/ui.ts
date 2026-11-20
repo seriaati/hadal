@@ -33,7 +33,8 @@ export type Field = { kind: "field"; id: string; label: string; max: number; dot
  * them, one pip of each colour; otherwise a track of pips, with `text` at its right if given.
  */
 export type Slider = { kind: "slider"; id: string; label: string; value: number; set: (value: number) => void; steps?: number; colors?: number[]; text?: string };
-export type Note = { kind: "note"; text: string; bad?: boolean };
+/** A `warm` note warns of what something will cost before it is done, in amber. */
+export type Note = { kind: "note"; text: string; bad?: boolean; warm?: boolean };
 export type Wait = { kind: "wait"; text: string; done: number; of: number };
 /** Facts read together, such as how a room is set up. They wrap only between facts, and a `hot` one glows. With `press` it is a line, `value` at its right. */
 export type Summary = { kind: "summary"; facts: { text: string; hot?: boolean }[]; id?: string; press?: () => void; says?: string; value?: string };
@@ -748,7 +749,7 @@ export class Ui {
         place(control!, x - 10, wide + 20);
       } else if (part.kind === "note" || part.kind === "wait") {
         const gap = pitch(tiny, plain(part.text), 8);
-        lines.forEach((line, i) => say(line, tx, py + 1 + i * gap, part.kind === "wait" ? 7 : part.bad ? 18 : 6));
+        lines.forEach((line, i) => say(line, tx, py + 1 + i * gap, part.kind === "wait" ? 7 : part.bad ? 18 : part.kind === "note" && part.warm ? 15 : 6));
         if (part.kind === "note") continue;
         // One pip for each piece of the work that is done, and the next one blinks. Past 10 pieces a pip stands for a tenth of the work.
         const pips = py + lines.length * gap + 5;

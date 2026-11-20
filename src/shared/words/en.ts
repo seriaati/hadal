@@ -248,6 +248,8 @@ export const en = {
     copied: "Link copied",
     leave: "Leave",
     change: "Change",
+    /** Said in the set-up while anyone is ready: a change puts their lanterns out. */
+    putsOut: (lit: number) => `changing these puts out ${lit} ${lit === 1 ? "lantern" : "lanterns"}`,
     lost: "the connection to the server was lost",
     removedYou: "the host removed you from the room",
     bannedYou: "the host banned you from the room",

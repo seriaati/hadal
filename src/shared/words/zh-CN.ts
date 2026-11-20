@@ -224,6 +224,7 @@ export const zhCN: Words = {
     copied: "链接已复制",
     leave: "离开",
     change: "更改",
+    putsOut: (lit: number) => `更改这些设置会熄灭 ${lit} 盏提灯`,
     lost: "与服务器的连接已断开",
     removedYou: "房主把你移出了房间",
     bannedYou: "房主已禁止你进入这个房间",

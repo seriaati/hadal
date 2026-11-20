@@ -30,6 +30,10 @@ const REFUSALS: Record<Refusal, Where> = {
 /** A lantern that is out, as the line that lights it shows it: a little paler than in the sea, so it reads on the dark. */
 const COLD_LANTERN = LANTERN_OUT.map((row) => row.replace(/[rR34]/g, (char) => ({ r: "5", R: "6", "3": "4", "4": "5" })[char]!));
 
+/** How long, in seconds, what the host has just changed glows in the room's line; and the least time between two of the pings that say so. */
+const HOT_SECONDS = 3;
+const RESET_SECONDS = 1;
+
 /** The air is set in steps of this many seconds. */
 const AIR_STEP = 5;
 
@@ -73,6 +77,9 @@ export class MultiplayerPanel {
   /** The host has changed the settings, and the room has not yet come back with them; and the settings as last seen. */
   private changing = false;
   private seenSettings = "";
+  /** What the host last changed, and when, in seconds; and when the ping that said so was last heard. */
+  private changed: { keys: (keyof RoomSettings)[]; at: number } | null = null;
+  private pinged = -Infinity;
   private packs: PackSummary[] = [];
   private builtIn: PackSummary[] = [];
   private copiedAt = -Infinity;
@@ -344,13 +351,24 @@ export class MultiplayerPanel {
           // Without storage the next room starts as a new one does.
         }
       }
+      // A guest sees what the host has just changed, and hears that it put their lantern out.
+      const before = this.host?.code === code && this.seenSettings ? (JSON.parse(this.seenSettings) as RoomSettings) : null;
+      const reset = !!before && seen !== this.seenSettings && !players.find((player) => player.id === you)?.host;
+      if (reset) {
+        this.changed = { keys: (Object.keys(settings) as (keyof RoomSettings)[]).filter((key) => JSON.stringify(settings[key]) !== JSON.stringify(before[key])), at: this.sent };
+        if (this.sent - this.pinged >= RESET_SECONDS) {
+          this.pinged = this.sent;
+          this.sound.reset();
+        }
+      }
       this.seenSettings = seen;
       const host = players.find((player) => player.host);
       if (host && this.host?.code === code && this.host.id !== host.id) this.crowned = { id: host.id, from: this.host.name, at: this.sent };
       this.host = host ? { code, id: host.id, name: host.nickname } : null;
       // A dive takes the screen as it begins, and gives it back to the room when it ends.
       const diving = message.room.dive !== null;
-      this.hearLanterns(message.room, diving !== this.diving);
+      // The ping of a change stands for the lanterns it put out.
+      this.hearLanterns(message.room, diving !== this.diving || reset);
       this.hearHearts(message.room);
       if (diving !== this.diving) {
         this.diving = diving;
@@ -528,9 +546,14 @@ export class MultiplayerPanel {
       return [{ kind: "diver", id, name: player.nickname, press: pick, says: words.playerSays(player.nickname) }];
     });
     const { mode, air, hearts, judging } = view.settings;
-    const facts = [words.modes[mode][0], words.air(air), mode === "longest" ? words.newHearts(words.hearts[hearts]) : "", packsOf(view.settings, this.builtIn.length, true), judging ? words.liveJudging : ""]
-      .filter(Boolean)
-      .map((text) => ({ text }));
+    const hot = (...keys: (keyof RoomSettings)[]) => !!this.changed && performance.now() / 1000 - this.changed.at < HOT_SECONDS && keys.some((key) => this.changed!.keys.includes(key));
+    const facts = [
+      { text: words.modes[mode][0], hot: hot("mode") },
+      { text: words.air(air), hot: hot("air") },
+      { text: mode === "longest" ? words.newHearts(words.hearts[hearts]) : "", hot: hot("hearts") },
+      { text: packsOf(view.settings, this.builtIn.length, true), hot: hot("builtIn", "ownPacks") },
+      { text: judging ? words.liveJudging : "", hot: hot("judging") },
+    ].filter((fact) => fact.text);
     const rows: Part[] = [
       ...this.refusal("copy"),
       you.host ? { kind: "summary", id: "setup", facts, value: words.change, says: words.setUp, press: () => this.open(this.setup) } : { kind: "summary", facts },
@@ -574,6 +597,8 @@ export class MultiplayerPanel {
     const words = t().rooms;
     if (!settings) return { title: words.setUp, rows: [] };
     const air = this.air ?? settings.air;
+    // While anyone is ready, the host is told what a change costs before making one.
+    const lit = this.client.view!.players.filter((player) => !player.host && player.ready).length;
     const keyed = this.account.account?.keys.anthropic || this.account.account?.keys.jev;
     const shift = (way: -1 | 1) => this.change({ mode: MODES[(MODES.indexOf(settings.mode) + way + MODES.length) % MODES.length] });
     const judging = () => this.change({ judging: !settings.judging });
@@ -583,6 +608,7 @@ export class MultiplayerPanel {
     return {
       title: words.setUp,
       rows: [
+        ...(lit ? [{ kind: "note", text: words.putsOut(lit), warm: true } as Part] : []),
         { kind: "press", id: "mode", label: words.mode, value: words.modes[settings.mode][0], press: () => this.open(this.modeStep), shift },
         {
           kind: "slider",

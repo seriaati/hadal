@@ -147,6 +147,13 @@ export class Sound {
     else this.note("effects", "triangle", 320, 110, 0.35, 0.25);
   }
 
+  /** The host changed the room's settings and every lantern went out: a new prompt's two pings, falling and softer. */
+  reset() {
+    if (!this.rig) return;
+    this.note("effects", "sine", 988, 960, 0.09, 0.5);
+    this.note("effects", "sine", 740, 720, 0.09, 0.8, 0.005, 0.14);
+  }
+
   /** A lit lantern means the diver is ready in the room. */
   lantern(lit: boolean) {
     if (!this.rig) return;

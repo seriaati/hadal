@@ -224,6 +224,7 @@ export const zhTW: Words = {
     copied: "連結已複製",
     leave: "離開",
     change: "更改",
+    putsOut: (lit: number) => `更改這些設定會熄滅 ${lit} 盞提燈`,
     lost: "與伺服器的連線已斷開",
     removedYou: "房主把你踢出了房間",
     bannedYou: "房主已禁止你進入這個房間",
