@@ -45,10 +45,8 @@ export const LANTERN_OUT = [".rrR.", "rrrrR", ".434.", "43334", ".434.", "rrrrR"
 /** A small light that stays with the lamp it woke at. */
 export const FRY = [".m.", "mwm", "T.T"];
 const ARROW = ["77777", ".777.", "..7.."];
-/** Beside the name of a diver above or below the view. */
 const UP = ["..6..", ".666.", "66666"];
 const DOWN = ["66666", ".666.", "..6.."];
-/** A heart of a diver in "longest", and one spent. */
 const HEART = ["xx.xx", "xxxxx", "xxxxx", ".xxx.", "..x.."];
 const SPENT = ["55.55", "5.5.5", "5...5", ".5.5.", "..5.."];
 /**
@@ -244,7 +242,6 @@ export function lobbyPlaces(width: number): { gap: number; across: number } {
   return { gap, across: CHAIN_X + 10 - first };
 }
 
-/** A name cut to fit `width`: a long name loses its end. */
 function clip(name: string, width: number): string {
   while (name.length > 1 && measure(FONTS.tiny, name) > width) name = name.slice(0, -1);
   return name;
@@ -272,7 +269,6 @@ function seeded(seed: number) {
   };
 }
 
-/** The shape of the trench, generated once for its whole height. */
 function buildRock() {
   const random = seeded(4180);
   const edge = new Int16Array(ROWS); // right edge of the near wall
@@ -393,7 +389,7 @@ export class Scene {
       this.across = 0;
       const gap = game.depth - this.depth;
       if (game.phase === "ascent") {
-        // The dive is over: the diver is hauled back up the line, past every lamp, gently at both ends.
+        // The dive is over: the diver is hauled back up the line, gently at both ends.
         const t = Math.min(1, game.phaseTime / ascentSeconds(game.depth));
         this.depth = game.depth * (1 - t * t * (3 - 2 * t));
       } else if (game.phase === "done") {
@@ -445,7 +441,6 @@ export class Scene {
       });
     };
 
-    // The lines that hang from the boat: the player's alone, or one for each diver of a room.
     // On a wide screen as many as fit beside the words; in a dive on a narrow one, the diver in focus and the one before.
     // A chaos diver whose air ran out has a dead lantern.
     const members: Crew[] = crew?.map((diver) => ({ ...diver, slot: this.slots.get(diver.name) ?? diver.slot })) ?? [
@@ -480,8 +475,7 @@ export class Scene {
     if (lead) this.focus = { x: lead.x + 10, y: lead.y + 12 };
     const sub = vessel(game);
 
-    // Running low on air: the lantern sputters and the dark begins to pulse red.
-    // In the last third of the air, the diver is in trouble and the screen shows it.
+    // In the last third of the air the lantern sputters and the dark begins to pulse red.
     const starved = game.phase === "ask" ? Math.max(0, 1 - game.air / (this.full(game) / 3)) : 0;
     this.panic += (starved - this.panic) * Math.min(1, dt * 5);
     this.pulse += dt * (1.2 + this.panic * 1.6) * Math.PI * 2;
@@ -536,7 +530,7 @@ export class Scene {
       return value;
     };
 
-    // ---- water, darkening with depth (and a night sky above it)
+    // Water, darkening with depth, and a night sky above it.
     frame.clear();
     if (this.water.length !== H) {
       this.water = new Uint8Array(H);
@@ -566,7 +560,7 @@ export class Scene {
     }
 
     const surface = screenY(SURFACE_ROW);
-    // ---- the boat the lines hang from: one hull, a wheelhouse over every line
+    // The boat the lines hang from: one hull, a wheelhouse over every line.
     const slots = members.map((diver) => diver.slot);
     if (!game.chaos && surface > -20 && surface < H + 20) {
       // In a room the hull runs under every place, taken or not.
@@ -583,8 +577,8 @@ export class Scene {
       frame.block = -1;
     }
 
-    // ---- the far wall of the trench: a darker dark, at the right of the world. In a room the world goes on past the last line,
-    // and before a dive, with every place close together, the wall stands off the screen.
+    // The far wall of the trench, at the right of the world. In a room the world goes on past the last line, and before
+    // a dive, with every place close together, the wall stands off the screen.
     const wall = W + Math.max(...slots) * this.gap - across + Math.round(this.spread * W);
     const end = Math.min(W, wall);
     for (let y = 0; y < H; y++) {
@@ -594,7 +588,7 @@ export class Scene {
       for (let x = wall - reach; x < end; x++) frame.put(x, y, Math.max(0, water[y]! - 1));
     }
 
-    // ---- far lights: other lives, a long way off
+    // Far lights: other lives, a long way off.
     for (let cy = Math.floor(rowAt(0) / 24); cy <= Math.floor(rowAt(H) / 24); cy++) {
       if (depthOf(cy * 24) < 800) continue;
       for (let cx = Math.max(4, Math.floor(across / 24)); cx * 24 - across < W; cx++) {
@@ -658,7 +652,7 @@ export class Scene {
       }
     }
 
-    // ---- the near wall: a silhouette, lit only where a lamp reaches. In a room it stands left of the first line.
+    // The near wall: a silhouette, lit only where a lamp reaches. In a room it stands left of the first line.
     const shift = -across;
     frame.block = 224;
     for (let y = 0; y < H; y++) {
@@ -792,7 +786,7 @@ export class Scene {
     }
     frame.block = -1;
 
-    // ---- bubbles climbing the line from the helmet of the diver in focus: a burst as the clamp lets go
+    // Bubbles climbing the line from the helmet of the diver in focus: a burst as the clamp lets go.
     if (game.phase !== "drop") this.freed = false;
     else if (!this.freed && game.phaseTime >= RELEASE && lead) {
       this.freed = true;
@@ -823,7 +817,7 @@ export class Scene {
       else for (const [i, j, c] of [[1, 0, hi], [0, 1, hi], [2, 1, lo], [1, 2, lo]] as const) frame.put(x + i, y + j, c);
     }
 
-    // ---- the divers, lantern in hand, the one in focus in front. One who is out has been hauled up.
+    // The one in focus is drawn in front. One who is out has been hauled up.
     frame.block = 178;
     for (const { x, y, suit, lit, fade, going: away } of lines.filter((line) => !line.out).sort((a, b) => Number(a.focus) - Number(b.focus))) {
       // One hauled up goes into the boat, under its hull.
@@ -839,7 +833,7 @@ export class Scene {
     if (sub && sub.fade < 0.5) for (const at of subs) frame.sprite(sub.open ? CLAMP_OPEN : CLAMP_SHUT, at.x + 22, at.y + 16);
     frame.block = -1;
 
-    // ---- in a room, their names over them, and over another player's their depth
+    // In a room, their names over them, and over another player's their depth.
     const { tiny, large } = FONTS;
     const right = wide && !this.lobby ? 180 : W - 2;
     // In a room a name has its own place, or two on a narrow screen where its neighbours hang lower.

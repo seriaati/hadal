@@ -3,7 +3,7 @@ import { deflateSync } from "node:zlib";
 import { PALETTE } from "../../src/web/pixel/frame";
 import { HELMET } from "./helmet";
 
-// Draws the link preview and the icons into src/web/: `bun design/brand/render.ts`. The preview needs Google Chrome.
+// Run with `bun design/brand/render.ts`; the preview needs Google Chrome.
 const here = import.meta.dir;
 const web = `${here}/../../src/web`;
 

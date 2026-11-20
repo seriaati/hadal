@@ -2,17 +2,16 @@ import file from "@fontsource/fusion-pixel-10px-proportional-sc/files/fusion-pix
 import { latin, other, plain } from "./font";
 
 /**
- * The font for everything the hand-built fonts cannot draw: Fusion Pixel, a ready-made pixel
- * font of 10 pixels with Cyrillic, Greek, Japanese, Chinese and Korean. It is 414 KB (despite
- * "latin" in the file's name, that is the whole font), so it is fetched only once some text
- * needs it. Each letter is drawn once on a hidden canvas and kept as rows of pixels, like a
- * hand-built glyph. It is drawn SCALE times its size and read at the middle of each block:
- * some systems thicken text as they smooth it, which at the font's own size fills the
- * one-pixel gaps of a dense letter, but never reaches the middle of a block.
- * A letter the font lacks comes out in the device's own font, roughly.
+ * Fusion Pixel, a 10-pixel font with Cyrillic, Greek, Japanese, Chinese and Korean. It is 414 KB (despite "latin" in
+ * the file's name, that is the whole font), so it is fetched only once some text needs it. A letter it lacks comes out
+ * in the device's own font, roughly.
  */
 const FAMILY = "Hadal Other";
 const SIZE = 10;
+/**
+ * Letters are drawn this many times their size and read at the middle of each block: some systems thicken text as they
+ * smooth it, which at the font's own size fills the one-pixel gaps of a dense letter.
+ */
 const SCALE = 8;
 /** Rows kept above and below the line the letters sit on: room for a mark over a capital, and for a tail. */
 const ASCENT = 10;

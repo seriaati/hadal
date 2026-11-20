@@ -13,7 +13,6 @@ type Shoal = Turning & { kind: "fish"; x: number; y: number; age: number; way: n
 type Whale = Turning & { kind: "whale"; x: number; y: number; age: number; scale: number };
 /** `x` and `y` are where its lure is first seen. */
 type Leviathan = Turning & { kind: "leviathan"; x: number; y: number; age: number };
-/** One of the creatures NekuMeow drew, shown frame by frame from `drawn.ts`. */
 /** `rest` and `life`: where the dumbo octopus stops to look in, and for how many seconds, before it backs away. */
 type Drawn = Turning & { kind: DrawnKind; x: number; y: number; age: number; rest?: number; life?: number };
 type Creature = Eyes | Serpent | Angler | Shoal | Whale | Leviathan | Drawn;
@@ -111,7 +110,6 @@ export class Ambient {
       const y = 8 + Math.random() * (height - 16);
       this.creatures.push({ kind, x, y, age: 0, life: 5 + Math.random() * 4, gap: 2 + Math.floor(Math.random() * 3), turned: false, flick: 0 });
     } else if (kind === "leviathan") {
-      // It rises from the dark below the diver.
       const x = this.focus.x + 20 + Math.random() * 60;
       const y = this.focus.y + (height - this.focus.y) * (0.55 + Math.random() * 0.3);
       this.creatures.push({ kind, x, y, age: 0, turned: false, flick: 0 });

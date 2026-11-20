@@ -64,8 +64,8 @@ export class MultiplayerPanel {
   private refused: [Where, string] | null = null;
   /** Why the player is back at the first step. */
   private note = "";
-  /** `sent` is when the server last said how the dive stands, in seconds. */
   diving = false;
+  /** When the server last said how the dive stands, in seconds. */
   private sent = 0;
   private dive = new RoomDive();
   /** What the player last sent as typed, on their turn. */
@@ -584,7 +584,6 @@ export class MultiplayerPanel {
     return { title: words.leave, exit: true, code: { text: view.code, copy, copied }, world, rows, back: () => this.leaveRoom(), sure };
   };
 
-  /** Every way out of the room asks first, on the step's name: one more way out leaves. */
   private leaveRoom() {
     if (!this.leaving) {
       this.leaving = true;
@@ -731,7 +730,6 @@ export class MultiplayerPanel {
     this.ui.focus(next ? `player:${next.id}` : "act");
   }
 
-  /** What the host may do to another player of the room. */
   private playerStep = (): Step => {
     const words = t().rooms;
     const player = this.client.view?.players.find((one) => one.id === this.picked);

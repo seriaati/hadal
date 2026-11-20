@@ -53,11 +53,12 @@ type Control = Press | Field | Slider | Action | Diver | (Summary & { id: string
 /**
  * While `busy`, presses wait. `back` replaces going one step back when the player asks to (by
  * Escape, Left, the `‹` or a press outside; `head` when it was on the `‹`), and `escape` replaces it on Escape alone. `code`
- * follows the name in pale letters: a room's code, which has to be read out, and which a press copies.
+ * follows the name in pale letters: a room's code, which has to be read out, and which a press copies; while `copied`
+ * it says so.
  * `foot` comes after the rows; when the step is too long for its room it stays at the bottom and only the rows scroll.
  * With `sure`, the name asks "Sure?" in its place, and `sure` is called when the focus leaves it.
  * With `exit`, going back leaves something (a room): the name has an exit mark in place of the `‹`, and the code stands
- * against the right edge, saying it was `copied` for a moment. `world` are the divers pressed where they hang.
+ * against the right edge. `world` are the divers pressed where they hang.
  */
 export type Step = {
   title: string;
@@ -129,7 +130,6 @@ export function factLines(facts: Summary["facts"], width: number): number[][] {
   return lines;
 }
 
-/** How much a summary's `value` takes of its line. */
 const valueRoom = (part: Summary) => (part.value ? measure(FONTS.tiny, plain(part.value)) + 8 : 0);
 
 /**
@@ -518,7 +518,6 @@ export class Ui {
   /** Enter needs no handling here: the name and the code are buttons. */
   private headKey(event: KeyboardEvent, code: boolean) {
     const controls = this.placed.map((spot) => spot.part).filter(isControl);
-    // Up from the name goes to the divers over it, if there are any.
     const over = this.world[0]?.part;
     const to =
       event.key === "ArrowDown" || (event.key === "Tab" && !event.shiftKey) ? this.controls.get(controls[0]?.id ?? "")

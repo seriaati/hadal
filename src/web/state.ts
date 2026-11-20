@@ -127,7 +127,6 @@ export function tick(game: Game, dt: number) {
   else fail(game);
 }
 
-/** The one button: start, try an answer, or move on. */
 export function pressEnter(game: Game) {
   if (game.phase === "title") {
     void start(game);

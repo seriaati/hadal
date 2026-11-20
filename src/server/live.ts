@@ -152,11 +152,9 @@ async function ask(accountId: string | null, provider: Provider, judge: (apiKey:
 }
 
 /**
- * Rule on an answer the prompt's pack does not list. A ruling made before is reused, whoever
- * asked for it; a new one is made only for a signed-in player who keeps an API key, and is
- * then kept for everyone. Jev is asked first if the player keeps its key, being much the
- * faster and cheaper; Claude rules where Jev is not sure, or where there is no Jev key.
- * Without a ruling the answer stays wrong.
+ * For an answer the pack does not list. A ruling made before is reused, whoever asked for it; a new one is made only
+ * for a signed-in player who keeps an API key, and is then kept for everyone. Jev, much the faster and cheaper, is
+ * asked first; Claude rules where Jev is not sure, or where there is no Jev key.
  */
 export async function judgeLive(entry: PromptEntry, input: string, accountId: string | null): Promise<Verdict> {
   const typed = input.trim();

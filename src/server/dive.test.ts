@@ -311,7 +311,7 @@ test("in longest, the dive ends when one is left, and they win", async () => {
 
 test("in longest, when the prompts run out the deepest of those still in wins", async () => {
   const { dive: d, clock, ended, view } = dive([1, 2, 3], WRONG, "longest");
-  // Prompt one: 1 dives deepest of all, then goes out on prompt two after losing a heart on each.
+  // 1 runs out of air on both prompts, losing a heart on each, and goes out on prompt two.
   for (const [turn, answer] of [[1, ""], [2, "blue"], [3, "red"]] as const) {
     if (answer) await d.answer(turn, answer);
     else await clock.pass(AIR + GRACE_SECONDS);

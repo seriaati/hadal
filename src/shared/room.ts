@@ -33,7 +33,7 @@ export const PAUSE_SECONDS = 2.5;
 export const GRACE_SECONDS = 1;
 /** Seconds the submarines of a chaos dive take to let the divers go, before the first turn. */
 export const DROP_SECONDS = 4;
-/** In "longest", the hearts a diver starts with, the most they can have, and the points of rarity that fill the bar and give one more. In "chaos" a diver has one heart, and wins no more. */
+/** In "longest", the hearts a diver starts with and the most they can have. In "chaos" a diver has one heart, and wins no more. */
 export const START_HEARTS = 2;
 export const MAX_HEARTS = 5;
 /** The points that fill the bar, by how easily hearts are won. At every level one rare answer alone is not a heart. */

@@ -12,7 +12,7 @@ import { judgeLive } from "./live";
 
 /**
  * One connection. `accountId` is who was signed in when it was opened, not now; `browser` is the id the browser keeps in a
- * cookie; `language` is the language the player plays in; `closed` is set once the connection has closed.
+ * cookie; `closed` is set once the connection has closed.
  */
 export type Member = { accountId: string | null; browser: string; language: Language; closed?: boolean; send(message: ServerMessage): void };
 
@@ -117,7 +117,6 @@ function enter(member: Member, message: { nickname: string; suit: number }, to: 
   if (marks(member).some((mark) => room.banned.has(mark))) return "banned";
   if (room.players.length >= MAX_PLAYERS) return "full";
   if (room.players.some((player) => player.nickname === nickname)) return "name-taken";
-  // The suit asked for, if nobody wears it yet; otherwise one nobody wears, at random.
   const worn = new Set(room.players.map((player) => player.suit));
   const free = Array.from({ length: SUITS }, (_, suit) => suit).filter((suit) => !worn.has(suit));
   const suit = worn.has(message.suit) ? free[Math.floor(Math.random() * free.length)]! : message.suit;
@@ -171,8 +170,8 @@ async function change(member: Member, room: Room, changes: Partial<RoomSettings>
 }
 
 /**
- * Begin a dive, once every guest is ready. A pack of the host's that is gone by now is left
- * out, and without a key any more the answers are judged only by the pack and kept rulings.
+ * A pack of the host's that is gone by now is left out, and without a key any more the answers are judged only by the
+ * pack and kept rulings.
  */
 async function start(member: Member, room: Room): Promise<Refusal | void> {
   if (!isHost(member, room)) return "not-host";
@@ -244,7 +243,7 @@ function farewell(room: Room, id: number, how: Gone) {
   for (const { member } of room.players) member.send({ type: "gone", id, how });
 }
 
-/** The host takes a player out of the room. One banned cannot come back while the room lasts. */
+/** One banned cannot come back while the room lasts. */
 function remove(member: Member, room: Room, id: number, ban: boolean) {
   const player = room.players.find((one) => one.id === id);
   if (!isHost(member, room) || room.dive || !player || player.member === member) return;

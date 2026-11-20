@@ -41,7 +41,6 @@ const prompts = buildIndex(Object.values(builtIn).flat());
 usePrompts(builtIn);
 await migrate();
 
-/** The language the player plays in, which the browser keeps in a cookie. */
 function languageOf(req: BunRequest): Language {
   const language = req.cookies.get(LANGUAGE_COOKIE);
   return isLanguage(language) ? language : "en";
@@ -49,7 +48,7 @@ function languageOf(req: BunRequest): Language {
 
 const wordsOf = (req: BunRequest) => wordsIn(languageOf(req));
 
-/** Sign up or sign in. httpOnly keeps the token out of reach of scripts in the page. */
+/** httpOnly keeps the token out of reach of scripts in the page. */
 async function enter(req: BunRequest, entry: (username: string, password: string, words: Words) => Promise<Entry>) {
   const { username, password } = (await req.json()) as { username: string; password: string };
   const result = await entry(String(username ?? ""), String(password ?? ""), wordsOf(req));

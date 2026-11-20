@@ -4,7 +4,7 @@ import type { Words } from "./en";
 
 export const zhCN: Words = {
   name: "简体中文",
-  // Room names are Latin letters and digits, so 和 is set off by spaces.
+  // Names in a room may be in Latin letters, so 和 is set off by spaces.
   list: (items: string[]) => (items.length < 2 ? items.join("") : `${items.slice(0, -1).join("、")} 和 ${items.at(-1)}`),
   meters: (meters: number) => `${Math.round(meters).toLocaleString("en-US")} m`,
   count: (n: number, of: number) => `${n}/${of}`,

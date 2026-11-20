@@ -36,10 +36,8 @@ export function enoughFor(index: PromptIndex, divers: number): PromptIndex {
 }
 
 /**
- * A dive of a room: one prompt for everyone, answered in turns, each turn with its own air.
- * Who answers first moves on by one with each prompt. It keeps the clock and the score. In
- * "longest" a turn lost costs a heart, and a diver with none left is out of the dive. In "chaos"
- * a diver has one heart, and the dive opens with the divers being dropped off.
+ * One prompt for everyone, answered in turns. In "longest" and "chaos" a turn lost costs a heart and a diver with none
+ * left is out; in "chaos" a diver has one heart, and the dive opens with the divers being dropped off.
  */
 export class Dive {
   private round = 0;

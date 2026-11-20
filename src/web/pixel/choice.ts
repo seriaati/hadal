@@ -7,7 +7,6 @@ import type { Part, Step, Ui } from "./ui";
 /** The packs to choose from, those chosen, and how a change is made: the same in a room's set-up and in a custom dive. */
 export type PackChoice = { builtIn: PackSummary[]; own: PackSummary[]; chosen: Chosen; signedIn: boolean; choose: (changes: Partial<Chosen>) => void };
 
-/** The line that opens the built-in packs, then one for each of the player's own. */
 export function packRows({ builtIn, own, chosen, signedIn, choose }: PackChoice, openBuiltIn: () => void): Part[] {
   const words = t().rooms;
   const built = chosen.builtIn.length;
@@ -39,7 +38,6 @@ export function packRows({ builtIn, own, chosen, signedIn, choose }: PackChoice,
   ];
 }
 
-/** A line that turns every built-in pack on or off, then one for each. */
 export function builtInRows({ builtIn, chosen, choose }: PackChoice): Part[] {
   const words = t().rooms;
   const all = chosen.builtIn.length === builtIn.length;

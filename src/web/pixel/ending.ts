@@ -25,7 +25,7 @@ const RISE_SECONDS = 0.7;
 /** When the first lamp starts to rise, and the most time between one lamp and the next. */
 const RISE_FROM = 0.35;
 const STAGGER = 0.06;
-/** A lamp's chain hangs from the rope, and the lamp under it. */
+/** How many pixels a lamp's chain hangs from the rope; and the mark under the lamp in focus in a room. */
 const CHAIN = 4;
 const UNDER = [".a.", "aaa"];
 /** The small lamps of a room's rows on a wide screen, where six rows of full lamps would not fit. */

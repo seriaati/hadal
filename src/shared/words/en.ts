@@ -2,9 +2,8 @@ import { MAX_PLAYERS, type Hearts, type Mode, type Refusal } from "../room";
 import { NICKNAME_MAX, USERNAME_MAX } from "../types";
 
 /**
- * Everything the game says, in English. Every other language has the same keys, which the
- * compiler checks. Words on screen are drawn in the 3 by 5 capitals, so their case only shows
- * to a screen reader.
+ * Every other language has the same keys, which the compiler checks. Words on screen are drawn
+ * in the 3 by 5 capitals, so their case only shows to a screen reader.
  */
 export const en = {
   /** The language's own name, as the setting shows it. */

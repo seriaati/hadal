@@ -3,8 +3,7 @@ import type { Game } from "../state";
 import { FONTS, drawText, measure, wrap } from "./font";
 import { hash, type Frame } from "./frame";
 
-// A chaos dive is seen as if on an old tape that is failing: grain, scanlines, colours that slip off what is bright, a
-// tracking band, and faults that tear, freeze, roll, melt and shatter the picture, worse the deeper and the shorter of air.
+// A chaos dive is seen as if on an old tape that is failing.
 
 const DARKER = [0, 0, 1, 2, 3, 4, 5, 6, 2, 8, 9, 10, 1, 12, 13, 14, 15, 2, 12, 1, 19, 20];
 /** The colours of a band gone wrong: the sea in the reds of a warning lamp. */
@@ -178,12 +177,12 @@ export class Glitch {
       frame.shade[i] = 0;
     };
 
-    // ---- a frozen picture
+    // A frozen picture.
     if (!this.faults.some((fault) => fault.kind === "stick")) this.still = null;
     else if (!this.still) this.still = layers.map((layer) => layer.slice()) as Layers;
     else for (let i = 0; i < W * H; i++) if (free(i % W, Math.floor(i / W))) copy(i, this.still, i);
 
-    // ---- faults that move the picture read it as it was before they began moving it
+    // Faults that move the picture read it as it was before they began moving it.
     const before = layers.map((layer) => layer.slice()) as Layers;
     for (const fault of this.faults) {
       const t = fault.age / fault.life;
@@ -251,7 +250,7 @@ export class Glitch {
       }
     }
 
-    // ---- the signal lost: the picture drowns in static, and sometimes something looks out of it
+    // The signal lost: the picture drowns in static, and sometimes something looks out of it.
     const at = this.lostFor;
     if (this.lost > 0) {
       const thick = at >= 0 ? Math.min(1, (at - STATIC_AT) / 1) : 0.85;
@@ -295,7 +294,7 @@ export class Glitch {
 
     if (caption && at < OFF_AT) this.caption(frame, time);
 
-    // ---- a lost dive: the set switches off, the picture squeezed to a line, then to nothing
+    // A lost dive: the set switches off, the picture squeezed to a line, then to nothing.
     if (at >= OFF_AT && at < DARK_AT) {
       const t = (at - OFF_AT) / (DARK_AT - OFF_AT);
       const keep = Math.max(0, Math.round((H / 2) * (1 - t * 2)));

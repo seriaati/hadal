@@ -86,7 +86,7 @@ function build() {
   return { context, gains, hiss, surface, deep, rush, drone, hum, tapeHiss, wash, tape, musicBus, wow, flutter };
 }
 
-/** Every sound is synthesised as needed. It only listens to the game and the scene, never changes them. */
+/** It only listens to the game and the scene, never changes them. */
 export class Sound {
   levels: Record<Level, number> = { master: 0.5, music: 1, effects: 1, ambient: 1, ...JSON.parse(localStorage.getItem(STORED) ?? "{}") };
   private rig: Rig | null = null;

@@ -8,7 +8,7 @@ test("when no kind of creature can arrive, nothing does", () => {
   const frame = new Frame();
   frame.resize(width, height);
   const ambient = new Ambient();
-  // At 1,200 m only an anglerfish can appear, and never while another large creature is about.
+  // At 1,200 m only a squid, which gives no light, and an anglerfish, never while another is about, can come.
   ambient.spawn("angler", width, height, 1200);
   for (let second = 0; second < 8; second++) ambient.update(1, 1200, 0, width, height, 0);
 

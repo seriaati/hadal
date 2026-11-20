@@ -252,7 +252,7 @@ export class PacksPanel {
         }
       }
     } catch {
-      // Stopped by the player, or the connection was lost: `problems` says which.
+      // Stopped by the player, or the connection was lost: the signal says which.
     }
     this.writing = null;
     this.unwritten = stop.signal.aborted ? "" : (problems[0] ?? "");
