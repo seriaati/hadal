@@ -81,6 +81,7 @@ export function Game() {
       title: t().title.about,
       rows: [
         { kind: "note", text: t().about.madeBy },
+        { kind: "note", text: t().about.creatures },
         { kind: "press", id: "source", label: "github.com/seriaati/hadal", says: t().about.source, press: () => open(REPO, "_blank", "noopener") },
       ],
     });

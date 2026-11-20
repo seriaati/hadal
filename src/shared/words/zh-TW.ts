@@ -31,7 +31,7 @@ export const zhTW: Words = {
     noPacks: "還沒有選擇題庫，請在上面選擇",
   },
   horror: "注意：含輕微恐怖元素",
-  about: { madeBy: "Hadal 由 seria 製作", source: "在 GitHub 上檢視原始碼" },
+  about: { madeBy: "Hadal 由 seria 製作", creatures: "海洋生物由 NekuMeow 繪製", source: "在 GitHub 上檢視原始碼" },
   leaving: {
     title: "離開這次下潛？",
     stay: "繼續下潛",
