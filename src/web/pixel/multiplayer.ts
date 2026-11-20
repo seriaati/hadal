@@ -296,6 +296,7 @@ export class MultiplayerPanel {
       bar: mine?.bar ?? 0,
       barFull: BAR_FULL[view.settings.hearts],
       ahead: this.ahead ? typed : "",
+      offline: this.client.offline,
     };
   }
 
@@ -560,7 +561,7 @@ export class MultiplayerPanel {
       { kind: "gap" },
     ];
     if (you.host) {
-      rows.push({ kind: "action", id: "act", label: words.start, dim: waiting.length > 0, press: () => this.start() });
+      rows.push({ kind: "action", id: "act", label: words.start, dim: waiting.length > 0 || this.client.offline, press: () => this.start() });
       const refused = this.refused?.[0] === "start" ? this.refused[1] : "";
       // Not ready is said for as long as somebody is not.
       const early = refused === words.refusals["not-ready"];
@@ -572,9 +573,11 @@ export class MultiplayerPanel {
         label: you.ready ? words.putOut : words.light,
         says: you.ready ? words.putOutSays : words.lightSays,
         icon: you.ready ? { rows: LANTERN, glow: "ac" } : { rows: COLD_LANTERN },
+        dim: this.client.offline,
         press: () => this.client.send({ type: "ready", ready: !you.ready }),
       });
     }
+    if (this.client.offline) rows.push({ kind: "note", text: words.reconnecting, bad: true });
     const copy = () => this.copy(view.code);
     const copied = performance.now() - this.copiedAt < COPIED_FOR;
     const sure = this.leaving ? () => (this.leaving = false) : undefined;

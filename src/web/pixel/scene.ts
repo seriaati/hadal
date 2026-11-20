@@ -222,6 +222,8 @@ export type Turn = {
   barFull: number;
   /** What the player has typed ahead of their turn, while another diver answers. */
   ahead: string;
+  /** The player may be cut off from the room: what they type does not reach it. */
+  offline: boolean;
 };
 const LINE_GAP = 64;
 /**
@@ -1120,9 +1122,10 @@ export class Scene {
     if (!result) {
       const typed = plain(game.input);
       const font = fit([large, medium, tiny], `${typed}_`, room);
-      // In a room everyone sees what the diver whose turn it is types; only the diver has the caret.
-      const yours = !turn || turn.yours;
-      if (turn?.yours) say(tiny, t().dive.yourTurn, x, typingY - 9, 15);
+      // In a room everyone sees what the diver whose turn it is types; only the diver has the caret, unless it reaches nobody.
+      const yours = !turn || (turn.yours && !turn.offline);
+      if (turn?.offline) say(tiny, t().rooms.reconnecting, x, typingY - 9, 18);
+      else if (turn?.yours) say(tiny, t().dive.yourTurn, x, typingY - 9, 15);
       // One who joined during the dive only watches it, and is told so where a diver is told their turn has come.
       else if (turn?.watcher) say(tiny, t().dive.watcher, x, typingY - 9, 6);
       const { end, y } = sayWrapped(font, typed, typingY, yours ? 7 : 6);

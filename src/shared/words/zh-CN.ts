@@ -226,6 +226,7 @@ export const zhCN: Words = {
     change: "更改",
     putsOut: (lit: number) => `更改这些设置会熄灭 ${lit} 盏提灯`,
     lost: "与服务器的连接已断开",
+    reconnecting: "连接中断 ~ 正在重新连接",
     removedYou: "房主把你移出了房间",
     bannedYou: "房主已禁止你进入这个房间",
     playerSays: (name: string) => `${name}：转让房主、移出或禁止进入`,

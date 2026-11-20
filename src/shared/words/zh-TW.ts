@@ -226,6 +226,7 @@ export const zhTW: Words = {
     change: "更改",
     putsOut: (lit: number) => `更改這些設定會熄滅 ${lit} 盞提燈`,
     lost: "與伺服器的連線已斷開",
+    reconnecting: "連線中斷 ~ 正在重新連線",
     removedYou: "房主把你踢出了房間",
     bannedYou: "房主已禁止你進入這個房間",
     playerSays: (name: string) => `${name}：轉讓房主、踢出或禁止進入`,

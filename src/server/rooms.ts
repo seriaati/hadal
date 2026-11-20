@@ -312,6 +312,7 @@ export async function receive(member: Member, text: string) {
   } catch {
     return;
   }
+  if (message?.type === "ping") return member.send({ type: "pong" });
   const room = places.get(member);
   const refuse = (reason: Refusal | void) => reason && member.send({ type: "refused", reason });
   if (message?.type === "create" && !room) {

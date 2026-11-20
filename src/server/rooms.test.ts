@@ -160,6 +160,16 @@ test("a player whose connection closes keeps their place, and takes it back from
   leave(host);
 });
 
+test("a ping is answered at once, in a room or out of one", async () => {
+  const stranger = member();
+  await say(stranger, { type: "ping" });
+  expect(stranger.sent).toEqual([{ type: "pong" }]);
+  const { host } = await room();
+  await say(host, { type: "ping" });
+  expect(host.sent.at(-1)).toEqual({ type: "pong" });
+  leave(host);
+});
+
 test("a room the server no longer has is opened again under its code by the first player back", async () => {
   const code = "ACDEF";
   const ana = member();
