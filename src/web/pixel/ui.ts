@@ -199,10 +199,10 @@ export class Ui {
   /** The control that had the focus when the step was last drawn. */
   private seen = "";
 
-  /** `typing` is what takes the keys while no panel is open. */
+  /** `takeKeys` hands the keys back to the game when the panel closes. */
   constructor(
     private form: HTMLFormElement,
-    private typing: HTMLElement,
+    private takeKeys: () => void,
   ) {
     Object.assign(this.leave, { type: "button", tabIndex: -1 });
     Object.assign(this.copier, { type: "button", tabIndex: -1 });
@@ -273,7 +273,7 @@ export class Ui {
     this.steps = [];
     this.kept.clear();
     this.sync();
-    this.typing.focus();
+    this.takeKeys();
   }
 
   focus(id: string) {

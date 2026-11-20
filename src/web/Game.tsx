@@ -40,10 +40,10 @@ export function Game() {
     const display = new Display(canvas, glow.current!);
     const sound = new Sound();
     const glitch = new Glitch();
-    const ui = new Ui(form.current!, input);
+    const ui = new Ui(form.current!, () => takeKeys());
     const settings = () => settingsStep(sound);
     const account: AccountPanel = new AccountPanel(ui, () => void packs.load());
-    const packs = new PacksPanel(ui, account, sound, (pack) => void start(game, { builtIn: [], own: [pack] }));
+    const packs = new PacksPanel(ui, account, sound, (pack) => dive(false, { builtIn: [], own: [pack] }));
     const multiplayer = new MultiplayerPanel(ui, account, sound);
     // Wait for the account so the signed-in name can be filled in.
     const linked = new URLSearchParams(location.search).get("room");
@@ -54,8 +54,14 @@ export function Game() {
     let ending: Ending | null = null;
     const closeEnding = () => (multiplayer.ending ? multiplayer.closeEnding() : pressEnter(game));
     let shown = game;
+    // A phone opens its keyboard for whatever field has the focus, so there the field takes it only in a dive.
+    const takeKeys = () => {
+      if (!scene.touch || (!ending && (multiplayer.diving || game.phase !== "title"))) input.focus();
+    };
+    takeKeys();
     const dive = (chaos: boolean, packs?: Chosen) => {
       ui.close();
+      input.focus();
       void start(game, packs, chaos);
     };
     const custom = new CustomPanel(ui, account, (packs, chaos) => dive(chaos, packs));
@@ -95,9 +101,9 @@ export function Game() {
       else location.reload();
     };
     const leaveDive = () => {
-      ui.close();
       if (multiplayer.diving) multiplayer.leaveDive();
       else leave(game);
+      ui.close();
       input.value = "";
     };
     const leaving = (): Step => ({
@@ -156,7 +162,7 @@ export function Game() {
       // The controls of an open panel take the focus themselves.
       if (form.current!.contains(event.target as Node)) return;
       if (event.target !== input) event.preventDefault();
-      if (!ui.open) input.focus();
+      if (!ui.open) takeKeys();
     };
     // The cog and the title menu are drawn, not page controls, so the pointer is tested against them here.
     const onPointer = (event: PointerEvent) => {
@@ -251,7 +257,10 @@ export function Game() {
       // A chaos dive opens with a hard glitch.
       if (shown.phase === "drop" && phase !== "drop") glitch.cut(frame.height, scene.focus);
       // A dive may have used the player's keys: refresh so the menu can tell of any that failed.
-      if (shown.phase === "title" && phase !== "title") account.refresh();
+      if (shown.phase === "title" && phase !== "title") {
+        account.refresh();
+        if (scene.touch) input.blur();
+      }
       phase = shown.phase;
       const focus = closing ? closing.point : scene.focus;
       const faults = glitch.count;
@@ -281,7 +290,7 @@ export function Game() {
     <main ref={stage} className="stage">
       <canvas ref={pixels} className="pixels" />
       <canvas ref={glow} className="glow" />
-      <input ref={keys} className="keys" maxLength={MAX_ANSWER_LENGTH} autoFocus enterKeyHint="send" autoComplete="off" autoCapitalize="off" spellCheck={false} />
+      <input ref={keys} className="keys" maxLength={MAX_ANSWER_LENGTH} enterKeyHint="send" autoComplete="off" autoCapitalize="off" spellCheck={false} />
       {/* Whatever panel is open: `Ui` fills it with the controls of the step on screen. */}
       <form ref={form} className="panel" hidden />
       {dev && <DevMenu {...dev} />}
