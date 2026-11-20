@@ -235,7 +235,7 @@ const server = Bun.serve({
     },
     // An error left uncaught here (the database out of reach) would stop the server, and every room with it.
     message: (ws, text) => receive(ws.data, String(text)).catch((error) => console.error(error)),
-    close: (ws) => lost(ws.data),
+    close: (ws, code) => lost(ws.data, code),
   },
 });
 

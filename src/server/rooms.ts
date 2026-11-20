@@ -43,6 +43,11 @@ let builtInPacks: string[] = [];
 let packsIn: Partial<Record<Language, string[]>> = {};
 let clock: Clock = realClock;
 
+/** A line of a room's story for the server's log, to follow a player who lost their connection. Quiet in the tests. */
+function log(room: Room, player: Pick<Player, "id" | "nickname">, what: string) {
+  if (process.env.NODE_ENV !== "test") console.log(`${new Date().toISOString()} room ${room.code}: ${player.nickname} (#${player.id}) ${what}`);
+}
+
 const isSuit = (suit: number) => Number.isInteger(suit) && suit >= 0 && suit < SUITS;
 const packOf = (promptId: string) => promptId.slice(0, promptId.indexOf("/"));
 const isHost = (member: Member, room: Room) => room.players.some((player) => player.host && player.member === member);
@@ -116,9 +121,11 @@ function enter(member: Member, message: { nickname: string; suit: number }, to: 
   const worn = new Set(room.players.map((player) => player.suit));
   const free = Array.from({ length: SUITS }, (_, suit) => suit).filter((suit) => !worn.has(suit));
   const suit = worn.has(message.suit) ? free[Math.floor(Math.random() * free.length)]! : message.suit;
-  room.players.push({ id: room.nextId++, nickname, suit, ready: false, host: !room.players.length, member });
+  const player: Player = { id: room.nextId++, nickname, suit, ready: false, host: !room.players.length, member };
+  room.players.push(player);
   rooms.set(room.code, room);
   places.set(member, room);
+  log(room, player, player.host ? "opened the room" : "joined");
   tell(room);
 }
 
@@ -245,6 +252,7 @@ function remove(member: Member, room: Room, id: number, ban: boolean) {
   room.players = room.players.filter((one) => one !== player);
   places.delete(player.member);
   player.member.send({ type: "removed", banned: ban });
+  log(room, player, ban ? "was banned by the host" : "was removed by the host");
   farewell(room, player.id, ban ? "banned" : "removed");
   tell(room);
 }
@@ -253,10 +261,20 @@ function remove(member: Member, room: Room, id: number, ban: boolean) {
 export const AWAY_SECONDS = 30;
 const away = new Map<Member, Timer>();
 
-/** The connection closed: the player leaves the room unless they are back in time. */
-export function lost(member: Member) {
+/** The connection closed, with this WebSocket close code: the player leaves the room unless they are back in time. */
+export function lost(member: Member, code?: number) {
   member.closed = true;
-  if (places.has(member)) away.set(member, setTimeout(() => leave(member), AWAY_SECONDS * 1000));
+  const room = places.get(member);
+  if (!room) return;
+  const player = room.players.find((one) => one.member === member)!;
+  log(room, player, `lost their connection (close code ${code ?? "none"}${room.dive ? ", in a dive" : ""}), their place is kept ${AWAY_SECONDS} s`);
+  away.set(
+    member,
+    setTimeout(() => {
+      log(room, player, `did not come back within ${AWAY_SECONDS} s`);
+      leave(member);
+    }, AWAY_SECONDS * 1000),
+  );
 }
 
 /**
@@ -276,6 +294,7 @@ async function back(member: Member, message: Extract<ClientMessage, { type: "bac
     places.delete(player.member);
     player.member = member;
     places.set(member, room);
+    log(room, player, "came back");
     return tell(room);
   }
   if (code.length !== ROOM_CODE_LENGTH || [...code].some((letter) => !LETTERS.includes(letter))) return "no-room";
@@ -294,6 +313,7 @@ export function leave(member: Member) {
   places.delete(member);
   const at = room.players.findIndex((player) => player.member === member);
   const [gone] = room.players.splice(at, 1);
+  log(room, gone!, "left");
   if (!room.players.length) {
     rooms.delete(room.code);
     return room.dive?.close();
