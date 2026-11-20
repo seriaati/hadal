@@ -460,7 +460,8 @@ export class Scene {
       .map((diver) => {
         const depth = crew ? this.shown.get(diver.name)! : this.depth;
         const settled = diver.focus ? !diving : Math.abs(diver.depth - depth) <= 4;
-        const place = screenY(rowOf(depth)) + (settled ? Math.round(Math.sin(time * 1.3 + diver.slot * 2)) : 0) - held(game) + staggered(diver.slot);
+        const bob = settled ? Math.round(Math.sin(time * 1.3 + diver.slot * 2)) : 0;
+        const place = screenY(rowOf(depth)) + bob - held(game) + staggered(diver.slot);
         // Hauled up, a diver is out of sight once their boots are under the hull, or over the top of the screen.
         const away = diver.going ? going(diver.going, place + 26 - Math.max(0, screenY(SURFACE_ROW))) : null;
         const x = lineX(diver.slot) + (away?.dx ?? 0);
@@ -468,10 +469,11 @@ export class Scene {
         const y = place + (away?.dy ?? 0);
         // One hauled up into the boat takes their lantern with them.
         const lit = diver.lit && (!away || (away.lit && y + 17 > screenY(SURFACE_ROW)));
-        return { ...diver, x, y, depth, lit, fade: away?.fade ?? 0, lamps: hang(marks, diver.lamps ?? [], depth, x) };
+        return { ...diver, x, y, bob, depth, lit, fade: away?.fade ?? 0, lamps: hang(marks, diver.lamps ?? [], depth, x) };
       });
     const lamps = lines.flatMap((line) => line.lamps);
-    this.floor = Math.max(0, ...lines.map((line) => line.y + 34));
+    // Without the bob, or the top of the dock would bob with the divers.
+    this.floor = Math.max(0, ...lines.map((line) => line.y - line.bob + 34));
     const lead = lines.find((line) => line.focus);
     if (lead) this.focus = { x: lead.x + 10, y: lead.y + 12 };
     const sub = vessel(game);
