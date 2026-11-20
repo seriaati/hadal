@@ -1,5 +1,5 @@
 import { FONTS, drawText, measure, pitch, plain, wrap } from "./font";
-import { dither, type Frame } from "./frame";
+import type { Frame } from "./frame";
 import { t } from "../language";
 import type { Scene } from "./scene";
 
@@ -491,7 +491,7 @@ export class Ui {
   /** `scale` is how many screen pixels a pixel of the frame takes. */
   draw(frame: Frame, scene: Scene, scale: number, time: number, dive: boolean) {
     scene.hush = null;
-    scene.dock = Infinity;
+    scene.shade = null;
     if (!this.open) return;
     this.sync();
     const { tiny } = FONTS;
@@ -548,7 +548,6 @@ export class Ui {
     this.placed = [...laid.placed, ...foot];
     this.box = { x: left, y: top, w: width, h: shown };
     if (!wide || docked) scene.hush = [top - 12, top + shown + 8];
-    if (docked) scene.dock = top - 10;
 
     // The form is laid over the rows of the step and scrolls them: the wheel, a finger and a screen reader move it.
     const from = wide && !docked ? left - 12 : 0;
@@ -557,19 +556,8 @@ export class Ui {
     if (scroll !== this.form.scrollTop / scale) this.form.scrollTop = scroll * scale;
     const shift = Math.round(scroll);
 
-    // The water behind the words goes two shades darker, with a soft edge.
-    // In the dock it reaches the bottom of the screen, and its top edge is the water's own darkening (see `Scene.dock`).
-    const x0 = wide && !docked ? left - 12 : -99;
-    const y0 = top - 10;
-    const y1 = docked ? H + 99 : top + shown + 10;
-    for (let y = Math.max(0, y0); y < Math.min(H, y1); y++) {
-      for (let x = Math.max(0, x0); x < W; x++) {
-        const depth = Math.min(x - x0, docked ? 99 : y - y0, y1 - 1 - y);
-        if (depth < 10 && !dither(x, y, (depth + 1) / 11)) continue;
-        const color = frame.color[y * W + x]!;
-        if (color >= 2 && color <= 5) frame.color[y * W + x] = Math.max(1, color - 2);
-      }
-    }
+    // The sea behind the words goes two shades darker, down to the bottom of the screen in the dock; the scene darkens it.
+    scene.shade = { left: wide && !docked ? left - 12 : -99, top: top - 10, bottom: docked ? H + 99 : top + shown + 10 };
 
     const say = (text: string, x: number, y: number, color: number) => {
       const end = drawText(frame, tiny, text, x, y, color);

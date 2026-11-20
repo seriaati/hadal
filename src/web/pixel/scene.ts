@@ -25,6 +25,8 @@ const DIVER_X = 84;
 const SURFACE_ROW = -14;
 /** Rows of rock generated above row 0, so that array indices stay positive. */
 const PAD = 300;
+/** How far the water darkens towards an open panel. */
+const SOFT_EDGE = 44;
 const ROWS = PAD + rowOf(11000) + 300;
 /** Where a world row's rock is found. There is no floor: below the rock that was generated, the trench repeats. */
 function rockAt(row: number): number {
@@ -345,20 +347,20 @@ export class Scene {
   /** The divers of the room the player is in, or is about to make or join. */
   crew: Crew[] | null = null;
   /**
-   * The player is in a room and no dive is on: every place along the boat is shown. The words lie in a dock at the
-   * foot of the screen from row `dock` down, and the water darkens towards it; `floor` is the row under the lowest
-   * diver, which the dock does not climb over.
+   * The player is in a room and no dive is on: every place along the boat is shown, and the words lie in a dock at the
+   * foot of the screen. `floor` is the row under the lowest diver, which the dock does not climb over.
    */
   lobby = false;
-  dock = Infinity;
   floor = 0;
+  /** The box behind an open panel's words, out to the right edge of the screen, where the sea is darker (see `draw`). */
+  shade: { left: number; top: number; bottom: number } | null = null;
   /** Where each diver of a room stands on the frame, by name, as last drawn, and the one whose control has the focus. */
   places = new Map<string, { x: number; y: number; w: number; h: number }>();
   chosen: string | null = null;
-  /** How far the room's places are spread out, from 0 (as in a dive) to 1 (all in view), and the dock as shown. */
+  /** How far the room's places are spread out, from 0 (as in a dive) to 1 (all in view), and the panel's box as shown. */
   private spread = 0;
   private gap = LINE_GAP;
-  private shaded = Infinity;
+  private shaded: { left: number; top: number; bottom: number } | null = null;
   turn: Turn | null = null;
   /** The middle of the diver in focus, on the frame, as last drawn. */
   focus = { x: 0, y: 0 };
@@ -560,21 +562,6 @@ export class Scene {
     }
 
     const surface = screenY(SURFACE_ROW);
-    // In a room the water darkens down to the dock, two shades by its top, so the sea and the words meet without an edge.
-    this.shaded = this.dock === Infinity || this.shaded === Infinity ? this.dock : approach(this.shaded, this.dock, 1 - Math.exp(-dt * 12), 60 * dt);
-    if (this.shaded < H) {
-      const from = Math.max(surface + 2, this.shaded - 44);
-      for (let y = Math.max(0, Math.round(from)); y < Math.min(H, this.shaded); y++) {
-        const t = (y - from) / (this.shaded - from);
-        const k = t * t * (3 - 2 * t) * 2;
-        for (let x = 0; x < W; x++) {
-          const steps = Math.floor(k) + (dither(x, y, k - Math.floor(k)) ? 1 : 0);
-          const color = frame.color[y * W + x]!;
-          if (steps && color >= 2 && color <= 5) frame.put(x, y, Math.max(1, color - steps));
-        }
-      }
-    }
-
     // ---- the boat the lines hang from: one hull, a wheelhouse over every line
     const slots = members.map((diver) => diver.slot);
     if (!game.chaos && surface > -20 && surface < H + 20) {
@@ -642,6 +629,29 @@ export class Scene {
     for (const { y } of boundaries) {
       if (y < 0 || y >= H) continue;
       for (let x = 0; x < W; x++) if (x % 5 !== 2 && x % 5 !== 4 && !behindWords(x, y)) frame.put(x, y, x % 5 < 2 ? 5 : 3);
+    }
+
+    // The sea behind an open panel's words goes two shades darker, with all that swims in it, and darkens towards them
+    // around their box, so the two meet without an edge. As the box grows or shrinks, the darkening around it follows.
+    const box = this.shade;
+    const ease = (from: number, to: number) => approach(from, to, 1 - Math.exp(-dt * 12), 60 * dt);
+    const shaded = (this.shaded = box && this.shaded ? { left: ease(this.shaded.left, box.left), top: ease(this.shaded.top, box.top), bottom: ease(this.shaded.bottom, box.bottom) } : box);
+    if (box && shaded) {
+      const smooth = (t: number) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
+      // Above, it never reaches over the surface: between the two it takes what room there is.
+      const above = Math.min(SOFT_EDGE, shaded.top - surface - 2);
+      const from = Math.max(0, surface + 1, Math.round(Math.min(box.top, shaded.top - above)));
+      const to = Math.min(H, Math.max(box.bottom, shaded.bottom + SOFT_EDGE));
+      for (let y = from; y < to; y++) {
+        const down = y >= shaded.top ? (shaded.bottom + SOFT_EDGE - y) / SOFT_EDGE : above > 0 ? (y - shaded.top + above) / above : 0;
+        for (let x = Math.max(0, Math.round(Math.min(box.left, shaded.left - SOFT_EDGE))); x < W; x++) {
+          const inside = x >= box.left && y >= box.top && y < box.bottom;
+          const k = inside ? 2 : 2 * smooth(down) * smooth((x - shaded.left + SOFT_EDGE) / SOFT_EDGE);
+          const steps = Math.floor(k) + (dither(x, y, k - Math.floor(k)) ? 1 : 0);
+          const color = frame.color[y * W + x]!;
+          if (steps && color >= 2 && color <= 5) frame.put(x, y, Math.max(1, color - steps));
+        }
+      }
     }
 
     // ---- the near wall: a silhouette, lit only where a lamp reaches. In a room it stands left of the first line.
