@@ -3,8 +3,7 @@ import { en, type Words } from "../shared/words/en";
 import { sql } from "./db";
 import { validatePack } from "./packs";
 
-/** As many as the packs panel shows without scrolling. */
-export const MAX_PACKS = 10;
+export const MAX_PACKS = 25;
 
 export async function listPacks(accountId: string): Promise<PackSummary[]> {
   const rows = await sql`

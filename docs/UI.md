@@ -131,7 +131,7 @@ view 6.
 - A line says what pressing it does, as a verb: "Add a pack", "Keep key", "Sign out". A row
   of a list is the thing's own name.
 - A message is one plain sentence without a full stop. A refusal says what happened and, if
-  there is one, the way out ("an account keeps at most 10 packs: remove one first").
+  there is one, the way out ("an account keeps at most 25 packs: remove one first").
 - The same thing has the same name everywhere: a pack, a key, a name, a password.
 - Every word comes from the table of the player's language in `src/shared/words/`, and the
   rules above hold in each language. Chinese is drawn in the bundled font, which stands taller
