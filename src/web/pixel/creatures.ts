@@ -162,7 +162,8 @@ export class Ambient {
       if (creature.kind === "leviathan") return creature.age < LET_GO + THIN;
       if (isDrawn(creature)) {
         const [w, h] = drawnSize(creature.kind);
-        return creature.x > -w - 4 && creature.x < width + 4 && creature.y > -h - 4 && creature.y < height + 4;
+        // Gone once it has left the screen, or risen out of the sea.
+        return creature.x > -w - 4 && creature.x < width + 4 && creature.y + h > Math.max(0, top) && creature.y < height + 4;
       }
       if (creature.kind === "whale") return creature.x + WHALE_LENGTH * creature.scale > 0 && creature.y + WHALE_HEIGHT * creature.scale > -20 && creature.y < height + 20;
       if (creature.y < -80 || creature.y > height + 80) return false;
@@ -264,7 +265,10 @@ function drawDrawn(frame: Frame, creature: Drawn, top: number, lights: Light[]) 
   frame.clipTop = clip;
   // Their light swells and fades, slower and softer than the anglerfish's lure.
   const swell = 1 + 0.25 * Math.sin(creature.age * 2);
-  for (const light of own) lights.push({ ...light, x: x + light.x, y: y + light.y, strength: light.strength * swell });
+  for (const light of own) {
+    // No glow in the sky: a light above the surface is not cast.
+    if (y + light.y >= top) lights.push({ ...light, x: x + light.x, y: y + light.y, strength: light.strength * swell });
+  }
 }
 
 /** Faces left. */

@@ -138,3 +138,22 @@ test("the dumbo octopus only looks in for a while, then backs away", () => {
   for (let second = 0; second < 30; second++) ambient.update(1, 5000, 0, width, height, 0);
   expect(ambient.creatures.includes(dumbo)).toBe(false);
 });
+
+test("a creature that rises out of the sea leaves no glow in the sky", () => {
+  const [width, height] = [300, 200];
+  const frame = new Frame();
+  frame.resize(width, height);
+  const ambient = new Ambient();
+  ambient.update(0, 0, 0, width, height, 60);
+  ambient.spawn("angel", width, height, 300);
+  const angel = ambient.creatures[0]!;
+  // Half out of the water, its glowing gut above the surface.
+  angel.y = 48;
+  const lights: Light[] = [];
+  ambient.draw(frame, new Uint8Array(height).fill(3), 0, lights, () => false);
+  expect(lights).toHaveLength(0);
+  // Wholly out of it, it is gone.
+  angel.y = 30;
+  ambient.update(0, 0, 0, width, height, 60);
+  expect(ambient.creatures.includes(angel)).toBe(false);
+});
