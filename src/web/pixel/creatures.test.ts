@@ -3,7 +3,7 @@ import { Ambient, SCARE, WIDE } from "./creatures";
 import { DRAWN } from "./drawn";
 import { Frame, type Light } from "./frame";
 
-test("when no kind of creature can arrive, nothing does", () => {
+test("beside an anglerfish at 1,200 m, nothing else gives light", () => {
   const [width, height] = [300, 200];
   const frame = new Frame();
   frame.resize(width, height);
