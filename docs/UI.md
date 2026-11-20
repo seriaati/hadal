@@ -97,9 +97,13 @@ The same in every panel.
 
 ## Sizes
 
-- A line is 12 game pixels tall, or as many as it takes to be 40 screen pixels tall (20 on a
-  phone, where one game pixel is two screen pixels): room for a fingertip. If a step would
-  have to scroll at that height but fits at 12, it falls back to 12.
+- On a phone held upright the frame is about 150 game pixels across (one game pixel is two and
+  a half screen pixels or more), so the words are big enough to read and press. The game fills
+  only what can be seen: when the keyboard opens, the frame loses rows at the bottom and keeps
+  its scale.
+- A line is 12 game pixels tall, or as many as it takes to be 40 screen pixels tall (about 15
+  on a phone): room for a fingertip. If a step would have to scroll at that height but fits at
+  12, it falls back to 12.
 - 12 pixels is also what a line in another script needs (the bundled font is 10 tall).
 - A slider's track is 60 pixels: 20 pips of 2, a pixel apart.
 - Text is the 3 by 5 capitals throughout; a long name loses its end.

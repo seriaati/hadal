@@ -293,6 +293,8 @@ export class Scene {
   /** The screen row the diver hangs at, and the row under the prompt and the air: a panel is set out from these. */
   base = 0;
   hudBottom = 0;
+  /** Where the diver is on their way to hang, while `base` moves: -1 before the first frame. */
+  private place = -1;
   /** The screen rows a panel lies over, where it lies over the rock: no zone is named there. */
   hush: [top: number, bottom: number] | null = null;
   /** When each lit lamp was reached, by its index, and how many lamps have been reached since the game began. */
@@ -359,10 +361,14 @@ export class Scene {
     const sideways = across - this.shifted;
     this.shifted = across;
 
-    const base = (this.base = Math.round(H * 0.36)); // screen row of the diver's world row
+    const wide = W >= 300;
+    // On a narrow screen the prompt runs across the top, and the diver hangs under it with room below for the answer.
+    const asked = !wide && (game.phase === "ask" || game.phase === "verdict") && !!game.prompts[game.round];
+    const goal = asked ? Math.min(Math.max(H * 0.36, this.hudBottom + 12), H - 76) : H * 0.36;
+    this.place = this.place < 0 ? goal : approach(this.place, goal, 1 - Math.exp(-dt * 6), 20 * dt);
+    const base = (this.base = Math.round(this.place)); // screen row of the diver's world row
     const rowAt = (y: number) => camera + y - base;
     const screenY = (row: number) => row - camera + base;
-    const wide = W >= 300;
 
     if (!crew && game.lamps.length === 0 && this.reached.size > 0) {
       this.reached.clear();
@@ -632,6 +638,11 @@ export class Scene {
       if (this.hush && zone.y + 18 > this.hush[0] && zone.y + 4 < this.hush[1]) continue;
       // A name the bottom edge would cut waits until it fits.
       if (zone.y + 18 > H) continue;
+      // Nor is a name drawn where words stood last frame, as they do across a narrow screen.
+      const named = 4 + shift + Math.max(measure(FONTS.tiny, zone.name), measure(FONTS.tiny, formatMeters(zone.from)));
+      let crowded = false;
+      for (let y = Math.max(0, zone.y + 4); y < Math.min(H, zone.y + 18); y++) crowded ||= this.wordsFrom[y]! <= named && this.wordsTo[y]! >= 0;
+      if (crowded) continue;
       drawText(frame, FONTS.tiny, zone.name, 4 + shift, zone.y + 4, 6);
       drawText(frame, FONTS.tiny, formatMeters(zone.from), 4 + shift, zone.y + 12, 5);
     }
@@ -877,9 +888,10 @@ export class Scene {
     const { width: W, height: H } = frame;
     const { tiny, medium, large, huge } = FONTS;
     const wide = W >= 300;
-    const x = wide ? (this.crew ? 184 : 170) : 112;
-    const room = W - x - 8;
-    const answerY = base + (wide ? 10 : 52);
+    // On a narrow screen the words take the whole width: the prompt over the diver, the answer and the title under them.
+    const x = wide ? (this.crew ? 184 : 170) : 10;
+    const room = W - x - (wide ? 8 : 10);
+    const answerY = base + (wide ? 10 : 32);
     const amber = (tall: number) => (row: number) => (row < tall * 0.3 ? 16 : row < tall * 0.8 ? 15 : 14);
 
     this.wordsFrom.fill(W);
@@ -907,12 +919,13 @@ export class Scene {
       const note = menu.note ?? t().title.tagline;
       const under = wrap(tiny, note, room);
       const gap = pitch(tiny, note, 8);
+      const titleY = wide ? base - 4 : base + 32;
       // On a short screen the title stands higher, as far as it must for its last line to fit.
-      const lift = Math.max(0, Math.min(base - 8, base + tall + 2 + rise(tiny, note) + 4 + under.length * gap + menu.items.length * MENU_ROW - 4 - H));
+      const lift = Math.max(0, Math.min(titleY - 4, titleY + 4 + tall + 2 + rise(tiny, note) + 4 + under.length * gap + menu.items.length * MENU_ROW - 4 - H));
       frame.emit = 110;
-      say(font, "HADAL", x, base - 4 - lift, amber(tall));
+      say(font, "HADAL", x, titleY - lift, amber(tall));
       frame.emit = 0;
-      const top = base + tall + 2 + rise(tiny, note) - lift;
+      const top = titleY + 4 + tall + 2 + rise(tiny, note) - lift;
       under.forEach((line, i) => say(tiny, line, x, top + i * gap, menu.note ? 18 : 6));
       this.menuLeft = x;
       this.menuTop = top + 4 + under.length * gap;

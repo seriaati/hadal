@@ -112,6 +112,9 @@ export class Frame {
   }
 }
 
+/** On a screen held upright, the frame is at least this many pixels wide. */
+const NARROWEST = 144;
+
 /** The part of the window that can be seen, in screen pixels from the top left of the page: a phone's keyboard hides the rest. */
 export function visible() {
   const view = window.visualViewport;
@@ -150,8 +153,9 @@ export class Display {
   private tallest = { width: 0, height: 0 };
 
   /**
-   * Size the canvases to the part of the window that can be seen (above a phone's keyboard) at a whole-number pixel
-   * scale, and the frame to match.
+   * Size the canvases to the part of the window that can be seen (above a phone's keyboard) at a pixel scale that keeps
+   * pixels crisp, and the frame to match. On a phone held upright the frame is about 150 pixels across, so the words
+   * are big enough to read and press.
    */
   fit(frame: Frame) {
     const { width: seen, height: tall } = visible();
@@ -159,7 +163,9 @@ export class Display {
     if (seen !== this.tallest.width || !matchMedia("(pointer: coarse)").matches) this.tallest = { width: seen, height: tall };
     this.tallest.height = Math.max(this.tallest.height, tall);
     const full = this.tallest.height;
-    const scale = Math.max(2, Math.floor(Math.min(seen / 240, full / 180)));
+    const ratio = devicePixelRatio || 1;
+    // Upright, in whole device pixels so that every pixel of the frame is as big as the next.
+    const scale = full > seen ? Math.max(2, Math.min(Math.floor((seen * ratio) / NARROWEST), Math.floor((full * ratio) / 216), Math.floor(3 * ratio)) / ratio) : Math.max(2, Math.floor(Math.min(seen / 240, full / 180)));
     this.scale = scale;
     // A window with no size (as some phones report for a moment) keeps the frame of one pixel: an empty image cannot be made.
     const width = Math.max(1, Math.ceil(seen / scale));
