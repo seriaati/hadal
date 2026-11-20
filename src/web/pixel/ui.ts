@@ -235,7 +235,7 @@ export class Ui {
   private pointed: Element | null = null;
   /** The control that had the focus when the step was last drawn. */
   private seen = "";
-  /** The control last pressed. */
+  /** The control last pressed: while the step is busy it keeps the look of the focus, and shows that it waits. */
   private pressing = "";
   /** The step waits for work given to `wait`. */
   private waiting = false;
@@ -422,6 +422,7 @@ export class Ui {
         const file = control.files?.[0];
         control.value = ""; // so that the same file can be chosen again once it is mended
         const now = this.parts.get(id);
+        this.pressing = id;
         if (file && now?.kind === "press") now.file?.(file);
         this.sync();
       });
@@ -591,6 +592,13 @@ export class Ui {
     const cover = (control: HTMLElement, x: number, y: number, w: number, h: number) =>
       Object.assign(control.style, { left: `${x * scale}px`, top: `${y * scale}px`, width: `${w * scale}px`, height: `${h * scale}px` });
     const blink = Math.floor(time * 2.5) % 2 === 0;
+    // While the step is busy, the line that was pressed keeps the look of the focus, and dots after it fill one by one.
+    const waitingOn = this.busy && this.parts.has(this.pressing) ? this.pressing : null;
+    const dots = (x: number, y: number) => {
+      frame.emit = 150;
+      for (let i = 0; i < Math.floor(time * 4) % 4; i++) frame.put(x + 2 + i * 3, y + 4, 15);
+      frame.emit = 0;
+    };
 
     const back = this.leave === document.activeElement;
     const head = this.step.sure ? 18 : back ? 16 : 6;
@@ -638,12 +646,13 @@ export class Ui {
       const tx = px + INDENT;
       const ty = py + ((h - 5) >> 1);
       const control = isControl(part) ? this.controls.get(part.id) : undefined;
-      const on = control !== undefined && control === document.activeElement;
-      const mark = (at: number) => on && (!this.busy || blink) && drawMark(frame, px + 1, at);
+      const on = control !== undefined && (waitingOn ? isControl(part) && part.id === waitingOn : control === document.activeElement);
+      const mark = (at: number) => on && drawMark(frame, px + 1, at);
       const lit = (text: string, color: number) => {
         frame.emit = on ? 70 : 0;
-        say(text, tx, ty, on ? 16 : color);
+        const end = say(text, tx, ty, on ? 16 : color);
         frame.emit = 0;
+        return end;
       };
       if (part.kind === "press") {
         const value = plain(part.value ?? "");
@@ -652,8 +661,8 @@ export class Ui {
         let label = plain(part.label);
         while (label.length > 1 && measure(tiny, label) > w - INDENT - room) label = label.slice(0, -1);
         mark(ty);
-        if (part.danger) say(label, tx, ty, 18);
-        else lit(label, part.quiet ? 6 : 7);
+        const end = part.danger ? say(label, tx, ty, 18) : lit(label, part.quiet ? 6 : 7);
+        if (on && waitingOn) dots(end, ty);
         if (value) {
           const end = px + w;
           const from = end - measure(tiny, value);
@@ -752,11 +761,12 @@ export class Ui {
         const wide = icon + measure(medium, label);
         const x = px + ((w - wide) >> 1);
         const y = py + ((h - medium.height) >> 1);
-        if (on && (!this.busy || blink)) drawMark(frame, x - 8, y + 1);
+        if (on) drawMark(frame, x - 8, y + 1);
         if (part.icon) frame.sprite(part.icon.rows, x, y, part.icon.glow);
         frame.emit = on ? 90 : part.dim ? 0 : 40;
         const end = drawText(frame, medium, label, x + icon, y, part.dim ? (on ? 7 : 5) : on ? 16 : 15);
         frame.emit = 0;
+        if (on && waitingOn) dots(end, y + medium.height - 5);
         if (y + medium.height >= frame.clipTop && y < frame.clipBottom) scene.cover(x, end, y, y + medium.height);
         place(control!, x - 10, wide + 20);
       } else if (part.kind === "note" || part.kind === "wait") {
