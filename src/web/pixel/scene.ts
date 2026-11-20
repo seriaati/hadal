@@ -295,6 +295,8 @@ export class Scene {
   hudBottom = 0;
   /** Where the diver is on their way to hang, while `base` moves: -1 before the first frame. */
   private place = -1;
+  /** Whether the screen is worked by touch: what is drawn to press says so. */
+  touch = false;
   /** The screen rows a panel lies over, where it lies over the rock: no zone is named there. */
   hush: [top: number, bottom: number] | null = null;
   /** When each lit lamp was reached, by its index, and how many lamps have been reached since the game began. */
@@ -909,7 +911,7 @@ export class Scene {
       wrap(font, text, room).forEach((line, i) => (end = say(font, line, x, (y = ty + i * pitch(font, text)), color)));
       return { end, y };
     };
-    const key = (kx: number, ky: number, label: string) => cover(kx, drawKey(frame, kx, ky, label), ky, ky + 8);
+    const key = (kx: number, ky: number, label: string) => cover(kx, drawKey(frame, kx, ky, label, this.touch), ky, ky + 10);
 
     if (game.phase === "title") {
       if (covered) return;
@@ -1040,8 +1042,8 @@ export class Scene {
       frame.emit = 0;
       if (end + 3 + measure(tiny, note) > W - 4) say(tiny, note, x, (y += 8 + rise(tiny, note)), result.correct ? 9 : 5);
       else say(tiny, note, end + 3, y, result.correct ? 9 : 5);
-      // In a room the next turn comes by itself.
-      if (!turn && !diving && game.phase === "verdict" && game.phaseTime > 0.6) {
+      // In a room the next turn comes by itself. Over a phone's keyboard there may be no room above the depth: its own Enter key is there.
+      if (!turn && !diving && game.phase === "verdict" && game.phaseTime > 0.6 && y + 23 <= H - 24) {
         key(x, y + 12, game.round + 1 === game.prompts.length ? t().dive.endDive : t().dive.keepGoing);
       }
       below = y + 12;
@@ -1075,8 +1077,22 @@ function held(game: Game): number {
   return Math.round(CLAMPED * (1 - fall * fall));
 }
 
-/** A drawn Enter key, with what pressing it does. Returns the x where it ends. */
-function drawKey(frame: Frame, x: number, y: number, label: string) {
+/** A drawn Enter key, with what pressing it does; on a touch screen, a button to tap. Returns the x where it ends. */
+function drawKey(frame: Frame, x: number, y: number, label: string, touch: boolean) {
+  if (touch) {
+    const end = drawText(frame, FONTS.tiny, label, x + 4, y + 3, 7);
+    frame.sprite(ARROW, end + 3, y + 4);
+    const right = end + 11;
+    for (let i = x + 1; i < right; i++) {
+      frame.put(i, y, 6);
+      frame.put(i, y + 10, 5);
+    }
+    for (let j = 1; j < 10; j++) {
+      frame.put(x, y + j, 6);
+      frame.put(right, y + j, 5);
+    }
+    return right;
+  }
   for (let i = 1; i < 24; i++) {
     frame.put(x + i, y, 6);
     frame.put(x + i, y + 8, 5);

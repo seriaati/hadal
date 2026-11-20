@@ -67,7 +67,7 @@ The same in every panel.
 | Escape | One step back. With nothing open: at the title it opens the settings, in a dive it asks whether to leave the dive |
 | Pointer | Moving over a thing gives it the focus; a click presses it. A click outside the words, or on the `‹`, goes one step back |
 | Wheel | Scrolls a step too long for its room |
-| Touch | A tap presses, a drag scrolls. The `‹` goes back |
+| Touch | A tap presses, a drag scrolls. The `‹` goes back. In a dive a tap anywhere opens the keyboard, and after a verdict it goes on, like Enter |
 
 - **Back** is always one step: from "Write a pack" to the list, from the list to the title.
   Escape, Left from the leftmost line, the `‹` and a click outside the words all mean it.

@@ -35,6 +35,7 @@ export function Game() {
     const canvas = pixels.current!;
     const game = createGame();
     const scene = new Scene();
+    scene.touch = matchMedia("(pointer: coarse)").matches;
     const frame = new Frame();
     const display = new Display(canvas, glow.current!);
     const sound = new Sound();
@@ -186,6 +187,8 @@ export function Game() {
         else openMenu(false);
       } else if (ui.open) ui.press(x, y);
       else if (line >= 0) choose(line);
+      // A press anywhere does what Enter does after a verdict: a phone's keyboard may be closed.
+      else if (!multiplayer.diving && game.phase === "verdict") pressEnter(game);
     };
     input.addEventListener("keydown", onKey);
     addEventListener("mousedown", keepFocus);
@@ -282,7 +285,7 @@ export function Game() {
     <main ref={stage} className="stage">
       <canvas ref={pixels} className="pixels" />
       <canvas ref={glow} className="glow" />
-      <input ref={keys} className="keys" maxLength={MAX_ANSWER_LENGTH} autoFocus autoComplete="off" autoCapitalize="off" spellCheck={false} />
+      <input ref={keys} className="keys" maxLength={MAX_ANSWER_LENGTH} autoFocus enterKeyHint="send" autoComplete="off" autoCapitalize="off" spellCheck={false} />
       {/* Whatever panel is open: `Ui` fills it with the controls of the step on screen. */}
       <form ref={form} className="panel" hidden />
       {dev && <DevMenu {...dev} />}
