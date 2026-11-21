@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { FONTS, bolder, drawText, measure, other, pitch, plain, wrap } from "./font";
+import { FONTS, bolder, drawText, measure, other, pitch, plain, trimmed, wrap } from "./font";
 import { Frame } from "./frame";
 
 const { tiny } = FONTS;
@@ -80,4 +80,10 @@ test("letters in half pixels are drawn finer than the frame in small text, and i
 
 test("bolder strokes grow to the right only where a gap stays after them", () => {
   expect(bolder(["#...", "#.#.", "##..", "..#."])).toEqual(["##..", "#.##", "###.", "..##"]);
+});
+
+test("trimmed keeps the columns with ink and a margin either side, as far as the glyph goes", () => {
+  expect(trimmed(["......##......", ".......#......"], 3)).toEqual(["...##...", "....#..."]);
+  expect(trimmed(["#.....", "......"], 2)).toEqual(["#..", "..."]);
+  expect(trimmed(["...", "..."], 1)).toEqual(["...", "..."]);
 });

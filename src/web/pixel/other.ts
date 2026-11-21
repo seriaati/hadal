@@ -1,5 +1,5 @@
 import file from "@fontsource/unifont/files/unifont-latin-400-normal.woff2";
-import { bolder, latin, other, plain } from "./font";
+import { bolder, latin, other, plain, trimmed } from "./font";
 
 /**
  * GNU Unifont, a 16-pixel font with every script, drawn in half pixels of the frame as Minecraft draws Chinese: its
@@ -19,6 +19,11 @@ const ASCENT = 14;
 const DESCENT = 2;
 /** Unifont's Chinese fills all 8 pixels of its height: 3 more keep the strokes of one line off the next. */
 const LINE = 11;
+/**
+ * Half pixels kept either side of a punctuation mark's ink. A full-width mark (，：) is about 2 pixels of ink in a cell
+ * of 8, which leaves a gap in the sentence; trimmed to this, it stands as far from its neighbours as they from each other.
+ */
+const MARK_MARGIN = 3;
 
 let state: "unasked" | "coming" | "here" | "lost" = "unasked";
 let context: CanvasRenderingContext2D;
@@ -63,8 +68,9 @@ other.glyph = (unit) => {
     const sampled = Array.from({ length: ASCENT + DESCENT }, (_, y) =>
       Array.from({ length: width }, (_, x) => (data[((y * SCALE + middle) * across + x * SCALE + middle) * 4 + 3]! >= 128 ? "#" : ".")).join(""),
     );
-    // Unifont's strokes are half a pixel of the frame, thin beside the game's own letters.
-    rows = bolder(sampled);
+    // Unifont's strokes are half a pixel of the frame, thin beside the game's own letters. Its marks of punctuation
+    // are flat blocks (4 by 2) that bolder would only flatten further.
+    rows = /^\p{P}$/u.test(unit) ? trimmed(sampled, MARK_MARGIN) : bolder(sampled);
     drawn.set(unit, rows);
   }
   return rows;

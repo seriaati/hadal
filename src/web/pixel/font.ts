@@ -100,6 +100,15 @@ export function bolder(rows: string[]): string[] {
   return rows.map((row) => Array.from(row, (cell, x) => (cell === "#" || (row[x - 1] === "#" && row[x + 1] !== "#") ? "#" : ".")).join(""));
 }
 
+/** Only the columns that hold ink, and up to `margin` blank ones either side. A glyph with no ink is kept as it is. */
+export function trimmed(rows: string[], margin: number): string[] {
+  const inked = rows.flatMap((row) => [row.indexOf("#"), row.lastIndexOf("#")]).filter((x) => x >= 0);
+  if (!inked.length) return rows;
+  const from = Math.max(0, Math.min(...inked) - margin);
+  const to = Math.max(...inked) + 1 + margin;
+  return rows.map((row) => row.slice(from, to));
+}
+
 function doubled(glyphs: Glyphs): Glyphs {
   return Object.fromEntries(Object.entries(glyphs).map(([char, rows]) => [char, double(rows)]));
 }
