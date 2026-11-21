@@ -20,7 +20,12 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="./main.tsx"></script>
+    <main class="stage">
+      <canvas class="pixels"></canvas>
+      <canvas class="glow"></canvas>
+      <input class="keys" enterkeyhint="send" autocomplete="off" autocapitalize="off" spellcheck="false" />
+      <form class="panel" hidden></form>
+    </main>
+    <script type="module" src="./main.ts"></script>
   </body>
 </html>

@@ -125,12 +125,6 @@ export class Sound {
     document.addEventListener("visibilitychange", this.rest);
   }
 
-  close() {
-    for (const type of GESTURES) removeEventListener(type, this.wake);
-    document.removeEventListener("visibilitychange", this.rest);
-    void this.rig?.context.close();
-  }
-
   setLevel(name: Level, value: number) {
     this.levels[name] = value;
     localStorage.setItem(STORED, JSON.stringify(this.levels));

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { CreatureKind } from "./pixel/creatures";
 import type { Frame } from "./pixel/frame";
 import type { MultiplayerPanel } from "./pixel/multiplayer";
@@ -56,45 +55,39 @@ function stored(): boolean {
   }
 }
 
-export function DevMenu(tools: DevTools) {
+function button(label: string, press: () => void): HTMLButtonElement {
+  const made = document.createElement("button");
+  made.textContent = label;
+  made.addEventListener("click", press);
+  return made;
+}
+
+function line(label: string, buttons: HTMLButtonElement[]): HTMLDivElement {
+  const made = document.createElement("div");
+  made.append(label, ...buttons);
+  return made;
+}
+
+export function showDevMenu(parent: HTMLElement, tools: DevTools) {
   const { game, scene, frame } = tools;
-  const [folded, setFolded] = useState(stored);
-  const fold = (value: boolean) => {
-    setFolded(value);
+  const menu = document.createElement("aside");
+  menu.className = "dev";
+  parent.append(menu);
+  const show = (folded: boolean) => {
     try {
-      localStorage.setItem(FOLDED, value ? "1" : "0");
+      localStorage.setItem(FOLDED, folded ? "1" : "0");
     } catch {}
-  };
-  if (folded) {
-    return (
-      <aside className="dev">
-        <button onClick={() => fold(false)}>Dev</button>
-      </aside>
+    if (folded) return menu.replaceChildren(button("Dev", () => show(false)));
+    const hide = button("Hide", () => show(true));
+    hide.className = "fold";
+    hide.ariaLabel = "Hide the developer menu";
+    menu.replaceChildren(
+      hide,
+      line("Answer with rarity near", [1, 25, 50, 75, 100].map((rarity) => button(String(rarity), () => void answer(tools, rarity)))),
+      line("Air", [button("Run out", () => asking(game) && (game.air = 0))]),
+      line("Dive", [button("End", () => endDive(game))]),
+      line("Creature", CREATURES.map(([kind, name]) => button(name, () => scene.ambient.spawn(kind, frame.width, frame.height, scene.depth)))),
     );
-  }
-  return (
-    <aside className="dev">
-      <button className="fold" onClick={() => fold(true)} aria-label="Hide the developer menu">Hide</button>
-      <div>
-        Answer with rarity near
-        {[1, 25, 50, 75, 100].map((rarity) => (
-          <button key={rarity} onClick={() => void answer(tools, rarity)}>{rarity}</button>
-        ))}
-      </div>
-      <div>
-        Air
-        <button onClick={() => asking(game) && (game.air = 0)}>Run out</button>
-      </div>
-      <div>
-        Dive
-        <button onClick={() => endDive(game)}>End</button>
-      </div>
-      <div>
-        Creature
-        {CREATURES.map(([kind, name]) => (
-          <button key={kind} onClick={() => scene.ambient.spawn(kind, frame.width, frame.height, scene.depth)}>{name}</button>
-        ))}
-      </div>
-    </aside>
-  );
+  };
+  show(stored());
 }

@@ -8,7 +8,8 @@ states, and what every key does. Read it before touching a panel.
 
 ## Stack
 
-TypeScript, React, and Bun for everything (runtime, package manager, bundler, tests).
+TypeScript and Bun for everything (runtime, package manager, bundler, tests). No UI library:
+the game draws itself on canvas, and the few page elements are plain DOM.
 Use `bun`, not `npm`/`node`/`vite`.
 
 ## Commands
@@ -25,7 +26,7 @@ API keys: `HADAL_SECRET` in `.env` (32 characters or more, e.g. from `openssl ra
 seals the keys players store. Without it the game runs but keeps no keys.
 
 Developer mode: put `HADAL_DEV_MODE=1` in `.env` (git-ignored, read by Bun at start-up) and
-restart the server. The game then shows a menu of shortcuts (`src/web/DevMenu.tsx`): answer
+restart the server. The game then shows a menu of shortcuts (`src/web/devmenu.ts`): answer
 correctly at a chosen rarity (in a room too, on the player's turn), run out of air, end the
 dive, summon a creature. Its "Hide" button folds it away, and the browser remembers.
 
