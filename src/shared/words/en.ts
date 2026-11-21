@@ -108,7 +108,6 @@ export const en = {
     backToRoom: "Back to the room",
     backToTitle: "Back to the title",
     chaosRoom: "Chaos ~ one empty tank and out",
-    lampsLit: (zone: string, lit: number, of: number) => `${zone} ~ ${lit} of ${of} lamps lit`,
     signalLost: "Chaos ~ signal lost",
     chaosAir: (air: number) => `Chaos ~ ${air} seconds of air`,
     stillIn: "still in",

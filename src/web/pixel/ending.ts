@@ -370,11 +370,10 @@ export class Ending {
       return;
     }
     const top = W >= 300 ? 10 : 40;
-    const lamps = this.lines[0]!;
     this.say(frame, large, formatMeters(log.depth).toUpperCase(), W >> 1, top, amber(14), true, 255);
-    const lit = this.centred(frame, tiny, t().ending.lampsLit(zoneAt(log.depth), lamps.filter((hung) => hung.answer).length, lamps.length), top + 18, 6);
+    const zone = this.centred(frame, tiny, zoneAt(log.depth), top + 18, 6);
     const chaos = lostDive(log) ? t().ending.signalLost : t().ending.chaosAir(CHAOS_AIR_SECONDS);
-    if (log.chaos) this.centred(frame, tiny, chaos, lit - 1 + rise(tiny, chaos), 18);
+    if (log.chaos) this.centred(frame, tiny, chaos, zone - 1 + rise(tiny, chaos), 18);
   }
 
   /**

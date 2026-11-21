@@ -90,7 +90,6 @@ export const zhTW: Words = {
     backToRoom: "返回房間",
     backToTitle: "返回標題",
     chaosRoom: "混亂 ~ 氧氣耗盡一次即出局",
-    lampsLit: (zone: string, lit: number, of: number) => `${zone} ~ 點亮了 ${lit}/${of} 盞燈`,
     signalLost: "混亂 ~ 訊號中斷",
     chaosAir: (air: number) => `混亂 ~ 每題 ${air} 秒氧氣`,
     stillIn: "仍在場",

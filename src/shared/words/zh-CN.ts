@@ -90,7 +90,6 @@ export const zhCN: Words = {
     backToRoom: "返回房间",
     backToTitle: "返回标题",
     chaosRoom: "混乱 ~ 氧气耗尽一次即出局",
-    lampsLit: (zone: string, lit: number, of: number) => `${zone} ~ 点亮了 ${lit}/${of} 盏灯`,
     signalLost: "混乱 ~ 信号中断",
     chaosAir: (air: number) => `混乱 ~ 每题 ${air} 秒氧气`,
     stillIn: "仍在场",
