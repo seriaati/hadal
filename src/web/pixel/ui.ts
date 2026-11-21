@@ -1,4 +1,4 @@
-import { FONTS, drawText, measure, pitch, plain, wrap } from "./font";
+import { FONTS, drawText, measure, pitch, plain, rise, wrap } from "./font";
 import type { Frame } from "./frame";
 import { t } from "../language";
 import type { Scene } from "./scene";
@@ -150,6 +150,7 @@ export function factLines(facts: Summary["facts"], width: number): number[][] {
 }
 
 const valueRoom = (part: Summary) => (part.value ? measure(FONTS.tiny, plain(part.value)) + 8 : 0);
+const factGap = (part: Summary) => pitch(FONTS.tiny, plain(part.facts.map((fact) => fact.text).join("")), 8);
 
 /**
  * `kept` holds, by the control the words follow, the most room the words after each control
@@ -181,11 +182,11 @@ export function lay(step: Step, width: number, line: number, kept?: Map<string, 
       if (part.kind === "gap") h = 8;
       else if (part.kind === "field") h = line + 10;
       else if (part.kind === "action") h = line + 8;
-      else if (part.kind === "summary") h = Math.max(line, factLines(part.facts, width - INDENT - valueRoom(part)).length * 8 + 4);
+      else if (part.kind === "summary") h = Math.max(line, (factLines(part.facts, width - INDENT - valueRoom(part)).length - 1) * factGap(part) + LINE);
       else if (part.kind === "note" || part.kind === "wait") {
         const text = plain(part.text);
         lines = wrap(FONTS.tiny, text, width - INDENT);
-        h = lines.length * pitch(FONTS.tiny, text, 8) + (part.kind === "wait" ? 16 : 3);
+        h = rise(FONTS.tiny, text) + lines.length * pitch(FONTS.tiny, text, 8) + (part.kind === "wait" ? 16 : 3);
       }
       let w = width - x;
       if (parts.length > 1) {
@@ -884,17 +885,18 @@ export class Ui {
       } else if (part.kind === "summary") {
         const value = plain(part.value ?? "");
         const lines = factLines(part.facts, w - INDENT - valueRoom(part));
-        // Lines are 8 apart and 5 tall; the block stands in the middle of the row, and the value in the middle of the block.
-        const first = py + ((h - (lines.length - 1) * 8 - 5) >> 1);
-        const middle = first + (lines.length - 1) * 4;
+        // Lines are 5 tall; the block stands in the middle of the row, and the value in the middle of the block.
+        const gap = factGap(part);
+        const first = py + ((h - (lines.length - 1) * gap - 5) >> 1);
+        const middle = first + (((lines.length - 1) * gap) >> 1);
         mark(first);
         lines.forEach((line, j) => {
           let x = tx;
           line.forEach((i, k) => {
-            if (k) x = say(" ~ ", x, first + j * 8, 6);
+            if (k) x = say(" ~ ", x, first + j * gap, 6);
             const fact = part.facts[i]!;
             frame.emit = fact.hot || on ? 70 : 0;
-            x = say(plain(fact.text), x, first + j * 8, fact.hot ? 15 : on ? 16 : 7);
+            x = say(plain(fact.text), x, first + j * gap, fact.hot ? 15 : on ? 16 : 7);
             frame.emit = 0;
           });
         });
@@ -916,11 +918,13 @@ export class Ui {
         if (y + medium.height >= frame.clipTop && y < frame.clipBottom) scene.cover(x, end, y, y + medium.height);
         place(control!, x - 10, wide + 20);
       } else if (part.kind === "note" || part.kind === "wait") {
-        const gap = pitch(tiny, plain(part.text), 8);
-        lines.forEach((line, i) => say(line, tx, py + 1 + i * gap, part.kind === "wait" ? 7 : part.bad ? 18 : part.kind === "note" && part.warm ? 15 : 6));
+        const text = plain(part.text);
+        const gap = pitch(tiny, text, 8);
+        const first = py + 1 + rise(tiny, text);
+        lines.forEach((line, i) => say(line, tx, first + i * gap, part.kind === "wait" ? 7 : part.bad ? 18 : part.kind === "note" && part.warm ? 15 : 6));
         if (part.kind === "note") continue;
         // One pip for each piece of the work that is done, and the next one blinks. Past 10 pieces a pip stands for a tenth of the work.
-        const pips = py + lines.length * gap + 5;
+        const pips = first - 1 + lines.length * gap + 5;
         const count = Math.min(part.of, 10);
         const done = Math.floor((part.done * count) / part.of);
         for (let i = 0; i < count; i++) {
