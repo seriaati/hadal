@@ -156,7 +156,7 @@ export class PacksPanel {
           { kind: "press", id: "key", label: words.addKey, press: () => this.account.show("anthropic") },
           { kind: "gap" },
           { kind: "note", text: words.withSkill },
-          this.getSkill(),
+          { kind: "press", id: "skill", label: words.getSkill, says: words.downloadSkill, press: () => Object.assign(document.createElement("a"), { href: "/api/skill", download: "SKILL.md" }).click() },
           { kind: "press", id: "skillHelp", label: words.howToUse, press: () => this.ui.go(this.skillHelp) },
         ],
       };
@@ -191,15 +191,8 @@ export class PacksPanel {
         { kind: "gap" },
         { kind: "note", text: words.thenAsk },
         { kind: "note", text: words.askExample(t().name), warm: true },
-        { kind: "gap" },
-        this.getSkill(),
       ],
     };
-  };
-
-  private getSkill = (): Part => {
-    const words = t().packs;
-    return { kind: "press", id: "skill", label: words.getSkill, says: words.downloadSkill, press: () => Object.assign(document.createElement("a"), { href: "/api/skill", download: "SKILL.md" }).click() };
   };
 
   /** The server answers with the packs as they now stand, or the problems. Returns the pack that is new. */
