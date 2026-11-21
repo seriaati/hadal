@@ -31,7 +31,7 @@ export const zhCN: Words = {
     noPacks: "还没有选择题库，请在上面选择",
   },
   horror: "注意：含轻微恐怖元素",
-  about: { madeBy: "Hadal 由 seria 制作", creatures: "海洋生物由 NekuMeow 绘制", source: "在 GitHub 上查看源代码" },
+  about: { link: "在 GitHub 上开源", madeBy: "Hadal 由 seria 制作", creatures: "海洋生物由 NekuMeow 绘制", source: "在 GitHub 上查看源代码" },
   leaving: {
     title: "离开这次下潜？",
     stay: "继续下潜",

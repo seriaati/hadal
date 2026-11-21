@@ -38,7 +38,7 @@ export const en = {
   },
   /** Under the description of chaos mode, in rose. */
   horror: "Warning: minor horror elements",
-  about: { madeBy: "Hadal is made by seria", creatures: "Sea creatures drawn by NekuMeow", source: "Open the source code on GitHub" },
+  about: { link: "Open source on GitHub", madeBy: "Hadal is made by seria", creatures: "Sea creatures drawn by NekuMeow", source: "Open the source code on GitHub" },
   leaving: {
     title: "Leave the dive?",
     stay: "Keep diving",

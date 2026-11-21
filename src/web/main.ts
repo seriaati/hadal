@@ -76,7 +76,7 @@ const about = (): Step => ({
   rows: [
     { kind: "note", text: t().about.madeBy },
     { kind: "note", text: t().about.creatures },
-    { kind: "press", id: "source", label: "github.com/seriaati/hadal", says: t().about.source, press: () => open(REPO, "_blank", "noopener") },
+    { kind: "press", id: "source", label: t().about.link, says: t().about.source, press: () => open(REPO, "_blank", "noopener") },
   ],
 });
 /** The version the page was loaded with, and whether a newer one is out: a running game is never reloaded unasked. */
