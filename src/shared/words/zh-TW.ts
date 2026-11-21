@@ -157,7 +157,7 @@ export const zhTW: Words = {
     addKey: "新增金鑰",
     withSkill: "也可以讓你常用的 AI 工具按照 Hadal 的技能生成題庫，再新增它給你的檔案",
     getSkill: "取得技能",
-    openSkill: "在 GitHub 上檢視生成題庫的技能",
+    downloadSkill: "下載生成題庫的技能",
     topic: "題庫主題",
     instructions: "給 Claude 的補充說明",
     count: "題目數量",

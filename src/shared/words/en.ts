@@ -177,7 +177,7 @@ export const en = {
     addKey: "Add a key",
     withSkill: "Or have an AI you already use write one with Hadal's skill, then add the file it gives you",
     getSkill: "Get the skill",
-    openSkill: "Open the skill for writing packs on GitHub",
+    downloadSkill: "Download the skill for writing packs",
     topic: "A pack about",
     instructions: "Notes for Claude",
     count: "Prompts",

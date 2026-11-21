@@ -8,7 +8,6 @@ import type { Part, Step, Ui } from "./ui";
 /** As many lines about a refused file as fit on the shortest screen, wrapped as in the narrowest column. */
 const MAX_LINES = 10;
 const COLUMN = 128;
-const SKILL = "https://github.com/seriaati/hadal/blob/main/skills/write-hadal-pack/SKILL.md";
 
 /** The problems of a file, as many as fit, then a count of the rest. */
 function report(problems: string[]): string[] {
@@ -157,7 +156,7 @@ export class PacksPanel {
           { kind: "press", id: "key", label: words.addKey, press: () => this.account.show("anthropic") },
           { kind: "gap" },
           { kind: "note", text: words.withSkill },
-          { kind: "press", id: "skill", label: words.getSkill, says: words.openSkill, press: () => open(SKILL, "_blank", "noopener") },
+          { kind: "press", id: "skill", label: words.getSkill, says: words.downloadSkill, press: () => Object.assign(document.createElement("a"), { href: "/api/skill", download: "SKILL.md" }).click() },
         ],
       };
     }

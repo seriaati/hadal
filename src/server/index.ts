@@ -107,6 +107,10 @@ const server = Bun.serve({
     "/": app,
     // The link preview, at an address that does not change, as the page's og:image names it.
     "/og-2.png": () => new Response(Bun.file(`${import.meta.dir}/../web/og-2.png`)),
+    "/api/skill": () =>
+      new Response(Bun.file(`${import.meta.dir}/../../skills/write-hadal-pack/SKILL.md`), {
+        headers: { "content-disposition": 'attachment; filename="SKILL.md"' },
+      }),
     "/api/config": {
       GET: () => Response.json({ devMode: DEV_MODE, version: VERSION } satisfies Config, { headers: { "cache-control": "no-store" } }),
     },
