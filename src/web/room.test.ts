@@ -31,7 +31,7 @@ class FakeSocket extends EventTarget {
 const view: RoomView = {
   code: "ACDEF",
   you: 1,
-  players: [{ id: 0, nickname: "ana", suit: 0, ready: false, host: true }, { id: 1, nickname: "ben", suit: 1, ready: false, host: false }],
+  players: [{ id: 0, nickname: "ana", suit: 0, ready: false, host: true, muted: false }, { id: 1, nickname: "ben", suit: 1, ready: false, host: false, muted: false }],
   settings: { ...DEFAULT_SETTINGS, builtIn: [] },
   dive: null,
   last: null,

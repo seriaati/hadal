@@ -20,7 +20,8 @@ settings of the last room its host's browser set up. A player whose connection d
 place for 30 seconds while the page connects again; if the server has restarted meanwhile (a new
 version), the room opens again under its code, without the dive that was under way. A page left
 open across a new version keeps running it, and the title offers to update. The host may pass the crown to another player, remove a player (who may
-come back with the code) or ban one (until the room closes). When the host leaves, the crown
+come back with the code), ban one (until the room closes) or mute one (who still dives, but cannot
+talk until unmuted or given the crown). When the host leaves, the crown
 passes to the next player; the room closes when the last one leaves. The players can talk, 50
 characters at a time, and no chat box is shown. Tab opens it, in the room and in a dive (except
 while the player's own air runs), and types nothing, as a Chinese input method needs; before a

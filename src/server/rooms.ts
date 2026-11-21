@@ -121,7 +121,7 @@ function enter(member: Member, message: { nickname: string; suit: number }, to: 
   const worn = new Set(room.players.map((player) => player.suit));
   const free = Array.from({ length: SUITS }, (_, suit) => suit).filter((suit) => !worn.has(suit));
   const suit = worn.has(message.suit) ? free[Math.floor(Math.random() * free.length)]! : message.suit;
-  const player: Player = { id: room.nextId++, nickname, suit, ready: false, host: !room.players.length, member };
+  const player: Player = { id: room.nextId++, nickname, suit, ready: false, host: !room.players.length, muted: false, member };
   room.players.push(player);
   rooms.set(room.code, room);
   places.set(member, room);
@@ -223,12 +223,13 @@ function unasked(room: Room, index: PromptIndex, count: number): GamePrompt[] {
 }
 
 /**
- * The crown passes to `player`. The packs of the host's own and their judge go with the old host, and without them
- * whoever was ready had agreed to other settings.
+ * The crown passes to `player`, who may talk again if they were muted. The packs of the host's own and their judge go
+ * with the old host, and without them whoever was ready had agreed to other settings.
  */
 function pass(room: Room, player: Player) {
   for (const one of room.players) one.host = one === player;
   player.ready = false;
+  player.muted = false;
   const { ownPacks, judging } = room.settings;
   if (ownPacks.length || judging) {
     room.settings = { ...room.settings, ownPacks: [], judging: false };
@@ -243,6 +244,14 @@ function crown(member: Member, room: Room, id: number) {
   tell(room);
 }
 
+/** The host stops another player talking to the room, or lets them again. */
+function mute(member: Member, room: Room, id: number, muted: boolean) {
+  const player = room.players.find((one) => one.id === id);
+  if (!isHost(member, room) || !player || player.member === member) return;
+  player.muted = muted;
+  tell(room);
+}
+
 function farewell(room: Room, id: number, how: Gone) {
   for (const { member } of room.players) member.send({ type: "gone", id, how });
 }
@@ -253,6 +262,7 @@ function chat(member: Member, room: Room, text: unknown): Refusal | void {
   const said = String(text ?? "").normalize("NFC").replace(/\s+/g, " ").trim().slice(0, CHAT_MAX).trim();
   const now = clock.now();
   if (!said || now - (player.chatted ?? -Infinity) < CHAT_EVERY * 1000) return;
+  if (player.muted) return "muted";
   if (room.dive?.gives(said)) return "gives-answer";
   player.chatted = now;
   for (const { member } of room.players) member.send({ type: "chat", id: player.id, text: said });
@@ -359,7 +369,9 @@ export async function receive(member: Member, text: string) {
   else if (message?.type === "settings" && room) refuse(await change(member, room, message.settings ?? {}));
   else if (message?.type === "start" && room) refuse(await start(member, room));
   else if (message?.type === "host" && room) crown(member, room, message.id);
-  else if (message?.type === "remove" && room) remove(member, room, message.id, message.ban === true);  else if (message?.type === "chat" && room) refuse(chat(member, room, message.text));
+  else if (message?.type === "remove" && room) remove(member, room, message.id, message.ban === true);
+  else if (message?.type === "mute" && room) mute(member, room, message.id, message.muted === true);
+  else if (message?.type === "chat" && room) refuse(chat(member, room, message.text));
   else if ((message?.type === "typing" || message?.type === "answer" || message?.type === "out") && room?.dive) {
     const id = room.players.find((player) => player.member === member)!.id;
     if (message.type === "typing") room.dive.type(id, message.text);

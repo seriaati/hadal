@@ -66,7 +66,7 @@ test("creating a room makes its host, with a code and the settings a room starts
   await say(host, { type: "create", nickname: " Ana ", suit: 3 });
   const view = seen(host);
   expect(view.code).toMatch(/^[ACDEFGHJKLMNPRSTUWYZ]{5}$/);
-  expect(view.players).toEqual([{ id: view.you, nickname: "ana", suit: 3, ready: false, host: true }]);
+  expect(view.players).toEqual([{ id: view.you, nickname: "ana", suit: 3, ready: false, host: true, muted: false }]);
   expect(view.settings).toEqual(DEFAULT_SETTINGS);
 });
 
@@ -213,6 +213,25 @@ test("what a player says goes to everyone in the room, tidied and short, at most
   expect(host.sent).toHaveLength(before);
   await say(host, { type: "chat", text: "x".repeat(CHAT_MAX + 20) });
   expect(ben!.sent.at(-1)).toEqual({ type: "chat", id: hostId, text: "x".repeat(CHAT_MAX) });
+  leave(host);
+  leave(ben!);
+});
+
+test("the host mutes another player, who cannot talk until unmuted or crowned", async () => {
+  const { host, others: [ben] } = await room(null, "ben");
+  const benId = seen(ben!).you;
+  await say(ben!, { type: "mute", id: seen(host).you, muted: true });
+  expect(seen(host).players.every((player) => !player.muted)).toBe(true);
+  await say(host, { type: "mute", id: benId, muted: true });
+  expect(seen(host).players.find((player) => player.id === benId)?.muted).toBe(true);
+  await say(ben!, { type: "chat", text: "hello?" });
+  expect(ben!.sent.at(-1)).toEqual({ type: "refused", reason: "muted" });
+  await say(host, { type: "mute", id: benId, muted: false });
+  await say(ben!, { type: "chat", text: "thanks" });
+  expect(host.sent.at(-1)).toEqual({ type: "chat", id: benId, text: "thanks" });
+  await say(host, { type: "mute", id: benId, muted: true });
+  await say(host, { type: "host", id: benId });
+  expect(seen(ben!).players.find((player) => player.id === benId)).toMatchObject({ host: true, muted: false });
   leave(host);
   leave(ben!);
 });

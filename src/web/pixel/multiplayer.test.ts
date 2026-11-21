@@ -27,7 +27,7 @@ const dive = (air: number): DiveView => ({
 const room = (dive: DiveView | null): RoomView => ({
   code: "ACDEF",
   you: 0,
-  players: [{ id: 0, nickname: "ana", suit: 0, ready: true, host: true }, { id: 1, nickname: "ben", suit: 1, ready: true, host: false }],
+  players: [{ id: 0, nickname: "ana", suit: 0, ready: true, host: true, muted: false }, { id: 1, nickname: "ben", suit: 1, ready: true, host: false, muted: false }],
   settings: { ...DEFAULT_SETTINGS, builtIn: [] },
   dive,
   last: null,

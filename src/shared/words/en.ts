@@ -268,6 +268,9 @@ export const en = {
     playerSays: (name: string) => `${name}: make them the host, remove or ban them`,
     suitSays: (name: string) => `${name}: change your suit`,
     makeHost: "Make them the host",
+    mute: "Mute",
+    unmute: "Unmute",
+    muteHow: "they can still dive, but not talk",
     remove: "Remove from the room",
     removeHow: "they can come back with the code",
     ban: "Ban from the room",
@@ -317,7 +320,9 @@ export const en = {
       "no-packs": "no pack is chosen: choose some in the set-up",
       "no-prompts": "these packs have no prompt with an answer for everyone: choose others",
       banned: "the host of that room has banned you",
-      "gives-answer": "that would give an answer away",    } as Record<Refusal, string>,
+      "gives-answer": "that would give an answer away",
+      muted: "the host has muted you",
+    } as Record<Refusal, string>,
   },
 };
 

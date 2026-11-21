@@ -46,7 +46,8 @@ export const MAX_HEARTS = 5;
 /** The points that fill the bar, by how easily hearts are won. At every level one rare answer alone is not a heart. */
 export const BAR_FULL: Record<Hearts, number> = { easy: 175, medium: 275, hard: 400 };
 
-export type RoomPlayer = { id: number; nickname: string; suit: number; ready: boolean; host: boolean };
+/** `muted`: the host has stopped them talking to the room. */
+export type RoomPlayer = { id: number; nickname: string; suit: number; ready: boolean; host: boolean; muted: boolean };
 /**
  * A diver of the dive under way: their depth in metres, and the lamps on their line. In "longest" and "chaos" also
  * their hearts, the points in their bar, and whether they are out of the dive (no hearts left).
@@ -117,13 +118,14 @@ export type ClientMessage =
   | { type: "out"; text: string }
   | { type: "host"; id: number }
   | { type: "remove"; id: number; ban: boolean }
+  | { type: "mute"; id: number; muted: boolean }
   | { type: "leave" }
   | { type: "chat"; text: string }
   /** Asks the server to answer at once, so the page can tell a connection that still works from one that has silently broken. */
   | { type: "ping" };
 
-/** `gives-answer`: what a player said in a dive names an answer to the prompt that nobody has taken yet. */
-export type Refusal = "no-room" | "full" | "name-taken" | "bad-name" | "bad-suit" | "not-host" | "bad-settings" | "no-packs" | "no-prompts" | "banned" | "gives-answer";
+/** `gives-answer`: what a player said in a dive names an answer to the prompt that nobody has taken yet. `muted`: the host has stopped them talking. */
+export type Refusal = "no-room" | "full" | "name-taken" | "bad-name" | "bad-suit" | "not-host" | "bad-settings" | "no-packs" | "no-prompts" | "banned" | "gives-answer" | "muted";
 /** How a player went out of a room: of their own accord, or taken out by the host, with or without a ban. */
 export type Gone = "left" | "removed" | "banned";
 /**
