@@ -859,13 +859,9 @@ export class MultiplayerPanel {
       title: player.nickname,
       rows: [
         { kind: "press", id: "crown", label: words.makeHost, press: crown },
-        { kind: "gap" },
-        { kind: "press", id: "mute", label: player.muted ? words.unmute : words.mute, press: () => this.client.send({ type: "mute", id: player.id, muted: !player.muted }) },
-        { kind: "note", text: words.muteHow },
         { kind: "press", id: "remove", label: this.doomed === "remove" ? sure : words.remove, danger: this.doomed === "remove", press: () => this.remove(player, false), left: () => (this.doomed = "") },
-        { kind: "note", text: words.removeHow },
         { kind: "press", id: "ban", label: this.doomed === "ban" ? sure : words.ban, danger: this.doomed === "ban", press: () => this.remove(player, true), left: () => (this.doomed = "") },
-        { kind: "note", text: words.banHow },
+        { kind: "press", id: "mute", label: player.muted ? words.unmute : words.mute, press: () => this.client.send({ type: "mute", id: player.id, muted: !player.muted }) },
       ],
     };
   };
