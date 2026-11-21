@@ -896,7 +896,10 @@ export class Scene {
       const chosen = this.lobby && this.chosen === line.name;
       const x = Math.max(chosen ? 8 : 2, at(crown + measure(tiny, name) + hearts));
       crowns.set(line.name, { x, y });
-      if (this.lobby) this.places.set(line.name, { x: line.x - 4, y: y - 4, w: 30, h: line.y + 28 - (y - 4) });
+      // A diver is pressed anywhere along their line, from under the hull down to their boots: the pointer that chose
+      // them may drift up off their name, and a press there must not count as one outside the words, which leaves the room.
+      const from = Math.max(0, Math.min(y - 4, surface + 1));
+      if (this.lobby) this.places.set(line.name, { x: line.x - 4, y: from, w: 30, h: line.y + 28 - from });
       if (chosen) drawMark(frame, x - 6, y);
       if (line.host && !flying) {
         if (glint) frame.emit = Math.round(255 * glint);
