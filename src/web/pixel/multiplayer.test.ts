@@ -89,3 +89,24 @@ test("in a dive the host opens another diver's step by their name, and it closes
   expect(steps).toHaveLength(0);
   expect(panel.pickable("ben")).toBeUndefined();
 });
+
+test("the host passes the crown only on a second press, and moving away takes the question back", () => {
+  const steps: unknown[] = [];
+  const stack = { ...ui, go: (step: unknown) => steps.push(step), back: () => steps.pop(), get top() { return steps.at(-1); } } as unknown as Ui;
+  const panel = new MultiplayerPanel(stack, {} as AccountPanel, sound);
+  const sent: ClientMessage[] = [];
+  panel.client.send = (message) => sent.push(message);
+  panel.client.view = room(dive(30));
+  panel["hear"]({ type: "room", room: panel.client.view });
+  panel.pick(panel.pickable("ben")!);
+  const crown = () => panel["playerStep"]().rows.find((row) => "id" in row && row.id === "crown") as { label: string; press(): void; left(): void };
+
+  crown().press();
+  expect(sent).toEqual([]);
+  expect(crown().label).toBe("Sure?");
+  crown().left();
+  expect(crown().label).toBe("Transfer host");
+  crown().press();
+  crown().press();
+  expect(sent).toEqual([{ type: "host", id: 1 }]);
+});

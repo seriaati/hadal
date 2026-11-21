@@ -99,9 +99,9 @@ export class MultiplayerPanel {
   private linked = "";
   /** Each diver's hearts in the dive, as the server last said. */
   private hearts = new Map<number, number>();
-  /** The player whose step the host has open, and which of "Remove" and "Ban" one more press does. */
+  /** The player whose step the host has open, and which of "Transfer host", "Remove" and "Ban" one more press does. */
   private picked: number | null = null;
-  private doomed: "" | "remove" | "ban" = "";
+  private doomed: "" | "crown" | "remove" | "ban" = "";
   /** Leaving the room asks "Sure?" on the step's name: one more way out leaves. */
   private leaving = false;
   /** What each player last said in the room, by id, and when, in seconds; and how often each has spoken. */
@@ -841,11 +841,16 @@ export class MultiplayerPanel {
     };
   };
 
-  /** Removing and banning ask first: the second press in a row is the one that does it. The focus goes to what took the player's place. */
+  /** Passing the crown, removing and banning ask first: the second press in a row is the one that does it. */
+  private sure(what: "crown" | "remove" | "ban") {
+    const confirmed = this.doomed === what;
+    this.doomed = confirmed ? "" : what;
+    return confirmed;
+  }
+
+  /** The focus goes to what took the removed player's place. */
   private remove(player: RoomPlayer, ban: boolean) {
-    const what = ban ? "ban" : "remove";
-    if (this.doomed !== what) return void (this.doomed = what);
-    this.doomed = "";
+    if (!this.sure(ban ? "ban" : "remove")) return;
     this.client.send({ type: "remove", id: player.id, ban });
     const view = this.client.view!;
     const others = view.players.filter((one) => one.id !== view.you);
@@ -861,13 +866,14 @@ export class MultiplayerPanel {
     if (!player) return { title: words.room, rows: [] };
     const sure = t().packs.sure;
     const crown = () => {
+      if (!this.sure("crown")) return;
       this.client.send({ type: "host", id: player.id });
       this.ui.back();
     };
     return {
       title: player.nickname,
       rows: [
-        { kind: "press", id: "crown", label: words.makeHost, press: crown },
+        { kind: "press", id: "crown", label: this.doomed === "crown" ? sure : words.makeHost, danger: this.doomed === "crown", press: crown, left: () => (this.doomed = "") },
         { kind: "press", id: "remove", label: this.doomed === "remove" ? sure : words.remove, danger: this.doomed === "remove", press: () => this.remove(player, false), left: () => (this.doomed = "") },
         { kind: "press", id: "ban", label: this.doomed === "ban" ? sure : words.ban, danger: this.doomed === "ban", press: () => this.remove(player, true), left: () => (this.doomed = "") },
         { kind: "press", id: "mute", label: player.muted ? words.unmute : words.mute, press: () => this.client.send({ type: "mute", id: player.id, muted: !player.muted }) },

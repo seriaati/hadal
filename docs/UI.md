@@ -85,8 +85,8 @@ The same in every panel.
   removed, on what took its place.
 - **Fields and arrows.** Because a field is alone on its row, Up and Down always leave it and
   Left and Right always belong to its caret. There is no editing mode.
-- **Removing** takes two presses: "Remove" turns into "Sure?", and moving the focus away
-  takes the question back. There is never a hold.
+- **Removing**, and passing a room's crown, take two presses: the line turns into "Sure?", and
+  moving the focus away takes the question back. There is never a hold.
 - **Nothing jumps.** While a step is open, the line in focus stays where it is when the step
   changes (a message, a player joining), and the step moves, or scrolls, around it as far as
   the screen allows. Words said under a line keep their room after they go until the step closes, so a
