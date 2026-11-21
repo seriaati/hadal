@@ -41,6 +41,9 @@ const REFUSALS: Record<Refusal, Where> = {
 
 /** A lantern that is out, as the line that lights it shows it: a little paler than in the sea, so it reads on the dark. */
 const COLD_LANTERN = LANTERN_OUT.map((row) => row.replace(/[rR34]/g, (char) => ({ r: "5", R: "6", "3": "4", "4": "5" })[char]!));
+/** Two marks pointing down, the lower one brighter, before "Start the dive"; as dim as its words while it cannot start. */
+const DESCEND = ["oo.oo", ".ooo.", "..o..", ".....", "aa.aa", ".aaa.", "..a.."];
+const DESCEND_DIM = DESCEND.map((row) => row.replace(/[oa]/g, "5"));
 
 /** How long, in seconds, what the host has just changed glows in the room's line; and the least time between two of the pings that say so. */
 const HOT_SECONDS = 3;
@@ -680,7 +683,8 @@ export class MultiplayerPanel {
     if (you.host) {
       // While some are not ready, a press calls them: the sea shows who, and a bell rings.
       const says = waiting.length ? words.callSays(t().list(waiting)) : undefined;
-      rows.push({ kind: "action", id: "act", label: words.start, says, dim: waiting.length > 0 || this.client.offline, press: () => this.start() });
+      const dim = waiting.length > 0 || this.client.offline;
+      rows.push({ kind: "action", id: "act", label: words.start, says, icon: dim ? { rows: DESCEND_DIM } : { rows: DESCEND, glow: "a" }, dim, press: () => this.start() });
       rows.push(...this.refusal("start"));
     } else {
       rows.push({
