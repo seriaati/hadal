@@ -981,14 +981,18 @@ export class Ui {
     this.level(id, gripped.level + by);
   }
 
-  /** A click on the label sets the lowest level (the owner's wish), and one on a counter's minus or plus moves it a step. */
+  /**
+   * A click on the label sets the lowest level (owner, 2026-11-20), or on a choice of colours goes on to the next, round
+   * to the first (owner, 2026-11-21); one on a counter's minus or plus moves it a step.
+   */
   private drop(control: HTMLElement, id: string, event: PointerEvent) {
     const grip = this.grips.get(id);
     const gripped = this.gripped;
     this.gripped = null;
     if (!grip || gripped?.id !== id || gripped.dragged) return;
     const x = this.along(control, event);
-    if (gripped.label) this.level(id, 0);
+    const colors = (this.parts.get(id) as Slider | undefined)?.colors;
+    if (gripped.label) this.level(id, colors ? (gripped.level + 1) % colors.length : 0);
     else if ("less" in grip && x < grip.less) this.level(id, gripped.level - 1);
     else if ("less" in grip && x >= grip.more) this.level(id, gripped.level + 1);
   }
