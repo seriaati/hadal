@@ -41,7 +41,7 @@ export function Game() {
     const sound = new Sound();
     const glitch = new Glitch();
     const ui = new Ui(form.current!, () => takeKeys());
-    const settings = () => settingsStep(sound);
+    const settings = () => settingsStep(sound, display);
     const account: AccountPanel = new AccountPanel(ui, () => void packs.load());
     const packs = new PacksPanel(ui, account, sound, (pack) => dive(false, { builtIn: [], own: [pack] }));
     const multiplayer = new MultiplayerPanel(ui, account, sound);
@@ -208,7 +208,8 @@ export function Game() {
     let yours = false;
     let request = requestAnimationFrame(function loop(now) {
       request = requestAnimationFrame(loop);
-      const dt = Math.min(0.05, (now - last) / 1000);
+      const elapsed = (now - last) / 1000;
+      const dt = Math.min(0.05, elapsed);
       last = now;
       // The words of a turn that has ended are not kept for the next.
       if (yours && !multiplayer.yours) input.value = "";
@@ -273,6 +274,7 @@ export function Game() {
       if (glitch.blackout) lights.length = 0;
       if (!closing) drawCog(frame);
       ui.draw(frame, scene, display.scale, now / 1000, shown.phase !== "title");
+      display.pace(elapsed);
       display.present(frame, lights);
       sound.update(shown, scene, dt, glitch);
     });

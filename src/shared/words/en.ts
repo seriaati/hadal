@@ -48,6 +48,8 @@ export const en = {
     title: "Settings",
     language: "Language",
     levels: { master: "Master", music: "Music", effects: "Effects", ambient: "Ambient" },
+    glow: "Glow",
+    glows: { auto: "Auto", high: "High", mid: "Medium", low: "Low", autoAt: (level: string) => `Auto ~ ${level}` },
   },
 
   dive: {

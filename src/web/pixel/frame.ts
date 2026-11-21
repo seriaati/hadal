@@ -122,8 +122,22 @@ export function visible() {
   return { width: Math.round(view.width), height: Math.round(view.height), left: view.offsetLeft, top: view.offsetTop };
 }
 
-/** The soft-light layer is drawn at this multiple of the frame's resolution. */
-const GLOW_SCALE = 2;
+/**
+ * How finely the soft light is drawn. High draws it at twice the frame's resolution, Mid at the frame's own, and Low also
+ * leaves out the blurred bloom around glowing pixels; the lamps' light stays. Auto starts at High and steps down while
+ * frames come too slowly.
+ */
+export const GLOWS = ["auto", "high", "mid", "low"] as const;
+export type GlowSetting = (typeof GLOWS)[number];
+export type Glow = Exclude<GlowSetting, "auto">;
+const GLOW_STORED = "hadal.glow";
+/** The soft-light layer's resolution, as a multiple of the frame's. */
+const GLOW_SCALES: Record<Glow, number> = { high: 2, mid: 1, low: 1 };
+/** Auto steps down when frames have come at fewer than this many a second over `PACE_SECONDS`. */
+const SLOW_FPS = 45;
+const PACE_SECONDS = 3;
+/** The first seconds of a page are slow while it loads, and are not counted against the device. */
+const SETTLE_SECONDS = 2;
 /** How a light fades from its centre (0) to its edge (1). */
 const FALLOFF = [0, 0.1, 0.2, 0.3, 0.42, 0.55, 0.7, 0.85, 1].map(
   (t) => [t, (1 - t * t) ** 2 / (1 + 7 * t * t)] as const,
@@ -141,11 +155,15 @@ export class Display {
 
   constructor(
     private pixels: HTMLCanvasElement,
-    private glow: HTMLCanvasElement,
+    private glowCanvas: HTMLCanvasElement,
   ) {
     this.pixelContext = pixels.getContext("2d")!;
-    this.glowContext = glow.getContext("2d")!;
+    this.glowContext = glowCanvas.getContext("2d")!;
   }
+
+  setting: GlowSetting = GLOWS.find((glow) => glow === localStorage.getItem(GLOW_STORED)) ?? "auto";
+  glow: Glow = this.setting === "auto" ? "high" : this.setting;
+  private paced = { frames: 0, seconds: -SETTLE_SECONDS };
 
   /** Screen pixels per pixel of the frame. */
   scale = 2;
@@ -174,15 +192,36 @@ export class Display {
     frame.resize(width, height);
     this.pixels.width = this.shadeCanvas.width = this.bloomCanvas.width = width;
     this.pixels.height = this.shadeCanvas.height = this.bloomCanvas.height = height;
-    this.glow.width = width * GLOW_SCALE;
-    this.glow.height = height * GLOW_SCALE;
-    for (const canvas of [this.pixels, this.glow]) {
+    for (const canvas of [this.pixels, this.glowCanvas]) {
       canvas.style.width = `${width * scale}px`;
       canvas.style.height = `${height * scale}px`;
     }
     this.image = new ImageData(width, height);
     this.shade = new ImageData(width, height);
     this.bloom = new ImageData(width, height);
+  }
+
+  setGlow(setting: GlowSetting) {
+    this.setting = setting;
+    localStorage.setItem(GLOW_STORED, setting);
+    this.glow = setting === "auto" ? "high" : setting;
+    this.paced = { frames: 0, seconds: 0 };
+  }
+
+  /** Counts a frame that took `seconds` since the last, for Auto to step down by. */
+  pace(seconds: number) {
+    if (this.setting !== "auto" || this.glow === "low") return;
+    // A long gap is the page hidden or the browser busy with something else, not the drawing.
+    if (seconds > 0.25) {
+      this.paced = { frames: 0, seconds: Math.min(0, this.paced.seconds) };
+      return;
+    }
+    this.paced.seconds += seconds;
+    if (this.paced.seconds <= 0) return;
+    this.paced.frames++;
+    if (this.paced.seconds < PACE_SECONDS) return;
+    if (this.paced.frames / this.paced.seconds < SLOW_FPS) this.glow = this.glow === "high" ? "mid" : "low";
+    this.paced = { frames: 0, seconds: 0 };
   }
 
   present(frame: Frame, lights: Light[]) {
@@ -211,8 +250,12 @@ export class Display {
     this.shadeCanvas.getContext("2d")!.putImageData(this.shade, 0, 0);
     this.bloomCanvas.getContext("2d")!.putImageData(this.bloom, 0, 0);
 
+    const scale = GLOW_SCALES[this.glow];
+    // Setting a canvas's size clears it, so it is set only when it changes.
+    if (this.glowCanvas.width !== this.pixels.width * scale) this.glowCanvas.width = this.pixels.width * scale;
+    if (this.glowCanvas.height !== this.pixels.height * scale) this.glowCanvas.height = this.pixels.height * scale;
     const g = this.glowContext;
-    const { width, height } = this.glow;
+    const { width, height } = this.glowCanvas;
     g.filter = "none";
     g.globalAlpha = 1;
     g.globalCompositeOperation = "source-over";
@@ -221,9 +264,9 @@ export class Display {
 
     g.globalCompositeOperation = "lighter";
     for (const light of lights) {
-      const x = light.x * GLOW_SCALE;
-      const y = light.y * GLOW_SCALE;
-      const radius = light.radius * GLOW_SCALE;
+      const x = light.x * scale;
+      const y = light.y * scale;
+      const radius = light.radius * scale;
       const gradient = g.createRadialGradient(x, y, 0, x, y, radius);
       for (const [t, falloff] of FALLOFF) {
         gradient.addColorStop(t, `rgba(${light.rgb.join(",")},${Math.min(1, falloff * light.strength)})`);
@@ -237,10 +280,11 @@ export class Display {
     g.imageSmoothingEnabled = false;
     g.drawImage(this.shadeCanvas, 0, 0, width, height);
 
+    if (this.glow === "low") return;
     g.globalCompositeOperation = "lighter";
     g.imageSmoothingEnabled = true;
     for (const [blur, alpha] of [[1.25, 0.5], [4, 0.55], [11, 0.4]] as const) {
-      g.filter = `blur(${blur * GLOW_SCALE}px)`;
+      g.filter = `blur(${blur * scale}px)`;
       g.globalAlpha = alpha;
       g.drawImage(this.bloomCanvas, 0, 0, width, height);
     }

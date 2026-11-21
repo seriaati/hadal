@@ -41,6 +41,8 @@ export const zhCN: Words = {
     title: "设置",
     language: "语言",
     levels: { master: "总音量", music: "音乐", effects: "音效", ambient: "环境音" },
+    glow: "光晕",
+    glows: { auto: "自动", high: "高", mid: "中", low: "低", autoAt: (level: string) => `自动 ~ ${level}` },
   },
 
   dive: {

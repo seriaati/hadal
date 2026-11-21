@@ -41,6 +41,8 @@ export const zhTW: Words = {
     title: "設定",
     language: "語言",
     levels: { master: "總音量", music: "音樂", effects: "音效", ambient: "環境音" },
+    glow: "光暈",
+    glows: { auto: "自動", high: "高", mid: "中", low: "低", autoAt: (level: string) => `自動 ~ ${level}` },
   },
 
   dive: {
