@@ -93,6 +93,9 @@ const CROWN = [".....", "..x..", "x.x.x", "xxxxx", "xxxxx"];
 const MINUS = [".....", ".....", "#####", ".....", "....."];
 const PLUS = ["..#..", "..#..", "#####", "..#..", "..#.."];
 
+/** Space on anything but a field, where it is typed. */
+const spaceOnControl = (event: KeyboardEvent) => event.key === " " && (event.target as HTMLElement | null)?.dataset.kind !== "field";
+
 const isControl = <T extends Part | Diver>(part: T): part is T & Control =>
   part.kind === "press" || part.kind === "field" || part.kind === "slider" || part.kind === "action" || part.kind === "diver" || (part.kind === "summary" && !!part.id && !!part.press);
 /** The controls that are pressed, as a button is. */
@@ -286,6 +289,8 @@ export class Ui {
     for (const control of [this.leave, this.copier]) this.hover(control);
     form.append(this.sizer, this.leave, this.copier);
     form.addEventListener("keydown", (event) => this.key(event));
+    // A browser presses a button as Space comes up; only Enter presses (owner, 2026-11-21).
+    form.addEventListener("keyup", (event) => spaceOnControl(event) && event.preventDefault());
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       this.act((event.submitter as HTMLElement | null)?.dataset.id ?? "");
@@ -474,6 +479,7 @@ export class Ui {
   private key(event: KeyboardEvent) {
     // While a keyboard is still composing a letter (as for Japanese or Chinese), its keys are its own.
     if (event.isComposing) return;
+    if (spaceOnControl(event)) return event.preventDefault();
     if (event.key === "Escape") {
       event.preventDefault();
       // A key that is held down acts once: the second Escape of a pair must be meant.

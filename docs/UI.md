@@ -69,6 +69,7 @@ The same in every panel.
 | Left, Right | Move between things on one row. From the leftmost line of a row, Left goes one step back. On a slider, change it one step (5%). In a field, move the caret |
 | Tab, Shift+Tab | The next or the previous thing in reading order, round and round inside the panel |
 | Enter | Press what has the focus. In a field: go to the next field, or press the first line after the last one |
+| Space | Nothing, outside a field, where it is typed: only Enter presses (owner, 2026-11-21) |
 | Escape | One step back. With nothing open: at the title it opens the settings, in a dive it asks whether to leave the dive |
 | Pointer | Moving over a thing gives it the focus; a click presses it. A click outside the words, or on the `‹`, goes one step back. On a slider, a press on a pip sets the level there, a click on the label sets it to the lowest (owner, 2026-11-20), and a drag anywhere along the row moves it a step for each pip it passes |
 | Wheel | Scrolls a step too long for its room |
