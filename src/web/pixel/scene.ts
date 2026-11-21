@@ -911,7 +911,9 @@ export class Scene {
       if (tag) drawText(frame, tiny, tag, at(measure(tiny, tag)), under ? y + 8 : y - 8, 6);
       if (line.you) {
         frame.emit = 90;
-        frame.sprite(CARET, ((x + crown + end) >> 1) - 2, y - 6 + Math.round(Math.sin(time * 2.4)), "a");
+        // Over the middle of the crown and name, which stand centred over the diver; `end` is past the gap after the last letter.
+        const middle = (x + end - tiny.gap - 1) >> 1;
+        frame.sprite(CARET, middle - 2, y - 6 + Math.round(Math.sin(time * 2.4)), "a");
         frame.emit = 0;
       }
       if (line.lastDepth !== undefined) {
