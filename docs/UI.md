@@ -83,6 +83,9 @@ The same in every panel.
 - **Where the focus lands.** When a step opens, on its first thing. Coming back from a step,
   on the line that opened it. After something is added, on the new thing. After something is
   removed, on what took its place.
+- **W, A, S and D** are the arrows too (by where they sit, so ZQSD on AZERTY), at the title,
+  in every panel and on the screen that ends a dive. Not in a field, where they are typed, nor
+  in a room, where a letter opens what the player says.
 - **Fields and arrows.** Because a field is alone on its row, Up and Down always leave it and
   Left and Right always belong to its caret. There is no editing mode.
 - **Removing**, and passing a room's crown, take two presses: the line turns into "Sure?", and

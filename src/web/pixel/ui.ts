@@ -102,6 +102,11 @@ const PLUS = ["..#..", "..#..", "#####", "..#..", "..#.."];
 /** Space on anything but a field, where it is typed. */
 const spaceOnControl = (event: KeyboardEvent) => event.key === " " && (event.target as HTMLElement | null)?.dataset.kind !== "field";
 
+// By where the key sits, not the letter it types, so the same four keys steer on AZERTY (ZQSD) and other layouts.
+const WASD: Record<string, string> = { KeyW: "ArrowUp", KeyA: "ArrowLeft", KeyS: "ArrowDown", KeyD: "ArrowRight" };
+/** The key pressed, with W, A, S and D read as the arrows. Only where nothing is being typed. */
+export const steering = (event: KeyboardEvent) => (event.ctrlKey || event.metaKey || event.altKey ? undefined : WASD[event.code]) ?? event.key;
+
 const isControl = <T extends Part | Diver>(part: T): part is T & Control =>
   part.kind === "press" || part.kind === "field" || part.kind === "slider" || part.kind === "action" || part.kind === "diver" || (part.kind === "summary" && !!part.id && !!part.press);
 /** The controls that are pressed, as a button is. */
@@ -526,27 +531,28 @@ export class Ui {
     const spots = [...this.world, ...this.placed];
     const here = spots.find((spot) => isControl(spot.part) && this.controls.get(spot.part.id) === document.activeElement);
     if (!here) return;
+    const key = here.part.kind === "field" ? event.key : steering(event);
     const go = (way: Move) => {
       event.preventDefault();
       const to = move(spots, here, way)?.part;
       if (to && isControl(to)) this.controls.get(to.id)?.focus({ preventScroll: true });
     };
     if (event.key === "Tab") go(event.shiftKey ? "previous" : "next");
-    else if (event.key === "ArrowUp") go("up");
-    else if (event.key === "ArrowDown") go("down");
-    else if (here.part.kind === "press" && here.part.shift && (event.key === "ArrowLeft" || event.key === "ArrowRight")) {
+    else if (key === "ArrowUp") go("up");
+    else if (key === "ArrowDown") go("down");
+    else if (here.part.kind === "press" && here.part.shift && (key === "ArrowLeft" || key === "ArrowRight")) {
       event.preventDefault();
-      if (!this.busy) here.part.shift(event.key === "ArrowLeft" ? -1 : 1);
+      if (!this.busy) here.part.shift(key === "ArrowLeft" ? -1 : 1);
       this.sync();
     }
-    else if (isControl(here.part) && pressed(here.part) && event.key === "ArrowLeft") {
+    else if (isControl(here.part) && pressed(here.part) && key === "ArrowLeft") {
       if (move(spots, here, "left")) go("left");
       else {
         event.preventDefault();
         this.retreat();
       }
     }
-    else if (isControl(here.part) && pressed(here.part) && event.key === "ArrowRight") go("right");
+    else if (isControl(here.part) && pressed(here.part) && key === "ArrowRight") go("right");
     else if (here.part.kind === "field" && event.key === "Enter") {
       // Enter in a field goes on to the next field, or after the last one presses what follows.
       event.preventDefault();
@@ -590,17 +596,18 @@ export class Ui {
   private headKey(event: KeyboardEvent, code: boolean) {
     const controls = this.placed.map((spot) => spot.part).filter(isControl);
     const over = this.world[0]?.part;
+    const key = steering(event);
     const to =
-      event.key === "ArrowDown" || (event.key === "Tab" && !event.shiftKey) ? this.controls.get(controls[0]?.id ?? "")
-      : event.key === "ArrowUp" && over && isControl(over) ? this.controls.get(over.id)
-      : event.key === "ArrowUp" || event.key === "Tab" ? this.controls.get(controls.at(-1)?.id ?? "")
-      : event.key === "ArrowRight" && !code && this.step.code ? this.copier
-      : event.key === "ArrowLeft" && code ? this.leave
+      key === "ArrowDown" || (event.key === "Tab" && !event.shiftKey) ? this.controls.get(controls[0]?.id ?? "")
+      : key === "ArrowUp" && over && isControl(over) ? this.controls.get(over.id)
+      : key === "ArrowUp" || event.key === "Tab" ? this.controls.get(controls.at(-1)?.id ?? "")
+      : key === "ArrowRight" && !code && this.step.code ? this.copier
+      : key === "ArrowLeft" && code ? this.leave
       : undefined;
     if (to) {
       event.preventDefault();
       to.focus({ preventScroll: true });
-    } else if (event.key === "ArrowLeft" && !code) {
+    } else if (key === "ArrowLeft" && !code) {
       event.preventDefault();
       this.retreat(true);
     }

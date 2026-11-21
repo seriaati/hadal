@@ -14,7 +14,7 @@ import { MultiplayerPanel } from "./pixel/multiplayer";
 import { PacksPanel } from "./pixel/packs";
 import { Scene, type Menu } from "./pixel/scene";
 import { drawCog, overCog, settingsStep } from "./pixel/settings";
-import { Ui, type Step } from "./pixel/ui";
+import { steering, Ui, type Step } from "./pixel/ui";
 
 const REPO = "https://github.com/seriaati/hadal";
 /** How often an open page asks whether a newer version of the game is out, in milliseconds. */
@@ -144,7 +144,8 @@ document.addEventListener("visibilitychange", checkVersion);
 const onKey = (event: KeyboardEvent) => {
   // While a keyboard is still composing a letter (as for Japanese or Chinese), Enter picks the letter; it sends nothing.
   if (event.isComposing) return;
-  const way = ARROWS[event.key];
+  const key = steering(event);
+  const way = ARROWS[key];
   if (ending && done && way) {
     event.preventDefault();
     ending.move(way, frame);
@@ -157,8 +158,8 @@ const onKey = (event: KeyboardEvent) => {
     talk.focus();
     return;
   }
-  if (shown.phase === "title" && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
-    menu.choice = (menu.choice + (event.key === "ArrowUp" ? -1 : 1) + menu.items.length) % menu.items.length;
+  if (shown.phase === "title" && (key === "ArrowUp" || key === "ArrowDown")) {
+    menu.choice = (menu.choice + (key === "ArrowUp" ? -1 : 1) + menu.items.length) % menu.items.length;
   }
   if (event.key !== "Enter" && event.key !== "Escape") return;
   event.preventDefault();
