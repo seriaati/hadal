@@ -951,10 +951,9 @@ export class Scene {
       const x = Math.max(chosen ? 8 : 2, at(crown + measure(tiny, name) + hearts));
       crowns.set(line.name, { x, y });
       this.names.set(line.name, { x, y: y - 2, w: crown + measure(tiny, name) + hearts, h: 9 });
-      // A diver is pressed anywhere along their line, from under the hull down to their boots: the pointer that chose
-      // them may drift up off their name, and a press there must not count as one outside the words, which leaves the room.
-      const from = Math.max(0, Math.min(y - 4, surface + 1));
-      if (this.lobby) this.places.set(line.name, { x: line.x - 4, y: from, w: 30, h: line.y + 28 - from });
+      // A diver is pressed on their name or on themselves, the name being over their helmet or under their boots.
+      const from = Math.min(y - 4, line.y);
+      if (this.lobby) this.places.set(line.name, { x: line.x - 4, y: from, w: 30, h: Math.max(line.y + 28, y + 9) - from });
       if (chosen) drawMark(frame, x - 6, y);
       if (line.host && !flying) {
         if (glint) frame.emit = Math.round(255 * glint);

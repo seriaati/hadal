@@ -101,6 +101,9 @@ const menuItems = () => {
   return [words.single, words.multiplayer, words.packs, account.account ? words.account : words.signIn, words.about, ...(newer ? [words.update] : [])];
 };
 const menu: Menu = { items: menuItems(), choice: 0 };
+/** Whether the pointer chose the menu's line, and which line it took away when it moved off: Up or Down gives it back. */
+let menuPointed = false;
+let menuParked = 0;
 const choose = (line: number) => {
   if (line === 0) ui.go(single);
   else if (line === 1) multiplayer.show();
@@ -159,7 +162,9 @@ const onKey = (event: KeyboardEvent) => {
     return;
   }
   if (shown.phase === "title" && (key === "ArrowUp" || key === "ArrowDown")) {
-    menu.choice = (menu.choice + (key === "ArrowUp" ? -1 : 1) + menu.items.length) % menu.items.length;
+    menuPointed = false;
+    if (menu.choice < 0) menu.choice = menuParked;
+    else menu.choice = (menu.choice + (key === "ArrowUp" ? -1 : 1) + menu.items.length) % menu.items.length;
   }
   if (event.key !== "Enter" && event.key !== "Escape") return;
   event.preventDefault();
@@ -169,7 +174,7 @@ const onKey = (event: KeyboardEvent) => {
     if (multiplayer.answer(input.value)) input.value = "";
     return;
   }
-  if (game.phase === "title") return choose(menu.choice);
+  if (game.phase === "title") return menu.choice >= 0 ? choose(menu.choice) : undefined;
   if (game.phase === "ask") game.input = input.value; // include keys typed since the last frame
   pressEnter(game);
   if (game.phase === "ask") input.value = game.input; // an answer that was sent leaves the field empty
@@ -209,16 +214,26 @@ const onPointer = (event: PointerEvent) => {
   const named = ui.open ? undefined : multiplayer.pickable(scene.nameAt(x, y));
   canvas.style.cursor = cog || line >= 0 || named ? "pointer" : "";
   if (event.type === "pointermove") {
-    // Moving the pointer over a line of the menu chooses it, as moving it over a control of a panel gives that the focus.
-    if (line >= 0 && event.pointerType === "mouse" && (event.movementX || event.movementY)) menu.choice = line;
+    // Moving the pointer over a line of the menu chooses it, and moving off takes the choice away, as with a control of a panel.
+    if (!(event.pointerType === "mouse" && (event.movementX || event.movementY))) return;
+    if (line >= 0) {
+      menu.choice = line;
+      menuPointed = true;
+    } else if (menuPointed && shown.phase === "title" && !ui.open) {
+      menuParked = menu.choice;
+      menu.choice = -1;
+      menuPointed = false;
+    }
   } else if (cog) {
     if (ui.top === settings || ui.top === leaving) ui.back();
     else openMenu();
-  } else if (ui.open) ui.press(x, y);
+  }
+  // A click on nothing does nothing (owner, 2026-11-21): the controls of a panel are page elements, and take their own clicks.
+  else if (ui.open) return;
   else if (named) multiplayer.pick(named);
   else if (line >= 0) choose(line);
-  // A press anywhere does what Enter does after a verdict: a phone's keyboard may be closed.
-  else if (!multiplayer.diving && game.phase === "verdict") pressEnter(game);
+  // A tap anywhere does what Enter does after a verdict: a phone's keyboard may be closed.
+  else if (!multiplayer.diving && game.phase === "verdict" && event.pointerType !== "mouse") pressEnter(game);
 };
 input.addEventListener("keydown", onKey);
 addEventListener("mousedown", keepFocus);

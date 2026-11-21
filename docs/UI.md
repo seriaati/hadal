@@ -36,7 +36,7 @@ Every panel is built from these, and each has one look.
 | Setting | A line that stands for a choice | Its label, and the choice against the right edge ("Deepest", "built-in + 2"), with a pip before it if it is on or off. Left and Right change it, like a slider; Enter flips an on or off one |
 | Action | The one thing a step is for (lighting the lantern in a room, starting the dive) | The larger letters, in amber, in the middle of its row, after an icon if it has one. Dim while it cannot be done yet, though it may still be pressed to hear why. The focus lands on it when its step opens |
 | Summary | Facts read together, such as how a room is set up | Pale facts with a dim `~` between them, wrapped only between facts. A fact that has just changed glows amber. Where it can be changed it is pressed like a line, with a dim word at the right edge ("Change") |
-| Diver | One of the people in a room, pressed where they hang in the sea | Drawn by the sea, not the panel. A player's own diver opens their suit and "Say something"; to the host every other diver opens what the host can do to them. To the others another diver is only seen, and the focus passes over them. The divers are a row over the panel's: Up from its first row reaches them. In a dive the host presses another diver's name to open the same |
+| Diver | One of the people in a room, pressed where they hang in the sea | Drawn by the sea, not the panel. A diver is pressed on their name or on themselves. A player's own diver opens their suit and "Say something"; to the host every other diver opens what the host can do to them. To the others another diver is only seen, and the focus passes over them. The divers are a row over the panel's: Up from its first row reaches them. In a dive the host presses another diver's name to open the same |
 | Message | Words that are only read | Dim words, wrapped |
 | Wait | Something that takes long | Words, then one pip per piece of the work, then "prompt 4 of 10". Past 10 pieces a pip stands for a tenth of the work |
 
@@ -49,14 +49,14 @@ a row.
 |---|---|
 | At rest | As above |
 | In focus | An amber mark `▸` before it, and its words turn cream and glow a little. A field's rule turns amber and its caret blinks. A slider's lit pips turn amber |
-| Under the pointer | The same as in focus: moving the pointer over a thing gives it the focus, so there is never a second highlight. A field is the one exception: it takes the focus, and its caret, only when it is clicked or reached by the keys (owner, 2026-11-18, after play) |
+| Under the pointer | The same as in focus: moving the pointer over a thing gives it the focus, so there is never a second highlight. Moving it off onto nothing takes the focus away, and nothing is lit until the pointer is over a thing again or a key that moves lights that line again (owner, 2026-11-21). A field is the one exception: it takes the focus, and its caret, only when it is clicked or reached by the keys (owner, 2026-11-18, after play) |
 | Pressed | Nothing of its own: a press acts at once |
 | Busy | The line that was pressed keeps the look of the focus, wherever the focus goes, and dots after its words fill one by one. Presses wait until the answer has come. A panel that leads into a dive stays until the dive has begun |
 | About to destroy | The line's words turn rose and ask "Sure?" (the step's name, when it was the `‹` that was pressed) |
 | Refused | A message in rose, where the thing was tried, saying what happened and what to do |
 | Warned | A note in rose under what it warns of, such as the horror of chaos mode. A note of what a change will cost, said before it is made, is amber and stands at the top of the step ("changing these puts out 2 lanterns") |
 
-Something always has the focus while a panel is open, and it is always shown this one way:
+Something has the focus while a panel is open, unless the pointer has just moved off it, and the focus is always shown this one way:
 by a shape and by a change of light, never by colour alone.
 
 ## Control
@@ -72,12 +72,12 @@ The same in every panel.
 | Space | Nothing, outside a field, where it is typed: only Enter presses (owner, 2026-11-21) |
 | Typing | What the player says to a room, in a bubble over their own diver, edged in amber while it is typed. Tab opens it with nothing typed, in the room and in a dive while it is not the player's turn: an input method (Chinese) composes only into a field that already has the focus. In the room, with no field in focus, a letter or `/` opens it too, and a key an input method takes first opens it and is lost; in a dive letters type the answer, and "/" may be in one. Enter sends it, Escape takes it back (not a step back), Tab goes back with it kept, and the focus returns where it was; the player's turn closes it the same way. No key moves to it, and nothing of it is drawn until it is typed. A phone opens it from the player's own diver, and in a dive from a speech mark at the bottom left, lit while it is open. What would give away an answer is refused in a rose bubble in its place. A screen reader is told what the others say |
 | Escape | One step back. With nothing open: at the title it opens the settings, in a dive it asks whether to leave the dive |
-| Pointer | Moving over a thing gives it the focus; a click presses it. A click outside the words, or on the `‹`, goes one step back. On a slider, a press on a pip sets the level there, a click on the label sets it to the lowest (owner, 2026-11-20), and a drag anywhere along the row moves it a step for each pip it passes |
+| Pointer | Moving over a thing gives it the focus; a click presses it. A click on the `‹` goes one step back; a click on nothing does nothing (owner, 2026-11-21). The title menu's lines are chosen and let go the same way. On a slider, a press on a pip sets the level there, a click on the label sets it to the lowest (owner, 2026-11-20), and a drag anywhere along the row moves it a step for each pip it passes |
 | Wheel | Scrolls a step too long for its room |
-| Touch | A tap presses, a drag scrolls. On a counter, a tap on the minus or the plus moves it one step. The `‹` goes back. In a dive a tap anywhere opens the keyboard, and after a verdict it goes on, like Enter |
+| Touch | A tap presses, a drag scrolls. On a counter, a tap on the minus or the plus moves it one step. The `‹` goes back. In a dive a tap anywhere opens the keyboard, and after a verdict it goes on, like Enter (a tap, not a mouse click) |
 
 - **Back** is always one step: from "Write a pack" to the list, from the list to the title.
-  Escape, Left from the leftmost line, the `‹` and a click outside the words all mean it.
+  Escape, Left from the leftmost line and the `‹` all mean it.
   No panel has a "Back" button. The one exception is a message with nothing else to press,
   because the focus must rest somewhere.
 - **Where the focus lands.** When a step opens, on its first thing. Coming back from a step,
@@ -96,8 +96,7 @@ The same in every panel.
   message that comes and goes moves nothing. This holds for every panel, without its own code.
 - **Scrolling.** A thing the keys give the focus to is scrolled into view. One the pointer
   gives it to is under the pointer already, and nothing moves.
-- **Leaving a room** asks the same way: every way out (Escape, Left, a click outside, a
-  press on "Leave") first turns "Leave" into a rose "Sure?" and puts the focus on it. A
+- **Leaving a room** asks the same way: every way out (Escape, Left, a press on "Leave") first turns "Leave" into a rose "Sure?" and puts the focus on it. A
   second way out leaves.
 - **The cursor is a hand** over everything that can be pressed: the title menu's lines, the
   cog, and every line, field and slider of a panel.

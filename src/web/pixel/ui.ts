@@ -247,7 +247,6 @@ export class Ui {
   /** What was typed in the fields of steps that are not on screen, until the panel closes. */
   private kept = new Map<string, string>();
   private placed: Placed[] = [];
-  private box = { x: 0, y: 0, w: 0, h: 0 };
   /** Where the step on screen was last drawn: its top, and where each of its controls stood in it. */
   private held: { step: object; left: number; bottom: number; top: number; at: Map<string, number> } | null = null;
   /** The control to give the focus as soon as it exists. */
@@ -263,6 +262,8 @@ export class Ui {
   private sizer = document.createElement("div");
   /** The control the pointer gave the focus to, which is not scrolled to: it is under the pointer already. */
   private pointed: Element | null = null;
+  /** The control the pointer last moved off, taking its focus with it: the next key that moves gives it back. */
+  private parked: HTMLElement | null = null;
   /** The control that had the focus when the step was last drawn. */
   private seen = "";
   /** The control last pressed: while the step is busy it keeps the look of the focus, and shows that it waits. */
@@ -284,6 +285,8 @@ export class Ui {
   ) {
     Object.assign(this.leave, { type: "button", tabIndex: -1 });
     Object.assign(this.copier, { type: "button", tabIndex: -1 });
+    // While the pointer is over nothing the form itself holds the focus: nothing is lit, and the keys still come here.
+    form.tabIndex = -1;
     // The step's name and code stand above the box that scrolls.
     this.leave.style.position = this.copier.style.position = "fixed";
     this.sizer.className = "sizer";
@@ -332,6 +335,7 @@ export class Ui {
     if (top) top.focus = (document.activeElement as HTMLElement | null)?.dataset.id ?? "";
     this.steps.push({ build, focus: "", kept: new Map(), footKept: new Map() });
     this.wanted = focus;
+    this.unpark();
     this.sync();
   }
 
@@ -346,6 +350,7 @@ export class Ui {
     const top = this.steps.at(-1);
     if (!top) return this.close();
     this.wanted = top.focus;
+    this.unpark();
     this.sync();
   }
 
@@ -378,12 +383,6 @@ export class Ui {
     this.kept.delete(id);
     const field = this.controls.get(id);
     if (field) field.value = "";
-  }
-
-  /** A press outside the panel's words goes one step back. */
-  press(x: number, y: number) {
-    const { x: left, y: top, w, h } = this.box;
-    if (x < left - 14 || x >= left + w + 12 || y < top - 10 || y >= top + h + 10) this.retreat();
   }
 
   /**
@@ -448,7 +447,7 @@ export class Ui {
     this.wanted = "";
     const active = document.activeElement;
     if (wanted) wanted.focus({ preventScroll: true });
-    else if (top && !this.waiting && active?.parentElement !== this.form) this.controls.get(parts[0]?.id ?? "")?.focus({ preventScroll: true });
+    else if (top && !this.waiting && active !== this.form && active?.parentElement !== this.form) this.controls.get(parts[0]?.id ?? "")?.focus({ preventScroll: true });
   }
 
   private make(part: Control) {
@@ -525,6 +524,15 @@ export class Ui {
       // A key that is held down acts once: the second Escape of a pair must be meant.
       if (event.repeat) return;
       return this.step.escape ? this.step.escape() : this.retreat();
+    }
+    if (active === this.form && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Tab"].includes(steering(event))) {
+      event.preventDefault();
+      if (this.parked?.parentElement === this.form) this.parked.focus({ preventScroll: true });
+      else {
+        this.unpark();
+        this.sync();
+      }
+      return;
     }
     const head = [this.leave, this.copier].indexOf(document.activeElement as HTMLButtonElement);
     if (head >= 0) return this.headKey(event, head === 1);
@@ -672,7 +680,6 @@ export class Ui {
     this.seen = id;
     this.held = { step, left, bottom, top, at: new Map(laid.placed.flatMap((spot) => (isControl(spot.part) ? [[spot.part.id, spot.y]] : []))) };
     this.placed = [...laid.placed, ...foot];
-    this.box = { x: left, y: top, w: width, h: shown };
     if (!wide || docked) scene.hush = [top - 12, top + shown + 8];
 
     // The form is laid over the rows of the step and scrolls them: the wheel, a finger and a screen reader move it.
@@ -985,12 +992,25 @@ export class Ui {
     else if ("less" in grip && x >= grip.more) this.level(id, gripped.level + 1);
   }
 
-  /** A pointer that only rests over a control does not take the focus back from the keys. */
+  /**
+   * A pointer that only rests over a control does not take the focus back from the keys. One that moves off the control
+   * it lit takes the focus away, so that nothing looks pressable where a click does nothing (owner, 2026-11-21).
+   */
   private hover(control: HTMLElement) {
     control.addEventListener("pointermove", (event) => {
       if (!(event.pointerType === "mouse" && (event.movementX || event.movementY) && document.activeElement !== control)) return;
       this.pointed = control;
       control.focus({ preventScroll: true });
     });
+    control.addEventListener("pointerleave", (event) => {
+      if (event.pointerType !== "mouse" || document.activeElement !== control) return;
+      this.parked = control;
+      this.form.focus({ preventScroll: true });
+    });
+  }
+
+  /** Let the next sync give the focus as it does when a step opens. */
+  private unpark() {
+    if (document.activeElement === this.form) this.form.blur();
   }
 }
