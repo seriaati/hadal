@@ -103,6 +103,15 @@ test("words said after a line keep their room once they are gone, so the lines a
   expect(y(room(true))).toBe(said);
 });
 
+test("words and a gap before a line keep their room once, frame after frame", () => {
+  const step: Step = { title: "Write a pack", rows: [{ kind: "note", text: "Words" }, { kind: "gap" }, press("key"), { kind: "gap" }, { kind: "note", text: "More words" }, press("skill")] };
+  const kept = new Map<string, number>();
+  const ys = (laid: ReturnType<typeof lay>) => laid.placed.map((spot) => spot.y);
+  const fresh = ys(lay(step, 140, 12));
+  expect(ys(lay(step, 140, 12, kept))).toEqual(fresh);
+  expect(ys(lay(step, 140, 12, kept))).toEqual(fresh);
+});
+
 test("a step too long for its room stays where it stands and scrolls, no further than its end", () => {
   expect(view(100, 60, 60, 300, 0)).toEqual({ top: 60, scroll: 0 });
   expect(view(400, 60, 60, 300, 0)).toEqual({ top: 60, scroll: 0 });

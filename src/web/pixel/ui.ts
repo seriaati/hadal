@@ -151,7 +151,8 @@ export function lay(step: Step, width: number, line: number, kept?: Map<string, 
   };
   step.rows.forEach((row, index) => {
     const parts = Array.isArray(row) ? row : [row];
-    const words = parts.every((part) => part.kind === "note");
+    // A gap counts with the words: were it to keep their room as well, the line after it would keep it a second time.
+    const words = parts.every((part) => part.kind === "note" || part.kind === "gap");
     if (!words) keep();
     let x = 0;
     let tall = 0;
