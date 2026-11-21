@@ -158,7 +158,7 @@ export class Ending {
 
   /** In a room: where the lamps start (after the names), how far apart they are, and how many fit. */
   private columns(W: number) {
-    const names = W >= 300 ? 52 : 46;
+    const names = W >= 300 ? 58 : 52;
     const most = Math.max(1, ...this.lines.map((lamps) => lamps.length));
     const room = W - names - 8;
     const gap = Math.max(8, Math.min(26, Math.floor(room / most)));
@@ -167,7 +167,8 @@ export class Ending {
 
   private headHeight(W: number): number {
     const chaos = isRoom(this.log) && this.log.mode === "chaos";
-    return 6 + wrap(medium, this.winnerWords(), W - 16).length * 11 + 8 + (chaos ? 8 : 0);
+    const why = wrap(tiny, this.whyWords(), W - 16).length;
+    return 6 + wrap(medium, this.winnerWords(), W - 16).length * 11 + 8 + (why - 1) * 9 + (chaos ? 8 : 0);
   }
 
   private detailsTop(frame: Frame): number {
@@ -178,7 +179,14 @@ export class Ending {
   private winnerWords(): string {
     if (!isRoom(this.log)) return "";
     const won = this.divers.filter((diver) => diver.won).map((diver) => plain(diver.name));
-    return t().ending.won(t().list(won), this.log.mode === "deepest");
+    return t().ending.won(t().list(won), won.length);
+  }
+
+  /** Under the winners' names: what won it, and how deep they got. */
+  private whyWords(): string {
+    if (!isRoom(this.log)) return "";
+    const deepest = Math.max(0, ...this.divers.filter((diver) => diver.won).map((diver) => diver.depth));
+    return `${t().ending.why(this.log.mode === "deepest")} ~ ${formatMeters(deepest)} ~ ${zoneAt(deepest)}`;
   }
 
   /**
@@ -322,6 +330,7 @@ export class Ending {
       if (open < 0) return;
       const ex = Math.round(fx * W);
       const ey = Math.round(fy * H);
+      for (let y = ey; y < ey + 3; y++) if (this.wordsFrom[y]! <= ex + 13 && this.wordsTo[y]! >= ex) return;
       const shut = open < 0.12 || hash(i * 7, Math.floor(time * 1.7)) < 0.08;
       const look = Math.max(-1, Math.min(1, Math.round((this.point.x - ex) / 40)));
       frame.emit = 50;
@@ -356,8 +365,7 @@ export class Ending {
     const log = this.log;
     if (isRoom(log)) {
       const y = this.centred(frame, medium, this.winnerWords(), 6, 16, 70, 11);
-      const deepest = Math.max(0, ...this.divers.filter((diver) => diver.won).map((diver) => diver.depth));
-      const under = this.centred(frame, tiny, `${formatMeters(deepest)} ~ ${zoneAt(deepest)}`, y + 1, 6);
+      const under = this.centred(frame, tiny, this.whyWords(), y + 1, 6);
       if (log.mode === "chaos") this.centred(frame, tiny, t().ending.chaosRoom, under - 1 + rise(tiny, t().ending.chaosRoom), 18);
       return;
     }
@@ -369,16 +377,21 @@ export class Ending {
     if (log.chaos) this.centred(frame, tiny, chaos, lit - 1 + rise(tiny, chaos), 18);
   }
 
-  /** In a room, the name at the head of each row: in the colour of their suit, amber for the winner, cream while in focus. */
+  /**
+   * In a room, the head of each row: the diver's place, the colour of their suit and their name, amber for a winner and
+   * cream while in focus.
+   */
   private drawName(frame: Frame, row: Row, ready: boolean) {
     if (!ready) return;
     const diver = this.divers[row.line]!;
     const on = this.focus !== "back" && this.focus.line === row.line;
-    for (let j = 0; j < 5; j++) for (let k = 0; k < 3; k++) frame.put(4 + k, row.y - 2 + j, SUIT_COLORS[diver.suit]!);
+    // Winners of a tie are all first, though the server numbers them one after another.
+    this.say(frame, tiny, String(diver.won ? 1 : diver.place), 6, row.y - 2, diver.won ? 15 : 6, true, diver.won ? 70 : 0);
+    for (let j = 0; j < 5; j++) for (let k = 0; k < 3; k++) frame.put(10 + k, row.y - 2 + j, SUIT_COLORS[diver.suit]!);
     let name = plain(diver.name);
-    const room = this.columns(frame.width).left - 16;
+    const room = this.columns(frame.width).left - 22;
     while (name.length > 1 && measure(tiny, name) > room) name = name.slice(0, -1);
-    this.say(frame, tiny, name, 10, row.y - 2, on ? 16 : diver.won ? 15 : 7, false, on || diver.won ? 70 : 0);
+    this.say(frame, tiny, name, 16, row.y - 2, on ? 16 : diver.won ? 15 : 7, false, on || diver.won ? 70 : 0);
   }
 
   private drawDetails(frame: Frame) {

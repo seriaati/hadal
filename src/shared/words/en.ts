@@ -103,7 +103,8 @@ export const en = {
     ],
   },
   ending: {
-    won: (names: string, deepest: boolean) => `${names} ${deepest ? "went deepest" : "lasted longest"}`,
+    won: (names: string, count: number) => `${names} ${count > 1 ? "win" : "wins"}`,
+    why: (deepest: boolean): string => (deepest ? "went deepest" : "lasted longest"),
     backToRoom: "Back to the room",
     backToTitle: "Back to the title",
     chaosRoom: "Chaos ~ one empty tank and out",

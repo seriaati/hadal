@@ -85,7 +85,8 @@ export const zhTW: Words = {
     scary: ["有點太自信了吧？", "你聽到了嗎？", "看看你身後", "它一直就在你身邊", "你不該往下看的", "屏住呼吸", "它還在這裡"],
   },
   ending: {
-    won: (names: string, deepest: boolean) => `${names} ${deepest ? "潛得最深" : "堅持得最久"}`,
+    won: (names: string) => `${names} 獲勝`,
+    why: (deepest: boolean) => (deepest ? "潛得最深" : "堅持得最久"),
     backToRoom: "返回房間",
     backToTitle: "返回標題",
     chaosRoom: "混亂 ~ 氧氣耗盡一次即出局",
