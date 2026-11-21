@@ -551,7 +551,9 @@ export class Scene {
         : depth < 8500 ? [1, 0, (depth - 6000) / 2500]
         : [0, 0, 0];
       water[y] = mix > 0.5 ? to : from;
-      for (let x = 0; x < W; x++) {
+      // The near wall, drawn later, covers the water left of its edge.
+      const hidden = this.rock.edge[rockAt(row)]! - across;
+      for (let x = Math.max(0, hidden + 1); x < W; x++) {
         if (row < SURFACE_ROW) frame.put(x, y, hash(x, row) < 0.003 ? 6 : 1);
         else if (row === SURFACE_ROW && !behindWords(x, y)) frame.put(x, y, (x + Math.floor(time * 3)) % 9 < 5 ? 6 : 5);
         else frame.put(x, y, mix > 0 && dither(x, row, mix) ? to : from);
@@ -663,7 +665,7 @@ export class Scene {
       const band = this.rock.band[r]!;
       const [slab, offset] = this.rock.bands[band]!;
       const lean = hash(band, -999);
-      for (let x = 0; x <= edge; x++) {
+      for (let x = 0; x <= Math.min(edge, W - 1); x++) {
         const grain = hash(band, Math.floor((x - shift + offset) / slab));
         const crack = (this.rock.bandTop[r] === 1 && grain > 0.3) || ((x - shift + offset) % slab === 0 && grain > 0.55);
         const lit = rockLight(x - (lean - 0.5) * 9, y) + (lean - 0.5) * 0.05 + (grain - 0.5) * 0.03;
@@ -673,7 +675,7 @@ export class Scene {
         frame.put(x, y, (rim ? [2, 12, 13, 14] : [0, 1, 12, 13])[level]!);
       }
       // Snow settles on the ledges.
-      for (let x = Math.max(0, above + 1); x <= edge; x++) {
+      for (let x = Math.max(0, above + 1); x <= Math.min(edge, W - 1); x++) {
         const lit = rockLight(x, y);
         frame.put(x, y, lit > 0.3 ? 15 : lit > 0.17 ? 14 : lit > 0.08 ? 13 : 3);
       }

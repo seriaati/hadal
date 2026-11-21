@@ -101,6 +101,10 @@ export class Frame {
   sprite(rows: string[], x: number, y: number, glowChars?: string) {
     const emit = this.emit;
     rows.forEach((row, j) => {
+      // Rounded as `put` rounds, so that a row off the frame is skipped only where `put` would have drawn none of it.
+      const top = (y + j) | 0;
+      if (top < Math.max(0, this.clipTop) || top >= Math.min(this.height, this.clipBottom)) return;
+      if (((x + row.length - 1) | 0) < 0 || (x | 0) >= this.width) return;
       for (let i = 0; i < row.length; i++) {
         const char = row[i]!;
         if (char === ".") continue;
@@ -267,6 +271,7 @@ export class Display {
       const x = light.x * scale;
       const y = light.y * scale;
       const radius = light.radius * scale;
+      if (x + radius < 0 || y + radius < 0 || x - radius > width || y - radius > height) continue;
       const gradient = g.createRadialGradient(x, y, 0, x, y, radius);
       for (const [t, falloff] of FALLOFF) {
         gradient.addColorStop(t, `rgba(${light.rgb.join(",")},${Math.min(1, falloff * light.strength)})`);

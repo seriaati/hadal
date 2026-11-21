@@ -334,23 +334,39 @@ function drawWhale(frame: Frame, whale: Whale, water: Uint8Array, top: number, b
   // The long fins rise and fall a beat behind the stroke, bending most towards their tips.
   const flap = Math.sin(phase - 1.2) * 2.4;
   const finRoot = bend(23);
-  for (let py = 0; py < WHALE_HEIGHT * s; py++) {
-    const y = Math.round(whale.y) + py;
-    if (y < top || y >= frame.height) continue;
-    for (let px = 0; px < WHALE_LENGTH * s; px++) {
-      const u = (px + 0.5) / s;
-      const v = (py + 0.5) / s - bend(u);
-      const x = left + px;
+  const top0 = Math.round(whale.y);
+  const fromRow = Math.max(0, top - top0);
+  const toRow = Math.min(WHALE_HEIGHT * s, frame.height - top0);
+  // Column by column, so that the outline of the body at each column is worked out once; columns off the screen are skipped.
+  for (let px = Math.max(0, -left); px < Math.min(WHALE_LENGTH * s, frame.width - left); px++) {
+    const u = (px + 0.5) / s;
+    const sway = bend(u);
+    const x = left + px;
+    const back = u < 90 ? WHALE_BACK(u) : 0;
+    const belly = u < 90 ? WHALE_BELLY(u) : 0;
+    const jaw = u < 90 ? WHALE_JAW(u) : 0;
+    const pale = 0.55 + 0.5 * Math.max(0, Math.min(1, (u - 34) / 30));
+    // The flukes, a little turned to the light: two swept-back lobes forked from the stock, the lower one shorter.
+    const k = (u - 90) / 10;
+    const flukeLead = (1 + 9 * k ** 0.9) * (1 + 0.12 * spread * k);
+    // The trailing edge meets the leading one at the tip, so each lobe ends in a point.
+    const trail = k < 0.45 ? 0 : ((k - 0.45) / 0.55) ** 1.3 * flukeLead;
+    // The long pale fin, swept back and down from under the throat, with bumps along its leading edge.
+    const t = (u - 23) / 28;
+    const fin = t >= 0 && t <= 1;
+    const finV = 27 + t * 11 - Math.sin(t * Math.PI) * 1.5 + flap * t ** 1.6 + finRoot - sway;
+    const finWidth = 3.6 * (1 - t) ** 0.7 + 0.6;
+    const finLead = finV - finWidth * 0.45;
+    const bump = Math.max(0, Math.sin(u * 2.2)) * 0.5 * (1 - t);
+    for (let py = fromRow; py < toRow; py++) {
+      const y = top0 + py;
+      const v = (py + 0.5) / s - sway;
       let color = -1;
       if (u < 90) {
-        const back = WHALE_BACK(u);
-        const belly = WHALE_BELLY(u);
         // The small dorsal fin on the hump, leaning back.
         const dorsal = u > 60 && u < 67 && v < back && v > back - 2.6 * Math.min((u - 60) / 4, (67 - u) / 3);
         if ((v >= back && v <= belly) || dorsal) {
           const depth = (v - back) / (belly - back);
-          const pale = 0.55 + 0.5 * Math.max(0, Math.min(1, (u - 34) / 30));
-          const jaw = WHALE_JAW(u);
           if (u > 0.5 && u < 25 && Math.abs(v - jaw) < 0.55 / s + 0.35) color = 0;
           else if (Math.floor(u) === 26 && Math.floor(v) === 19) color = shade(y, 3); // the eye
           // The grooves of the throat run back along the belly.
@@ -365,26 +381,13 @@ function drawWhale(frame: Frame, whale: Whale, water: Uint8Array, top: number, b
           if (u < 14 && depth > 0.5 && hash(Math.floor(u * 2), Math.floor(v * 2)) < 0.12) color = shade(y, 3);
         }
       } else {
-        // The flukes, a little turned to the light: two swept-back lobes forked from the stock, the lower one shorter.
-        const k = (u - 90) / 10;
         const d = v - 20 + flex * 2.2 * k * k;
-        const lead = (1 + 9 * k ** 0.9) * (1 + 0.12 * spread * k);
-        // The trailing edge meets the leading one at the tip, so each lobe ends in a point.
-        const trail = k < 0.45 ? 0 : ((k - 0.45) / 0.55) ** 1.3 * lead;
-        const upper = d <= -trail && d >= -lead;
-        const lower = d >= trail * 0.9 && d <= lead * 0.9;
+        const upper = d <= -trail && d >= -flukeLead;
+        const lower = d >= trail * 0.9 && d <= flukeLead * 0.9;
         if (upper || lower || (k < 0.45 && Math.abs(d) <= 1.4 - k * 2)) color = lower && d > 1.4 ? shade(y, -1) : shade(y, -2);
       }
-      // The long pale fin, swept back and down from under the throat, with bumps along its leading edge.
-      const t = (u - 23) / 28;
-      if (t >= 0 && t <= 1) {
-        const finV = 27 + t * 11 - Math.sin(t * Math.PI) * 1.5 + flap * t ** 1.6 + finRoot - bend(u);
-        const width = 3.6 * (1 - t) ** 0.7 + 0.6;
-        const lead = finV - width * 0.45;
-        const bump = Math.max(0, Math.sin(u * 2.2)) * 0.5 * (1 - t);
-        if (v >= lead - bump && v <= finV + width * 0.55) {
-          color = v < lead + 0.6 ? shade(y, 3) : v > finV + width * 0.55 - 0.7 ? shade(y, 1) : shade(y, 2);
-        }
+      if (fin && v >= finLead - bump && v <= finV + finWidth * 0.55) {
+        color = v < finLead + 0.6 ? shade(y, 3) : v > finV + finWidth * 0.55 - 0.7 ? shade(y, 1) : shade(y, 2);
       }
       // Its pale parts are the colours of the words: behind them it is never brighter than the water near the surface.
       if (color >= 0) frame.put(x, y, behindWords(x, y) ? Math.min(color, 4) : color);
@@ -430,6 +433,7 @@ function drawSerpent(frame: Frame, serpent: Serpent, water: Uint8Array, time: nu
   const body = (x: number, y: number) => (water[Math.round(y)] ?? 0) + 1;
   for (const [x, y, girth] of spine) {
     const reach = Math.ceil(girth);
+    if (x + reach < -1 || x - reach > frame.width || y + reach < -1 || y - reach > frame.height) continue;
     for (let j = -reach; j <= reach; j++) {
       for (let i = -reach; i <= reach; i++) {
         if (i * i + j * j > girth * girth) continue;
@@ -488,7 +492,7 @@ function drawAngler(frame: Frame, fish: Angler, water: Uint8Array, time: number,
     if (y < 0 || y >= frame.height) continue;
     const row = water[y]!;
     const hide = row === 0 ? 1 : row - 1; // the body: one shade off the water
-    for (let px = 0; px < 46 * s; px++) {
+    for (let px = Math.max(0, -left); px < Math.min(46 * s, frame.width - left); px++) {
       const u = (px + 0.5) / s;
       const v = (py + 0.5) / s;
       const near = Math.hypot(u - angler.lure.x, v - angler.lure.y);
