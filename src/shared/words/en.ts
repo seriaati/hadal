@@ -241,7 +241,8 @@ export const en = {
     joinIt: "Join the room",
     room: "Room",
     start: "Start the dive",
-    waitingFor: (refused: string, names: string) => `${refused}: waiting for ${names}`,
+    /** Said for "Start the dive" while some are not ready: a press rings for them. */
+    callSays: (names: string) => `Start the dive: waiting for ${names}, a press calls them`,
     setUp: "Set up the room",
     putOut: "Put it out",
     light: "Light the lantern",
@@ -308,7 +309,6 @@ export const en = {
       "bad-suit": "that suit is not one of the six",
       "not-host": "only the host sets up the room",
       "bad-settings": "the room cannot be set up that way",
-      "not-ready": "everyone has to be ready first",
       "no-packs": "no pack is chosen: choose some in the set-up",
       "no-prompts": "these packs have no prompt with an answer for everyone: choose others",
       banned: "the host of that room has banned you",

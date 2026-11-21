@@ -125,6 +125,9 @@ view 6.
 - What happens to the people of a room is seen in the sea. One who leaves is hauled up their line
   into the boat; one removed is jolted and yanked up; one banned has their line snap and sinks
   into the dark. The crown flies from the old host's name to the new one's and glints there.
+- The host's "Start the dive", pressed while some are not ready, calls them instead of saying
+  why: a ship's bell rings twice for everyone, and the lanterns of those not ready blink red
+  for a few seconds, until they light them.
 
 ## Wording
 

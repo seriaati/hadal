@@ -176,7 +176,10 @@ async function change(member: Member, room: Room, changes: Partial<RoomSettings>
 async function start(member: Member, room: Room): Promise<Refusal | void> {
   if (!isHost(member, room)) return "not-host";
   if (room.dive) return;
-  if (room.players.some((player) => !player.host && !player.ready)) return "not-ready";
+  if (room.players.some((player) => !player.host && !player.ready)) {
+    for (const player of room.players) player.member.send({ type: "called" });
+    return;
+  }
   // A room may be set up with no pack while the host chooses, but not dive without one.
   if (!room.settings.builtIn.length && !room.settings.ownPacks.length) return "no-packs";
   const { accountId } = member;

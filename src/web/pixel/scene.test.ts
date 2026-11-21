@@ -35,6 +35,21 @@ test("when the turn passes, the camera travels to the next diver in three quarte
   expect(scene.lit).toBe(lit);
 });
 
+test("a diver the host called blinks red, a third of a second on and one off, until they light their lantern", () => {
+  const frame = new Frame();
+  frame.resize(320, 180);
+  const scene = new Scene();
+  const reds = (diver: Partial<Crew>) => {
+    scene.crew = [{ slot: 0, suit: 0, name: "ana", lit: false, focus: true, depth: 0, ...diver }];
+    return scene.draw(frame, createGame(), { items: [], choice: 0 }, 1 / 60, 0, false).filter(({ rgb }) => rgb[0] === 210 && rgb[1] === 40).length;
+  };
+  expect(reds({ called: 0.1 })).toBe(1);
+  expect(reds({ called: 0.5 })).toBe(0);
+  expect(reds({ called: 0.7 })).toBe(1);
+  expect(reds({ called: 0.1, lit: true })).toBe(0);
+  expect(reds({})).toBe(0);
+});
+
 test("in a room every place along the boat is in view, from the narrowest frame to a wide one", () => {
   // An upright phone's frame is at least 144 wide; a diver is 21 wide, their line at its left.
   for (const width of [144, 146, 195, 240, 320, 480]) {

@@ -447,7 +447,9 @@ test("a dive starts once every guest is ready, from prompts with an answer for e
   await say(guest, { type: "start" });
   expect(guest.sent.at(-1)).toEqual({ type: "refused", reason: "not-host" });
   await say(host, { type: "start" });
-  expect(host.sent.at(-1)).toEqual({ type: "refused", reason: "not-ready" });
+  // Starting while a guest is not ready calls them, for everyone to see, and starts nothing.
+  expect(host.sent.at(-1)).toEqual({ type: "called" });
+  expect(guest.sent.at(-1)).toEqual({ type: "called" });
   await say(guest, { type: "ready", ready: true });
   await say(host, { type: "start" });
   const dive = seen(guest).dive!;

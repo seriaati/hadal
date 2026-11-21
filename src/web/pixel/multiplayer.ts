@@ -8,7 +8,7 @@ import type { Sound } from "../sound";
 import { LOST_SECONDS, ascentSeconds, createGame, type Game } from "../state";
 import type { AccountPanel } from "./account";
 import { builtInRows, packRows, type PackChoice } from "./choice";
-import { CROWN_SECONDS, GLINT_SECONDS, GOING_SECONDS, LANTERN, LANTERN_OUT, SUIT_COLORS, type Crew, type Turn } from "./scene";
+import { CALL_SECONDS, CROWN_SECONDS, GLINT_SECONDS, GOING_SECONDS, LANTERN, LANTERN_OUT, SUIT_COLORS, type Crew, type Turn } from "./scene";
 import type { Diver, Part, Step, Ui } from "./ui";
 
 /** Where in the panel a refusal is said: under the field it is about, before the last line, in the room's set-up, under "Copy the link" or under "Start the dive". */
@@ -21,7 +21,6 @@ const REFUSALS: Record<Refusal, Where> = {
   "bad-suit": "end",
   "not-host": "settings",
   "bad-settings": "settings",
-  "not-ready": "start",
   "no-packs": "start",
   "no-prompts": "start",
   banned: "code",
@@ -101,6 +100,9 @@ export class MultiplayerPanel {
   private crowned: { id: number; from: string; at: number } | null = null;
   /** Who was ready, by room code and id, as the server last said. */
   private ready = new Map<string, boolean>();
+  /** When the host last called those who are not ready, and when that was last heard, in seconds. */
+  private called = -Infinity;
+  private rung = -Infinity;
   /**
    * The room's dive that has just ended: its log, the diver the camera follows up, and when it ended and how long
    * the haul up takes, in seconds. At the surface the end screen opens; closing it goes back to the room.
@@ -189,7 +191,7 @@ export class MultiplayerPanel {
     // The host has no ready of their own: starting the dive is it.
     const last = (id: number) => view.last?.divers.find((diver) => diver.id === id)?.depth;
     return this.place(
-      view.players.map((player, slot) => ({ slot, suit: player.suit, name: player.nickname, lit: player.host || player.ready, focus: player.id === view.you, depth: 0, host: player.host, crowned: this.crownedOf(player.id), you: player.id === view.you, lastDepth: last(player.id) })),
+      view.players.map((player, slot) => ({ slot, suit: player.suit, name: player.nickname, lit: player.host || player.ready, focus: player.id === view.you, depth: 0, host: player.host, crowned: this.crownedOf(player.id), you: player.id === view.you, lastDepth: last(player.id), called: this.calledOf(player) })),
     );
   }
 
@@ -208,7 +210,21 @@ export class MultiplayerPanel {
   private ghost(id: number, how: Gone) {
     const name = this.client.view?.players.find((player) => player.id === id)?.nickname;
     const diver = this.shown.find((one) => one.name === name && !one.going);
-    if (diver) this.ghosts.push({ crew: { ...diver, focus: false, depthLabel: false, host: false, crowned: undefined }, how, at: performance.now() / 1000 });
+    if (diver) this.ghosts.push({ crew: { ...diver, focus: false, depthLabel: false, host: false, crowned: undefined, called: undefined }, how, at: performance.now() / 1000 });
+  }
+
+  /** One still not ready blinks red for a while after the host calls; lighting their lantern stops it. */
+  private calledOf(player: RoomPlayer): Crew["called"] {
+    const t = performance.now() / 1000 - this.called;
+    return !player.host && !player.ready && t < CALL_SECONDS ? t : undefined;
+  }
+
+  /** The bell is not rung again while it still rings, however often the host presses. */
+  private call() {
+    this.called = performance.now() / 1000;
+    if (this.called - this.rung < CALL_SECONDS) return;
+    this.rung = this.called;
+    this.sound.call();
   }
 
   private crownedOf(id: number): Crew["crowned"] {
@@ -336,6 +352,7 @@ export class MultiplayerPanel {
 
   private hear(message: Heard) {
     if (message.type === "gone") return this.ghost(message.id, message.how);
+    if (message.type === "called") return this.call();
     this.busy = false;
     const entering = this.ui.top === this.create || this.ui.top === this.join;
     if (message.type === "room") {
@@ -561,11 +578,10 @@ export class MultiplayerPanel {
       { kind: "gap" },
     ];
     if (you.host) {
-      rows.push({ kind: "action", id: "act", label: words.start, dim: waiting.length > 0 || this.client.offline, press: () => this.start() });
-      const refused = this.refused?.[0] === "start" ? this.refused[1] : "";
-      // Not ready is said for as long as somebody is not.
-      const early = refused === words.refusals["not-ready"];
-      if (refused && (!early || waiting.length)) rows.push({ kind: "note", text: early ? words.waitingFor(refused, t().list(waiting)) : refused, bad: true });
+      // While some are not ready, a press calls them: the sea shows who, and a bell rings.
+      const says = waiting.length ? words.callSays(t().list(waiting)) : undefined;
+      rows.push({ kind: "action", id: "act", label: words.start, says, dim: waiting.length > 0 || this.client.offline, press: () => this.start() });
+      rows.push(...this.refusal("start"));
     } else {
       rows.push({
         kind: "action",

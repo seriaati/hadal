@@ -42,6 +42,8 @@ export const LAMP_LIT = [".rRo.", "rRRRo", ".aca.", ".ccc.", ".aca.", "rRRRo"];
 export const LAMP_DEAD = [".555.", "56665", "5...5", "5.x..", "5...5", "56665"];
 export const LANTERN = [".rRo.", "rRRRo", ".aca.", "accca", ".aca.", "rRRRo", ".rRo."];
 export const LANTERN_OUT = [".rrR.", "rrrrR", ".434.", "43334", ".434.", "rrrrR", ".rrR."];
+/** A lantern that is out, blinking red like the submarine's warning lamps: the host has called its diver to get ready. */
+const LANTERN_CALLED = [".rrR.", "rrrrR", ".xxx.", "xxcxx", ".xxx.", "rrrrR", ".rrR."];
 /** A small light that stays with the lamp it woke at. */
 export const FRY = [".m.", "mwm", "T.T"];
 const ARROW = ["77777", ".777.", "..7.."];
@@ -159,12 +161,19 @@ export type Crew = {
   you?: boolean;
   /** In a room before a dive: how deep they went in the last dive. */
   lastDepth?: number;
+  /** In a room before a dive: the host called them to get ready `called` seconds ago, and they are still not. */
+  called?: number;
 };
 /** How long a diver who went out of the room is seen going, in seconds. */
 export const GOING_SECONDS: Record<Gone, number> = { left: 1.4, removed: 1, banned: 2.6 };
 /** When the line of a banned diver snaps, and how long one removed is jolted before they are yanked up. */
 const SNAP = 0.6;
 const JOLT = 0.25;
+/** How long the lantern of a diver the host called blinks red, in seconds. */
+export const CALL_SECONDS = 3;
+/** Whether a called diver's lantern is in a red blink: on for a third of a second, off for the next. */
+const alarmed = ({ lit, called }: Pick<Crew, "lit" | "called">) => !lit && called !== undefined && Math.floor(called * 3) % 2 === 0;
+
 /** How long the crown flies from one host to the next, and how long it glints once it is there. */
 export const CROWN_SECONDS = 0.9;
 export const GLINT_SECONDS = 0.6;
@@ -509,6 +518,7 @@ export class Scene {
     const subs = sub ? lines.map((line) => ({ x: line.x - 16 + sub.dx, y: screenY(0) - 19 - CLAMPED + sub.dy + (sub.dx ? 0 : Math.round(Math.sin(time * 1.3 + line.slot * 2))) })) : [];
     if (sub) for (const at of subs) lights.push(...sunk(blink ? "x" : "X", SUB, at.x, at.y, sub.fade));
     if (game.chaos && !sub && Math.floor(time * 1.2) % 2 === 0) for (const line of lines) lights.push(...sunk("X", BUOY, line.x - 2, screenY(SURFACE_ROW) - 3));
+    for (const line of lines) if (alarmed(line)) lights.push({ x: line.x + 18.5, y: line.y + 19.5, radius: 30, rgb: [210, 40, 70], strength: 0.6 });
 
     const light = (list: Lit[], x: number, y: number) => {
       let value = 0;
@@ -820,7 +830,7 @@ export class Scene {
 
     // The one in focus is drawn in front. One who is out has been hauled up.
     frame.block = 178;
-    for (const { x, y, suit, lit, fade, going: away } of lines.filter((line) => !line.out).sort((a, b) => Number(a.focus) - Number(b.focus))) {
+    for (const { x, y, suit, lit, called, fade, going: away } of lines.filter((line) => !line.out).sort((a, b) => Number(a.focus) - Number(b.focus))) {
       // One hauled up goes into the boat, under its hull.
       const top = away && away.how !== "banned" ? surface + 1 : -Infinity;
       const draw = (rows: string[], left: number, from: number, glow?: string) =>
@@ -828,7 +838,8 @@ export class Scene {
       draw(lit ? ["rRo"] : ["rrR"], x + 8, y - 1);
       draw(WORN[suit]![lit ? 1 : 0]!, x, y);
       if (y + 16 >= top && !fade) frame.put(x + 18, y + 16, lit ? 13 : 12);
-      draw(lit ? LANTERN : LANTERN_OUT, x + 16, y + 17, lit ? "ac" : undefined);
+      const alarm = alarmed({ lit, called });
+      draw(lit ? LANTERN : alarm ? LANTERN_CALLED : LANTERN_OUT, x + 16, y + 17, lit ? "ac" : alarm ? "xc" : undefined);
     }
     // The clamp holds the helmet from either side, so it is drawn over the diver.
     if (sub && sub.fade < 0.5) for (const at of subs) frame.sprite(sub.open ? CLAMP_OPEN : CLAMP_SHUT, at.x + 22, at.y + 16);

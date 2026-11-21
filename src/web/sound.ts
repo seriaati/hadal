@@ -148,6 +148,13 @@ export class Sound {
     this.note("effects", "sine", 740, 720, 0.09, 0.8, 0.005, 0.14);
   }
 
+  /** The host called those not ready in the room: a ship's bell struck twice, with the first two red blinks. */
+  call() {
+    if (!this.rig) return;
+    this.bell(pitch(24), 0.16, 1.4);
+    this.bell(pitch(24), 0.16, 1.4, 2 / 3);
+  }
+
   /** A lit lantern means the diver is ready in the room. */
   lantern(lit: boolean) {
     if (!this.rig) return;
@@ -412,9 +419,9 @@ export class Sound {
   }
 
   /** A struck bell: partials that are not in tune with each other, the higher ones dying first. */
-  private bell(frequency: number, level: number, seconds: number) {
+  private bell(frequency: number, level: number, seconds: number, delay = 0) {
     for (const [ratio, share] of [[1, 1], [2.76, 0.4], [5.4, 0.18]] as const) {
-      this.note("effects", "sine", frequency * ratio, frequency * ratio, level * share, seconds / ratio);
+      this.note("effects", "sine", frequency * ratio, frequency * ratio, level * share, seconds / ratio, 0.005, delay);
     }
   }
 
