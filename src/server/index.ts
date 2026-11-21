@@ -242,8 +242,7 @@ console.log(`hadal is running at ${server.url}`);
 
 /**
  * Cloudflare keeps a copy of the page at its edge, so each release clears it there: the page names the code files of its
- * own release, and the last release's files are gone. Docker stops the old server before this one starts, so no request
- * can put the old page back afterwards.
+ * own release, and the last release's files are gone.
  */
 async function clearCachedPage() {
   const { CLOUDFLARE_ZONE_ID: zone, CLOUDFLARE_PURGE_TOKEN: token, HADAL_URL: page } = process.env;
@@ -257,3 +256,6 @@ async function clearCachedPage() {
   else console.error(`could not clear the page from Cloudflare's cache: ${res instanceof Response ? res.status : res.name}`);
 }
 void clearCachedPage();
+// Dokploy stops the old server only once this one runs, and in those seconds the old one can put its page back in the
+// cache, as the first release that cleared it showed. So the page is cleared again when the old server is surely gone.
+setTimeout(() => void clearCachedPage(), 60_000);
