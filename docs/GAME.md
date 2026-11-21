@@ -56,7 +56,8 @@ traditional characters: 關 and 关 are the same answer.
 - **Dark pixel art.** A lone hard-hat diver descends a line down a trench wall, hanging a lamp
   at every prompt. A correct answer lights the lamp, brighter the rarer it was; a wrong one
   leaves a dead lamp. One low-resolution pixel grid, a 22-colour palette, hand-built bitmap
-  fonts, and soft light laid over the crisp pixels. The settings set how finely the light is
+  fonts (Chinese and other scripts in half pixels of the grid, so dense characters stay readable),
+  and soft light laid over the crisp pixels. The settings set how finely the light is
   drawn (Glow: High, Medium, Low), for slower devices; Auto, the default, starts at High and
   steps down while frames come too slowly. Low keeps the lamps' light but drops the bloom.
 - **Subtle deep-sea horror.** The sea is dark, lonely and lit only by the diver's lamps and

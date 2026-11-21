@@ -112,7 +112,7 @@ The same in every panel.
 - A line is 12 game pixels tall, or as many as it takes to be 40 screen pixels tall (about 15
   on a phone): room for a fingertip. If a step would have to scroll at that height but fits at
   12, it falls back to 12.
-- 12 pixels is also what a line in another script needs (the bundled font is 10 tall).
+- 12 pixels is also what a line in another script needs (its letters are 8 tall, in half pixels).
 - A slider's track is 60 pixels: 20 pips of 2, a pixel apart.
 - Text is the 3 by 5 capitals throughout; a long name loses its end.
 

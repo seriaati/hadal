@@ -92,6 +92,14 @@ function double(rows: string[]): string[] {
   return out;
 }
 
+/**
+ * Strokes one pixel wider to the right, wherever a pixel of gap still stays after them, so that strokes close together
+ * keep apart. Past the right edge counts as gap, and is never drawn on.
+ */
+export function bolder(rows: string[]): string[] {
+  return rows.map((row) => Array.from(row, (cell, x) => (cell === "#" || (row[x - 1] === "#" && row[x + 1] !== "#") ? "#" : ".")).join(""));
+}
+
 function doubled(glyphs: Glyphs): Glyphs {
   return Object.fromEntries(Object.entries(glyphs).map(([char, rows]) => [char, double(rows)]));
 }
@@ -109,8 +117,9 @@ export const FONTS: Record<"tiny" | "medium" | "large" | "huge", Font> = {
 /**
  * Where glyphs come from that the fonts above lack: every other script. `other.ts` fills this
  * in with a ready-made pixel font, fetched when first needed. `glyph` gives the rows of one
- * letter with its marks, or nothing if it cannot be drawn (yet); `ascent` is how many of
- * those rows stand above the line the letters sit on; `line` is how many rows a line of them needs.
+ * letter with its marks, in half pixels of the frame, or nothing if it cannot be drawn (yet);
+ * `ascent` is how many pixels of the frame those rows stand above the line the letters sit on;
+ * `line` is how many pixels a line of them needs.
  */
 export const other: { glyph: (unit: string) => string[] | undefined; ascent: number; line: number } = {
   glyph: () => undefined,
@@ -123,7 +132,8 @@ export const latin = (text: string) => /^[ -~]*$/.test(text);
 
 const letters = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 const segmented = new Map<string, string[]>();
-const enlarged = new Map<string, string[]>();
+/** Keyed by the glyph rather than the letter: the same letter has other rows once the language picks another cut. */
+const enlarged = new WeakMap<string[], string[]>();
 
 /**
  * Text as the pieces that are drawn one at a time: a letter together with any marks it carries.
@@ -142,17 +152,20 @@ function pieces(text: string): string[] {
 
 const units = (font: Font, text: string) => pieces(font.capitals ? text.toUpperCase() : text);
 
-/** The rows of a unit, and how far above the top of the line they start. */
-function glyphOf(font: Font, unit: string): { rows: string[]; rise: number } | undefined {
+type Glyph = { rows: string[]; rise: number; fine: boolean };
+
+/** The rows of a unit, how far above the top of the line they start, and whether they are in half pixels. */
+function glyphOf(font: Font, unit: string): Glyph | undefined {
   const own = font.glyphs[unit];
-  if (own) return { rows: own, rise: 0 };
+  if (own) return { rows: own, rise: 0, fine: false };
   let rows = other.glyph(unit);
   if (!rows) return undefined;
-  for (let scale = font.scale; scale > 1; scale /= 2) {
-    const key = `${scale}${unit}`;
-    rows = enlarged.get(key) ?? enlarged.set(key, double(rows)).get(key)!;
+  // Half pixels drawn twice as large are whole pixels: only text of the smallest scale is drawn in half pixels.
+  for (let scale = font.scale / 2; scale > 1; scale /= 2) {
+    const small: string[] = rows;
+    rows = enlarged.get(small) ?? enlarged.set(small, double(small)).get(small)!;
   }
-  return { rows, rise: other.ascent * font.scale - font.height };
+  return { rows, rise: other.ascent * font.scale - font.height, fine: font.scale === 1 };
 }
 
 /**
@@ -169,16 +182,27 @@ export function plain(text: string): string {
     .replace(/[–—]/g, "-");
 }
 
-const glyphWidth = (rows: string[]) => Math.max(...rows.map((row) => row.length));
+/**
+ * How far on the next letter starts. A letter in half pixels ends with its own font's gap of half a pixel, rounded up to
+ * a whole one: adding this font's gap as well sets Chinese visibly far apart.
+ */
+const advance = (glyph: Glyph, font: Font) => {
+  const across = Math.max(...glyph.rows.map((row) => row.length));
+  return glyph.fine ? Math.ceil((across + 1) / 2) : across + font.gap;
+};
 
 export function measure(font: Font, text: string): number {
   let width = 0;
+  let trail = font.gap;
   for (const unit of units(font, text)) {
     const glyph = glyphOf(font, unit);
     if (unit === " ") width += font.space;
-    else if (glyph) width += glyphWidth(glyph.rows) + font.gap;
+    else if (glyph) {
+      width += advance(glyph, font);
+      trail = glyph.fine ? 0 : font.gap;
+    }
   }
-  return Math.max(0, width - font.gap);
+  return Math.max(0, width - trail);
 }
 
 type TextColor = number | ((row: number) => number);
@@ -193,12 +217,16 @@ export function drawText(frame: Frame, font: Font, text: string, x: number, y: n
     }
     const glyph = glyphOf(font, unit);
     if (!glyph) continue;
+    const top = y - glyph.rise;
     glyph.rows.forEach((row, j) => {
+      const ink = typeof color === "number" ? color : color((glyph.fine ? j >> 1 : j) - glyph.rise);
       for (let i = 0; i < row.length; i++) {
-        if (row[i] === "#") frame.put(x + i, y + j - glyph.rise, typeof color === "number" ? color : color(j - glyph.rise));
+        if (row[i] !== "#") continue;
+        if (glyph.fine) frame.putFine(2 * (x | 0) + i, 2 * (top | 0) + j, ink);
+        else frame.put(x + i, top + j, ink);
       }
     });
-    x += glyphWidth(glyph.rows) + font.gap;
+    x += advance(glyph, font);
   }
   return x;
 }

@@ -1,21 +1,24 @@
-import file from "@fontsource/fusion-pixel-10px-proportional-sc/files/fusion-pixel-10px-proportional-sc-latin-400-normal.woff2";
-import { latin, other, plain } from "./font";
+import file from "@fontsource/unifont/files/unifont-latin-400-normal.woff2";
+import { bolder, latin, other, plain } from "./font";
 
 /**
- * Fusion Pixel, a 10-pixel font with Cyrillic, Greek, Japanese, Chinese and Korean. It is 414 KB (despite "latin" in
- * the file's name, that is the whole font), so it is fetched only once some text needs it. A letter it lacks comes out
- * in the device's own font, roughly.
+ * GNU Unifont, a 16-pixel font with every script, drawn in half pixels of the frame as Minecraft draws Chinese: its
+ * letters stand 8 pixels tall, yet dense characters (鬱, 龜, 體) keep their strokes apart, which a font in the frame's
+ * own pixels manages only at 12 or more. It is 1.6 MB (despite "latin" in the file's name, that is the whole font), so
+ * it is fetched only once some text needs it. Its Chinese has mainland forms only.
  */
 const FAMILY = "Hadal Other";
-const SIZE = 10;
+const SIZE = 16;
 /**
  * Letters are drawn this many times their size and read at the middle of each block: some systems thicken text as they
  * smooth it, which at the font's own size fills the one-pixel gaps of a dense letter.
  */
 const SCALE = 8;
-/** Rows kept above and below the line the letters sit on: room for a mark over a capital, and for a tail. */
-const ASCENT = 10;
-const DESCENT = 3;
+/** Rows of half pixels kept above and below the line the letters sit on: every letter of the font is within them. */
+const ASCENT = 14;
+const DESCENT = 2;
+/** Unifont's Chinese fills all 8 pixels of its height: 3 more keep the strokes of one line off the next. */
+const LINE = 11;
 
 let state: "unasked" | "coming" | "here" | "lost" = "unasked";
 let context: CanvasRenderingContext2D;
@@ -42,8 +45,8 @@ export function drawable(text: string): boolean {
   return state !== "coming";
 }
 
-other.ascent = ASCENT;
-other.line = SIZE;
+other.ascent = ASCENT / 2;
+other.line = LINE;
 other.glyph = (unit) => {
   if (latin(unit)) return undefined;
   if (state === "unasked") send();
@@ -57,9 +60,11 @@ other.glyph = (unit) => {
     context.fillText(unit, 0, ASCENT * SCALE);
     const { data } = context.getImageData(0, 0, across, (ASCENT + DESCENT) * SCALE);
     const middle = SCALE >> 1;
-    rows = Array.from({ length: ASCENT + DESCENT }, (_, y) =>
+    const sampled = Array.from({ length: ASCENT + DESCENT }, (_, y) =>
       Array.from({ length: width }, (_, x) => (data[((y * SCALE + middle) * across + x * SCALE + middle) * 4 + 3]! >= 128 ? "#" : ".")).join(""),
     );
+    // Unifont's strokes are half a pixel of the frame, thin beside the game's own letters.
+    rows = bolder(sampled);
     drawn.set(unit, rows);
   }
   return rows;

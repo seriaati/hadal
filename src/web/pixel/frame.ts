@@ -60,6 +60,8 @@ export class Frame {
   glowColor = new Uint8Array(0);
   glowStrength = new Uint8Array(0);
   shade = new Uint8Array(0);
+  /** Palette index + 1 of each half pixel of text, or 0: twice as many columns and rows as the frame. */
+  fine = new Uint8Array(0);
   /** Glow strength (0-255) given to pixels drawn from now on. */
   emit = 0;
   /** Shade (0-255) given to pixels drawn from now on, or -1 to leave the shade as it is. */
@@ -78,10 +80,12 @@ export class Frame {
     this.glowColor = new Uint8Array(width * height);
     this.glowStrength = new Uint8Array(width * height);
     this.shade = new Uint8Array(width * height);
+    this.fine = new Uint8Array(width * height * 4);
   }
 
   clear() {
     this.color.fill(0);
+    this.fine.fill(0);
     this.glowColor.fill(0);
     this.shade.fill(0);
     this.emit = 0;
@@ -95,6 +99,19 @@ export class Frame {
     const i = y * this.width + x;
     const hushed = this.hushed?.(x, y) ?? false;
     this.color[i] = hushed ? Math.min(color, 4) : color;
+    this.glowColor[i] = this.emit && !hushed ? color + 1 : 0;
+    this.glowStrength[i] = hushed ? 0 : this.emit;
+    if (this.block >= 0) this.shade[i] = this.block;
+  }
+
+  /** A half pixel of text. The pixel it is in keeps its colour, and glows and blocks light as if `put` had drawn it. */
+  putFine(fx: number, fy: number, color: number) {
+    const x = fx >> 1;
+    const y = fy >> 1;
+    if (x < 0 || y < 0 || x >= this.width || y >= this.height || y < this.clipTop || y >= this.clipBottom) return;
+    const i = y * this.width + x;
+    const hushed = this.hushed?.(x, y) ?? false;
+    this.fine[fy * this.width * 2 + fx] = (hushed ? Math.min(color, 4) : color) + 1;
     this.glowColor[i] = this.emit && !hushed ? color + 1 : 0;
     this.glowStrength[i] = hushed ? 0 : this.emit;
     if (this.block >= 0) this.shade[i] = this.block;
@@ -150,7 +167,7 @@ const FALLOFF = [0, 0.1, 0.2, 0.3, 0.42, 0.55, 0.7, 0.85, 1].map(
   (t) => [t, (1 - t * t) ** 2 / (1 + 7 * t * t)] as const,
 );
 
-/** Puts frames on screen: crisp pixels on one canvas, soft light on another above it. */
+/** Puts frames on screen: crisp pixels on one canvas, at twice the frame's resolution for text in half pixels, and soft light on another above it. */
 export class Display {
   private pixelContext: CanvasRenderingContext2D;
   private glowContext: CanvasRenderingContext2D;
@@ -195,15 +212,17 @@ export class Display {
     // A window with no size (as some phones report for a moment) keeps the frame of one pixel: an empty image cannot be made.
     const width = Math.max(1, Math.ceil(seen / scale));
     const height = Math.max(1, Math.ceil(tall / scale));
-    if (width === this.pixels.width && height === this.pixels.height) return;
+    if (width === this.shadeCanvas.width && height === this.shadeCanvas.height) return;
     frame.resize(width, height);
-    this.pixels.width = this.shadeCanvas.width = this.bloomCanvas.width = width;
-    this.pixels.height = this.shadeCanvas.height = this.bloomCanvas.height = height;
+    this.shadeCanvas.width = this.bloomCanvas.width = width;
+    this.shadeCanvas.height = this.bloomCanvas.height = height;
+    this.pixels.width = width * 2;
+    this.pixels.height = height * 2;
     for (const canvas of [this.pixels, this.glowCanvas]) {
       canvas.style.width = `${width * scale}px`;
       canvas.style.height = `${height * scale}px`;
     }
-    this.image = new ImageData(width, height);
+    this.image = new ImageData(width * 2, height * 2);
     this.shade = new ImageData(width, height);
     this.bloom = new ImageData(width, height);
   }
@@ -236,11 +255,6 @@ export class Display {
     const shade = this.shade.data;
     const bloom = this.bloom.data;
     for (let i = 0, o = 0; i < frame.color.length; i++, o += 4) {
-      const rgb = RGB[frame.color[i]!]!;
-      image[o] = rgb[0]!;
-      image[o + 1] = rgb[1]!;
-      image[o + 2] = rgb[2]!;
-      image[o + 3] = 255;
       shade[o + 3] = frame.shade[i]!;
       const glowing = frame.glowColor[i]!;
       if (glowing) {
@@ -253,14 +267,28 @@ export class Display {
         bloom[o + 3] = 0;
       }
     }
+    // Each pixel of the frame as four, where a half pixel of text may stand in for one of them.
+    const across = frame.width * 2;
+    for (let fy = 0, o = 0; fy < frame.height * 2; fy++) {
+      for (let fx = 0; fx < across; fx++, o += 4) {
+        const half = frame.fine[fy * across + fx]!;
+        const rgb = RGB[half ? half - 1 : frame.color[(fy >> 1) * frame.width + (fx >> 1)]!]!;
+        image[o] = rgb[0]!;
+        image[o + 1] = rgb[1]!;
+        image[o + 2] = rgb[2]!;
+        image[o + 3] = 255;
+      }
+    }
+    // The end screen paints over the last frame rather than clearing it, which would keep its words in half pixels.
+    frame.fine.fill(0);
     this.pixelContext.putImageData(this.image, 0, 0);
     this.shadeCanvas.getContext("2d")!.putImageData(this.shade, 0, 0);
     this.bloomCanvas.getContext("2d")!.putImageData(this.bloom, 0, 0);
 
     const scale = GLOW_SCALES[this.glow];
     // Setting a canvas's size clears it, so it is set only when it changes.
-    if (this.glowCanvas.width !== this.pixels.width * scale) this.glowCanvas.width = this.pixels.width * scale;
-    if (this.glowCanvas.height !== this.pixels.height * scale) this.glowCanvas.height = this.pixels.height * scale;
+    if (this.glowCanvas.width !== frame.width * scale) this.glowCanvas.width = frame.width * scale;
+    if (this.glowCanvas.height !== frame.height * scale) this.glowCanvas.height = frame.height * scale;
     const g = this.glowContext;
     const { width, height } = this.glowCanvas;
     g.filter = "none";
