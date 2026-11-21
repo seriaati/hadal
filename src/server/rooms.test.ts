@@ -466,16 +466,18 @@ test("a banned player cannot come back, by another name or another connection, u
   expect(await again(member(id, "bens-browser"), seen(host).code)).toMatchObject({ type: "room" });
 });
 
-test("nobody is crowned or removed during a dive", async () => {
+test("during a dive the host may crown, and one removed leaves the dive", async () => {
   const { host, others: [ben] } = await room(null, "ben");
   await say(ben!, { type: "ready", ready: true });
   await say(host, { type: "start" });
-  expect(seen(host).dive).not.toBeNull();
-  const before = host.sent.length;
-  await say(host, { type: "host", id: seen(ben!).you });
-  await say(host, { type: "remove", id: seen(ben!).you, ban: true });
-  expect(host.sent).toHaveLength(before);
-  leave(host);
+  const { you: hostId } = seen(host);
+  const benId = seen(ben!).you;
+  await say(host, { type: "host", id: benId });
+  expect(seen(ben!).players.find((player) => player.id === benId)?.host).toBe(true);
+  await say(ben!, { type: "remove", id: hostId, ban: true });
+  expect(host.sent).toContainEqual({ type: "removed", banned: true });
+  expect(seen(ben!).dive!.order).toEqual([benId]);
+  leave(ben!);
 });
 
 test("nonsense is ignored", async () => {

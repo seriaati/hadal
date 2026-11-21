@@ -239,7 +239,7 @@ function pass(room: Room, player: Player) {
 
 function crown(member: Member, room: Room, id: number) {
   const player = room.players.find((one) => one.id === id);
-  if (!isHost(member, room) || room.dive || !player || player.member === member) return;
+  if (!isHost(member, room) || !player || player.member === member) return;
   pass(room, player);
   tell(room);
 }
@@ -271,13 +271,14 @@ function chat(member: Member, room: Room, text: unknown): Refusal | void {
 /** One banned cannot come back while the room lasts. */
 function remove(member: Member, room: Room, id: number, ban: boolean) {
   const player = room.players.find((one) => one.id === id);
-  if (!isHost(member, room) || room.dive || !player || player.member === member) return;
+  if (!isHost(member, room) || !player || player.member === member) return;
   if (ban) for (const mark of marks(player.member)) room.banned.add(mark);
   room.players = room.players.filter((one) => one !== player);
   places.delete(player.member);
   player.member.send({ type: "removed", banned: ban });
   log(room, player, ban ? "was banned by the host" : "was removed by the host");
   farewell(room, player.id, ban ? "banned" : "removed");
+  room.dive?.drop(player.id);
   tell(room);
 }
 
