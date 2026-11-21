@@ -21,7 +21,16 @@ place for 30 seconds while the page connects again; if the server has restarted 
 version), the room opens again under its code, without the dive that was under way. A page left
 open across a new version keeps running it, and the title offers to update. The host may pass the crown to another player, remove a player (who may
 come back with the code) or ban one (until the room closes). When the host leaves, the crown
-passes to the next player; the room closes when the last one leaves. A room asks no prompt
+passes to the next player; the room closes when the last one leaves. The players can talk, 50
+characters at a time, and no chat box is shown. Tab opens it, in the room and in a dive (except
+while the player's own air runs), and types nothing, as a Chinese input method needs; before a
+dive a player may also just start typing. On a phone, their own diver opens it before a dive, and
+a speech mark at the bottom left in one. What they say rises from their helmet in a bubble over
+them and stays long enough to read, then goes; a newer bubble pushes an older one it would cover
+out of its way. One whose diver is out of view says it from where they are named at the edge of
+the screen, or, if they are not named, at the bottom left after their name. Screen readers read
+out what the others say. Nothing said is kept, and in a dive what names an answer to the prompt
+that nobody has taken yet is refused, so no answer is given away. A room asks no prompt
 twice until it has asked every one. While another diver answers, a player may type their own
 answer ahead, and send it when their turn comes. A diver's air runs out by their own browser's
 clock, which the server waits a moment for, so the last letters typed before it ran out still

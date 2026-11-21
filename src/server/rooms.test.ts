@@ -1,5 +1,5 @@
 import { afterAll, expect, test } from "bun:test";
-import { DEFAULT_SETTINGS as SHARED_DEFAULTS, type ClientMessage, type RoomView, type ServerMessage } from "../shared/room";
+import { CHAT_EVERY, CHAT_MAX, DEFAULT_SETTINGS as SHARED_DEFAULTS, type ClientMessage, type RoomView, type ServerMessage } from "../shared/room";
 import type { Pack } from "../shared/types";
 import { accountIdOf, signUp } from "./accounts";
 import { savePack } from "./custom";
@@ -199,6 +199,48 @@ test("a player changes their suit in the room, but not during a dive", async () 
   await say(ben!, { type: "suit", suit: 2 });
   expect(host.sent).toHaveLength(before);
   leave(host);
+});
+
+test("what a player says goes to everyone in the room, tidied and short, at most once a second", async () => {
+  const { host, others: [ben] } = await room(null, "ben");
+  const [hostId, benId] = [seen(host).you, seen(ben!).you];
+  await say(ben!, { type: "chat", text: "  so\n  close  " });
+  expect(host.sent.at(-1)).toEqual({ type: "chat", id: benId, text: "so close" });
+  expect(ben!.sent.at(-1)).toEqual({ type: "chat", id: benId, text: "so close" });
+  const before = host.sent.length;
+  await say(host, { type: "chat", text: "   " });
+  await say(ben!, { type: "chat", text: "again" });
+  expect(host.sent).toHaveLength(before);
+  await say(host, { type: "chat", text: "x".repeat(CHAT_MAX + 20) });
+  expect(ben!.sent.at(-1)).toEqual({ type: "chat", id: hostId, text: "x".repeat(CHAT_MAX) });
+  leave(host);
+  leave(ben!);
+});
+
+test("in a dive what names an answer to the prompt that nobody has taken is refused, and the rest goes out", async () => {
+  const { host, others: [ben] } = await room(null, "ben");
+  await say(ben!, { type: "ready", ready: true });
+  await say(host, { type: "start" });
+  const { dive, you: hostId } = seen(host);
+  const [first, second] = dive!.prompt.text === ocean.text ? ["Pacific", "Indian"] : ["Baikal", "Titicaca"];
+  const said = (who: Fake, text: string) => who.sent.some((message) => message.type === "chat" && message.text === text);
+  await say(ben!, { type: "chat", text: "good luck" });
+  expect(said(host, "good luck")).toBe(true);
+  await Bun.sleep(CHAT_EVERY * 1000);
+  await say(host, { type: "chat", text: `maybe the ${second!.toUpperCase()}?` });
+  expect(host.sent.at(-1)).toEqual({ type: "refused", reason: "gives-answer" });
+  expect(said(ben!, `maybe the ${second!.toUpperCase()}?`)).toBe(false);
+  // Inside another word it names nothing.
+  await say(host, { type: "chat", text: `${first!.toLowerCase()}ish` });
+  expect(said(ben!, `${first!.toLowerCase()}ish`)).toBe(true);
+  // Once an answer is taken it is no secret.
+  const turner = dive!.turn === hostId ? host : ben!;
+  await say(turner, { type: "answer", text: first! });
+  await Bun.sleep(CHAT_EVERY * 1000);
+  await say(host, { type: "chat", text: `nice, ${first}` });
+  expect(said(ben!, `nice, ${first}`)).toBe(true);
+  leave(host);
+  leave(ben!);
 });
 
 test("only the host changes the settings, and a change takes back every ready", async () => {

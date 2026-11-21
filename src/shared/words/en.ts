@@ -258,6 +258,11 @@ export const en = {
     lost: "the connection to the server was lost",
     /** Said while the page is getting back into the room, or the server has gone quiet. */
     reconnecting: "connection lost ~ reconnecting",
+    /** The line where a player types what they say to the room, and the line on their own diver that opens it. */
+    say: "Say",
+    sayIt: "Say something",
+    /** Read out to a screen reader when another player says something. */
+    heard: (name: string, text: string) => `${name} says: ${text}`,
     removedYou: "the host removed you from the room",
     bannedYou: "the host banned you from the room",
     playerSays: (name: string) => `${name}: make them the host, remove or ban them`,
@@ -312,7 +317,7 @@ export const en = {
       "no-packs": "no pack is chosen: choose some in the set-up",
       "no-prompts": "these packs have no prompt with an answer for everyone: choose others",
       banned: "the host of that room has banned you",
-    } as Record<Refusal, string>,
+      "gives-answer": "that would give an answer away",    } as Record<Refusal, string>,
   },
 };
 

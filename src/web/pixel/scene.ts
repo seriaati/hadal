@@ -163,7 +163,19 @@ export type Crew = {
   lastDepth?: number;
   /** In a room before a dive: the host called them to get ready `called` seconds ago, and they are still not. */
   called?: number;
+  /** In a room before a dive: how many times they have spoken there; each time, a few bubbles rise from their helmet. */
+  spoken?: number;
+  /** The player's own diver: seconds since they made or joined the room, while how to talk is shown over them. */
+  joined?: number;
 };
+/** What a diver of a room last said, `age` seconds ago, by the name they are hung by. */
+export type Chat = { name: string; text: string; age: number; bad?: boolean };
+/** What the player is typing to say, and the name their diver is hung by. */
+export type Draft = { name: string; text: string };
+/** How long what is said stays over the diver, in seconds: long enough to read, longer for more words. */
+const speechSeconds = (text: string) => 4 + 0.1 * text.length;
+/** For how much of the end of that it is dim, in seconds. */
+const SPEECH_FADE = 0.6;
 /** How long a diver who went out of the room is seen going, in seconds. */
 export const GOING_SECONDS: Record<Gone, number> = { left: 1.4, removed: 1, banned: 2.6 };
 /** When the line of a banned diver snaps, and how long one removed is jolted before they are yanked up. */
@@ -237,6 +249,11 @@ const LINE_GAP = 64;
  * the hull; and how far a narrow screen hangs every other diver further down.
  */
 const CARET = ["aaaaa", ".aaa.", "..a.."];
+/** A speech mark: shown with "Tab" over the player's own diver for a moment after they join a room, and on a phone the button that opens what they say in a dive. */
+const SPEECH = [".#####.", "#.....#", "#.#.#.#", "#.....#", ".#####.", ".#....."];
+/** How long that is shown, and for how much of the end of that it is dim, in seconds. */
+const HINT_SECONDS = 5;
+const HINT_FADE = 1;
 const LONGER = 14;
 const STAGGER = 44;
 
@@ -320,6 +337,8 @@ export class Scene {
   private snow: { x: number; y: number; k: number }[] = [];
   private bubbles: { x: number; y: number; size: number; phase: number }[] = [];
   private nextBubble = 0;
+  /** How many times each diver of a room, by name, had spoken when last drawn. */
+  private spoken = new Map<string, number>();
   /** Whether the diver of a chaos dive has been let go, and the bubbles of that have risen. */
   private freed = false;
   private menuLeft = 0;
@@ -327,6 +346,8 @@ export class Scene {
   /** The screen row the diver hangs at, and the row under the prompt and the air: a panel is set out from these. */
   base = 0;
   hudBottom = 0;
+  /** Where the words of a dive (the prompt, the air, the answer) begin, from the left. */
+  private hudLeft = 0;
   /** Where the diver is on their way to hang, while `base` moves: -1 before the first frame. */
   private place = -1;
   /** Whether the screen is worked by touch: what is drawn to press says so. */
@@ -358,6 +379,17 @@ export class Scene {
    */
   lobby = false;
   floor = 0;
+  /** What each diver of a room last said, and what the player is typing to say (null while they are not): over the divers before a dive. */
+  chat: Chat[] = [];
+  draft: Draft | null = null;
+  /** Where what the player is typing was drawn, for the field that takes it to be laid over. */
+  speaking: { x: number; y: number; w: number; h: number } | null = null;
+  /**
+   * On a phone in a dive, while the player may talk: the button that opens what they say, lit while it is open; and
+   * where it was drawn, for the page's own button to be laid over.
+   */
+  talkButton: "closed" | "open" | null = null;
+  talkBox: { x: number; y: number; w: number; h: number } | null = null;
   /** The box behind an open panel's words, out to the right edge of the screen, where the sea is darker (see `draw`). */
   shade: { left: number; top: number; bottom: number } | null = null;
   /** Where each diver of a room stands on the frame, by name, as last drawn, and the one whose control has the focus. */
@@ -807,6 +839,13 @@ export class Scene {
       if (line.going?.how !== "banned" || line.going.t < SNAP || line.going.t - dt >= SNAP) continue;
       for (let i = 0; i < 8; i++) this.bubbles.push({ x: line.x + 6 + Math.random() * 10, y: line.y - 4 + Math.random() * 6, size: 1 + Math.floor(Math.random() * 3), phase: Math.random() * 6 });
     }
+    for (const line of lines) {
+      if (line.spoken === undefined) continue;
+      if (line.spoken > (this.spoken.get(line.name) ?? line.spoken)) {
+        for (let i = 0; i < 4; i++) this.bubbles.push({ x: line.x + 10 + Math.random() * 4, y: line.y - 1 - i * 3, size: 1 + Math.floor(Math.random() * 2), phase: Math.random() * 6 });
+      }
+      this.spoken.set(line.name, line.spoken);
+    }
     this.nextBubble -= dt;
     if (this.nextBubble <= 0 && lead) {
       this.nextBubble = (0.5 + Math.random() * 0.9) * (1 - 0.7 * this.panic);
@@ -857,6 +896,10 @@ export class Scene {
     /** Where each name's crown is, or would be. */
     const crowns = new Map<string, { x: number; y: number }>();
     this.places.clear();
+    /** Where how to talk is shown over the player's own diver, which what others say keeps clear of. */
+    let hint: { x: number; y: number; w: number; h: number } | null = null;
+    /** Where what each diver named on screen says comes from: over the middle of `cx`, down to `y`, or from `y` down if `down`. */
+    const anchors = new Map<string, { cx: number; y: number; down: boolean }>();
     for (const line of lines) {
       if (!line.name) continue;
       // One going is named on the way, fading with them, until they are in the boat or out of view.
@@ -884,6 +927,8 @@ export class Scene {
         if (line.host && !flying) drawCrown(frame, x + 7, y, 6);
         const end = drawText(frame, tiny, text, x + 7 + crown, y, 6);
         if (line.hearts !== undefined) drawHearts(frame, line.hearts, end + 2, y);
+        // What they say comes from where they are named: hanging under a name at the top, rising over one at the bottom.
+        anchors.set(line.name, { cx: x + (width >> 1), y: above ? y + 7 : y - 2, down: above });
         continue;
       }
       const at = (width: number) => Math.max(2, Math.min(right - width, line.x + 10 - (width >> 1)));
@@ -912,17 +957,78 @@ export class Scene {
       frame.emit = 0;
       if (line.hearts !== undefined) drawHearts(frame, line.hearts, end + 2, y);
       if (tag) drawText(frame, tiny, tag, at(measure(tiny, tag)), under ? y + 8 : y - 8, 6);
+      // Over the highest of their name, their depth and the player's own mark; over the helmet when they are named under the boots.
+      anchors.set(line.name, { cx: line.x + 10, y: (under ? line.y : tag ? y - 8 : y) - (line.you && !under ? 6 : 0) - 1, down: false });
       if (line.you) {
         frame.emit = 90;
         // Over the middle of the crown and name, which stand centred over the diver; `end` is past the gap after the last letter.
         const middle = (x + end - tiny.gap - 1) >> 1;
-        frame.sprite(CARET, middle - 2, y - 6 + Math.round(Math.sin(time * 2.4)), "a");
+        const bob = Math.round(Math.sin(time * 2.4));
+        frame.sprite(CARET, middle - 2, y - 6 + bob, "a");
         frame.emit = 0;
+        // Just after joining, "Tab" and a speech mark over it say how to talk; a phone has no Tab, and shows the mark alone.
+        const talking = this.draft !== null || this.chat.some((chat) => chat.name === line.name && chat.age < speechSeconds(chat.text));
+        if (line.joined !== undefined && line.joined < HINT_SECONDS && !talking) {
+          const color = line.joined > HINT_SECONDS - HINT_FADE ? "5" : "7";
+          const icon = SPEECH.map((row) => row.replaceAll("#", color));
+          const top = y - 14 + bob;
+          const key = this.touch ? "" : "TAB";
+          const width = key ? measure(tiny, key) + 2 + 7 : 7;
+          const left = middle - (width >> 1);
+          if (key) drawText(frame, tiny, key, left, top, Number(color));
+          frame.sprite(icon, left + width - 7, top);
+          hint = { x: left - 1, y: top - 1, w: width + 2, h: 8 };
+        }
       }
       if (line.lastDepth !== undefined) {
         const last = formatMeters(line.lastDepth);
         drawText(frame, tiny, last, at(measure(tiny, last)), line.y + 27, 5);
       }
+    }
+
+    // What a diver says rises a little over them and stays a while; what the player types stands over their own diver.
+    // One not in view says it at the bottom left, after their name, as does one in a dive whose words would reach up into
+    // the prompt. The newest is nearest its diver: an older one it would cover goes up above it.
+    this.speaking = null;
+    if (this.lobby || this.turn) {
+      // The corner is over the player's hearts, and over the button that opens what they say on a phone.
+      const corner = this.talkButton ? H - 32 : H - 18;
+      const place = (name: string, text: string, typing: boolean, lift: number) => {
+        const at = anchors.get(name);
+        if (at) {
+          const bubble = speech(text, at.cx, at.down ? at.y + lift : at.y - lift, W, typing, true, at.down);
+          const clear = bubble.y >= this.hudBottom + 2 || bubble.x + bubble.w <= this.hudLeft - 4;
+          if (!this.turn || clear) return bubble;
+        }
+        return speech(typing ? text : `${name} ~ ${text}`, 0, corner, W, typing, false, false);
+      };
+      const spoken: (Speech & { edge: number; ink: number; caret?: boolean })[] = [];
+      if (this.draft) spoken.push({ ...place(this.draft.name, this.draft.text, true, 0), edge: 15, ink: 7, caret: Math.floor(time * 2.5) % 2 === 0 });
+      const said = this.chat.filter((chat) => chat.age < speechSeconds(chat.text));
+      for (const chat of said.toSorted((a, b) => a.age - b.age)) {
+        const dim = speechSeconds(chat.text) - chat.age < SPEECH_FADE;
+        const bubble = place(chat.name, chat.text, false, Math.round(Math.min(4, chat.age * 8)));
+        const taken = hint ? [hint, ...spoken] : spoken;
+        for (let i = 0; i < taken.length; i++) {
+          const other = taken[i]!;
+          const apart = bubble.x + bubble.w <= other.x || other.x + other.w <= bubble.x || bubble.y + bubble.h + 4 <= other.y || other.y + other.h + 4 <= bubble.y;
+          if (apart) continue;
+          bubble.y = bubble.down ? other.y + other.h + 5 : other.y - bubble.h - 5;
+          i = -1;
+        }
+        spoken.push({ ...bubble, edge: chat.bad ? 18 : dim ? 4 : 5, ink: dim ? 5 : 7 });
+      }
+      for (const bubble of spoken.toReversed()) {
+        drawSpeech(frame, bubble, bubble.edge, bubble.ink, bubble.caret);
+        this.cover(bubble.x, bubble.x + bubble.w, bubble.y, bubble.y + bubble.h);
+      }
+      if (this.draft) this.speaking = spoken[0]!;
+    }
+    this.talkBox = null;
+    if (this.talkButton) {
+      const icon = SPEECH.map((row) => row.replaceAll("#", this.talkButton === "open" ? "a" : "7"));
+      frame.sprite(icon, 6, H - 26);
+      this.talkBox = { x: 2, y: H - 30, w: 15, h: 14 };
     }
 
     // The crown lifts off the old host's name and arcs over to the new host's; from above, if the old host is not in view.
@@ -1015,6 +1121,7 @@ export class Scene {
     const wide = W >= 300;
     // On a narrow screen the words take the whole width: the prompt over the diver, the answer and the title under them.
     const x = wide ? (this.crew ? 184 : 170) : 10;
+    this.hudLeft = x;
     const room = W - x - (wide ? 8 : 10);
     const answerY = base + (wide ? 10 : 32);
     const amber = (tall: number) => (row: number) => (row < tall * 0.3 ? 16 : row < tall * 0.8 ? 15 : 14);
@@ -1177,6 +1284,48 @@ export class Scene {
       if (Math.floor(time * 2.5) % 2 === 0) for (let j = 0; j < tiny.height; j++) frame.put(end, y + j, 5);
     }
   }
+}
+
+/** Words in a bubble: where it stands, the diver it points down to (`cx`) if `tail`, and its lines. */
+type Speech = { x: number; y: number; w: number; h: number; cx: number; tail: boolean; down: boolean; lines: string[]; gap: number; above: number };
+
+/**
+ * The bubble of words said over (cx, edge), standing as low as it can, or with `down` hanging under it as high as it
+ * can; `typing` leaves room for a caret.
+ */
+function speech(text: string, cx: number, edge: number, W: number, typing: boolean, tail: boolean, down: boolean): Speech {
+  const { tiny } = FONTS;
+  const said = plain(text);
+  const lines = said ? wrap(tiny, said, Math.min(84, W - 12)) : [""];
+  const gap = pitch(tiny, said, 7);
+  const above = rise(tiny, said);
+  const w = Math.max(...lines.map((line) => measure(tiny, line))) + (typing ? 9 : 7);
+  const h = lines.length * gap + 3 + above;
+  return { x: Math.max(2, Math.min(W - w - 2, cx - (w >> 1))), y: down ? edge + 4 : edge - h - 4, w, h, cx, tail, down, lines, gap, above };
+}
+
+/**
+ * A bubble of words, rounded at its corners, with two small bubbles between it and who says it (under it, or over it if
+ * it hangs `down`). With `caret` true, a caret after the words.
+ */
+function drawSpeech(frame: Frame, { x, y, w, h, cx, tail, down, lines, gap, above }: Speech, edge: number, ink: number, caret?: boolean) {
+  for (let j = 0; j < h; j++) {
+    for (let i = 0; i < w; i++) {
+      const rim = i === 0 || j === 0 || i === w - 1 || j === h - 1;
+      const corner = (i === 0 || i === w - 1) && (j === 0 || j === h - 1);
+      if (!corner) frame.put(x + i, y + j, rim ? edge : 0);
+    }
+  }
+  if (tail && down) {
+    frame.put(cx, y - 2, edge);
+    frame.put(cx - 1, y - 4, edge);
+  } else if (tail) {
+    frame.put(cx, y + h + 1, edge);
+    frame.put(cx - 1, y + h + 3, edge);
+  }
+  let end = x + 3;
+  lines.forEach((line, i) => (end = drawText(frame, FONTS.tiny, line, x + 3, y + 2 + above + i * gap, ink)));
+  if (caret) for (let j = 0; j < 5; j++) frame.put(end, y + 2 + above + (lines.length - 1) * gap + j, 16);
 }
 
 /**

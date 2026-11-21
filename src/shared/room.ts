@@ -21,6 +21,13 @@ export type RoomSettings = { mode: Mode; air: number; hearts: Hearts; builtIn: s
 /** A new room plays every built-in pack, which only the server knows. */
 export const DEFAULT_SETTINGS: Omit<RoomSettings, "builtIn"> = { mode: "deepest", air: DEFAULT_AIR.deepest, hearts: "medium", ownPacks: [], judging: false };
 
+/**
+ * The most characters a chat message may have (with its speaker's name, two lines over the boat on a phone, all the room
+ * there is), and the least time between two of one player's, in seconds.
+ */
+export const CHAT_MAX = 50;
+export const CHAT_EVERY = 1;
+
 /** How many prompts a dive in "deepest" mode asks. */
 export const DIVE_PROMPTS = 10;
 /** Seconds everyone sees a verdict before the next turn. */
@@ -111,16 +118,19 @@ export type ClientMessage =
   | { type: "host"; id: number }
   | { type: "remove"; id: number; ban: boolean }
   | { type: "leave" }
+  | { type: "chat"; text: string }
   /** Asks the server to answer at once, so the page can tell a connection that still works from one that has silently broken. */
   | { type: "ping" };
 
-export type Refusal = "no-room" | "full" | "name-taken" | "bad-name" | "bad-suit" | "not-host" | "bad-settings" | "no-packs" | "no-prompts" | "banned";
+/** `gives-answer`: what a player said in a dive names an answer to the prompt that nobody has taken yet. */
+export type Refusal = "no-room" | "full" | "name-taken" | "bad-name" | "bad-suit" | "not-host" | "bad-settings" | "no-packs" | "no-prompts" | "banned" | "gives-answer";
 /** How a player went out of a room: of their own accord, or taken out by the host, with or without a ban. */
 export type Gone = "left" | "removed" | "banned";
 /**
  * `room` is the whole room again, sent after every change to it. `removed` means the host took the player out of the
  * room, and with `banned` they cannot come back to it. `gone` tells the others how a player went, just before the room
  * without them. `called` tells everyone the host tried to start while some were not ready. `pong` answers a `ping`.
+ * `chat` is what player `id` said to the room; it is not kept.
  */
 export type ServerMessage =
   | { type: "room"; room: RoomView }
@@ -128,4 +138,5 @@ export type ServerMessage =
   | { type: "refused"; reason: Refusal }
   | { type: "removed"; banned: boolean }
   | { type: "gone"; id: number; how: Gone }
-  | { type: "called" };
+  | { type: "called" }
+  | { type: "chat"; id: number; text: string };

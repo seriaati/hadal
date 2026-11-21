@@ -1,4 +1,4 @@
-import { AIR_MAX, AIR_MIN, BAR_FULL, HEARTS, MODES, ROOM_CODE_LENGTH, SUITS, type Gone, type Refusal, type RoomPlayer, type RoomSettings, type RoomView } from "../../shared/room";
+import { AIR_MAX, AIR_MIN, BAR_FULL, CHAT_EVERY, CHAT_MAX, HEARTS, MODES, ROOM_CODE_LENGTH, SUITS, type Gone, type Refusal, type RoomPlayer, type RoomSettings, type RoomView } from "../../shared/room";
 import { NICKNAME_MAX, type PackSummary } from "../../shared/types";
 import { t } from "../language";
 import type { RoomLog } from "./ending";
@@ -8,11 +8,14 @@ import type { Sound } from "../sound";
 import { LOST_SECONDS, ascentSeconds, createGame, type Game } from "../state";
 import type { AccountPanel } from "./account";
 import { builtInRows, packRows, type PackChoice } from "./choice";
-import { CALL_SECONDS, CROWN_SECONDS, GLINT_SECONDS, GOING_SECONDS, LANTERN, LANTERN_OUT, SUIT_COLORS, type Crew, type Turn } from "./scene";
-import type { Diver, Part, Step, Ui } from "./ui";
+import { CALL_SECONDS, CROWN_SECONDS, GLINT_SECONDS, GOING_SECONDS, LANTERN, LANTERN_OUT, SUIT_COLORS, type Chat, type Crew, type Draft, type Turn } from "./scene";
+import type { Diver, Field, Part, Step, Ui } from "./ui";
 
-/** Where in the panel a refusal is said: under the field it is about, before the last line, in the room's set-up, under "Copy the link" or under "Start the dive". */
-type Where = "code" | "name" | "end" | "settings" | "copy" | "start";
+/**
+ * Where a refusal is said: under the field it is about, before the last line, in the room's set-up, under "Copy the link"
+ * or under "Start the dive"; or over the player's own diver, in the place of what they said.
+ */
+type Where = "code" | "name" | "end" | "settings" | "copy" | "start" | "said";
 const REFUSALS: Record<Refusal, Where> = {
   "no-room": "code",
   full: "code",
@@ -24,6 +27,7 @@ const REFUSALS: Record<Refusal, Where> = {
   "no-packs": "start",
   "no-prompts": "start",
   banned: "code",
+  "gives-answer": "said",
 };
 
 /** A lantern that is out, as the line that lights it shows it: a little paler than in the sea, so it reads on the dark. */
@@ -91,6 +95,12 @@ export class MultiplayerPanel {
   private doomed: "" | "remove" | "ban" = "";
   /** Leaving the room asks "Sure?" on the step's name: one more way out leaves. */
   private leaving = false;
+  /** What each player last said in the room, by id, and when, in seconds; and how often each has spoken. */
+  private said = new Map<number, { text: string; at: number; bad?: boolean }>();
+  private spoken = new Map<number, number>();
+  /** When the player last said something, by `performance.now()`; and when they made or joined the room, in seconds. */
+  private spokeAt = -Infinity;
+  private joinedAt = -Infinity;
   /** Divers who have just gone out of the room, as they were last seen, how they went and when, in seconds. */
   private ghosts: { crew: Crew; how: Gone; at: number }[] = [];
   /** The divers as last shown, so that one who goes is seen off from where they were. */
@@ -191,7 +201,7 @@ export class MultiplayerPanel {
     // The host has no ready of their own: starting the dive is it.
     const last = (id: number) => view.last?.divers.find((diver) => diver.id === id)?.depth;
     return this.place(
-      view.players.map((player, slot) => ({ slot, suit: player.suit, name: player.nickname, lit: player.host || player.ready, focus: player.id === view.you, depth: 0, host: player.host, crowned: this.crownedOf(player.id), you: player.id === view.you, lastDepth: last(player.id), called: this.calledOf(player) })),
+      view.players.map((player, slot) => ({ slot, suit: player.suit, name: player.nickname, lit: player.host || player.ready, focus: player.id === view.you, depth: 0, host: player.host, crowned: this.crownedOf(player.id), you: player.id === view.you, lastDepth: last(player.id), called: this.calledOf(player), spoken: this.spoken.get(player.id) ?? 0, joined: player.id === view.you ? performance.now() / 1000 - this.joinedAt : undefined })),
     );
   }
 
@@ -353,6 +363,14 @@ export class MultiplayerPanel {
   private hear(message: Heard) {
     if (message.type === "gone") return this.ghost(message.id, message.how);
     if (message.type === "called") return this.call();
+    if (message.type === "chat") return this.heard(message.id, message.text);
+    // What was refused stays with the player, in the place of what they meant to say.
+    if (message.type === "refused" && REFUSALS[message.reason] === "said") {
+      const you = this.client.view?.you;
+      if (you !== undefined) this.said.set(you, { text: t().rooms.refusals[message.reason], at: performance.now() / 1000, bad: true });
+      this.announce(t().rooms.refusals[message.reason]);
+      return;
+    }
     this.busy = false;
     const entering = this.ui.top === this.create || this.ui.top === this.join;
     if (message.type === "room") {
@@ -411,6 +429,9 @@ export class MultiplayerPanel {
       this.refused = null;
       this.linked = "";
       this.leaving = false;
+      this.said.clear();
+      this.spoken.clear();
+      this.joinedAt = performance.now() / 1000;
       this.ui.back();
       this.ui.go(this.room, "act");
     } else if (message.type === "refused") {
@@ -434,6 +455,60 @@ export class MultiplayerPanel {
       }
       while (this.ui.top !== this.first) this.ui.back();
     }
+  }
+
+  /** What each diver last said, for the scene to show over them, in the room and in its dive. */
+  chat(): Chat[] {
+    const view = this.client.view;
+    if (!view || !(this.lobby || this.diving)) return [];
+    const now = performance.now() / 1000;
+    return view.players.flatMap((player) => {
+      const said = this.said.get(player.id);
+      return said ? [{ name: player.nickname, text: said.text, age: now - said.at, bad: said.bad }] : [];
+    });
+  }
+
+  /** What the player is typing to say, while they are: in the room's own line, or in a dive `typing`, from the page's line. */
+  draft(typing: string | null): Draft | null {
+    const view = this.client.view;
+    const name = view?.players.find((player) => player.id === view.you)?.nickname;
+    if (!name) return null;
+    if (this.diving) return typing === null ? null : { name, text: typing };
+    return this.lobby && this.ui.focused("say") ? { name, text: this.ui.value("say") } : null;
+  }
+
+  /** Whether the player may say something in the dive: not while their own air runs, when every key is for the answer. */
+  get talking(): boolean {
+    return this.diving && !this.yours && !this.dying;
+  }
+
+  /** Tells a screen reader what was said: the scene only draws it. */
+  announce: (words: string) => void = () => {};
+
+  private heard(id: number, text: string) {
+    const view = this.client.view;
+    const player = view?.players.find((one) => one.id === id);
+    if (!player) return;
+    this.said.set(id, { text, at: performance.now() / 1000 });
+    this.spoken.set(id, (this.spoken.get(id) ?? 0) + 1);
+    if (id !== view!.you) this.announce(t().rooms.heard(player.nickname, text));
+  }
+
+  /** Says whether it went: not sooner than CHAT_EVERY after the last, which the server would drop, so it is kept to send then. */
+  talk(text: string): boolean {
+    if (performance.now() - this.spokeAt < CHAT_EVERY * 1000) return false;
+    this.spokeAt = performance.now();
+    this.client.send({ type: "chat", text });
+    return true;
+  }
+
+  /** Says whether the room's line may close. */
+  private speak(): boolean {
+    const text = this.ui.value("say").trim();
+    if (!text) return true;
+    if (!this.talk(text)) return false;
+    this.ui.clear("say");
+    return true;
   }
 
   private goneNote(message: Heard): string {
@@ -594,10 +669,11 @@ export class MultiplayerPanel {
       });
     }
     if (this.client.offline) rows.push({ kind: "note", text: words.reconnecting, bad: true });
+    const chat: Field = { kind: "field", id: "say", label: words.say, max: CHAT_MAX, autocomplete: "off", enter: () => this.speak() };
     const copy = () => this.copy(view.code);
     const copied = performance.now() - this.copiedAt < COPIED_FOR;
     const sure = this.leaving ? () => (this.leaving = false) : undefined;
-    return { title: words.leave, exit: true, code: { text: view.code, copy, copied }, world, rows, back: () => this.leaveRoom(), sure };
+    return { title: words.leave, exit: true, code: { text: view.code, copy, copied }, world, chat, rows, back: () => this.leaveRoom(), sure };
   };
 
   private leaveRoom() {
@@ -726,9 +802,17 @@ export class MultiplayerPanel {
       this.suit = suit;
       this.client.send({ type: "suit", suit });
     };
+    // A phone has no keys to start typing with: there the chat is opened from here, the player's own diver.
+    const speak = () => {
+      this.ui.back();
+      this.ui.openChat(`player:${you.id}`);
+    };
     return {
       title: you.nickname,
-      rows: [{ kind: "slider", id: "suit", label: t().rooms.suit, value: this.suit / (SUITS - 1), steps: SUITS - 1, colors: SUIT_COLORS, set }],
+      rows: [
+        { kind: "slider", id: "suit", label: t().rooms.suit, value: this.suit / (SUITS - 1), steps: SUITS - 1, colors: SUIT_COLORS, set },
+        { kind: "press", id: "speak", label: t().rooms.sayIt, press: speak },
+      ],
     };
   };
 

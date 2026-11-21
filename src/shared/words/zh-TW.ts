@@ -232,6 +232,9 @@ export const zhTW: Words = {
     putsOut: (lit: number) => `更改這些設定會熄滅 ${lit} 盞提燈`,
     lost: "與伺服器的連線已斷開",
     reconnecting: "連線中斷 ~ 正在重新連線",
+    say: "說",
+    sayIt: "說點什麼",
+    heard: (name: string, text: string) => `${name}說：${text}`,
     removedYou: "房主把你踢出了房間",
     bannedYou: "房主已禁止你進入這個房間",
     playerSays: (name: string) => `${name}：轉讓房主、踢出或禁止進入`,
@@ -279,6 +282,6 @@ export const zhTW: Words = {
       "no-packs": "沒有選擇題庫，請在房間設定中選擇",
       "no-prompts": "這些題庫裡沒有一道題的答案夠所有人作答，請換其他題庫",
       banned: "這個房間的房主已禁止你進入",
-    } as Record<Refusal, string>,
+      "gives-answer": "這會洩漏答案",    } as Record<Refusal, string>,
   },
 };

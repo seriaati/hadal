@@ -1,3 +1,4 @@
+import { CHAT_MAX } from "../shared/room";
 import { MAX_ANSWER_LENGTH, type Config } from "../shared/types";
 import { showDevMenu } from "./devmenu";
 import { t } from "./language";
@@ -27,6 +28,15 @@ const input = document.querySelector<HTMLInputElement>(".keys")!;
 // Whatever panel is open: `Ui` fills it with the controls of the step on screen.
 const form = document.querySelector<HTMLFormElement>(".panel")!;
 input.maxLength = MAX_ANSWER_LENGTH;
+// In a dive what the player says has a line of its own, opened by Tab: letters type the answer, and "/" may be in one.
+const talk = document.querySelector<HTMLInputElement>(".talk")!;
+talk.maxLength = CHAT_MAX;
+const talking = () => document.activeElement === talk;
+// A phone has no Tab: a button opens it, and closes it again.
+const talkButton = document.querySelector<HTMLButtonElement>(".talk-button")!;
+talkButton.addEventListener("click", () => (talking() ? takeKeys() : talk.focus()));
+// Screen readers are told what the others say; the game only draws it.
+const said = document.querySelector<HTMLElement>(".said")!;
 const game = createGame();
 const scene = new Scene();
 scene.touch = matchMedia("(pointer: coarse)").matches;
@@ -39,6 +49,10 @@ const settings = () => settingsStep(sound, display);
 const account: AccountPanel = new AccountPanel(ui, () => void packs.load());
 const packs = new PacksPanel(ui, account, sound, (pack) => dive(false, { builtIn: [], own: [pack] }));
 const multiplayer = new MultiplayerPanel(ui, account, sound);
+multiplayer.announce = (words) => {
+  said.append(Object.assign(document.createElement("p"), { textContent: words }));
+  while (said.childElementCount > 20) said.firstElementChild!.remove();
+};
 // Wait for the account so the signed-in name can be filled in.
 const linked = new URLSearchParams(location.search).get("room");
 if (linked) {
@@ -138,6 +152,11 @@ const onKey = (event: KeyboardEvent) => {
   }
   // An open panel has the focus and its own keys; these come here while it waits for a dive to begin, and are not for the title.
   if (ui.open) return;
+  if (event.key === "Tab" && multiplayer.talking) {
+    event.preventDefault();
+    talk.focus();
+    return;
+  }
   if (shown.phase === "title" && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
     menu.choice = (menu.choice + (event.key === "ArrowUp" ? -1 : 1) + menu.items.length) % menu.items.length;
   }
@@ -158,8 +177,18 @@ const keepFocus = (event: MouseEvent) => {
   // The controls of an open panel take the focus themselves.
   if (form.contains(event.target as Node)) return;
   if (event.target !== input) event.preventDefault();
-  if (!ui.open) takeKeys();
+  if (!ui.open && !talking()) takeKeys();
 };
+// Enter sends what is said, unless it must wait out the last; Escape takes it back, and Tab goes back to the answer with it kept.
+talk.addEventListener("keydown", (event) => {
+  if (event.isComposing) return;
+  if (event.key !== "Enter" && event.key !== "Escape" && event.key !== "Tab") return;
+  event.preventDefault();
+  const text = talk.value.trim();
+  if (event.key === "Enter" && text && !multiplayer.talk(text)) return;
+  if (event.key !== "Tab") talk.value = "";
+  takeKeys();
+});
 // The cog and the title menu are drawn, not page controls, so the pointer is tested against them here.
 const onPointer = (event: PointerEvent) => {
   const at = canvas.getBoundingClientRect();
@@ -231,6 +260,10 @@ requestAnimationFrame(function loop(now) {
   display.fit(frame);
   menu.items = menuItems();
   input.ariaLabel = t().page.answer;
+  talk.ariaLabel = t().rooms.say;
+  // The player's own turn closes what they were saying, kept for later: every key is for the answer while their air runs.
+  if (talking() && !multiplayer.talking) takeKeys();
+  if (!multiplayer.diving) talk.value = "";
   form.ariaLabel = t().page.menu;
   menu.note = account.trouble();
   multiplayer.update();
@@ -239,7 +272,11 @@ requestAnimationFrame(function loop(now) {
   if (multiplayer.yours) shown.input = input.value;
   scene.crew = multiplayer.crew();
   scene.lobby = multiplayer.lobby;
+  scene.chat = multiplayer.chat();
+  scene.draft = multiplayer.draft(talking() ? talk.value : null);
   scene.turn = multiplayer.turn(input.value);
+  scene.talkButton = scene.touch && multiplayer.talking ? (talking() ? "open" : "closed") : null;
+  talkButton.ariaLabel = t().rooms.sayIt;
   let lights: Light[] = [];
   const closing = done ? ending : null;
   // Once the end screen has faded in it hides the sea, which need not be drawn.
@@ -267,6 +304,12 @@ requestAnimationFrame(function loop(now) {
   glitch.apply(frame, closing ? closing.wordsFrom : scene.wordsFrom, closing ? closing.wordsTo : scene.wordsTo, now / 1000, focus, !closing);
   if (glitch.blackout) lights.length = 0;
   if (!closing) drawCog(frame);
+  const box = closing ? null : scene.talkBox;
+  talkButton.hidden = !box;
+  if (box) {
+    const s = display.scale;
+    Object.assign(talkButton.style, { left: `${box.x * s}px`, top: `${box.y * s}px`, width: `${box.w * s}px`, height: `${box.h * s}px` });
+  }
   ui.draw(frame, scene, display.scale, now / 1000, shown.phase !== "title");
   display.pace(elapsed);
   display.present(frame, lights);

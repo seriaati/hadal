@@ -23,6 +23,26 @@ export function normalize(text: string): string {
     .replaceAll(" ", "");
 }
 
+/**
+ * The answers to a prompt that a text names: as whole words (up to 8 together), or anywhere in it for one written without
+ * spaces (Chinese). It keeps what players say in a dive from giving an answer away.
+ */
+export function named(entry: PromptEntry, text: string): Answer[] {
+  const words = text.split(/[^\p{L}\p{N}\p{M}]+/u).map(normalize).filter(Boolean);
+  const found = new Set<Answer>();
+  for (let i = 0; i < words.length; i++) {
+    let key = "";
+    for (let j = i; j < Math.min(words.length, i + 8); j++) {
+      key += words[j];
+      const answer = entry.answers.get(key);
+      if (answer) found.add(answer);
+    }
+  }
+  const whole = normalize(text);
+  for (const [key, answer] of entry.answers) if (/\p{Script=Han}/u.test(key) && whole.includes(key)) found.add(answer);
+  return [...found];
+}
+
 /** Expects valid packs. `prefix` keeps a player's own packs' ids apart from the built-in ones. */
 export function buildIndex(packs: Pack[], prefix = ""): PromptIndex {
   const index: PromptIndex = new Map();

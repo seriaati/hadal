@@ -1,5 +1,5 @@
 import {
-  AIR_MAX, AIR_MIN, BAR_FULL, DEFAULT_AIR, HEARTS, DEFAULT_SETTINGS, DIVE_PROMPTS, MAX_PLAYERS, MODES, ROOM_CODE_LENGTH, SUITS,
+  AIR_MAX, AIR_MIN, BAR_FULL, CHAT_EVERY, CHAT_MAX, DEFAULT_AIR, HEARTS, DEFAULT_SETTINGS, DIVE_PROMPTS, MAX_PLAYERS, MODES, ROOM_CODE_LENGTH, SUITS,
   type ClientMessage, type Gone, type Hearts, type Mode, type Refusal, type RoomPlayer, type RoomSettings, type RoomView, type ServerMessage,
 } from "../shared/room";
 import type { Language } from "../shared/language";
@@ -16,7 +16,8 @@ import { judgeLive } from "./live";
  */
 export type Member = { accountId: string | null; browser: string; language: Language; closed?: boolean; send(message: ServerMessage): void };
 
-type Player = RoomPlayer & { member: Member };
+/** `chatted` is when they last said something to the room, by the clock, in milliseconds. */
+type Player = RoomPlayer & { member: Member; chatted?: number };
 /**
  * `last` is how the dive before ended. `banned` holds the browsers and accounts the host banned, for as long as the room lasts.
  * `asked` holds the prompts the room has been asked since every prompt last had its turn, and `asking` the one on screen.
@@ -246,6 +247,17 @@ function farewell(room: Room, id: number, how: Gone) {
   for (const { member } of room.players) member.send({ type: "gone", id, how });
 }
 
+/** In a dive, what names an answer nobody has taken yet is refused, so that nobody is told one. The words are not logged. */
+function chat(member: Member, room: Room, text: unknown): Refusal | void {
+  const player = room.players.find((one) => one.member === member)!;
+  const said = String(text ?? "").normalize("NFC").replace(/\s+/g, " ").trim().slice(0, CHAT_MAX).trim();
+  const now = clock.now();
+  if (!said || now - (player.chatted ?? -Infinity) < CHAT_EVERY * 1000) return;
+  if (room.dive?.gives(said)) return "gives-answer";
+  player.chatted = now;
+  for (const { member } of room.players) member.send({ type: "chat", id: player.id, text: said });
+}
+
 /** One banned cannot come back while the room lasts. */
 function remove(member: Member, room: Room, id: number, ban: boolean) {
   const player = room.players.find((one) => one.id === id);
@@ -347,7 +359,7 @@ export async function receive(member: Member, text: string) {
   else if (message?.type === "settings" && room) refuse(await change(member, room, message.settings ?? {}));
   else if (message?.type === "start" && room) refuse(await start(member, room));
   else if (message?.type === "host" && room) crown(member, room, message.id);
-  else if (message?.type === "remove" && room) remove(member, room, message.id, message.ban === true);
+  else if (message?.type === "remove" && room) remove(member, room, message.id, message.ban === true);  else if (message?.type === "chat" && room) refuse(chat(member, room, message.text));
   else if ((message?.type === "typing" || message?.type === "answer" || message?.type === "out") && room?.dive) {
     const id = room.players.find((player) => player.member === member)!.id;
     if (message.type === "typing") room.dive.type(id, message.text);

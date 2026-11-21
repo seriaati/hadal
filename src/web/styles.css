@@ -49,6 +49,24 @@ body {
   font-size: 16px;
 }
 
+/* On a phone in a dive: laid over the speech mark the game draws, which opens what the player says. */
+.talk-button {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+}
+
+/* What the players say, for screen readers only: the game draws it in bubbles. */
+.said {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* The form of whatever panel is open: invisible, each control laid over where the game draws it. */
 .panel {
   position: fixed;

@@ -232,6 +232,9 @@ export const zhCN: Words = {
     putsOut: (lit: number) => `更改这些设置会熄灭 ${lit} 盏提灯`,
     lost: "与服务器的连接已断开",
     reconnecting: "连接中断 ~ 正在重新连接",
+    say: "说",
+    sayIt: "说点什么",
+    heard: (name: string, text: string) => `${name}说：${text}`,
     removedYou: "房主把你移出了房间",
     bannedYou: "房主已禁止你进入这个房间",
     playerSays: (name: string) => `${name}：转让房主、移出或禁止进入`,
@@ -279,6 +282,6 @@ export const zhCN: Words = {
       "no-packs": "没有选择题库，请在房间设置中选择",
       "no-prompts": "这些题库里没有一道题的答案够所有人作答，请换其他题库",
       banned: "这个房间的房主已禁止你进入",
-    } as Record<Refusal, string>,
+      "gives-answer": "这会泄露答案",    } as Record<Refusal, string>,
   },
 };

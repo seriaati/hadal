@@ -27,7 +27,8 @@ export type Press = {
   /** Left and Right change the setting, as on a slider. */
   shift?: (way: -1 | 1) => void;
 };
-export type Field = { kind: "field"; id: string; label: string; max: number; dots?: boolean; password?: boolean; autocomplete: string; start?: string };
+/** With `enter`, Enter in it calls that instead of going on. */
+export type Field = { kind: "field"; id: string; label: string; max: number; dots?: boolean; password?: boolean; autocomplete: string; start?: string; enter?: () => boolean | void };
 /**
  * A level from 0 to 1 in `steps` steps (20 if not given). With `colors` it is a choice among
  * them, one pip of each colour; otherwise a track of pips, with `text` at its right if given.
@@ -58,13 +59,16 @@ type Control = Press | Field | Slider | Action | Diver | (Summary & { id: string
  * `foot` comes after the rows; when the step is too long for its room it stays at the bottom and only the rows scroll.
  * With `sure`, the name asks "Sure?" in its place, and `sure` is called when the focus leaves it.
  * With `exit`, going back leaves something (a room): the name has an exit mark in place of the `‹`, and the code stands
- * against the right edge. `world` are the divers pressed where they hang.
+ * against the right edge. `world` are the divers pressed where they hang. `chat` is what the player says to a room: a
+ * line no key moves to, opened by Tab or by starting to type, and drawn by the scene where it is said (`Scene.speaking`).
+ * Enter calls its `enter`, which closes it unless that says `false`; Escape and Tab close it; the focus then goes back.
  */
 export type Step = {
   title: string;
   code?: { text: string; copy: () => void; copied?: boolean };
   exit?: boolean;
   world?: Diver[];
+  chat?: Field;
   rows: (Part | Part[])[];
   foot?: (Part | Part[])[];
   busy?: boolean;
@@ -238,6 +242,8 @@ export class Ui {
   private wanted = "";
   /** The divers of the step, where they were last laid over the sea. */
   private world: Placed[] = [];
+  /** The control that had the focus when the step's chat was opened, to have it back when the chat closes. */
+  private chatFrom = "";
   /** The step's name, which goes back, and the code after it, which copies it. */
   private leave = document.createElement("button");
   private copier = document.createElement("button");
@@ -351,6 +357,11 @@ export class Ui {
     return this.controls.get(id)?.value ?? this.kept.get(id) ?? "";
   }
 
+  focused(id: string): boolean {
+    const control = this.controls.get(id);
+    return !!control && control === document.activeElement;
+  }
+
   clear(id: string) {
     this.kept.delete(id);
     const field = this.controls.get(id);
@@ -395,7 +406,8 @@ export class Ui {
     const top = this.steps.at(-1);
     this.form.hidden = !top;
     this.step = top?.build() ?? { title: "", rows: [] };
-    const parts = [...(this.step.world ?? []), ...[...this.step.rows, ...(this.step.foot ?? [])].flat()].filter(isControl);
+    // The chat comes after the divers, so that a step that opens with no focus asked for does not start typing.
+    const parts = [...(this.step.world ?? []), ...(this.step.chat ? [this.step.chat] : []), ...[...this.step.rows, ...(this.step.foot ?? [])].flat()].filter(isControl);
     this.parts = new Map(parts.map((part) => [part.id, part]));
     this.copier.hidden = !this.step.code;
     this.leave.ariaLabel = this.step.sure ? t().packs.sure : this.step.exit ? this.step.title : t().page.back;
@@ -479,7 +491,23 @@ export class Ui {
   private key(event: KeyboardEvent) {
     // While a keyboard is still composing a letter (as for Japanese or Chinese), its keys are its own.
     if (event.isComposing) return;
+    const chat = this.step.chat && this.controls.get(this.step.chat.id);
+    const active = document.activeElement as HTMLElement | null;
+    if (chat && active === chat) return this.chatKey(event);
     if (spaceOnControl(event)) return event.preventDefault();
+    // Starting to type, with no field in focus, opens the chat. Not Space, which does nothing outside a field.
+    // An input method (as for Chinese) composes only into a field that has the focus before the key: for it Tab and "/"
+    // open the chat with nothing typed, and so does a key the input method has already taken ("Process"), which is lost.
+    // Tab is the key that opens it in a dive too (owner, 2026-11-21); Shift+Tab and the arrows still move through the step.
+    const bare = !event.ctrlKey && !event.metaKey && !event.altKey && active?.dataset.kind !== "field";
+    const opens = (event.key === "Tab" && !event.shiftKey) || event.key === "/" || event.key === "Process";
+    if (chat && bare && (opens || (event.key.length === 1 && event.key !== " "))) {
+      if (opens) event.preventDefault();
+      this.chatFrom = active?.dataset.id ?? "";
+      // The focus moves before the letter is typed, so the letter goes into the chat.
+      chat.focus({ preventScroll: true });
+      return;
+    }
     if (event.key === "Escape") {
       event.preventDefault();
       // A key that is held down acts once: the second Escape of a pair must be meant.
@@ -488,11 +516,12 @@ export class Ui {
     }
     const head = [this.leave, this.copier].indexOf(document.activeElement as HTMLButtonElement);
     if (head >= 0) return this.headKey(event, head === 1);
-    const here = [...this.world, ...this.placed].find((spot) => isControl(spot.part) && this.controls.get(spot.part.id) === document.activeElement);
+    const spots = [...this.world, ...this.placed];
+    const here = spots.find((spot) => isControl(spot.part) && this.controls.get(spot.part.id) === document.activeElement);
     if (!here) return;
     const go = (way: Move) => {
       event.preventDefault();
-      const to = move([...this.world, ...this.placed], here, way)?.part;
+      const to = move(spots, here, way)?.part;
       if (to && isControl(to)) this.controls.get(to.id)?.focus({ preventScroll: true });
     };
     if (event.key === "Tab") go(event.shiftKey ? "previous" : "next");
@@ -504,7 +533,7 @@ export class Ui {
       this.sync();
     }
     else if (isControl(here.part) && pressed(here.part) && event.key === "ArrowLeft") {
-      if (move([...this.world, ...this.placed], here, "left")) go("left");
+      if (move(spots, here, "left")) go("left");
       else {
         event.preventDefault();
         this.retreat();
@@ -520,6 +549,34 @@ export class Ui {
       if (next?.kind === "field") control?.focus({ preventScroll: true });
       else control?.click();
     }
+  }
+
+  private chatKey(event: KeyboardEvent) {
+    const chat = this.step.chat!;
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if (chat.enter?.() !== false) this.closeChat();
+    } else if (event.key === "Escape" || event.key === "Tab") {
+      // Escape takes what was typed back; Tab keeps it for later, as in a dive.
+      event.preventDefault();
+      if (event.key === "Escape") this.clear(chat.id);
+      this.closeChat();
+    }
+  }
+
+  /** Open the step's chat, as though the player had started to type with `from` in focus. */
+  openChat(from: string) {
+    this.chatFrom = from;
+    this.wanted = this.step.chat?.id ?? "";
+  }
+
+  private closeChat() {
+    const back = this.controls.get(this.chatFrom);
+    this.chatFrom = "";
+    // With nothing to go back to, the step's first thing takes the focus, as when it opens.
+    if (back) back.focus({ preventScroll: true });
+    else (document.activeElement as HTMLElement | null)?.blur();
+    this.sync();
   }
 
   /** Enter needs no handling here: the name and the code are buttons. */
@@ -660,6 +717,15 @@ export class Ui {
       control.style.position = "fixed";
       cover(control, spot.x + left, spot.y, spot.w, spot.h);
       if (control === document.activeElement) scene.chosen = spot.part.name;
+    }
+
+    // The chat is laid over where the scene draws it. Closed, it lets the pointer through to the divers under it.
+    const chat = this.step.chat && this.controls.get(this.step.chat.id);
+    if (chat) {
+      const box = chat === document.activeElement ? scene.speaking : null;
+      chat.style.position = "fixed";
+      chat.style.pointerEvents = box ? "" : "none";
+      cover(chat, box?.x ?? 0, box?.y ?? 0, box?.w ?? 1, box?.h ?? 1);
     }
 
     const spots = [...laid.placed.map((spot) => ({ ...spot, py: top + spot.y - shift, pinned: false })), ...foot.map((spot) => ({ ...spot, py: fold + spot.y - HEAD, pinned: true }))];

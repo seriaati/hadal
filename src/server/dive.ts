@@ -1,6 +1,6 @@
 import { DROP_SECONDS, GRACE_SECONDS, MAX_HEARTS, PAUSE_SECONDS, START_HEARTS, type DiveView, type DiverView, type Finish, type Mode, type Said } from "../shared/room";
 import { MAX_ANSWER_LENGTH, METERS_PER_POINT, type GamePrompt, type Verdict } from "../shared/types";
-import { judge, type PromptEntry, type PromptIndex } from "./game";
+import { judge, named, type PromptEntry, type PromptIndex } from "./game";
 
 /** What a dive keeps time with: the real clock in the game, one moved by hand in the tests. */
 export type Clock = { now(): number; after(ms: number, then: () => void): () => void };
@@ -91,6 +91,12 @@ export class Dive {
 
   get turn(): number {
     return this.queue[0]!;
+  }
+
+  /** Whether what a player says names an answer to the prompt being asked that nobody has taken yet. */
+  gives(text: string): boolean {
+    const entry = this.setup.index.get(this.setup.prompts[this.round]!.id);
+    return !!entry && named(entry, text).some((answer) => !this.taken.includes(answer.text));
   }
 
   view(): DiveView {

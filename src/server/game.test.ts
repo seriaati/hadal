@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import type { Pack } from "../shared/types";
-import { buildIndex, judge, nearestAnswer, normalize, pickPrompts, typos } from "./game";
+import { buildIndex, judge, named, nearestAnswer, normalize, pickPrompts, typos } from "./game";
 import { loadBuiltIn } from "./packs";
 
 const index = buildIndex(Object.values(await loadBuiltIn()).flat());
@@ -21,6 +21,20 @@ test("normalize reads traditional and simplified Chinese as the same characters"
   expect(normalize("關")).toBe(normalize("关"));
   expect(normalize("臺灣")).toBe(normalize("台湾"));
   expect(judge(index, "zh-geography/asia-countries", "韓國")?.answer).toBe("韩国");
+});
+
+test("named finds the answers a text names as whole words, or anywhere for Chinese", () => {
+  const pack: Pack = {
+    id: "test",
+    name: "Test",
+    prompts: [{ id: "one", text: "Name a place", answers: [{ text: "Timor-Leste", rarity: 100 }, { text: "Chad", rarity: 50 }, { text: "台湾", rarity: 90 }] }],
+  };
+  const entry = buildIndex([pack]).get("test/one")!;
+  const names = (text: string) => named(entry, text).map((answer) => answer.text);
+  expect(names("what about the TIMOR leste?")).toEqual(["Timor-Leste"]);
+  expect(names("chadwick is no answer")).toEqual([]);
+  expect(names("Chad, surely")).toEqual(["Chad"]);
+  expect(names("是臺灣吧")).toEqual(["台湾"]);
 });
 
 test("a correct answer returns the pack's spelling and its rarity", () => {
