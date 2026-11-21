@@ -395,6 +395,8 @@ export class Scene {
   /** Where each diver of a room stands on the frame, by name, as last drawn, and the one whose control has the focus. */
   places = new Map<string, { x: number; y: number; w: number; h: number }>();
   chosen: string | null = null;
+  /** Where each diver's name stands on the frame, as last drawn, for the host to press in a dive. */
+  private names = new Map<string, { x: number; y: number; w: number; h: number }>();
   /** How far the room's places are spread out, from 0 (as in a dive) to 1 (all in view), and the panel's box as shown. */
   private spread = 0;
   private gap = LINE_GAP;
@@ -896,6 +898,7 @@ export class Scene {
     /** Where each name's crown is, or would be. */
     const crowns = new Map<string, { x: number; y: number }>();
     this.places.clear();
+    this.names.clear();
     /** Where how to talk is shown over the player's own diver, which what others say keeps clear of. */
     let hint: { x: number; y: number; w: number; h: number } | null = null;
     /** Where what each diver named on screen says comes from: over the middle of `cx`, down to `y`, or from `y` down if `down`. */
@@ -924,6 +927,7 @@ export class Scene {
         const y = above ? 3 : x + width > depthLeft || x < heartsRight ? H - 32 : H - 8;
         frame.sprite(above ? UP : DOWN, x, y + 1);
         crowns.set(line.name, { x: x + 7, y });
+        this.names.set(line.name, { x, y: y - 2, w: width, h: 9 });
         if (line.host && !flying) drawCrown(frame, x + 7, y, 6);
         const end = drawText(frame, tiny, text, x + 7 + crown, y, 6);
         if (line.hearts !== undefined) drawHearts(frame, line.hearts, end + 2, y);
@@ -941,6 +945,7 @@ export class Scene {
       const chosen = this.lobby && this.chosen === line.name;
       const x = Math.max(chosen ? 8 : 2, at(crown + measure(tiny, name) + hearts));
       crowns.set(line.name, { x, y });
+      this.names.set(line.name, { x, y: y - 2, w: crown + measure(tiny, name) + hearts, h: 9 });
       // A diver is pressed anywhere along their line, from under the hull down to their boots: the pointer that chose
       // them may drift up off their name, and a press there must not count as one outside the words, which leaves the room.
       const from = Math.max(0, Math.min(y - 4, surface + 1));
@@ -1103,6 +1108,11 @@ export class Scene {
   }
 
   /** Which line of the title menu is at a point of the frame. No line has an index outside the menu. */
+  nameAt(x: number, y: number): string | null {
+    for (const [name, at] of this.names) if (x >= at.x && x < at.x + at.w && y >= at.y && y < at.y + at.h) return name;
+    return null;
+  }
+
   menuAt(x: number, y: number): number {
     return x < this.menuLeft - 8 ? -1 : Math.floor((y - this.menuTop + 2) / MENU_ROW);
   }

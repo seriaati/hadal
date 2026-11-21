@@ -205,7 +205,8 @@ const onPointer = (event: PointerEvent) => {
   }
   const cog = overCog(frame, x, y);
   const line = shown.phase === "title" && !ui.open && menu.items[scene.menuAt(x, y)] ? scene.menuAt(x, y) : -1;
-  canvas.style.cursor = cog || line >= 0 ? "pointer" : "";
+  const named = ui.open ? undefined : multiplayer.pickable(scene.nameAt(x, y));
+  canvas.style.cursor = cog || line >= 0 || named ? "pointer" : "";
   if (event.type === "pointermove") {
     // Moving the pointer over a line of the menu chooses it, as moving it over a control of a panel gives that the focus.
     if (line >= 0 && event.pointerType === "mouse" && (event.movementX || event.movementY)) menu.choice = line;
@@ -213,6 +214,7 @@ const onPointer = (event: PointerEvent) => {
     if (ui.top === settings || ui.top === leaving) ui.back();
     else openMenu();
   } else if (ui.open) ui.press(x, y);
+  else if (named) multiplayer.pick(named);
   else if (line >= 0) choose(line);
   // A press anywhere does what Enter does after a verdict: a phone's keyboard may be closed.
   else if (!multiplayer.diving && game.phase === "verdict") pressEnter(game);

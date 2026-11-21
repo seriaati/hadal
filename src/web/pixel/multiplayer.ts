@@ -165,13 +165,27 @@ export class MultiplayerPanel {
 
   /** Called every frame: leaving the room's step leaves the room, and leaving multiplayer ends the connection. */
   update() {
+    // The player has left, the crown has passed or the dive has ended: their step has nothing more to do.
+    const view = this.client.view;
+    const host = view?.players.find((player) => player.id === view.you)?.host;
+    if (this.ui.top === this.playerStep && (!host || this.ending || !view!.players.some((player) => player.id === this.picked))) this.ui.back();
     if (this.diving || this.ending) return;
     if (!this.ui.holds(this.first)) this.client.close();
     else if (this.client.view && !this.ui.holds(this.room)) this.client.leave();
-    // The player has left, or the crown has passed: their step has nothing more to do.
+  }
+
+  /** In a dive the host may press another diver's name to open what they can do to them. */
+  pickable(name: string | null): RoomPlayer | undefined {
     const view = this.client.view;
-    const host = view?.players.find((player) => player.id === view.you)?.host;
-    if (this.ui.top === this.playerStep && (!host || !view!.players.some((player) => player.id === this.picked))) this.ui.back();
+    const you = view?.players.find((one) => one.id === view.you);
+    if (!this.diving || !you?.host) return undefined;
+    return view!.players.find((one) => one.nickname === name && one !== you);
+  }
+
+  pick(player: RoomPlayer) {
+    this.picked = player.id;
+    this.doomed = "";
+    this.open(this.playerStep);
   }
 
   /**
@@ -647,12 +661,7 @@ export class MultiplayerPanel {
       const id = `player:${player.id}`;
       if (player.id === you.id) return [{ kind: "diver", id, name: player.nickname, press: () => this.pickSuit(player), says: words.suitSays(player.nickname) }];
       if (!you.host) return [];
-      const pick = () => {
-        this.picked = player.id;
-        this.doomed = "";
-        this.open(this.playerStep);
-      };
-      return [{ kind: "diver", id, name: player.nickname, press: pick, says: words.playerSays(player.nickname) }];
+      return [{ kind: "diver", id, name: player.nickname, press: () => this.pick(player), says: words.playerSays(player.nickname) }];
     });
     const { mode, air, hearts, judging } = view.settings;
     const hot = (...keys: (keyof RoomSettings)[]) => !!this.changed && performance.now() / 1000 - this.changed.at < HOT_SECONDS && keys.some((key) => this.changed!.keys.includes(key));

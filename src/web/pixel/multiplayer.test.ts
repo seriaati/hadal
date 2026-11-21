@@ -62,3 +62,30 @@ test("a room code that cannot be one is refused before the server is asked", () 
   expect(codeProblem("ABCDE")).toBeUndefined();
   expect(codeProblem("abcde")).toBeUndefined();
 });
+
+test("in a dive the host opens another diver's step by their name, and it closes when the crown passes", () => {
+  const steps: unknown[] = [];
+  const stack = { ...ui, go: (step: unknown) => steps.push(step), back: () => steps.pop(), get top() { return steps.at(-1); } } as unknown as Ui;
+  const panel = new MultiplayerPanel(stack, {} as AccountPanel, sound);
+  const hear = (view: RoomView) => {
+    panel.client.view = view;
+    panel["hear"]({ type: "room", room: view });
+  };
+
+  hear(room(null));
+  expect(panel.pickable("ben")).toBeUndefined();
+  hear(room(dive(30)));
+  expect(panel.pickable("ana")).toBeUndefined();
+  expect(panel.pickable(null)).toBeUndefined();
+  const ben = panel.pickable("ben")!;
+  expect(ben.id).toBe(1);
+
+  panel.pick(ben);
+  expect(steps).toHaveLength(1);
+  const crowned = room(dive(30));
+  crowned.players = crowned.players.map((player) => ({ ...player, host: player.id === 1 }));
+  hear(crowned);
+  panel.update();
+  expect(steps).toHaveLength(0);
+  expect(panel.pickable("ben")).toBeUndefined();
+});
