@@ -417,7 +417,6 @@ export class Ui {
     const top = this.steps.at(-1);
     this.form.hidden = !top;
     this.step = top?.build() ?? { title: "", rows: [] };
-    // The chat comes after the divers, so that a step that opens with no focus asked for does not start typing.
     const parts = [...(this.step.world ?? []), ...(this.step.chat ? [this.step.chat] : []), ...[...this.step.rows, ...(this.step.foot ?? [])].flat()].filter(isControl);
     this.parts = new Map(parts.map((part) => [part.id, part]));
     this.copier.hidden = !this.step.code;
@@ -446,8 +445,10 @@ export class Ui {
     const wanted = this.controls.get(this.wanted);
     this.wanted = "";
     const active = document.activeElement;
+    // A step that opens with no focus asked for does not start typing in its chat.
+    const first = parts.find((part) => part !== this.step.chat);
     if (wanted) wanted.focus({ preventScroll: true });
-    else if (top && !this.waiting && active !== this.form && active?.parentElement !== this.form) this.controls.get(parts[0]?.id ?? "")?.focus({ preventScroll: true });
+    else if (top && !this.waiting && active !== this.form && active?.parentElement !== this.form) this.controls.get(first?.id ?? "")?.focus({ preventScroll: true });
   }
 
   private make(part: Control) {

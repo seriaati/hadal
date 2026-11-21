@@ -694,12 +694,13 @@ export class MultiplayerPanel {
       });
     }
     if (this.client.offline) rows.push({ kind: "note", text: words.reconnecting, bad: true });
-    const chat: Field = { kind: "field", id: "say", label: words.say, max: CHAT_MAX, autocomplete: "off", enter: () => this.speak() };
     const copy = () => this.copy(view.code);
     const copied = performance.now() - this.copiedAt < COPIED_FOR;
     const sure = this.leaving ? () => (this.leaving = false) : undefined;
-    return { title: words.leave, exit: true, code: { text: view.code, copy, copied }, world, chat, rows, back: () => this.leaveRoom(), sure };
+    return { title: words.leave, exit: true, code: { text: view.code, copy, copied }, world, chat: this.chatField(), rows, back: () => this.leaveRoom(), sure };
   };
+
+  private chatField = (): Field => ({ kind: "field", id: "say", label: t().rooms.say, max: CHAT_MAX, autocomplete: "off", enter: () => this.speak() });
 
   private leaveRoom() {
     if (!this.leaving) {
@@ -834,9 +835,12 @@ export class MultiplayerPanel {
     };
     return {
       title: you.nickname,
+      // Tab opens the chat here as in the room, as the line under the suit says.
+      chat: this.chatField(),
       rows: [
         { kind: "slider", id: "suit", label: t().rooms.suit, value: this.suit / (SUITS - 1), steps: SUITS - 1, colors: SUIT_COLORS, set },
-        { kind: "press", id: "speak", label: t().rooms.sayIt, press: speak },
+        // The key that opens the chat, which a phone has none of.
+        { kind: "press", id: "speak", label: t().rooms.sayIt, value: matchMedia("(pointer: coarse)").matches ? undefined : t().rooms.sayKey, press: speak },
       ],
     };
   };

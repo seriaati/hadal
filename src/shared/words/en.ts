@@ -269,6 +269,8 @@ export const en = {
     /** The line where a player types what they say to the room, and the line on their own diver that opens it. */
     say: "Say",
     sayIt: "Say something",
+    /** The key that opens the line, shown at its right. */
+    sayKey: "Tab",
     /** Read out to a screen reader when another player says something. */
     heard: (name: string, text: string) => `${name} says: ${text}`,
     removedYou: "the host removed you from the room",

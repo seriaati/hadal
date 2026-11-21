@@ -242,6 +242,7 @@ export const zhCN: Words = {
     reconnecting: "连接中断 ~ 正在重新连接",
     say: "说",
     sayIt: "说点什么",
+    sayKey: "Tab",
     heard: (name: string, text: string) => `${name}说：${text}`,
     removedYou: "房主把你移出了房间",
     bannedYou: "房主已禁止你进入这个房间",

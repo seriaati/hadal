@@ -242,6 +242,7 @@ export const zhTW: Words = {
     reconnecting: "連線中斷 ~ 正在重新連線",
     say: "說",
     sayIt: "說點什麼",
+    sayKey: "Tab",
     heard: (name: string, text: string) => `${name}說：${text}`,
     removedYou: "房主把你踢出了房間",
     bannedYou: "房主已禁止你進入這個房間",
