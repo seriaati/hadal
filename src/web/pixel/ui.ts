@@ -94,6 +94,8 @@ const STEPS = 20;
 const MARK = ["a..", "aa.", "aaa", "aa.", "a.."];
 const EXIT = ["##.....", "#....#.", "#.#####", "#....#.", "##....."];
 const CROWN = [".....", "..x..", "x.x.x", "xxxxx", "xxxxx"];
+/** A speech mark struck through: "r" is the stroke. */
+const MUTED = ["rxxx.", "xr..x", "x.r.x", ".xxr.", "x...r"];
 const MINUS = [".....", ".....", "#####", ".....", "....."];
 const PLUS = ["..#..", "..#..", "#####", "..#..", "..#.."];
 
@@ -116,6 +118,11 @@ export function drawMark(frame: Frame, x: number, y: number) {
 /** The mark of a room's host, beside their name. */
 export function drawCrown(frame: Frame, x: number, y: number, color: number) {
   CROWN.forEach((row, j) => [...row].forEach((char, i) => char === "x" && frame.put(x + i, y + j, color)));
+}
+
+/** The mark of a diver the host has muted, where a host's crown would be. */
+export function drawMuted(frame: Frame, x: number, y: number, color: number) {
+  MUTED.forEach((row, j) => [...row].forEach((char, i) => char !== "." && frame.put(x + i, y + j, char === "r" ? 18 : color)));
 }
 
 /** Which facts of a summary stand on each line, in `width`: a fact is never broken. */

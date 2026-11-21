@@ -215,7 +215,7 @@ export class MultiplayerPanel {
         // One who has just gone out is still seen through the verdict, and hauled up when the turn passes.
         const out = diver.out && !turn;
         const crowned = this.crownedOf(diver.id);
-        return player ? [{ slot, suit: player.suit, name: player.nickname, lit: turn, focus: turn, depth, lamps, depthLabel: diver.id !== view.you, hearts: longest ? diver.hearts : undefined, out, host: player.host, crowned }] : [];
+        return player ? [{ slot, suit: player.suit, name: player.nickname, lit: turn, focus: turn, depth, lamps, depthLabel: diver.id !== view.you, hearts: longest ? diver.hearts : undefined, out, host: player.host, muted: player.muted, crowned }] : [];
       });
       return this.place(divers);
     }
@@ -224,7 +224,7 @@ export class MultiplayerPanel {
     // The host has no ready of their own: starting the dive is it.
     const last = (id: number) => view.last?.divers.find((diver) => diver.id === id)?.depth;
     return this.place(
-      view.players.map((player, slot) => ({ slot, suit: player.suit, name: player.nickname, lit: player.host || player.ready, focus: player.id === view.you, depth: 0, host: player.host, crowned: this.crownedOf(player.id), you: player.id === view.you, lastDepth: last(player.id), called: this.calledOf(player), spoken: this.spoken.get(player.id) ?? 0, joined: player.id === view.you ? performance.now() / 1000 - this.joinedAt : undefined })),
+      view.players.map((player, slot) => ({ slot, suit: player.suit, name: player.nickname, lit: player.host || player.ready, focus: player.id === view.you, depth: 0, host: player.host, muted: player.muted, crowned: this.crownedOf(player.id), you: player.id === view.you, lastDepth: last(player.id), called: this.calledOf(player), spoken: this.spoken.get(player.id) ?? 0, joined: player.id === view.you ? performance.now() / 1000 - this.joinedAt : undefined })),
     );
   }
 

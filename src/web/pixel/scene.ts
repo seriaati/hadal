@@ -6,7 +6,7 @@ import { ascentSeconds, fullAir, type Game, type Lamp } from "../state";
 import { Ambient } from "./creatures";
 import { FONTS, drawText, fit, measure, pitch, plain, rise, wrap, type Font } from "./font";
 import { dither, hash, type Frame, type Light } from "./frame";
-import { drawCrown, drawMark } from "./ui";
+import { drawCrown, drawMark, drawMuted } from "./ui";
 
 /**
  * The world row at a depth, on a curve: near the surface a metre is drawn larger than in the deep, so a common answer
@@ -153,6 +153,8 @@ export type Crew = {
   /** Being hauled up at the end of a dive: shown exactly at `depth`, which is given afresh every frame. */
   hauled?: boolean;
   host?: boolean;
+  /** The host has muted them: marked where a host's crown would be. A host is never muted. */
+  muted?: boolean;
   /** They went out of the room `t` seconds ago, and are seen going: hauled up their line, yanked up it, or cut loose. */
   going?: { how: Gone; t: number };
   /** The crown came to them `t` seconds ago, from the diver named `from`. */
@@ -915,7 +917,7 @@ export class Scene {
       }
       const tag = line.depthLabel && !line.out ? formatMeters(line.depth) : "";
       const hearts = line.hearts === undefined ? 0 : 2 + heartsWidth(line.hearts);
-      const crown = line.host ? 7 : 0;
+      const crown = line.host || line.muted ? 7 : 0;
       // While the crown flies to them it is not yet on their head; as it lands it glints.
       const flying = !!line.crowned && line.crowned.t < CROWN_SECONDS;
       const glint = line.crowned && !flying ? Math.max(0, 1 - (line.crowned.t - CROWN_SECONDS) / GLINT_SECONDS) : 0;
@@ -931,6 +933,7 @@ export class Scene {
         crowns.set(line.name, { x: x + 7, y });
         this.names.set(line.name, { x, y: y - 2, w: width, h: 9 });
         if (line.host && !flying) drawCrown(frame, x + 7, y, 6);
+        if (line.muted) drawMuted(frame, x + 7, y, 6);
         const end = drawText(frame, tiny, text, x + 7 + crown, y, 6);
         if (line.hearts !== undefined) drawHearts(frame, line.hearts, end + 2, y);
         // What they say comes from where they are named: hanging under a name at the top, rising over one at the bottom.
@@ -959,6 +962,7 @@ export class Scene {
         if (glint > 0.5) for (const [i, j] of [[2, -4], [2, -2], [1, -3], [3, -3]] as const) frame.put(x + i, y + j, 16);
         frame.emit = line.lit ? 70 : 0;
       }
+      if (line.muted) drawMuted(frame, x, y, line.lit ? 16 : 6);
       if (chosen) frame.emit = 70;
       const end = drawText(frame, tiny, name, x + crown, y, line.lit || chosen ? 16 : 6);
       frame.emit = 0;
