@@ -11,6 +11,14 @@ import { builtInRows, packRows, type PackChoice } from "./choice";
 import { CALL_SECONDS, CROWN_SECONDS, GLINT_SECONDS, GOING_SECONDS, LANTERN, LANTERN_OUT, SUIT_COLORS, type Chat, type Crew, type Draft, type Turn } from "./scene";
 import type { Diver, Field, Part, Step, Ui } from "./ui";
 
+/** What is wrong with a typed room code, said before asking the server. Either case is accepted, as the server accepts it. */
+export function codeProblem(code: string): string | undefined {
+  const words = t().rooms;
+  if (!code) return words.noCode;
+  if (!/^[a-z]+$/i.test(code)) return words.codeLetters;
+  if (code.length !== ROOM_CODE_LENGTH) return words.codeLength(ROOM_CODE_LENGTH);
+}
+
 /**
  * Where a refusal is said: under the field it is about, before the last line, in the room's set-up, under "Copy the link"
  * or under "Start the dive"; or over the player's own diver, in the place of what they said.
@@ -552,9 +560,16 @@ export class MultiplayerPanel {
 
   private enter(how: "create" | "join") {
     this.refused = null;
+    const code = this.ui.value("code").trim();
+    const wrong = how === "join" ? codeProblem(code) : undefined;
+    if (wrong) {
+      this.refused = ["code", wrong];
+      this.ui.focus("code");
+      return;
+    }
     this.busy = true;
     const you = { nickname: this.ui.value("name").trim(), suit: this.suit };
-    this.client.send(how === "create" ? { type: "create", ...you, settings: rememberedSettings() } : { type: "join", code: this.ui.value("code"), ...you });
+    this.client.send(how === "create" ? { type: "create", ...you, settings: rememberedSettings() } : { type: "join", code, ...you });
   }
 
   /** Without a secure page (plain http to another machine) browsers keep `navigator.clipboard` closed. */

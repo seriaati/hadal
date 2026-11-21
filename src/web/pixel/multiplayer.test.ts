@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { DEFAULT_SETTINGS, type ClientMessage, type DiveView, type RoomView } from "../../shared/room";
 import type { Sound } from "../sound";
 import type { AccountPanel } from "./account";
-import { MultiplayerPanel } from "./multiplayer";
+import { MultiplayerPanel, codeProblem } from "./multiplayer";
 import type { Ui } from "./ui";
 
 const ui = { close() {}, go() {}, back() {}, top: null, holds: () => false, value: () => "" } as unknown as Ui;
@@ -50,4 +50,15 @@ test("a turn whose air ran out in one dive does not take away the same turn of t
   hear(room(null));
   hear(room(dive(30)));
   expect(panel.yours).toBe(true);
+});
+
+test("a room code that cannot be one is refused before the server is asked", () => {
+  expect(codeProblem("")).toBe("type the room's code");
+  expect(codeProblem("AB1DE")).toBe("a room code has only the letters A to Z");
+  expect(codeProblem("房间代码啊")).toBe("a room code has only the letters A to Z");
+  expect(codeProblem("AB DE")).toBe("a room code has only the letters A to Z");
+  expect(codeProblem("ABCD")).toBe("a room code has 5 letters");
+  expect(codeProblem("ABCDEF")).toBe("a room code has 5 letters");
+  expect(codeProblem("ABCDE")).toBeUndefined();
+  expect(codeProblem("abcde")).toBeUndefined();
 });
