@@ -1000,10 +1000,12 @@ export class Ui {
   /**
    * A pointer that only rests over a control does not take the focus back from the keys. One that moves off the control
    * it lit takes the focus away, so that nothing looks pressable where a click does nothing (owner, 2026-11-21).
+   * An open chat keeps the focus until another control is clicked: losing it closes the chat (owner, 2026-11-21).
    */
   private hover(control: HTMLElement) {
     control.addEventListener("pointermove", (event) => {
       if (!(event.pointerType === "mouse" && (event.movementX || event.movementY) && document.activeElement !== control)) return;
+      if (this.step.chat && document.activeElement === this.controls.get(this.step.chat.id)) return;
       this.pointed = control;
       control.focus({ preventScroll: true });
     });
