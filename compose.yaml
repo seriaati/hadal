@@ -27,6 +27,11 @@ services:
       # Seals the API keys players store: 32 characters or more, e.g. from `openssl rand -base64 32`.
       # Without it the game runs but keeps no keys. Changing it makes every stored key unreadable.
       HADAL_SECRET: ${HADAL_SECRET:-}
+      # Behind Cloudflare with a cache rule that keeps the page (/) at its edge: the server clears that copy each time it
+      # starts. The token needs only the Zone > Cache Purge permission. Leave them unset when the page is not cached.
+      HADAL_URL: ${HADAL_URL:-}
+      CLOUDFLARE_ZONE_ID: ${CLOUDFLARE_ZONE_ID:-}
+      CLOUDFLARE_PURGE_TOKEN: ${CLOUDFLARE_PURGE_TOKEN:-}
     ports:
       - "${PORT:-3000}:3000"
     depends_on:

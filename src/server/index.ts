@@ -239,3 +239,21 @@ const server = Bun.serve({
 });
 
 console.log(`hadal is running at ${server.url}`);
+
+/**
+ * Cloudflare keeps a copy of the page at its edge, so each release clears it there: the page names the code files of its
+ * own release, and the last release's files are gone. Docker stops the old server before this one starts, so no request
+ * can put the old page back afterwards.
+ */
+async function clearCachedPage() {
+  const { CLOUDFLARE_ZONE_ID: zone, CLOUDFLARE_PURGE_TOKEN: token, HADAL_URL: page } = process.env;
+  if (!zone || !token || !page) return;
+  const res = await fetch(`https://api.cloudflare.com/client/v4/zones/${zone}/purge_cache`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+    body: JSON.stringify({ files: [new URL("/", page).href] }),
+  }).catch((error: Error) => error);
+  if (res instanceof Response && res.ok) console.log("cleared the page from Cloudflare's cache");
+  else console.error(`could not clear the page from Cloudflare's cache: ${res instanceof Response ? res.status : res.name}`);
+}
+void clearCachedPage();
