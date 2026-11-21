@@ -304,7 +304,7 @@ export const en = {
     refusals: {
       "no-room": "no room has that code",
       full: `that room is full: a room holds ${MAX_PLAYERS} divers`,
-      "name-taken": "someone in that room has that name: choose another",
+      "name-taken": "name is taken",
       "bad-name": `a name is up to ${NICKNAME_MAX} letters or digits`,
       "bad-suit": "that suit is not one of the six",
       "not-host": "only the host sets up the room",

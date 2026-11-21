@@ -271,7 +271,7 @@ export const zhCN: Words = {
     refusals: {
       "no-room": "没有这个代码的房间",
       full: `房间已满：每个房间最多 ${MAX_PLAYERS} 名潜水员`,
-      "name-taken": "房间里已有人用这个名字，请换一个",
+      "name-taken": "名字已被使用",
       "bad-name": `名字最多 ${NICKNAME_MAX} 个字，只用文字或数字`,
       "bad-suit": "只有六种潜水服可选",
       "not-host": "只有房主可以设置房间",
