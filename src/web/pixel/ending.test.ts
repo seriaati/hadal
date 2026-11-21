@@ -35,7 +35,8 @@ test("on a wide screen Down goes from the lamps to the line back and round to th
   const ending = new Ending(dive());
   ending.move("down", WIDE);
   expect(ending.focus).toBe("back");
-  expect(ending.focused).toBeNull();
+  // The line back keeps the details of the lamp last in focus.
+  expect(ending.focused?.rarity).toBe(92);
   ending.move("down", WIDE);
   expect(ending.focus).toEqual({ line: 0, lamp: 0 });
   ending.move("up", WIDE);
@@ -53,8 +54,10 @@ test("on a phone the lamps hang in rows of five, and Down keeps the column", () 
   expect(ending.focus).toBe("back");
 });
 
-test("a dive with nothing asked has only the line back", () => {
-  expect(new Ending({ ...createGame(), phase: "done" }).focus).toBe("back");
+test("a dive with nothing asked has only the line back, and no details", () => {
+  const ending = new Ending({ ...createGame(), phase: "done" });
+  expect(ending.focus).toBe("back");
+  expect(ending.focused).toBeNull();
 });
 
 test("in a room the rows go by place, and the focus starts in the row of the diver followed", () => {

@@ -55,7 +55,9 @@ export class Ending {
   /** Every line of lamps: the player's own, or one for each diver of the room in the order they finished. */
   private lines: Hung[][];
   private divers: Diver[] = [];
-  focus: Spot;
+  private spot: Spot = "back";
+  /** The lamp last in focus: the line back keeps its details on the screen. */
+  private lastLamp: Exclude<Spot, "back"> | null = null;
   /** In a room whose rows are longer than the screen, the first lamp shown. */
   private offset = 0;
   /** Where the lamps and the line back were last drawn, for the pointer. */
@@ -87,8 +89,18 @@ export class Ending {
     this.focus = lamps.length ? { line, lamp: rarest } : "back";
   }
 
+  get focus(): Spot {
+    return this.spot;
+  }
+
+  set focus(spot: Spot) {
+    this.spot = spot;
+    if (spot !== "back") this.lastLamp = spot;
+  }
+
+  /** The lamp whose details are shown: the one in focus, or the one last in focus while the line back has it. */
   get focused(): Hung | null {
-    return this.focus === "back" ? null : this.lines[this.focus.line]![this.focus.lamp]!;
+    return this.lastLamp && this.lines[this.lastLamp.line]![this.lastLamp.lamp]!;
   }
 
   /** Says whether the focus moved. */
@@ -395,15 +407,16 @@ export class Ending {
 
   private drawDetails(frame: Frame) {
     const hung = this.focused;
-    if (!hung || this.focus === "back") return;
+    const at = this.lastLamp;
+    if (!hung || !at) return;
     const { width: W } = frame;
     let y = this.detailsTop(frame);
     if (this.divers.length) {
-      const diver = this.divers[this.focus.line]!;
+      const diver = this.divers[at.line]!;
       const out = isRoom(this.log) && this.log.mode !== "deepest" ? (diver.outAt === null ? t().ending.stillIn : t().ending.outAt(diver.outAt)) : "";
       y = this.centred(frame, tiny, [plain(diver.name), formatMeters(diver.depth), t().ending.points(diver.points), out].filter(Boolean).join(" ~ "), y, 6);
     } else {
-      y = this.centred(frame, tiny, `${plain(hung.pack ?? "")} ~ ${t().count(this.focus.lamp + 1, this.lines[0]!.length)}`, y, 6);
+      y = this.centred(frame, tiny, `${plain(hung.pack ?? "")} ~ ${t().count(at.lamp + 1, this.lines[0]!.length)}`, y, 6);
     }
     y = this.centred(frame, medium, plain(hung.prompt), y + 2, 7, 0, 11) + 3;
     const answer = hung.answer ? plain(hung.answer) : t().dive.outOfAir;
