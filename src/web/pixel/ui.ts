@@ -789,7 +789,9 @@ export class Ui {
       } else if (part.kind === "summary") {
         const value = plain(part.value ?? "");
         const lines = factLines(part.facts, w - INDENT - valueRoom(part));
-        const first = lines.length === 1 ? ty : py + 2;
+        // Lines are 8 apart and 5 tall; the block stands in the middle of the row, and the value in the middle of the block.
+        const first = py + ((h - (lines.length - 1) * 8 - 5) >> 1);
+        const middle = first + (lines.length - 1) * 4;
         mark(first);
         lines.forEach((line, j) => {
           let x = tx;
@@ -801,7 +803,7 @@ export class Ui {
             frame.emit = 0;
           });
         });
-        if (value) say(value, px + w - measure(tiny, value), first, on ? 16 : 6);
+        if (value) say(value, px + w - measure(tiny, value), middle, on ? 16 : 6);
         if (control) place(control, px, w);
       } else if (part.kind === "action") {
         const { medium } = FONTS;
