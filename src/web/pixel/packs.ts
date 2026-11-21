@@ -154,7 +154,6 @@ export class PacksPanel {
         title,
         rows: [
           { kind: "note", text: words.needsKey },
-          { kind: "gap" },
           { kind: "press", id: "key", label: words.addKey, press: () => this.account.show("anthropic") },
           { kind: "gap" },
           { kind: "note", text: words.withSkill },
