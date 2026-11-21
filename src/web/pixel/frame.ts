@@ -64,6 +64,8 @@ export class Frame {
   emit = 0;
   /** Shade (0-255) given to pixels drawn from now on, or -1 to leave the shade as it is. */
   block = -1;
+  /** Where this is true, pixels drawn from now on are no brighter than colour 4 and do not glow, so they cannot be mistaken for words over them. */
+  hushed: ((x: number, y: number) => boolean) | null = null;
   /** Rows above `clipTop` and from `clipBottom` down are not drawn on. */
   clipTop = 0;
   clipBottom = Infinity;
@@ -91,9 +93,10 @@ export class Frame {
     y |= 0;
     if (x < 0 || y < 0 || x >= this.width || y >= this.height || y < this.clipTop || y >= this.clipBottom) return;
     const i = y * this.width + x;
-    this.color[i] = color;
-    this.glowColor[i] = this.emit ? color + 1 : 0;
-    this.glowStrength[i] = this.emit;
+    const hushed = this.hushed?.(x, y) ?? false;
+    this.color[i] = hushed ? Math.min(color, 4) : color;
+    this.glowColor[i] = this.emit && !hushed ? color + 1 : 0;
+    this.glowStrength[i] = hushed ? 0 : this.emit;
     if (this.block >= 0) this.shade[i] = this.block;
   }
 

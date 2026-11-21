@@ -157,3 +157,22 @@ test("a creature that rises out of the sea leaves no glow in the sky", () => {
   ambient.update(0, 0, 0, width, height, 60);
   expect(ambient.creatures.includes(angel)).toBe(false);
 });
+
+test("a creature behind the words is drawn dim and gives no glow", () => {
+  const [width, height] = [300, 200];
+  const ambient = new Ambient();
+  ambient.spawn("angler", width, height, 1200);
+  for (let second = 0; second < 8; second++) ambient.update(1, 1200, 0, width, height, 0);
+  const draw = (behindWords: boolean) => {
+    const frame = new Frame();
+    frame.resize(width, height);
+    frame.hushed = () => behindWords;
+    ambient.draw(frame, new Uint8Array(height), 0, [], () => behindWords);
+    return frame;
+  };
+
+  expect(Math.max(...draw(false).color)).toBeGreaterThan(4);
+  const hushed = draw(true);
+  expect(Math.max(...hushed.color)).toBeLessThanOrEqual(4);
+  expect(Math.max(...hushed.glowColor)).toBe(0);
+});

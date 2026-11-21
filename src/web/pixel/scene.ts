@@ -652,7 +652,9 @@ export class Scene {
     // Back on the title screen, the giant anglerfish of a dive that was left is gone.
     if (game.phase === "title") this.ambient.creatures = this.ambient.creatures.filter((creature) => creature.kind !== "leviathan");
     this.ambient.update(dt, this.depth, scroll, W, H, surface + 1);
+    frame.hushed = behindWords;
     this.ambient.draw(frame, water, time, lights, behindWords);
+    frame.hushed = null;
 
     const flakes = Math.round((W * H) / 250);
     while (this.snow.length < flakes) this.snow.push({ x: Math.random() * W, y: Math.random() * H, k: Math.random() });
