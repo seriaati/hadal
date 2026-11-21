@@ -3,7 +3,7 @@ import type { GamePrompt, Verdict } from "./types";
 export const MAX_PLAYERS = 6;
 export const ROOM_CODE_LENGTH = 5;
 /** A suit is a colour index below this. */
-export const SUITS = 6;
+export const SUITS = 10;
 
 export type Mode = "deepest" | "longest" | "chaos";
 export const MODES: Mode[] = ["deepest", "longest", "chaos"];

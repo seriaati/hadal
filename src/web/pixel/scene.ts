@@ -121,9 +121,13 @@ const SUITS = [
   { lit: "gGll", dark: "2gGG" }, // green
   { lit: "2vx7", dark: "1vvx" }, // violet
   { lit: "rxcc", dark: "rxxx" }, // rose
+  { lit: "oacc", dark: "Roaa" }, // yellow
+  { lit: "Tmww", dark: "tTmm" }, // mint
+  { lit: "Gllc", dark: "gGll" }, // lime
+  { lit: "7wcc", dark: "67ww" }, // white
 ];
 /** The colour that stands for each suit in a list. */
-export const SUIT_COLORS = [5, 9, 7, 20, 17, 18];
+export const SUIT_COLORS = [5, 9, 7, 20, 17, 18, 15, 10, 21, 11];
 /** With the lantern out the brass goes a step darker too. */
 const DIM: Record<string, string> = { a: "R", o: "R", R: "r", c: "o", m: "T", T: "t" };
 /** The diver in every suit, with the lantern out (0) and burning (1). */

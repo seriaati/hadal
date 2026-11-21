@@ -285,7 +285,7 @@ export const zhCN: Words = {
       full: `房间已满：每个房间最多 ${MAX_PLAYERS} 名潜水员`,
       "name-taken": "名字已被使用",
       "bad-name": `名字最多 ${NICKNAME_MAX} 个字，只用文字或数字`,
-      "bad-suit": "只有六种潜水服可选",
+      "bad-suit": "只有十种潜水服可选",
       "not-host": "只有房主可以设置房间",
       "bad-settings": "房间不能这样设置",
       "no-packs": "没有选择题库，请在房间设置中选择",

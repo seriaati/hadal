@@ -1,5 +1,5 @@
 import { afterAll, expect, test } from "bun:test";
-import { CHAT_EVERY, CHAT_MAX, DEFAULT_SETTINGS as SHARED_DEFAULTS, type ClientMessage, type RoomView, type ServerMessage } from "../shared/room";
+import { CHAT_EVERY, CHAT_MAX, DEFAULT_SETTINGS as SHARED_DEFAULTS, SUITS, type ClientMessage, type RoomView, type ServerMessage } from "../shared/room";
 import type { Pack } from "../shared/types";
 import { accountIdOf, signUp } from "./accounts";
 import { savePack } from "./custom";
@@ -92,7 +92,7 @@ test("joining is refused with the reason", async () => {
   expect(await refused({ type: "join", code, nickname: "c al", suit: 0 })).toEqual([{ type: "refused", reason: "bad-name" }]);
   expect(await refused({ type: "join", code, nickname: "ben!", suit: 0 })).toEqual([{ type: "refused", reason: "bad-name" }]);
   expect(await refused({ type: "join", code, nickname: "a".repeat(17), suit: 0 })).toEqual([{ type: "refused", reason: "bad-name" }]);
-  expect(await refused({ type: "join", code, nickname: "cal", suit: 6 })).toEqual([{ type: "refused", reason: "bad-suit" }]);
+  expect(await refused({ type: "join", code, nickname: "cal", suit: SUITS })).toEqual([{ type: "refused", reason: "bad-suit" }]);
   expect(await refused({ type: "create", nickname: "cal", suit: 1.5 })).toEqual([{ type: "refused", reason: "bad-suit" }]);
 });
 
@@ -191,7 +191,7 @@ test("a player changes their suit in the room, but not during a dive", async () 
   const { host, others: [ben] } = await room(null, "ben");
   await say(ben!, { type: "suit", suit: 4 });
   expect(seen(host).players.map((player) => player.suit)).toEqual([0, 4]);
-  await say(ben!, { type: "suit", suit: 6 });
+  await say(ben!, { type: "suit", suit: SUITS });
   expect(ben!.sent.at(-1)).toEqual({ type: "refused", reason: "bad-suit" });
   await say(ben!, { type: "ready", ready: true });
   await say(host, { type: "start" });

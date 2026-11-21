@@ -285,7 +285,7 @@ export const zhTW: Words = {
       full: `房間已滿：每個房間最多 ${MAX_PLAYERS} 名潛水員`,
       "name-taken": "名字已被使用",
       "bad-name": `名字最多 ${NICKNAME_MAX} 個字，只用文字或數字`,
-      "bad-suit": "只有六種潛水服可選",
+      "bad-suit": "只有十種潛水服可選",
       "not-host": "只有房主可以設定房間",
       "bad-settings": "房間不能這樣設定",
       "no-packs": "沒有選擇題庫，請在房間設定中選擇",

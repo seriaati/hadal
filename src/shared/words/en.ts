@@ -321,7 +321,7 @@ export const en = {
       full: `that room is full: a room holds ${MAX_PLAYERS} divers`,
       "name-taken": "name is taken",
       "bad-name": `a name is up to ${NICKNAME_MAX} letters or digits`,
-      "bad-suit": "that suit is not one of the six",
+      "bad-suit": "that suit is not one of the ten",
       "not-host": "only the host sets up the room",
       "bad-settings": "the room cannot be set up that way",
       "no-packs": "no pack is chosen: choose some in the set-up",
