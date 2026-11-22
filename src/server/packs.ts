@@ -1,6 +1,6 @@
 import { basename, join } from "node:path";
 import { LANGUAGES, type Language } from "../shared/language";
-import { MAX_ANSWER_LENGTH, TIERS, type Pack } from "../shared/types";
+import { MAX_ANSWER_LENGTH, TIERS, type Answer, type Pack } from "../shared/types";
 import { en, type Words } from "../shared/words/en";
 import { normalize } from "./game";
 
@@ -77,6 +77,28 @@ export function validatePack(data: unknown, words: Words = en): string[] {
     if (answers.length && !gems) problems.push(say.gem(where));
   });
   return problems;
+}
+
+/** A pack as the built-in files are written: an answer to a line, so that a change to one shows as a change to its line. */
+export function formatPack(pack: Pack): string {
+  const answer = ({ text, aliases, tier }: Answer) => {
+    const fields = [`"text": ${JSON.stringify(text)}`];
+    if (aliases?.length) fields.push(`"aliases": [${aliases.map((alias) => JSON.stringify(alias)).join(", ")}]`);
+    fields.push(`"tier": ${JSON.stringify(tier)}`);
+    return `        { ${fields.join(", ")} }`;
+  };
+  const prompts = pack.prompts.map((prompt) =>
+    [
+      "    {",
+      `      "id": ${JSON.stringify(prompt.id)},`,
+      `      "text": ${JSON.stringify(prompt.text)},`,
+      '      "answers": [',
+      prompt.answers.map(answer).join(",\n"),
+      "      ]",
+      "    }",
+    ].join("\n"),
+  );
+  return ["{", `  "id": ${JSON.stringify(pack.id)},`, `  "name": ${JSON.stringify(pack.name)},`, '  "prompts": [', prompts.join(",\n"), "  ]", "}", ""].join("\n");
 }
 
 /** The built-in packs of every language, each in the folder named after its language. */

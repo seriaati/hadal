@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadBuiltIn, loadPacks, validatePack } from "./packs";
+import { formatPack, loadBuiltIn, loadPacks, validatePack } from "./packs";
 
 const answers = [
   { text: "Peru", tier: "common" },
@@ -79,4 +79,11 @@ test("a pack file that is not valid stops the server, naming the file and the pr
   const dir = await mkdtemp(join(tmpdir(), "hadal-"));
   await Bun.write(join(dir, "broken.json"), JSON.stringify(pack({}, { id: "other" })));
   await expect(loadPacks(dir)).rejects.toThrow("broken.json is not a valid pack:\n- the pack's id must be the file's name");
+});
+
+test("every built-in pack is written as formatPack writes it", async () => {
+  for (const file of new Bun.Glob("*/*.json").scanSync({ cwd: `${import.meta.dir}/../../packs`, absolute: true })) {
+    const written = await Bun.file(file).text();
+    expect(formatPack(JSON.parse(written))).toBe(written);
+  }
 });

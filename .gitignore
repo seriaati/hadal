@@ -5,3 +5,7 @@ node_modules/
 
 # The bundled page the link preview is drawn from
 design/brand/out/
+
+# What the pack tools learn from Wikipedia, made again whenever they run. The titles kept by hand stay.
+curation/*.signals.json
+curation/*.names.json
