@@ -46,7 +46,7 @@ Hadal refuses a pack that breaks any of these:
   letter or digit, and matches no other spelling in the same prompt. Spellings that differ only in
   capitals, accents, punctuation, spaces, a leading "the", or simplified against traditional
   Chinese characters count as the same.
-- The file is at most 200 KB.
+- The file is at most 5 MB.
 
 ## Making it good
 

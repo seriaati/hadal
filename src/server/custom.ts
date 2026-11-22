@@ -15,7 +15,7 @@ export async function listPacks(accountId: string): Promise<PackSummary[]> {
 
 /** A pack with the id of one the account already has takes its place: that is how a pack is edited. */
 export async function savePack(accountId: string, file: string, words: Words = en): Promise<string[]> {
-  if (Buffer.byteLength(file) > MAX_PACK_BYTES) return [words.packs.tooBig(MAX_PACK_BYTES / 1000)];
+  if (Buffer.byteLength(file) > MAX_PACK_BYTES) return [words.packs.tooBig(MAX_PACK_BYTES / 1_000_000)];
   let pack: unknown;
   try {
     pack = JSON.parse(file);

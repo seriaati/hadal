@@ -171,7 +171,7 @@ export const zhCN: Words = {
     how: "Claude 会用你的密钥编写，每 10 题大约需要一分钟",
     send: "开始生成",
     signInFirst: "请先登录",
-    tooBig: (kb: number) => `题库文件最大 ${kb} KB`,
+    tooBig: (mb: number) => `题库文件最大 ${mb} MB`,
     notJson: (why: string) => `文件不是有效的 JSON（${why}）`,
     tooMany: (max: number) => `每个账号最多保存 ${max} 个题库，请先删除一个`,
     badTopic: (max: number) => `主题长度为 1 到 ${max} 个字符`,

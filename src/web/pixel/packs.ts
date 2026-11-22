@@ -222,7 +222,7 @@ export class PacksPanel {
 
   private async add(file: File) {
     const tried = t().packs.notAdded(file.name);
-    if (file.size > MAX_PACK_BYTES) return this.refuse(tried, [t().packs.tooBig(MAX_PACK_BYTES / 1000)], true);
+    if (file.size > MAX_PACK_BYTES) return this.refuse(tried, [t().packs.tooBig(MAX_PACK_BYTES / 1_000_000)], true);
     const added = await this.change(fetch("/api/packs", { method: "POST", body: file }), tried, true);
     if (added) this.ui.focus(`dive:${added.id}`);
   }

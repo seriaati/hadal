@@ -45,7 +45,7 @@ test("a file that is not a valid pack is refused, with the reasons", async () =>
   const id = await account();
   expect(await savePack(id, "{ not json")).toEqual([expect.stringContaining("not valid JSON")]);
   expect(await savePack(id, file("Rivers"))).toEqual([expect.stringContaining("the pack's id")]);
-  expect(await savePack(id, `${file()}${" ".repeat(MAX_PACK_BYTES)}`)).toEqual([expect.stringContaining("at most 200 KB")]);
+  expect(await savePack(id, `${file()}${" ".repeat(MAX_PACK_BYTES)}`)).toEqual([expect.stringContaining("at most 5 MB")]);
   expect(await listPacks(id)).toEqual([]);
 });
 

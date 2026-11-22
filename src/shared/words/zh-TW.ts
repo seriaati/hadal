@@ -171,7 +171,7 @@ export const zhTW: Words = {
     how: "Claude 會用你的金鑰撰寫，每 10 題大約需要一分鐘",
     send: "開始生成",
     signInFirst: "請先登入",
-    tooBig: (kb: number) => `題庫檔案最大 ${kb} KB`,
+    tooBig: (mb: number) => `題庫檔案最大 ${mb} MB`,
     notJson: (why: string) => `檔案不是有效的 JSON（${why}）`,
     tooMany: (max: number) => `每個帳號最多儲存 ${max} 個題庫，請先刪除一個`,
     badTopic: (max: number) => `主題長度為 1 到 ${max} 個字元`,

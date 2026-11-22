@@ -117,7 +117,7 @@ built-in pack is not valid. Uploaded packs go through the same check.
 - Every spelling (the text and each alias) is at most 40 characters, has at least one letter
   or digit, and matches no other spelling of the prompt (spellings that differ only in simplified
   and traditional characters match).
-- An uploaded file is at most 200 KB.
+- An uploaded file is at most 5 MB.
 
 `skills/write-hadal-pack/SKILL.md` restates these rules for players' own AI tools; change it with
 them.

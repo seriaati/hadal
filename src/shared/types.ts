@@ -11,8 +11,8 @@ export type Answer = { text: string; aliases?: string[]; tier: Tier };
 /** No spelling in a pack may be longer, or it could not be typed. */
 export const MAX_ANSWER_LENGTH = 40;
 
-/** For an uploaded pack. The largest built-in pack is about 7 KB. */
-export const MAX_PACK_BYTES = 200_000;
+/** For an uploaded pack: room for prompts with thousands of answers. */
+export const MAX_PACK_BYTES = 5_000_000;
 /** As the browser sees it: no prompts or answers. */
 export type PackSummary = { id: string; name: string; prompts: number };
 

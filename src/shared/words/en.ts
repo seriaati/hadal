@@ -192,7 +192,7 @@ export const en = {
     send: "Write it",
     /** The refusals of the server. */
     signInFirst: "sign in first",
-    tooBig: (kb: number) => `a pack file is at most ${kb} KB`,
+    tooBig: (mb: number) => `a pack file is at most ${mb} MB`,
     notJson: (why: string) => `the file is not valid JSON (${why})`,
     tooMany: (max: number) => `an account keeps at most ${max} packs: remove one first`,
     badTopic: (max: number) => `a topic is 1 to ${max} characters`,
