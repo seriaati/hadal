@@ -1,8 +1,7 @@
+import type { Counted } from "../shared/review";
 import { MAX_ANSWER_LENGTH, type Verdict } from "../shared/types";
 import { sql } from "./db";
 import { OWN, normalize } from "./game";
-
-export type Count = { answer: string; typed: string; judged: string | null; times: number };
 
 /** Counts an answer given to a built-in prompt. A player's own packs are theirs alone: nothing of them is kept. */
 export async function countAnswer(promptId: string, input: string, verdict: Verdict) {
@@ -20,6 +19,6 @@ export function heard(promptId: string, typed: string, verdict: Verdict) {
 }
 
 /** Every answer given to a prompt, the most given first. */
-export async function countsOf(promptId: string): Promise<Count[]> {
+export async function countsOf(promptId: string): Promise<Counted[]> {
   return [...(await sql`select answer, typed, judged, times from answer_counts where prompt = ${promptId} order by times desc, answer`)];
 }

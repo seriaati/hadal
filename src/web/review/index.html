@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hadal pack review</title>
+    <link rel="icon" type="image/png" href="../favicon.png" />
+    <style>
+      :root {
+        --void: #05060b;
+        --water: #0f1526;
+        --line: #1f3352;
+        --dim: #4d7396;
+        --text: #9cc0d6;
+        --bright: #fff1c2;
+        --common: #4d7396;
+        --familiar: #2fa39a;
+        --uncommon: #8cc45a;
+        --rare: #f5c15a;
+        --gem: #c2415c;
+        --warn: #d9772f;
+        color-scheme: dark;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--void); color: var(--text); font: 14px/1.4 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+      header { position: sticky; top: 0; z-index: 1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 16px; background: var(--water); border-bottom: 1px solid var(--line); }
+      header h1 { margin: 0 8px 0 0; font-size: 15px; color: var(--bright); }
+      select, input, button { font: inherit; color: inherit; background: var(--void); border: 1px solid var(--line); border-radius: 4px; padding: 4px 8px; }
+      button { cursor: pointer; }
+      button:hover { border-color: var(--dim); }
+      button:disabled { opacity: 0.4; cursor: default; }
+      .status { color: var(--dim); }
+      .status.bad { color: var(--warn); white-space: pre-wrap; }
+      main { padding: 8px 16px 64px; }
+      .help { color: var(--dim); margin: 4px 0 12px; }
+      section { margin: 16px 0; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--water); }
+      section h2 { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; margin: 0 0 8px; font-size: 14px; font-weight: normal; }
+      section h2 input { flex: 1 1 320px; color: var(--bright); }
+      .meta { color: var(--dim); }
+      .tiers { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+      @media (max-width: 760px) { .tiers { grid-template-columns: 1fr; } }
+      .tier { min-width: 0; }
+      .tier h3 { margin: 0 0 4px; font-size: 12px; font-weight: normal; text-transform: uppercase; letter-spacing: 0.05em; }
+      .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+      .chip { max-width: 100%; padding: 2px 6px; text-align: left; border-color: var(--line); overflow-wrap: anywhere; }
+      .chip small { color: var(--dim); margin-left: 4px; }
+      .chip.off { border-color: var(--warn); }
+      .chip.selected { background: var(--line); border-color: var(--bright); color: var(--bright); }
+      .editor { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 10px 0 0; padding: 8px; border: 1px dashed var(--dim); border-radius: 4px; }
+      .editor input.text { flex: 1 1 160px; }
+      .editor input.aliases { flex: 3 1 280px; }
+      .editor .why { flex-basis: 100%; color: var(--dim); }
+      .adding { display: flex; gap: 6px; margin-top: 10px; }
+      .adding input { flex: 1; }
+      .unlisted { margin-top: 10px; }
+      .unlisted h3 { margin: 0 0 4px; font-size: 12px; font-weight: normal; color: var(--dim); }
+      .chip.wrong { border-style: dashed; }
+      .chip.allowed { border-color: var(--familiar); }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Pack review</h1>
+      <select class="packs" aria-label="Pack"></select>
+      <button class="save" type="button" disabled>Save</button>
+      <span class="status" role="status"></span>
+    </header>
+    <main>
+      <p class="help">
+        Click an answer to edit it. With one picked: 1 to 5 sets its tier, Delete removes it, Escape lets go. An orange edge
+        means Wikipedia (from <code>bun tools/signals.ts</code>) or the players' counts suggest a tier two or more away.
+        Under each prompt, what players typed that it does not list: click to add it, or shift-click to add it as another
+        name of the picked answer.
+      </p>
+      <div class="prompts"></div>
+    </main>
+    <script type="module" src="./review.ts"></script>
+  </body>
+</html>

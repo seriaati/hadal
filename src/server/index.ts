@@ -1,4 +1,5 @@
 import app from "../web/index.html";
+import reviewPage from "../web/review/index.html";
 import type { BunRequest, Server } from "bun";
 import { LANGUAGES, LANGUAGE_COOKIE, isLanguage, wordsIn, type Language } from "../shared/language";
 import { MAX_PACK_BYTES, PROVIDERS, type Config, type Pack, type PackSummary, type Provider, type WriteOrder } from "../shared/types";
@@ -12,12 +13,14 @@ import { resumeWritings, run, stopWriting, writePack, writingOf } from "./genera
 import { removeKey, saveKey } from "./keys";
 import { judgeLive } from "./live";
 import { loadBuiltIn } from "./packs";
+import { review, reviewList, saveReviewed } from "./review";
 import { lost, receive, usePrompts, type Member } from "./rooms";
 
 const PROMPTS_PER_GAME = 10;
 /**
- * Developer mode (HADAL_DEV_MODE=1) gives the game a menu of shortcuts, and adds an endpoint
- * that gives away pack answers. Never turn it on for an instance other people play on.
+ * Developer mode (HADAL_DEV_MODE=1) gives the game a menu of shortcuts, adds an endpoint that
+ * gives away pack answers, and a page that rewrites the built-in pack files (`/dev/review`).
+ * Never turn it on for an instance other people play on.
  */
 const DEV_MODE = process.env.HADAL_DEV_MODE === "1";
 const PRODUCTION = process.env.NODE_ENV === "production";
@@ -33,13 +36,20 @@ async function versionOf(): Promise<string> {
   return hasher.digest("hex").slice(0, 12);
 }
 const VERSION = await versionOf();
-const builtIn = await loadBuiltIn();
-const inEach = <T>(make: (packs: Pack[]) => T) => Object.fromEntries(LANGUAGES.map((language) => [language, make(builtIn[language])])) as Record<Language, T>;
-const summaries = inEach((packs): PackSummary[] => packs.map((pack) => ({ id: pack.id, name: pack.name, prompts: pack.prompts.length })));
+let summaries: Record<Language, PackSummary[]>;
 /** A dive draws from the packs of the player's language; an answer is judged against every built-in prompt. */
-const promptsIn = inEach(buildIndex);
-const prompts = buildIndex(Object.values(builtIn).flat());
-usePrompts(builtIn);
+let promptsIn: Record<Language, PromptIndex>;
+let prompts: PromptIndex;
+/** Loads the built-in packs: at start-up, and again when the review page of developer mode changes one. */
+async function useBuiltIn() {
+  const builtIn = await loadBuiltIn();
+  const inEach = <T>(make: (packs: Pack[]) => T) => Object.fromEntries(LANGUAGES.map((language) => [language, make(builtIn[language])])) as Record<Language, T>;
+  summaries = inEach((packs): PackSummary[] => packs.map((pack) => ({ id: pack.id, name: pack.name, prompts: pack.prompts.length })));
+  promptsIn = inEach(buildIndex);
+  prompts = buildIndex(Object.values(builtIn).flat());
+  usePrompts(builtIn);
+}
+await useBuiltIn();
 await migrate();
 void resumeWritings();
 
@@ -215,6 +225,22 @@ const server = Bun.serve({
         : { "Set-Cookie": new Bun.Cookie(BROWSER, browser, { httpOnly: true, sameSite: "lax", secure: PRODUCTION, path: "/", maxAge: 400 * 24 * 60 * 60 }).serialize() };
       if (server.upgrade(req, { headers, data: { accountId, browser, language: languageOf(req), send() {} } })) return;
       return new Response("Expected a WebSocket", { status: 400 });
+    },
+    "/dev/review": DEV_MODE ? reviewPage : () => new Response("Not found", { status: 404 }),
+    "/api/dev/review": {
+      GET: async () => (DEV_MODE ? Response.json(await reviewList()) : new Response("Not found", { status: 404 })),
+    },
+    "/api/dev/review/:language/:id": {
+      GET: async (req) => {
+        const reviewed = DEV_MODE ? await review(req.params.language, req.params.id) : null;
+        return reviewed ? Response.json(reviewed) : new Response("Not found", { status: 404 });
+      },
+      PUT: async (req) => {
+        const problems = DEV_MODE ? await saveReviewed(req.params.language, req.params.id, await req.json()) : null;
+        if (!problems) return new Response("Not found", { status: 404 });
+        if (!problems.length) await useBuiltIn();
+        return Response.json({ problems }, { status: problems.length ? 400 : 200 });
+      },
     },
     "/api/dev/answer": {
       GET: async (req) => {
