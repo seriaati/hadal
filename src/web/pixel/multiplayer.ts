@@ -1,6 +1,7 @@
 import { AIR_MAX, AIR_MIN, BAR_FULL, CHAT_EVERY, CHAT_MAX, HEARTS, MODES, ROOM_CODE_LENGTH, SUITS, type Gone, type Refusal, type RoomPlayer, type RoomSettings, type RoomView } from "../../shared/room";
+import type { Language } from "../../shared/language";
 import { NICKNAME_MAX, type PackSummary } from "../../shared/types";
-import { t } from "../language";
+import { currentLanguage, t } from "../language";
 import type { RoomLog } from "./ending";
 import { RoomClient, type Heard } from "../room";
 import { RoomDive } from "../roomdive";
@@ -60,7 +61,12 @@ const SETTINGS = "hadal:room-settings";
 
 function rememberedSettings(): Partial<RoomSettings> | undefined {
   try {
-    return JSON.parse(localStorage.getItem(SETTINGS) ?? "null") ?? undefined;
+    const saved = JSON.parse(localStorage.getItem(SETTINGS) ?? "null") as (Partial<RoomSettings> & { language?: Language }) | null;
+    if (!saved) return undefined;
+    const { language, ...settings } = saved;
+    // The built-in packs were chosen in the language the game was in then: in another, the room starts with that one's.
+    if (language !== currentLanguage()) delete settings.builtIn;
+    return settings;
   } catch {
     return undefined;
   }
@@ -408,7 +414,7 @@ export class MultiplayerPanel {
       if (this.changing && seen !== this.seenSettings && players.find((player) => player.id === you)?.host) {
         this.changing = false;
         try {
-          localStorage.setItem(SETTINGS, seen);
+          localStorage.setItem(SETTINGS, JSON.stringify({ ...settings, language: currentLanguage() }));
         } catch {
           // Without storage the next room starts as a new one does.
         }
