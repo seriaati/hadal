@@ -1,0 +1,149 @@
+{
+  "us-state-capitals": {
+    "Montgomery": "Montgomery, Alabama",
+    "Juneau": "Juneau, Alaska",
+    "Phoenix": "Phoenix, Arizona",
+    "Little Rock": "Little Rock, Arkansas",
+    "Sacramento": "Sacramento, California",
+    "Denver": "Denver, Colorado",
+    "Hartford": "Hartford, Connecticut",
+    "Dover": "Dover, Delaware",
+    "Tallahassee": "Tallahassee, Florida",
+    "Atlanta": "Atlanta, Georgia",
+    "Honolulu": "Honolulu, Hawaii",
+    "Boise": "Boise, Idaho",
+    "Springfield": "Springfield, Illinois",
+    "Indianapolis": "Indianapolis, Indiana",
+    "Des Moines": "Des Moines, Iowa",
+    "Topeka": "Topeka, Kansas",
+    "Frankfort": "Frankfort, Kentucky",
+    "Baton Rouge": "Baton Rouge, Louisiana",
+    "Augusta": "Augusta, Maine",
+    "Annapolis": "Annapolis, Maryland",
+    "Boston": "Boston, Massachusetts",
+    "Lansing": "Lansing, Michigan",
+    "Saint Paul": "Saint Paul, Minnesota",
+    "Jackson": "Jackson, Mississippi",
+    "Jefferson City": "Jefferson City, Missouri",
+    "Helena": "Helena, Montana",
+    "Lincoln": "Lincoln, Nebraska",
+    "Carson City": "Carson City, Nevada",
+    "Concord": "Concord, New Hampshire",
+    "Trenton": "Trenton, New Jersey",
+    "Santa Fe": "Santa Fe, New Mexico",
+    "Albany": "Albany, New York",
+    "Raleigh": "Raleigh, North Carolina",
+    "Bismarck": "Bismarck, North Dakota",
+    "Columbus": "Columbus, Ohio",
+    "Oklahoma City": "Oklahoma City, Oklahoma",
+    "Salem": "Salem, Oregon",
+    "Harrisburg": "Harrisburg, Pennsylvania",
+    "Providence": "Providence, Rhode Island",
+    "Columbia": "Columbia, South Carolina",
+    "Pierre": "Pierre, South Dakota",
+    "Nashville": "Nashville, Tennessee",
+    "Austin": "Austin, Texas",
+    "Salt Lake City": "Salt Lake City, Utah",
+    "Montpelier": "Montpelier, Vermont",
+    "Richmond": "Richmond, Virginia",
+    "Olympia": "Olympia, Washington",
+    "Charleston": "Charleston, West Virginia",
+    "Madison": "Madison, Wisconsin",
+    "Cheyenne": "Cheyenne, Wyoming"
+  },
+  "long-rivers": {
+    "Amazon": "Amazon River",
+    "Mississippi": "Mississippi River",
+    "Missouri": "Missouri River",
+    "Ob": "Ob River",
+    "Paraná": "Paraná River",
+    "Congo": "Congo River",
+    "Amur": "Amur River",
+    "Lena": "Lena River",
+    "Mackenzie": "Mackenzie River",
+    "Niger": "Niger River",
+    "Brahmaputra": "Brahmaputra River",
+    "Murray": "Murray River",
+    "Tocantins": "Tocantins River",
+    "Volga": "Volga River",
+    "Madeira": "Madeira River",
+    "Purús": "Purus River",
+    "Yukon": "Yukon River",
+    "Indus": "Indus River",
+    "São Francisco": "São Francisco River",
+    "Salween": "Salween River",
+    "Saint Lawrence": "Saint Lawrence River",
+    "Yenisey": "Yenisey"
+  },
+  "world-capitals": {
+    "Victoria": "Victoria, Seychelles",
+    "Kingston": "Kingston, Jamaica",
+    "Georgetown": "Georgetown, Guyana",
+    "Luxembourg": "Luxembourg City",
+    "Djibouti": "Djibouti (city)",
+    "San Marino": "City of San Marino",
+    "Nassau": "Nassau, Bahamas",
+    "St. John's": "St. John's, Antigua and Barbuda",
+    "St. George's": "St. George's, Grenada",
+    "Moroni": "Moroni, Comoros",
+    "Tripoli": "Tripoli, Libya",
+    "San José": "San José, Costa Rica",
+    "Monaco": "Monaco City",
+    "Yaren": "Yaren District",
+    "Santiago": "Santiago",
+    "Kuwait City": "Kuwait City",
+    "Singapore": "Singapore",
+    "Vatican City": "Vatican City",
+    "Panama City": "Panama City",
+    "Sejong": "Sejong City"
+  },
+  "capital-not-largest": {
+    "San Marino": "City of San Marino",
+    "Yaren": "Yaren District"
+  },
+  "europe-countries": {
+    "Ireland": "Republic of Ireland",
+    "Georgia": "Georgia (country)"
+  },
+  "africa-countries": {
+    "Gambia": "The Gambia"
+  },
+  "asia-countries": {
+    "Georgia": "Georgia (country)"
+  },
+  "oceania-countries": {
+    "Micronesia": "Federated States of Micronesia"
+  },
+  "caribbean-countries": {
+    "Bahamas": "The Bahamas"
+  },
+  "island-countries": {
+    "Bahamas": "The Bahamas",
+    "Ireland": "Republic of Ireland",
+    "Micronesia": "Federated States of Micronesia"
+  },
+  "russia-borders": {
+    "Georgia": "Georgia (country)"
+  },
+  "one-border": {
+    "Gambia": "The Gambia",
+    "Ireland": "Republic of Ireland"
+  },
+  "monarchies": {
+    "Bahamas": "The Bahamas"
+  },
+  "soviet-republics": {
+    "Georgia": "Georgia (country)"
+  },
+  "us-states": {
+    "Georgia": "Georgia (U.S. state)",
+    "Washington": "Washington (state)",
+    "New York": "New York (state)"
+  },
+  "india-states": {
+    "Punjab": "Punjab, India",
+    "Delhi": "Delhi",
+    "Jammu and Kashmir": "Jammu and Kashmir (union territory)",
+    "Puducherry": "Puducherry (union territory)"
+  }
+}
