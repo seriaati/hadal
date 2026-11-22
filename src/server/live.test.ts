@@ -1,10 +1,10 @@
 import { afterAll, beforeEach, expect, test } from "bun:test";
-import type { Provider } from "../shared/types";
+import type { Answer, Provider } from "../shared/types";
 import { accountIdOf, signUp } from "./accounts";
 import { migrate, sql } from "./db";
 import { buildIndex } from "./game";
 import { saveKey } from "./keys";
-import { judgeLive, question, settle } from "./live";
+import { judgeLive, question, settle, shown } from "./live";
 
 // These tests need the database (`docker compose up -d db`). No request leaves this machine:
 // stand-ins for Anthropic's API and for Jev's answer here, with whatever `reply` and `jev` say.
@@ -87,6 +87,24 @@ afterAll(async () => {
 
 test("Claude is sent the prompt, its listed answers and the player's answer", () => {
   expect(question(entry, "zambezi")).toBe(`Prompt: ${ASKED}\n\nListed answers:\n- Nile (common)\n- Okavango, also Cubango (gem)\n\nThe player's answer: zambezi`);
+});
+
+test("of a long list, a judge is shown the answers spelt most like the player's and a few of each tier", () => {
+  const tiers = ["common", "familiar", "uncommon", "rare", "gem"] as const;
+  const answers: Answer[] = Array.from({ length: 1000 }, (_, i) => ({ text: `Lake ${i}`, tier: tiers[i % 5]! }));
+  answers.push({ text: "Titicaca", aliases: ["Lago Titicaca"], tier: "rare" });
+  const lakes = buildIndex([{ id: "lakes", name: "Lakes", prompts: [{ id: "all", text: "Name a lake", answers }] }]).get("lakes/all")!;
+  const some = shown(lakes, "Lago Titikaka");
+  expect(some.length).toBeLessThan(60);
+  expect(some.map((answer) => answer.text)).toContain("Titicaca");
+  for (const tier of tiers) expect(some.filter((answer) => answer.tier === tier).length).toBeGreaterThanOrEqual(5);
+  expect(question(lakes, "Lago Titikaka")).toStartWith("Prompt: Name a lake\n\nSome of the 1001 listed answers:\n");
+  expect(shown(entry, "zambezi")).toHaveLength(2);
+  // Claude is shown up to 500 answers whole; Jev, which chooses between at most 255 options, a cut-down list sooner.
+  const first300: Answer[] = answers.slice(0, 300);
+  const capitals = buildIndex([{ id: "caps", name: "Capitals", prompts: [{ id: "all", text: "Name a capital", answers: [...first300, { text: "Seoul", tier: "gem" }] }] }]).get("caps/all")!;
+  expect(shown(capitals, "Hanseong")).toHaveLength(301);
+  expect(shown(capitals, "Hanseong", 254).length).toBeLessThan(60);
 });
 
 test("a ruling of Claude's comes to a verdict", () => {
