@@ -5,6 +5,7 @@ import { MAX_PACK_BYTES, PROVIDERS, type Config, type Pack, type PackSummary, ty
 import type { Words } from "../shared/words/en";
 import { SESSION_DAYS, accountIdOf, accountOf, signInFrom, signOut, signUp, type Entry } from "./accounts";
 import { MAX_PACKS, listPacks, loadPack, removePack, savePack } from "./custom";
+import { heard } from "./counts";
 import { migrate } from "./db";
 import { OWN, buildIndex, judge, nearestAnswer, pickPrompts, type PromptIndex } from "./game";
 import { resumeWritings, run, stopWriting, writePack, writingOf } from "./generate";
@@ -145,10 +146,12 @@ const server = Bun.serve({
         server.timeout(req, 20);
         const { promptId, answer } = (await req.json()) as { promptId: string; answer: string };
         const index = await indexOf(req, String(promptId));
-        const verdict = judge(index, promptId, String(answer ?? ""));
+        const typed = String(answer ?? "");
+        let verdict = judge(index, promptId, typed);
         if (!verdict) return new Response("Unknown prompt", { status: 404 });
-        if (verdict.answer !== null) return Response.json(verdict);
-        return Response.json(await judgeLive(index.get(promptId)!, String(answer ?? ""), await accountIdOf(req.cookies.get(SESSION))));
+        if (verdict.answer === null) verdict = await judgeLive(index.get(promptId)!, typed, await accountIdOf(req.cookies.get(SESSION)));
+        heard(promptId, typed, verdict);
+        return Response.json(verdict);
       },
     },
     "/api/account": {

@@ -44,7 +44,9 @@ live with their own API key. Claude writes a pack in the background, one at a ti
 player: first its name and prompts, then each prompt's answers, which may run to thousands.
 The game may be closed meanwhile, and a server that restarts goes on where it stood; the pack
 appears among the player's when it is done. Before it begins, the player is told roughly what it
-may cost their key, and while it goes on, what it has cost so far.
+may cost their key, and while it goes on, what it has cost so far. The game counts the answers
+players give to built-in prompts, right or wrong, tied to nobody, to measure how rare each
+really is and to find the right ones a pack misses (see `docs/PACKS.md`).
 
 The game speaks English, Simplified Chinese and Traditional Chinese (as written in Taiwan). It
 starts in the browser's language, and the settings change it; Claude writes a player's packs in

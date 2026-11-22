@@ -23,6 +23,8 @@ export type DiveSetup = {
   /** In "longest", the points of rarity that fill the bar and give one more heart. */
   barFull: number;
   live: Live;
+  /** Hears every answer judged, and what it was judged to be. */
+  heard?: (promptId: string, typed: string, verdict: Verdict) => void;
   clock: Clock;
   changed: () => void;
   ended: (finish: Finish[]) => void;
@@ -201,6 +203,7 @@ export class Dive {
     const promptId = this.setup.prompts[this.round]!.id;
     let verdict = judge(this.setup.index, promptId, typed)!;
     if (verdict.answer === null) verdict = await this.setup.live(this.setup.index.get(promptId)!, typed).catch(() => WRONG);
+    this.setup.heard?.(promptId, typed, verdict);
     if (turn !== this.turns || this.over) return;
     this.judging = null;
     // Taken goes by the answer an alias or a misspelling stands for, not by the words typed.

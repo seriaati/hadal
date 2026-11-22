@@ -375,3 +375,16 @@ test("in chaos, a rare answer wins no heart", async () => {
   await rare(d, clock, 6);
   expect(view().divers[0]).toMatchObject({ hearts: 1, bar: 0 });
 });
+
+test("every answer judged is heard, with what it was judged to be", async () => {
+  const heard: [string, string, Verdict][] = [];
+  const prompts = [index.get("colours/flag")!.prompt];
+  const running = new Dive({ mode: "deepest", index, prompts, order: [1], air: AIR, barFull: BAR_FULL.medium, live: WRONG, heard: (...said) => heard.push(said), clock: handClock(), changed: () => {}, ended: () => {} });
+  running.start();
+  await running.answer(1, "purple");
+  await running.answer(1, "verde");
+  expect(heard).toEqual([
+    ["colours/flag", "purple", { answer: null, rarity: 0 }],
+    ["colours/flag", "verde", { answer: "Green", rarity: 60 }],
+  ]);
+});

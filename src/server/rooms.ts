@@ -4,6 +4,7 @@ import {
 } from "../shared/room";
 import type { Language } from "../shared/language";
 import { NICKNAME, type GamePrompt, type Pack } from "../shared/types";
+import { heard } from "./counts";
 import { listPacks, loadPack } from "./custom";
 import { Dive, enoughFor, realClock, type Clock } from "./dive";
 import { OWN, buildIndex, pickPrompts, shuffle, type PromptIndex } from "./game";
@@ -203,6 +204,7 @@ async function start(member: Member, room: Room): Promise<Refusal | void> {
     barFull: BAR_FULL[room.settings.hearts],
     // A host who leaves takes their key with them.
     live: (entry, typed) => judgeLive(entry, typed, isHost(member, room) ? judgeAs : null),
+    heard,
     clock,
     changed: () => tell(room),
     ended: (divers) => {

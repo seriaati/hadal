@@ -47,6 +47,8 @@ const account = async () => {
 };
 afterAll(async () => {
   await sql`delete from accounts where username in ${sql(made)}`;
+  // The answers given in these rooms are counted like any others, under the test packs' ids.
+  await sql`delete from answer_counts where split_part(prompt, '/', 1) in ('hu', 'lakes', 'seas')`;
 });
 
 test("a new room plays the built-in packs of its host's language", async () => {
