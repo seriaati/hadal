@@ -1,3 +1,4 @@
+import { estimate } from "../../shared/cost";
 import { MAX_INSTRUCTIONS_LENGTH, MAX_PACK_BYTES, MAX_TOPIC_LENGTH, WRITTEN_PROMPTS, type PackSummary, type Writing, type WriteOrder } from "../../shared/types";
 import { t } from "../language";
 import type { Sound } from "../sound";
@@ -197,6 +198,7 @@ export class PacksPanel {
         title,
         rows: [
           { kind: "wait", text: words.writing(writing.topic), done: writing.done, of: writing.of },
+          { kind: "note", text: words.spent(writing.spent) },
           { kind: "gap" },
           { kind: "press", id: "stop", label: words.stop, press: () => void this.stop() },
         ],
@@ -229,7 +231,7 @@ export class PacksPanel {
         { kind: "press", id: "search", label: words.search, value: this.search ? t().rooms.on : t().rooms.off, on: this.search, press: () => (this.search = !this.search) },
         this.unwritten
           ? { kind: "note", text: words.unwritten(this.unwritten), bad: true }
-          : { kind: "note", text: words.how },
+          : { kind: "note", text: words.how(...estimate(this.prompts, this.search)) },
         { kind: "gap" },
         { kind: "press", id: "send", label: words.send, press: () => void this.begin() },
       ],

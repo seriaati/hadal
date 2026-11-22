@@ -1,4 +1,5 @@
 import { afterAll, beforeEach, expect, test } from "bun:test";
+import { dollars } from "../shared/cost";
 import { wordsIn } from "../shared/language";
 import { MAX_TOPIC_LENGTH } from "../shared/types";
 import { accountIdOf, signUp } from "./accounts";
@@ -112,7 +113,10 @@ test("Claude is told how many prompts to write and the player's notes, and searc
   expect(asked[0]!.body.messages[0]!.content).toBe("Topic: rivers\nLanguage: English\nInstructions from the player: only rivers in Asia\nPrompts: 30");
   expect(asked[1]!.body.messages[0]!.content).toContain("Instructions from the player: only rivers in Asia");
   for (const one of asked) {
-    expect(one.body.tools).toEqual([{ type: "web_search_20260318", name: "web_search", max_uses: 5, response_inclusion: "excluded" }]);
+    expect(one.body.tools).toEqual([
+      { type: "web_search_20260318", name: "web_search", max_uses: 5, response_inclusion: "excluded" },
+      { type: "web_fetch_20260318", name: "web_fetch", max_uses: 2, max_content_tokens: 40000, response_inclusion: "excluded" },
+    ]);
     expect(one.body.system).toContain("search the web");
   }
 });
@@ -132,10 +136,10 @@ test("what Claude says before a search is not part of the answer, and a paused s
 test("how a writing stands is told while it goes on, and it picks up where it stood", async () => {
   const id = await account();
   expect(await writePack(id, { topic: "rivers" })).toEqual([]);
-  expect(await writingOf(id)).toEqual({ topic: "rivers", done: 0, of: 10 });
+  expect(await writingOf(id)).toEqual({ topic: "rivers", done: 0, of: 10, spent: 0 });
   // As if the server had stopped once the plan and the first prompt were written.
   await sql`update writings set plan = ${PLAN}, answers = ${{ 0: DRAFT.prompts[0]!.answers }}::jsonb where account_id = ${id}`;
-  expect(await writingOf(id)).toEqual({ topic: "rivers", done: 1, of: 2 });
+  expect(await writingOf(id)).toEqual({ topic: "rivers", done: 1, of: 2, spent: 0 });
   await run(id);
   expect(asked.map((one) => one.asking)).toEqual(["Name a river in Europe"]);
   expect(await listPacks(id)).toEqual([{ id: "rivers", name: "Rivers", prompts: 2 }]);
@@ -213,9 +217,11 @@ test("a key that fails on one prompt ends the writing, and no more prompts are a
   const many = { name: "Rivers", prompts: Array.from({ length: 10 }, (_, i) => `Name river ${i}`) };
   reply = (asking) => (asking === "plan" ? { text: JSON.stringify(many) } : asking === "Name river 1" ? { status: 401 } : { delay: 100 });
   expect(await write(id, { topic: "rivers" })).toEqual([]);
-  expect((await writingOf(id))?.failed).toContain("did not accept");
-  // The plan, the failed prompt and the one being written beside it.
+  const writing = await writingOf(id);
+  expect(writing?.failed).toContain("did not accept");
+  // The plan, the failed prompt and the one being written beside it, of which two were answered (a token in and out each).
   expect(asked).toHaveLength(3);
+  expect(writing?.spent).toBeCloseTo(dollars({ input: 2, output: 2, searches: 0 }));
 });
 
 test("a prompt Claude will not write is left out of the pack", async () => {

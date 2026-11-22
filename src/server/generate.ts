@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { FETCHES_PER_REQUEST, MAX_FETCHED_TOKENS, SEARCHES_PER_REQUEST, dollars, type Used } from "../shared/cost";
 import { LANGUAGE_NAMES, isLanguage, wordsIn, type Language } from "../shared/language";
 import { MAX_ANSWER_LENGTH, MAX_INSTRUCTIONS_LENGTH, MAX_TOPIC_LENGTH, TIERS, WRITTEN_PROMPTS, type Answer, type Pack, type Tier, type Writing, type WriteOrder } from "../shared/types";
 import { MAX_PACKS, listPacks, savePack } from "./custom";
@@ -12,7 +13,6 @@ const MODEL = "claude-opus-5-5";
 const AT_ONCE = 2;
 /** Nobody waits on a request, so one the API turns away for now is tried again, after the wait it asks for. */
 const RETRIES = 8;
-const SEARCHES_PER_REQUEST = 5;
 
 const GAME = `You write trivia packs for Hadal, a deep-sea diving game.
 
@@ -52,7 +52,7 @@ You write the answers to one prompt of a pack, in the language of the pack. The 
 
 const SEARCH = `
 
-You can search the web. Use it for what may have changed since you were trained (this season's teams, recent releases, who holds an office now) and to check answers you are unsure of, not for what you know well.`;
+You can search the web and read the pages you find. Use it for what may have changed since you were trained (this season's teams, recent releases, who holds an office now), to check answers you are unsure of, and to read a long list from a source you trust (a Wikipedia list, an official register) rather than recall it from memory. Do not use it for what you know well.`;
 
 const text = { type: "string" };
 const PLAN_SCHEMA = {
@@ -96,8 +96,17 @@ class Refused extends Error {
   }
 }
 
-/** One request to Claude, whose answer is JSON of `schema`. */
-async function ask<T>(apiKey: string, system: string, content: string, schema: Record<string, unknown>, search: boolean, language: Language, signal: AbortSignal): Promise<T> {
+/** One request to Claude, whose answer is JSON of `schema`. `spend` hears what each answer used of the key. */
+async function ask<T>(
+  apiKey: string,
+  system: string,
+  content: string,
+  schema: Record<string, unknown>,
+  search: boolean,
+  language: Language,
+  signal: AbortSignal,
+  spend: (used: Used) => Promise<unknown>,
+): Promise<T> {
   const words = wordsIn(language).packs;
   const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content }];
   let message: Anthropic.Beta.BetaMessage;
@@ -114,12 +123,23 @@ async function ask<T>(apiKey: string, system: string, content: string, schema: R
             fallbacks: "default",
             output_config: { effort: "high", format: { type: "json_schema", schema } },
             system: search ? system + SEARCH : system,
-            tools: search ? [{ type: "web_search_20260318", name: "web_search", max_uses: SEARCHES_PER_REQUEST, response_inclusion: "excluded" }] : undefined,
+            tools: search
+              ? [
+                  { type: "web_search_20260318", name: "web_search", max_uses: SEARCHES_PER_REQUEST, response_inclusion: "excluded" },
+                  { type: "web_fetch_20260318", name: "web_fetch", max_uses: FETCHES_PER_REQUEST, max_content_tokens: MAX_FETCHED_TOKENS, response_inclusion: "excluded" },
+                ]
+              : undefined,
             messages,
           },
           { signal },
         )
         .finalMessage();
+      const { usage } = message;
+      await spend({
+        input: usage.input_tokens + (usage.cache_creation_input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0),
+        output: usage.output_tokens,
+        searches: usage.server_tool_use?.web_search_requests ?? 0,
+      });
       // A long run of searches is paused by Anthropic, and goes on when what was said so far is sent back.
       if (message.stop_reason !== "pause_turn") break;
       messages.push({ role: "assistant", content: message.content });
@@ -233,11 +253,11 @@ export async function writePack(accountId: string, asked: Partial<WriteOrder> & 
 export async function writingOf(accountId: string): Promise<Writing | null> {
   const [row] = await sql`
     select request->>'topic' as topic, coalesce(jsonb_array_length(plan->'prompts'), (request->>'prompts')::int) as of,
-      (select count(*)::int from jsonb_object_keys(answers)) as done, failed
+      (select count(*)::int from jsonb_object_keys(answers)) as done, input_tokens::int as input, output_tokens::int as output, searches, failed
     from writings where account_id = ${accountId}`;
   if (!row) return null;
   if (row.failed) await sql`delete from writings where account_id = ${accountId} and failed is not null`;
-  return { topic: row.topic, done: row.done, of: row.of, ...(row.failed && { failed: row.failed }) };
+  return { topic: row.topic, done: row.done, of: row.of, spent: dollars(row), ...(row.failed && { failed: row.failed }) };
 }
 
 export async function stopWriting(accountId: string) {
@@ -260,12 +280,15 @@ export async function run(accountId: string): Promise<void> {
     const words = wordsIn(language).packs;
     const order = row.request as WriteOrder;
     const fail = (why: string) => sql`update writings set failed = ${why} where account_id = ${accountId}`;
+    const spend = (used: Used) => sql`
+      update writings set input_tokens = input_tokens + ${used.input}, output_tokens = output_tokens + ${used.output}, searches = searches + ${used.searches}
+      where account_id = ${accountId}`;
     try {
       const apiKey = await loadKey(accountId, "anthropic");
       if (!apiKey) return void (await fail(words.keyNeeded));
       let plan = row.plan as Plan | null;
       if (!plan) {
-        plan = await ask<Plan>(apiKey, PLAN, `${asked(order, language)}\nPrompts: ${order.prompts}`, PLAN_SCHEMA, order.search, language, stop.signal);
+        plan = await ask<Plan>(apiKey, PLAN, `${asked(order, language)}\nPrompts: ${order.prompts}`, PLAN_SCHEMA, order.search, language, stop.signal, spend);
         if (!plan.prompts.length) return void (await fail(words.unusable));
         await sql`update writings set plan = ${plan} where account_id = ${accountId}`;
       }
@@ -277,7 +300,7 @@ export async function run(accountId: string): Promise<void> {
         let written: Written[] | null;
         try {
           const content = `${asked(order, language)}\nPrompt: ${plan.prompts[i]}`;
-          written = (await ask<{ answers: Written[] }>(apiKey, ANSWERS, content, ANSWERS_SCHEMA, order.search, language, stop.signal)).answers;
+          written = (await ask<{ answers: Written[] }>(apiKey, ANSWERS, content, ANSWERS_SCHEMA, order.search, language, stop.signal, spend)).answers;
         } catch (error) {
           if (error instanceof Refused && !error.lasting) written = null;
           else {

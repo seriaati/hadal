@@ -172,6 +172,7 @@ export const en = {
     notRemoved: (pack: string) => `${pack} was not removed`,
     writing: (topic: string) => `Claude is writing a pack about ${topic}`,
     progress: (n: number, of: number) => `prompt ${n} of ${of}`,
+    spent: (dollars: number) => `${dollars.toFixed(2)} US dollars of your key spent so far`,
     stop: "Stop writing",
     needsKey: "Writing a pack takes an Anthropic API key of your own",
     addKey: "Add a key",
@@ -188,7 +189,7 @@ export const en = {
     count: "Prompts",
     search: "Search the web",
     unwritten: (why: string) => `No pack was written: ${why}`,
-    how: "Claude writes it with your key, which takes a while. You may close the game: the pack appears here when it is done",
+    how: (low: number, high: number) => `Claude writes it in the background with your key, for about ${low.toFixed(2)} to ${high.toFixed(2)} US dollars. You may close the game meanwhile`,
     send: "Write it",
     /** The refusals of the server. */
     signInFirst: "sign in first",
