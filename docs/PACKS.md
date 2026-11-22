@@ -68,9 +68,13 @@ A prompt asks for one item of a set. It works when every one of these holds:
 | rare | 85 | few players |
 | gem | 100 | the most satisfying of the rarest answers |
 
-- **A pyramid.** Common is a handful, even in a list of thousands; familiar and uncommon grow
-  slower than the list does, and most of a long list is rare. Of 9 answers, about 2 common, 1
-  familiar, 2 uncommon and 4 rare; of 1,000, about 8, 24, 94 and 874.
+- **A pyramid**, steeper the less players know the set. In a set most players know well
+  (countries, capitals, states), many answers are common or familiar: of 50, about 6 common,
+  9 familiar, 14 uncommon and 21 rare. In an open set nobody knows whole (fish, films), common is a
+  handful even in thousands: of 1,000, about 8, 24, 94 and 874.
+- **When torn between two tiers, choose the rarer.** Whoever writes a list knows the topic better
+  than most players. Of krillion's 212 capitals, the tiers Claude gave 39 differently from
+  krillion's players, 30 of them one tier too common.
 - **Gems are chosen, not computed.** One to three per prompt, from the rarest answers, for being
   a pleasure to land on. Not merely the most obscure: something at least a few players get.
 - **Watch the "too clever" pick**, the go-to obscure answer that many players give (Eswatini for
@@ -83,6 +87,12 @@ A prompt asks for one item of a set. It works when every one of these holds:
 Guesses are a start; data is better. `bun tools/signals.ts <pack file>` looks every answer up on
 Wikipedia and suggests tiers from how often its article is read. Use it as a check, not the score:
 
+- **Views rank how famous each answer is.** That is a fair first draft for a plain set: of
+  krillion's 212 capitals, views alone put 148 in the tier krillion's players did. They cannot see a
+  prompt's property: for "an island country" the United Kingdom is famous, but few players remember
+  it is an island. For such prompts, and for fan topics with no articles, judge by hand.
+- **Give `--known` for a set most players know well**, so the suggestions follow its gentler
+  pyramid. Without it Greece comes out a rare country in Europe.
 - **Pageviews measure curiosity as well as fame.** People read about what they do not know:
   Eswatini's article is read more than Mongolia's, yet nobody names Eswatini first. Distrust a
   rare answer the data calls common, and the reverse.
@@ -99,7 +109,7 @@ the pack does not list, and tiers the counts disagree with.
 The `curate-pack` skill (`.claude/skills/curate-pack/SKILL.md`) walks Claude Code through it:
 
 1. Draft twice as many prompts as needed, check each against "A good prompt", and choose.
-2. Build each answer list from sources, with aliases.
+2. Build each answer list from sources, check it against a second source, and add aliases.
 3. Tier it: signals first, then judgement, then the gems.
 4. Check it with `validatePack`, and write `packs/<language>/<id>.json`.
 5. Review it in the game with developer mode on, at `/dev/review`: move answers between tiers,

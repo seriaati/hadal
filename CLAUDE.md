@@ -24,8 +24,8 @@ Use `bun`, not `npm`/`node`/`vite`.
 - `bun typecheck`: type-check
 - `docker compose up -d --build`: run the database and the game as in production
 - `bun tools/check.ts [--write] <pack files>`: check built-in packs and lay them out as the others
-  are; `tools/signals.ts`, `tools/names.ts` and `tools/members.ts` look answers up on Wikipedia
-  (see `docs/PACKS.md`)
+  are; `tools/table.ts`, `tools/members.ts`, `tools/names.ts` and `tools/signals.ts` look answers
+  up on Wikipedia (see `docs/PACKS.md`)
 
 API keys: `HADAL_SECRET` in `.env` (32 characters or more, e.g. from `openssl rand -base64 32`)
 seals the keys players store. Without it the game runs but keeps no keys.
