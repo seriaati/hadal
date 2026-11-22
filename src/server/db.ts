@@ -2,8 +2,12 @@ import { SQL } from "bun";
 
 const MIGRATIONS = `${import.meta.dir}/migrations`;
 
-/** The default is the `db` service of `compose.yaml`, as reached from this machine. */
-export const sql = new SQL(process.env.DATABASE_URL ?? "postgres://hadal:hadal@localhost:5433/hadal");
+/**
+ * The default is the `db` service of `compose.yaml`, as reached from this machine. Kept on
+ * `globalThis` because `bun --hot` runs this module afresh on every change: a new pool each time
+ * would leave the old one's connections open until Postgres refuses any more.
+ */
+export const sql: SQL = ((globalThis as { hadalSql?: SQL }).hadalSql ??= new SQL(process.env.DATABASE_URL ?? "postgres://hadal:hadal@localhost:5433/hadal"));
 
 export async function migrate() {
   await sql`create table if not exists migrations (name text primary key)`;
