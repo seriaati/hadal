@@ -17,7 +17,9 @@ async function get(url: string, params: Record<string, string>): Promise<any> {
     if (res.ok) return res.json();
     // Told to slow down: wait as long as asked, and try again a few times.
     if (res.status !== 429 || tries === 5) throw new Error(`${url} answered ${res.status}`);
-    await Bun.sleep(1000 * Number(res.headers.get("retry-after") ?? 10));
+    const wait = Number(res.headers.get("retry-after") ?? 10);
+    console.error(`Wikimedia asked to slow down: waiting ${wait} s`);
+    await Bun.sleep(1000 * wait);
   }
 }
 
