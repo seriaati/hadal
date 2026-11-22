@@ -229,10 +229,10 @@ export const en = {
     slug: (where: string) => `${where} must be lower-case letters and digits joined by hyphens, like "asia-countries"`,
     list: (where: string, min: number) => `${where} must be a list${min ? ` of at least ${min}` : ""}`,
     sameId: (where: string) => `${where}: another prompt already has this id`,
-    rarity: (where: string) => `${where}: rarity must be a whole number from 1 to 100`,
+    tier: (where: string, tiers: string[]) => `${where}: tier must be one of ${tiers.map((tier) => `"${tier}"`).join(", ")}`,
     noLetters: (where: string, spelling: string) => `${where}: "${spelling}" has no letters or digits`,
     twice: (where: string, spelling: string) => `${where}: "${spelling}" is already an answer to this prompt`,
-    rarest: (where: string) => `${where}: the rarest answer must have rarity 100`,
+    gem: (where: string) => `${where}: at least one answer must have the tier "gem"`,
   },
 
   rooms: {

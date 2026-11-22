@@ -1,6 +1,6 @@
 import { afterAll, expect, test } from "bun:test";
 import { CHAT_EVERY, CHAT_MAX, DEFAULT_SETTINGS as SHARED_DEFAULTS, SUITS, type ClientMessage, type RoomView, type ServerMessage } from "../shared/room";
-import type { Pack } from "../shared/types";
+import type { Pack, Prompt } from "../shared/types";
 import { accountIdOf, signUp } from "./accounts";
 import { savePack } from "./custom";
 import { migrate, sql } from "./db";
@@ -30,8 +30,8 @@ const room = async (hostAccount: string | null = null, ...guests: string[]) => {
 };
 
 const inEnglish = (packs: Pack[]) => ({ en: packs, "zh-CN": [], "zh-TW": [] });
-const ocean = { id: "two", text: "Name an ocean", answers: [{ text: "Pacific", rarity: 10 }, { text: "Indian", rarity: 60 }] };
-const lake = { id: "one", text: "Name a lake", answers: [{ text: "Baikal", rarity: 10 }, { text: "Titicaca", rarity: 60 }] };
+const ocean: Prompt = { id: "two", text: "Name an ocean", answers: [{ text: "Pacific", tier: "common" }, { text: "Indian", tier: "uncommon" }] };
+const lake: Prompt = { id: "one", text: "Name a lake", answers: [{ text: "Baikal", tier: "common" }, { text: "Titicaca", tier: "uncommon" }] };
 usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: [ocean] }, { id: "lakes", name: "Lakes", prompts: [lake] }]));
 const DEFAULT_SETTINGS = { ...SHARED_DEFAULTS, builtIn: ["seas", "lakes"] };
 
@@ -308,7 +308,7 @@ test("a host without an account has no packs of their own and no judge", async (
 
 test("the host plays packs of their own, and only those", async () => {
   const id = await account();
-  const pack = { id: "rivers", name: "Rivers", prompts: [{ id: "africa", text: "Name a river in Africa", answers: [{ text: "Nile", rarity: 10 }, { text: "Okavango", rarity: 100 }] }] };
+  const pack = { id: "rivers", name: "Rivers", prompts: [{ id: "africa", text: "Name a river in Africa", answers: [{ text: "Nile", tier: "common" }, { text: "Okavango", tier: "gem" }] }] };
   expect(await savePack(id, JSON.stringify(pack))).toEqual([]);
   const { host } = await room(id);
   await say(host, { type: "settings", settings: { builtIn: [], ownPacks: ["rivers"] } });
@@ -333,7 +333,7 @@ test("a new room starts with the settings the host's browser remembers, as far a
 
 test("a host's remembered packs of their own and judge come back while they still have them", async () => {
   const id = await account();
-  const pack = { id: "rivers", name: "Rivers", prompts: [{ id: "africa", text: "Name a river in Africa", answers: [{ text: "Nile", rarity: 10 }, { text: "Okavango", rarity: 100 }] }] };
+  const pack = { id: "rivers", name: "Rivers", prompts: [{ id: "africa", text: "Name a river in Africa", answers: [{ text: "Nile", tier: "common" }, { text: "Okavango", tier: "gem" }] }] };
   expect(await savePack(id, JSON.stringify(pack))).toEqual([]);
   expect(await saveKey(id, "jev", "jev-test-0123456789")).toBeNull();
   const host = member(id);
@@ -420,7 +420,7 @@ test("the host passes the crown", async () => {
 test("the host's own packs and judge stay theirs when the crown passes", async () => {
   process.env.HADAL_SECRET = "a secret for the tests, long enough";
   const id = await account();
-  const pack = { id: "rivers", name: "Rivers", prompts: [{ id: "africa", text: "Name a river in Africa", answers: [{ text: "Nile", rarity: 10 }, { text: "Okavango", rarity: 100 }] }] };
+  const pack = { id: "rivers", name: "Rivers", prompts: [{ id: "africa", text: "Name a river in Africa", answers: [{ text: "Nile", tier: "common" }, { text: "Okavango", tier: "gem" }] }] };
   expect(await savePack(id, JSON.stringify(pack))).toEqual([]);
   expect(await saveKey(id, "jev", "jev-test-0123456789")).toBeNull();
   const { host, others: [ben, cal] } = await room(id, "ben", "cal");
@@ -499,8 +499,8 @@ test("a dive starts once every guest is ready, from prompts with an answer for e
         id: "seas",
         name: "Seas",
         prompts: [
-          { id: "one", text: "Name a sea", answers: [{ text: "Baltic", rarity: 50 }] },
-          { id: "two", text: "Name an ocean", answers: [{ text: "Pacific", rarity: 10 }, { text: "Indian", rarity: 60 }] },
+          { id: "one", text: "Name a sea", answers: [{ text: "Baltic", tier: "uncommon" }] },
+          { id: "two", text: "Name an ocean", answers: [{ text: "Pacific", tier: "common" }, { text: "Indian", tier: "uncommon" }] },
         ],
       },
     ]),
@@ -533,7 +533,7 @@ test("a dive starts once every guest is ready, from prompts with an answer for e
 });
 
 test("a dive in deepest asks 10 prompts, and one in longest every prompt there is", async () => {
-  const many = Array.from({ length: 14 }, (_, i) => ({ id: `p${i}`, text: `Name sea ${i}`, answers: [{ text: "Baltic", rarity: 50 }, { text: "North", rarity: 60 }] }));
+  const many = Array.from({ length: 14 }, (_, i): Prompt => ({ id: `p${i}`, text: `Name sea ${i}`, answers: [{ text: "Baltic", tier: "uncommon" }, { text: "North", tier: "uncommon" }] }));
   usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: many }]));
   const { host, others } = await room(null, "ben");
   const play = async () => {
@@ -553,7 +553,7 @@ test("a dive in deepest asks 10 prompts, and one in longest every prompt there i
 });
 
 test("a room is asked no prompt twice until it has been asked every one", async () => {
-  const many = Array.from({ length: 14 }, (_, i) => ({ id: `p${i}`, text: `Name sea ${i}`, answers: [{ text: "Baltic", rarity: 50 }, { text: "North", rarity: 60 }] }));
+  const many = Array.from({ length: 14 }, (_, i): Prompt => ({ id: `p${i}`, text: `Name sea ${i}`, answers: [{ text: "Baltic", tier: "uncommon" }, { text: "North", tier: "uncommon" }] }));
   // Time moves only when the test says: the last timer set is the pause after the turn just ended.
   const timers: (() => void)[] = [];
   usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: many }]), { now: () => 0, after: (_, then) => (timers.push(then), () => {}) });
@@ -574,7 +574,7 @@ test("a room is asked no prompt twice until it has been asked every one", async 
 });
 
 test("a dive is refused when no prompt has an answer for every diver", async () => {
-  usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: [{ id: "one", text: "Name a sea", answers: [{ text: "Baltic", rarity: 50 }] }] }]));
+  usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: [{ id: "one", text: "Name a sea", answers: [{ text: "Baltic", tier: "uncommon" }] }] }]));
   const { host, others } = await room(null, "ben");
   await say(others[0]!, { type: "ready", ready: true });
   await say(host, { type: "start" });
@@ -583,7 +583,7 @@ test("a dive is refused when no prompt has an answer for every diver", async () 
 });
 
 test("a guest who leaves during a dive is taken out of it, and one who joins watches", async () => {
-  usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: [{ id: "two", text: "Name an ocean", answers: [{ text: "Pacific", rarity: 10 }, { text: "Indian", rarity: 60 }, { text: "Arctic", rarity: 80 }] }] }]));
+  usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: [{ id: "two", text: "Name an ocean", answers: [{ text: "Pacific", tier: "common" }, { text: "Indian", tier: "uncommon" }, { text: "Arctic", tier: "rare" }] }] }]));
   const { host, others, code } = await room(null, "ben", "cal");
   for (const guest of others) await say(guest, { type: "ready", ready: true });
   await say(host, { type: "start" });
@@ -597,7 +597,7 @@ test("a guest who leaves during a dive is taken out of it, and one who joins wat
 });
 
 test("a host who leaves during a dive is taken out of it, and the others dive on under the next host", async () => {
-  usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: [{ id: "two", text: "Name an ocean", answers: [{ text: "Pacific", rarity: 10 }, { text: "Indian", rarity: 60 }, { text: "Arctic", rarity: 80 }] }] }]));
+  usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: [{ id: "two", text: "Name an ocean", answers: [{ text: "Pacific", tier: "common" }, { text: "Indian", tier: "uncommon" }, { text: "Arctic", tier: "rare" }] }] }]));
   const { host, others: [ben, cal] } = await room(null, "ben", "cal");
   await say(ben!, { type: "ready", ready: true });
   await say(cal!, { type: "ready", ready: true });

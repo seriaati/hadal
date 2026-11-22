@@ -206,10 +206,10 @@ export const zhTW: Words = {
     slug: (where: string) => `${where}只能由小寫字母和數字組成，用連字號連接，如「asia-countries」`,
     list: (where: string, min: number) => `${where}必須是清單${min ? `，至少 ${min} 項` : ""}`,
     sameId: (where: string) => `${where}：已有其他題目使用這個 id`,
-    rarity: (where: string) => `${where}：「rarity」必須是 1 到 100 的整數`,
+    tier: (where: string, tiers: string[]) => `${where}：「tier」必須是 ${tiers.map((tier) => `「${tier}」`).join("、")} 之一`,
     noLetters: (where: string, spelling: string) => `${where}：「${spelling}」沒有字母或數字`,
     twice: (where: string, spelling: string) => `${where}：「${spelling}」已經是這道題的答案`,
-    rarest: (where: string) => `${where}：最冷門答案的「rarity」必須是 100`,
+    gem: (where: string) => `${where}：至少要有一個答案的「tier」是「gem」`,
   },
 
   rooms: {

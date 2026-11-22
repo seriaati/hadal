@@ -5,8 +5,8 @@ import { join } from "node:path";
 import { loadBuiltIn, loadPacks, validatePack } from "./packs";
 
 const answers = [
-  { text: "Peru", rarity: 20 },
-  { text: "Suriname", aliases: ["Surinam"], rarity: 100 },
+  { text: "Peru", tier: "common" },
+  { text: "Suriname", aliases: ["Surinam"], tier: "gem" },
 ];
 const pack = (prompt: object = {}, top: object = {}) => ({
   id: "p",
@@ -52,26 +52,26 @@ test("answers are checked, and every problem is reported at once", () => {
   const problems = validatePack(
     pack({
       answers: [
-        { text: "Peru", rarity: 0 },
-        { text: "peru", alias: ["Perú"], rarity: 100 },
-        { text: "???", rarity: 50.5 },
-        { text: "x".repeat(41), rarity: 5 },
+        { text: "Peru", tier: "legendary" },
+        { text: "peru", alias: ["Perú"], tier: "gem" },
+        { text: "???", tier: 50 },
+        { text: "x".repeat(41), tier: "common" },
       ],
     }),
   );
   expect(problems).toEqual([
-    'prompt "q", answer "Peru": rarity must be a whole number from 1 to 100',
+    'prompt "q", answer "Peru": tier must be one of "common", "familiar", "uncommon", "rare", "gem"',
     'prompt "q", answer 2 has an unknown field "alias"',
     'prompt "q", answer "peru": "peru" is already an answer to this prompt',
-    'prompt "q", answer "???": rarity must be a whole number from 1 to 100',
+    'prompt "q", answer "???": tier must be one of "common", "familiar", "uncommon", "rare", "gem"',
     'prompt "q", answer "???": "???" has no letters or digits',
     expect.stringContaining("every spelling must be text of 1 to 40 characters"),
   ]);
 });
 
-test("the rarest answer of a prompt must have rarity 100", () => {
-  expect(validatePack(pack({ answers: [{ text: "Peru", rarity: 20 }, { text: "Chile", rarity: 95 }] }))).toEqual([
-    'prompt "q": the rarest answer must have rarity 100',
+test("every prompt must have a gem", () => {
+  expect(validatePack(pack({ answers: [{ text: "Peru", tier: "common" }, { text: "Chile", tier: "rare" }] }))).toEqual([
+    'prompt "q": at least one answer must have the tier "gem"',
   ]);
 });
 

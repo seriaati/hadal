@@ -6,7 +6,7 @@ description: Write or fix a trivia pack for Hadal, the deep-sea diving trivia ga
 # Writing a Hadal pack
 
 Hadal shows the player a prompt such as "Name a country that borders Germany" and they type one
-answer. A correct answer scores its rarity: the answers few players think of take the diver
+answer. A correct answer scores by its tier: the answers few players think of take the diver
 deepest. An answer that is not in the pack counts as wrong, so a list with gaps punishes exactly
 the well-informed players the game is meant to reward.
 
@@ -24,9 +24,9 @@ for. Give back one JSON file named after the pack's id, such as `rivers-of-europ
       "id": "germany-borders",
       "text": "Name a country that borders Germany",
       "answers": [
-        { "text": "France", "rarity": 5 },
-        { "text": "Netherlands", "aliases": ["Holland"], "rarity": 25 },
-        { "text": "Luxembourg", "rarity": 100 }
+        { "text": "France", "tier": "common" },
+        { "text": "Netherlands", "aliases": ["Holland"], "tier": "familiar" },
+        { "text": "Luxembourg", "tier": "gem" }
       ]
     }
   ]
@@ -40,7 +40,8 @@ Hadal refuses a pack that breaks any of these:
   at most 40 characters. Prompt ids are unique within the pack.
 - `name` is at most 24 characters; a prompt's `text` at most 80.
 - At least one prompt, and at least two answers per prompt.
-- `rarity` is a whole number from 1 to 100, and the rarest answer of every prompt has exactly 100.
+- `tier` is one of `"common"`, `"familiar"`, `"uncommon"`, `"rare"` and `"gem"`, and every prompt
+  has at least one gem.
 - Every spelling (an answer's `text` and each alias) is at most 40 characters, has at least one
   letter or digit, and matches no other spelling in the same prompt. Spellings that differ only in
   capitals, accents, punctuation, spaces, a leading "the", or simplified against traditional
@@ -57,7 +58,7 @@ Prompts
 - Each has at least 8 correct answers, ideally 10 to 40: up to six divers answer the same prompt
   in a room, and an answer once given is taken. Avoid sets too large to list in full (more than
   about 60) and sets whose edges a player cannot know.
-- Its answers clearly differ in how well known they are, so their rarity is plain. Avoid sets
+- Its answers clearly differ in how well known they are, so their tiers are plain. Avoid sets
   whose members are all about as well known as each other, such as the signs of the zodiac.
 - Its set stays put. Avoid sets that change within a few years, such as current team rosters or
   the latest winners of a yearly award, and list nothing not yet released or not yet happened.
@@ -78,13 +79,16 @@ Answers
   might type for the same thing ("Holland" for "Netherlands", "JFK" for "John F. Kennedy"). The
   game already ignores capitals, accents, punctuation, spaces and a leading "the", and forgives
   small typos, so do not list such variants.
-- `rarity` is how unlikely a typical player is to give the answer: 1 to 20 is what nearly everyone
-  says first, 80 to 100 what only an enthusiast would think of. Spread each prompt's answers over
-  the whole range.
+- `tier` is how likely a typical player is to give the answer: `common` is what nearly everyone
+  says first, `familiar` what most players would think of, `uncommon` what some would, and `rare`
+  what few would. Few answers are common; in a long list, most are rare.
+- `gem` goes to the rarest answers that are a pleasure to land on: ones a player could reason
+  their way to and would know at once to be right, not merely the most obscure. Every prompt has
+  at least one, and seldom more than three.
 
 ## Before handing it over
 
-Go through the rules under "Format" one by one against the file, especially the 100 in every
+Go through the rules under "Format" one by one against the file, especially the gem in every
 prompt, the length limits and spellings repeated within a prompt. Then read the prompts once more
 as a player who knows the topic only a little, and replace any that fail the points under
 "Prompts".

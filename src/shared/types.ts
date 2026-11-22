@@ -1,7 +1,12 @@
 export type Pack = { id: string; name: string; prompts: Prompt[] };
 export type Prompt = { id: string; text: string; answers: Answer[] };
-/** `rarity` runs from 1 (everyone says it) to 100 (almost nobody does). */
-export type Answer = { text: string; aliases?: string[]; rarity: number };
+/**
+ * How rare an answer is, from what nearly everyone says first to what almost nobody thinks of, and the
+ * points each scores. Every prompt has at least one gem: the most satisfying of its rarest answers.
+ */
+export const TIERS = { common: 10, familiar: 30, uncommon: 60, rare: 85, gem: 100 } as const;
+export type Tier = keyof typeof TIERS;
+export type Answer = { text: string; aliases?: string[]; tier: Tier };
 
 /** No spelling in a pack may be longer, or it could not be typed. */
 export const MAX_ANSWER_LENGTH = 40;
@@ -13,7 +18,7 @@ export type PackSummary = { id: string; name: string; prompts: number };
 
 /** A prompt as the browser sees it: no answers. */
 export type GamePrompt = { id: string; text: string; pack: string };
-/** `answer` is the pack's spelling of a correct answer, or null when wrong (rarity 0). */
+/** `answer` is the pack's spelling of a correct answer, or null when wrong. `rarity` is the points of its tier, 0 when wrong. */
 export type Verdict = { answer: string | null; rarity: number };
 
 /** `version` changes whenever the game's own code does: an open page that sees a new one offers to update. */

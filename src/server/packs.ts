@@ -1,6 +1,6 @@
 import { basename, join } from "node:path";
 import { LANGUAGES, type Language } from "../shared/language";
-import { MAX_ANSWER_LENGTH, type Pack } from "../shared/types";
+import { MAX_ANSWER_LENGTH, TIERS, type Pack } from "../shared/types";
 import { en, type Words } from "../shared/words/en";
 import { normalize } from "./game";
 
@@ -56,19 +56,14 @@ export function validatePack(data: unknown, words: Words = en): string[] {
     text(prompt.text, MAX_PROMPT_LENGTH, say.field(where, "text"));
 
     const spellings = new Set<string>();
-    let rarest = 0;
+    let gems = 0;
     const answers = list(prompt.answers, 2, say.field(where, "answers"));
     answers.forEach((answer, j) => {
       let at = say.answer(where, j + 1);
-      if (!fields(answer, ["text", "aliases", "rarity"], at)) return;
+      if (!fields(answer, ["text", "aliases", "tier"], at)) return;
       if (typeof answer.text === "string") at = say.answerNamed(where, answer.text);
-      const rarity = answer.rarity;
-      if (typeof rarity === "number" && Number.isInteger(rarity) && rarity >= 1 && rarity <= 100) {
-        rarest = Math.max(rarest, rarity);
-      } else {
-        problems.push(say.rarity(at));
-        rarest = 100;
-      }
+      if (answer.tier === "gem") gems++;
+      else if (typeof answer.tier !== "string" || !Object.hasOwn(TIERS, answer.tier)) problems.push(say.tier(at, Object.keys(TIERS)));
       const aliases = answer.aliases === undefined ? [] : list(answer.aliases, 0, say.field(at, "aliases"));
       for (const spelling of [answer.text, ...aliases]) {
         if (!text(spelling, MAX_ANSWER_LENGTH, say.everySpelling(at))) continue;
@@ -78,8 +73,8 @@ export function validatePack(data: unknown, words: Words = en): string[] {
         spellings.add(key);
       }
     });
-    // Rarity is relative to the prompt's other answers, so that every prompt can take the diver equally deep.
-    if (answers.length && rarest < 100) problems.push(say.rarest(where));
+    // So that every prompt can take the diver equally deep.
+    if (answers.length && !gems) problems.push(say.gem(where));
   });
   return problems;
 }

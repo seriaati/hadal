@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { LANGUAGE_NAMES, wordsIn, type Language } from "../shared/language";
-import { MAX_ANSWER_LENGTH, MAX_INSTRUCTIONS_LENGTH, MAX_TOPIC_LENGTH, WRITTEN_PROMPTS, type Answer, type Pack, type WriteOrder } from "../shared/types";
+import { MAX_ANSWER_LENGTH, MAX_INSTRUCTIONS_LENGTH, MAX_TOPIC_LENGTH, TIERS, WRITTEN_PROMPTS, type Answer, type Pack, type Tier, type WriteOrder } from "../shared/types";
 import { MAX_PACKS, listPacks, savePack } from "./custom";
 import { normalize } from "./game";
 import { loadKey } from "./keys";
@@ -10,7 +10,7 @@ const MODEL = "claude-opus-5-5";
 
 const SYSTEM = `You write trivia packs for Hadal, a deep-sea diving game.
 
-How the game works: the player is shown a prompt such as "Name a country that borders Germany" and types one answer. A correct answer scores its rarity: the answers few players think of take the diver deepest. An answer that is not in your list counts as wrong, so a list with gaps punishes exactly the well-informed players the game is meant to reward.
+How the game works: the player is shown a prompt such as "Name a country that borders Germany" and types one answer. A correct answer scores by its tier: the answers few players think of take the diver deepest. An answer that is not in your list counts as wrong, so a list with gaps punishes exactly the well-informed players the game is meant to reward.
 
 Write a pack on the topic the player gives, with as many prompts as they ask for, in the language the player plays the game in. The player may add instructions of their own; follow them, except where they would break the rules below.
 
@@ -18,7 +18,7 @@ Prompts
 - Each asks for one item of a well-defined set and can be judged as plainly right or wrong: "Name a moon of Jupiter", not "Name a good film".
 - Each is widely known: an ordinary adult who is no specialist or fan can name two or three answers. "Name a dog breed", not "Name a Uralic language" or "Name a Kanto Gym Leader".
 - Each has at least 8 correct answers, ideally 10 to 40: up to six divers answer the same prompt in a room, and an answer once given is taken. Avoid sets too large to list in full (more than about 60 members) and sets a player cannot know the edges of.
-- Its answers clearly differ in how well known they are, so their rarity is plain. Avoid sets whose members are all about as well known as each other, such as the signs of the zodiac.
+- Its answers clearly differ in how well known they are, so their tiers are plain. Avoid sets whose members are all about as well known as each other, such as the signs of the zodiac.
 - Its set stays put, unless the player asks otherwise. Avoid sets that change within a few years, such as current team rosters or the latest winners of a yearly award, and list nothing not yet released or not yet happened.
 - It suits the people who play in the pack's language. A pack in English does not ask about works that English speakers seldom know, such as the characters of the classic Chinese novels; a pack in Chinese may.
 - No two prompts ask for nearly the same set.
@@ -33,7 +33,8 @@ Answers
 - List every correct answer, not a selection. Check each one: a wrong answer in the list is worse than a missing one.
 - "text" is the usual way to write the answer. "aliases" are other names or spellings a player might type for the same thing ("Holland" for "Netherlands", "JFK" for "John F. Kennedy"); leave the list empty when there are none. The game already ignores capitals, accents, punctuation, spaces and a leading "the", and forgives small typos, so do not list such variants.
 - Every text and alias is at most ${MAX_ANSWER_LENGTH} characters, and none appears twice within a prompt.
-- "rarity" is a whole number from 1 to 100: how unlikely a typical player is to give this answer. 1 to 20 is what nearly everyone says first; 80 to 100 is what only an enthusiast would think of. Spread the answers of a prompt over the whole range, and give the least likely answer of each prompt exactly 100.`;
+- "tier" is how likely a typical player is to give this answer: "common" is what nearly everyone says first, "familiar" what most players would think of, "uncommon" what some would, and "rare" what few would. Few answers are common; in a long list, most are rare.
+- Give "gem" to the rarest answers that are a pleasure to land on: ones a player could reason their way to and would know at once to be right, not merely the most obscure. Every prompt has at least one gem, and seldom more than three.`;
 
 const SEARCH = `
 
@@ -59,8 +60,8 @@ const SCHEMA = {
             items: {
               type: "object",
               additionalProperties: false,
-              required: ["text", "aliases", "rarity"],
-              properties: { text, aliases: { type: "array", items: text }, rarity: { type: "integer" } },
+              required: ["text", "aliases", "tier"],
+              properties: { text, aliases: { type: "array", items: text }, tier: { type: "string", enum: Object.keys(TIERS) } },
             },
           },
         },
@@ -70,7 +71,7 @@ const SCHEMA = {
 };
 
 /** A pack as the model writes it: no ids yet, and none of the pack format's limits checked. */
-type Draft = { name: string; prompts: { text: string; answers: { text: string; aliases: string[]; rarity: number }[] }[] };
+type Draft = { name: string; prompts: { text: string; answers: { text: string; aliases: string[]; tier: Tier }[] }[] };
 
 /** Thrown with words for the player when no pack could be written. */
 class Refused extends Error {}
@@ -147,8 +148,8 @@ async function draft(apiKey: string, order: WriteOrder, language: Language, prog
 /**
  * Make a draft into a pack that passes `validatePack`. The schema the model writes to fixes
  * the shape but not the limits, so whatever breaks one is dropped (a spelling that is too long
- * or given twice, a prompt left with fewer than two answers) and the rarities of each prompt
- * are stretched until its rarest answer has 100.
+ * or given twice, a prompt left with fewer than two answers), and a prompt without a gem gets
+ * one: the last answer of its rarest tier.
  */
 export function tidy(written: Draft, id: string): Pack {
   const prompts = written.prompts.flatMap((prompt) => {
@@ -163,10 +164,11 @@ export function tidy(written: Draft, id: string): Pack {
       const spelling = answer.text.trim();
       if (!fresh(spelling)) return [];
       const aliases = answer.aliases.map((alias) => alias.trim()).filter(fresh);
-      return [{ text: spelling, ...(aliases.length > 0 && { aliases }), rarity: Math.max(1, Math.min(100, Math.round(answer.rarity))) }];
+      return [{ text: spelling, ...(aliases.length > 0 && { aliases }), tier: answer.tier }];
     });
-    const rarest = Math.max(...answers.map((answer) => answer.rarity));
-    for (const answer of answers) answer.rarity = Math.max(1, Math.round((answer.rarity * 100) / rarest));
+    const rarest = Math.max(...answers.map((answer) => TIERS[answer.tier]));
+    const gem = answers.findLast((answer) => TIERS[answer.tier] === rarest);
+    if (gem) gem.tier = "gem";
     const asked = prompt.text.trim();
     return asked && asked.length <= MAX_PROMPT_LENGTH && answers.length >= 2 ? [{ text: asked, answers }] : [];
   });

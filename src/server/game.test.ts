@@ -27,7 +27,7 @@ test("named finds the answers a text names as whole words, or anywhere for Chine
   const pack: Pack = {
     id: "test",
     name: "Test",
-    prompts: [{ id: "one", text: "Name a place", answers: [{ text: "Timor-Leste", rarity: 100 }, { text: "Chad", rarity: 50 }, { text: "台湾", rarity: 90 }] }],
+    prompts: [{ id: "one", text: "Name a place", answers: [{ text: "Timor-Leste", tier: "gem" }, { text: "Chad", tier: "uncommon" }, { text: "台湾", tier: "rare" }] }],
   };
   const entry = buildIndex([pack]).get("test/one")!;
   const names = (text: string) => named(entry, text).map((answer) => answer.text);
@@ -57,10 +57,10 @@ test("an unknown prompt is reported as null", () => {
   expect(nearestAnswer(index, "nope/nope", 50)).toBeNull();
 });
 
-test("the nearest answer to a rarity is a correct answer of about that rarity", () => {
+test("the nearest answer to some points is a correct answer of the tier nearest them", () => {
   const rarest = judge(index, ASIA, nearestAnswer(index, ASIA, 100)!)!;
   const commonest = judge(index, ASIA, nearestAnswer(index, ASIA, 1)!)!;
-  expect(commonest.rarity).toBe(5);
+  expect(commonest.rarity).toBe(10);
   expect(rarest.rarity).toBeGreaterThan(60);
   expect(judge(index, ASIA, nearestAnswer(index, ASIA, 30)!)?.rarity).toBe(30);
 });
@@ -75,7 +75,7 @@ test("pickPrompts gives every pack a place, the big ones most, and a tiny pack s
   const pack = (id: string, size: number): Pack => ({
     id,
     name: id,
-    prompts: Array.from({ length: size }, (_, n) => ({ id: `p${n}`, text: "Name one", answers: [{ text: "a", rarity: 0 }] })),
+    prompts: Array.from({ length: size }, (_, n) => ({ id: `p${n}`, text: "Name one", answers: [{ text: "a", tier: "common" }] })),
   });
   const dives = (packs: Pack[]) => {
     const many = buildIndex(packs);
@@ -108,7 +108,7 @@ test("a misspelling counts as the answer it is nearest to", () => {
 
 test("a misspelling is refused when it is too far off, too short to be sure of, or could be two answers", () => {
   const only = (...texts: string[]): Pack[] => [
-    { id: "p", name: "P", prompts: [{ id: "q", text: "Q", answers: texts.map((text) => ({ text, rarity: 100 })) }] },
+    { id: "p", name: "P", prompts: [{ id: "q", text: "Q", answers: texts.map((text) => ({ text, tier: "gem" as const })) }] },
   ];
   const wrong = { answer: null, rarity: 0 };
   expect(judge(index, ASIA, "Irak")).toEqual(wrong);

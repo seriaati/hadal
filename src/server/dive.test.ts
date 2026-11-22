@@ -12,13 +12,13 @@ const PACK: Pack = {
       id: "flag",
       text: "Name a colour of a flag",
       answers: [
-        { text: "Red", rarity: 10 },
-        { text: "Blue", rarity: 30 },
-        { text: "Green", aliases: ["verde"], rarity: 60 },
+        { text: "Red", tier: "common" },
+        { text: "Blue", tier: "familiar" },
+        { text: "Green", aliases: ["verde"], tier: "uncommon" },
       ],
     },
-    { id: "sky", text: "Name the colour of the sky", answers: [{ text: "Blue", rarity: 50 }, { text: "Grey", rarity: 80 }, { text: "Azure", rarity: 100 }] },
-    { id: "one", text: "Name the colour of snow", answers: [{ text: "White", rarity: 100 }] },
+    { id: "sky", text: "Name the colour of the sky", answers: [{ text: "Blue", tier: "uncommon" }, { text: "Grey", tier: "rare" }, { text: "Azure", tier: "gem" }] },
+    { id: "one", text: "Name the colour of snow", answers: [{ text: "White", tier: "gem" }] },
   ],
 };
 const index = buildIndex([PACK]);
@@ -219,9 +219,9 @@ test("after the last prompt the dive ends with every diver's depth, place, point
   expect(ended).toEqual([
     [
       {
-        id: 1, depth: 110 + 880, won: false, place: 2, points: 90, outAt: null,
-        lamps: [{ depth: 110, lit: true }, { depth: 990, lit: true }],
-        said: [{ prompt: flag, answer: "Red", rarity: 10 }, { prompt: sky, answer: "Grey", rarity: 80 }],
+        id: 1, depth: 110 + 935, won: false, place: 2, points: 95, outAt: null,
+        lamps: [{ depth: 110, lit: true }, { depth: 1045, lit: true }],
+        said: [{ prompt: flag, answer: "Red", rarity: 10 }, { prompt: sky, answer: "Grey", rarity: 85 }],
       },
       {
         id: 2, depth: 330 + 1100, won: true, place: 1, points: 130, outAt: null,
@@ -325,8 +325,8 @@ test("in longest, when the prompts run out the deepest of those still in wins", 
   }
   expect(ended[0]!.map(({ id, depth, won, place, outAt }) => ({ id, depth, won, place, outAt }))).toEqual([
     { id: 1, depth: 0, won: false, place: 3, outAt: 2 },
-    { id: 2, depth: 330 + 880, won: true, place: 1, outAt: null },
-    { id: 3, depth: 110 + 550, won: false, place: 2, outAt: null },
+    { id: 2, depth: 330 + 935, won: true, place: 1, outAt: null },
+    { id: 3, depth: 110 + 660, won: false, place: 2, outAt: null },
   ]);
   expect(ended[0]![0]!.said).toEqual([
     { prompt: "Name a colour of a flag", answer: null, rarity: 0 },

@@ -1,5 +1,5 @@
 import { Converter } from "opencc-js/t2cn";
-import type { Answer, GamePrompt, Pack, Verdict } from "../shared/types";
+import { TIERS, type Answer, type GamePrompt, type Pack, type Verdict } from "../shared/types";
 
 export type PromptEntry = { prompt: GamePrompt; answers: Map<string, Answer> };
 export type PromptIndex = Map<string, PromptEntry>;
@@ -100,7 +100,8 @@ export function pickPrompts(index: PromptIndex, count: number): GamePrompt[] {
 
 export function nearestAnswer(index: PromptIndex, promptId: string, rarity: number): string | null {
   const answers = [...(index.get(promptId)?.answers.values() ?? [])];
-  const nearest = answers.reduce<Answer | null>((best, answer) => (best && Math.abs(best.rarity - rarity) <= Math.abs(answer.rarity - rarity) ? best : answer), null);
+  const off = (answer: Answer) => Math.abs(TIERS[answer.tier] - rarity);
+  const nearest = answers.reduce<Answer | null>((best, answer) => (best && off(best) <= off(answer) ? best : answer), null);
   return nearest?.text ?? null;
 }
 
@@ -150,5 +151,5 @@ export function judge(index: PromptIndex, promptId: string, input: string): Verd
   if (!entry) return null;
   const typed = normalize(input);
   const answer = entry.answers.get(typed) ?? misspelled(entry.answers, typed);
-  return answer ? { answer: answer.text, rarity: answer.rarity } : { answer: null, rarity: 0 };
+  return answer ? { answer: answer.text, rarity: TIERS[answer.tier] } : { answer: null, rarity: 0 };
 }

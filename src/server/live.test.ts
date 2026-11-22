@@ -18,7 +18,7 @@ const entry = buildIndex([
   {
     id: "rivers",
     name: "Rivers",
-    prompts: [{ id: "africa", text: ASKED, answers: [{ text: "Nile", rarity: 5 }, { text: "Okavango", aliases: ["Cubango"], rarity: 100 }] }],
+    prompts: [{ id: "africa", text: ASKED, answers: [{ text: "Nile", tier: "common" }, { text: "Okavango", aliases: ["Cubango"], tier: "gem" }] }],
   },
 ]).get("rivers/africa")!;
 const WRONG = { answer: null, rarity: 0 };
@@ -34,7 +34,7 @@ const api = Bun.serve({
     }
     return Response.json({
       id: "msg_1", type: "message", role: "assistant", model: "claude-haiku-5-5", stop_sequence: null,
-      content: [{ type: "text", text: JSON.stringify(reply.ruling ?? { correct: true, answer: "Zambezi", rarity: 40 }) }],
+      content: [{ type: "text", text: JSON.stringify(reply.ruling ?? { correct: true, answer: "Zambezi", tier: "familiar" }) }],
       stop_reason: reply.stop ?? "end_turn",
       usage: { input_tokens: 1, output_tokens: 1 },
     });
@@ -86,35 +86,33 @@ afterAll(async () => {
 });
 
 test("Claude is sent the prompt, its listed answers and the player's answer", () => {
-  expect(question(entry, "zambezi")).toBe(`Prompt: ${ASKED}\n\nListed answers:\n- Nile (5)\n- Okavango, also Cubango (100)\n\nThe player's answer: zambezi`);
+  expect(question(entry, "zambezi")).toBe(`Prompt: ${ASKED}\n\nListed answers:\n- Nile (common)\n- Okavango, also Cubango (gem)\n\nThe player's answer: zambezi`);
 });
 
 test("a ruling of Claude's comes to a verdict", () => {
-  expect(settle(entry, "moon", { correct: false, answer: "moon", rarity: 0 })).toEqual(WRONG);
-  expect(settle(entry, "zambesi", { correct: true, answer: " Zambezi ", rarity: 40 })).toEqual({ answer: "Zambezi", rarity: 40 });
+  expect(settle(entry, "moon", { correct: false, answer: "moon", tier: "common" })).toEqual(WRONG);
+  expect(settle(entry, "zambesi", { correct: true, answer: " Zambezi ", tier: "familiar" })).toEqual({ answer: "Zambezi", rarity: 30 });
   // An answer the judge knows as a listed one scores as that one.
-  expect(settle(entry, "kubango", { correct: true, answer: "cubango", rarity: 70 })).toEqual({ answer: "Okavango", rarity: 100 });
-  expect(settle(entry, "zambezi", { correct: true, answer: "Zambezi", rarity: 400 }).rarity).toBe(100);
-  expect(settle(entry, "zambezi", { correct: true, answer: "Zambezi", rarity: 0 }).rarity).toBe(1);
+  expect(settle(entry, "kubango", { correct: true, answer: "cubango", tier: "rare" })).toEqual({ answer: "Okavango", rarity: 100 });
   // A spelling the game cannot show falls back on what was typed.
-  expect(settle(entry, "zambezi", { correct: true, answer: "Z".repeat(41), rarity: 40 }).answer).toBe("zambezi");
+  expect(settle(entry, "zambezi", { correct: true, answer: "Z".repeat(41), tier: "familiar" }).answer).toBe("zambezi");
 });
 
 test("an answer is judged once, with the player's key, and the ruling is then everyone's", async () => {
-  expect(await judgeLive(entry, " zambezi ", await account("anthropic"))).toEqual({ answer: "Zambezi", rarity: 40 });
+  expect(await judgeLive(entry, " zambezi ", await account("anthropic"))).toEqual({ answer: "Zambezi", rarity: 30 });
   expect(asked).toHaveLength(1);
   expect(asked[0]!.key).toBe(`Bearer ${KEY}`);
   expect(asked[0]!.body.model).toBe("claude-haiku-5-5");
   expect(asked[0]!.body.messages[0]!.content).toEndWith("The player's answer: zambezi");
 
-  expect(await judgeLive(entry, "ZAMBEZI!", null)).toEqual({ answer: "Zambezi", rarity: 40 });
-  expect(await judgeLive(entry, "the zambezi", await account())).toEqual({ answer: "Zambezi", rarity: 40 });
+  expect(await judgeLive(entry, "ZAMBEZI!", null)).toEqual({ answer: "Zambezi", rarity: 30 });
+  expect(await judgeLive(entry, "the zambezi", await account())).toEqual({ answer: "Zambezi", rarity: 30 });
   expect(asked).toHaveLength(1);
   expect(jevAsked).toHaveLength(0);
 });
 
 test("a wrong ruling is kept as well", async () => {
-  reply = { ruling: { correct: false, answer: "thames", rarity: 0 } };
+  reply = { ruling: { correct: false, answer: "thames", tier: "common" } };
   expect(await judgeLive(entry, "thames", await account("anthropic"))).toEqual(WRONG);
   expect(await judgeLive(entry, "Thames", await account("anthropic"))).toEqual(WRONG);
   expect(asked).toHaveLength(1);
@@ -135,14 +133,14 @@ test("when Claude gives no ruling the answer is wrong for now, and nothing is ke
   expect(await judgeLive(entry, "niger", id)).toEqual(WRONG);
   reply = { stop: "refusal" };
   expect(await judgeLive(entry, "niger", id)).toEqual(WRONG);
-  reply = { ruling: { correct: true, answer: "Niger", rarity: 30 } };
+  reply = { ruling: { correct: true, answer: "Niger", tier: "familiar" } };
   expect(await judgeLive(entry, "niger", id)).toEqual({ answer: "Niger", rarity: 30 });
   expect(asked).toHaveLength(3);
 });
 
 test("Jev rules first where it is sure, and its ruling is kept", async () => {
   jev = { right: 0.95, level: 2 };
-  expect(await judgeLive(entry, "Limpopo", await account("anthropic", "jev"))).toEqual({ answer: "Limpopo", rarity: 51 });
+  expect(await judgeLive(entry, "Limpopo", await account("anthropic", "jev"))).toEqual({ answer: "Limpopo", rarity: 60 });
   expect(asked).toHaveLength(0);
   expect(jevAsked).toHaveLength(2);
   expect(jevAsked.every((request) => request.key === `Bearer ${JEV_KEY}` && request.body.model === "jev-latest")).toBe(true);
@@ -154,7 +152,7 @@ test("Jev rules first where it is sure, and its ruling is kept", async () => {
 
   jev = { right: 0.02 };
   expect(await judgeLive(entry, "Mekong", await account("jev"))).toEqual(WRONG);
-  expect(await judgeLive(entry, "limpopo", null)).toEqual({ answer: "Limpopo", rarity: 51 });
+  expect(await judgeLive(entry, "limpopo", null)).toEqual({ answer: "Limpopo", rarity: 60 });
   expect(await judgeLive(entry, "mekong", await account("anthropic"))).toEqual(WRONG);
   expect(asked).toHaveLength(0);
   expect(jevAsked).toHaveLength(4);
@@ -170,7 +168,7 @@ test("where Jev is not sure, Claude rules; without Claude the answer is wrong fo
   const onlyJev = await account("jev");
   for (const [answer, unsure] of [["Orange", { right: 0.5 }], ["Senegal", { same: "Nile", sure: 0.4 }], ["Volta", { sure: 0.5 }], ["Tana", { status: 529 }]] as const) {
     jev = unsure;
-    reply = { ruling: { correct: true, answer, rarity: 60 } };
+    reply = { ruling: { correct: true, answer, tier: "uncommon" } };
     expect(await judgeLive(entry, answer, onlyJev)).toEqual(WRONG);
     expect(asked).toHaveLength(0);
     expect(await judgeLive(entry, answer, both)).toEqual({ answer, rarity: 60 });
@@ -186,7 +184,7 @@ test("a judge's failure is noted on the key that was used, and a later ruling cl
   expect(await judgeLive(entry, "Ruvuma", id)).toEqual(WRONG);
   expect(await failed()).toEqual({ jev: "refused", anthropic: "limited" });
   jev = { status: 529 };
-  reply = { ruling: { correct: true, answer: "Ruvuma", rarity: 80 } };
-  expect(await judgeLive(entry, "Ruvuma", id)).toEqual({ answer: "Ruvuma", rarity: 80 });
+  reply = { ruling: { correct: true, answer: "Ruvuma", tier: "rare" } };
+  expect(await judgeLive(entry, "Ruvuma", id)).toEqual({ answer: "Ruvuma", rarity: 85 });
   expect(await failed()).toEqual({ jev: "unanswered", anthropic: null });
 });

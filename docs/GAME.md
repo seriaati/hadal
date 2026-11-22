@@ -6,8 +6,9 @@ Hadal is a sea-themed web trivia game. A prompt is shown ("Name a country in Asi
 player types one answer.
 
 - **Correctness gates the score.** A wrong answer ("USA") scores nothing.
-- **Rarity sets the score.** The rarer a correct answer, the more it scores ("Taiwan" scores
-  high, "China" scores low).
+- **Rarity sets the score.** Every answer is in one of five tiers, and the rarer its tier, the more
+  it scores: common 10 points, familiar 30, uncommon 60, rare 85 and gem 100 ("Taiwan" scores
+  high, "China" scores low). A prompt's gems are the most satisfying of its rarest answers.
 - **Score is depth.** The higher the score, the deeper the diver goes, through the real ocean
   zones down to the hadal zone (a perfect dive reaches 11,000 m).
 
@@ -94,9 +95,9 @@ built-in pack is not valid. Uploaded packs go through the same check.
       "id": "germany-borders",
       "text": "Name a country that borders Germany",
       "answers": [
-        { "text": "France", "rarity": 5 },
-        { "text": "Netherlands", "aliases": ["Holland"], "rarity": 25 },
-        { "text": "Luxembourg", "rarity": 100 }
+        { "text": "France", "tier": "common" },
+        { "text": "Netherlands", "aliases": ["Holland"], "tier": "familiar" },
+        { "text": "Luxembourg", "tier": "gem" }
       ]
     }
   ]
@@ -109,8 +110,10 @@ built-in pack is not valid. Uploaded packs go through the same check.
   language: the packs of a language are in `packs/<language>/` (`packs/en/`, `packs/zh-CN/`,
   `packs/zh-TW/`).
 - The name is at most 24 characters and a prompt's text at most 80.
-- A prompt has at least two answers. Rarity is a whole number from 1 (everyone says it) to
-  100, and the rarest answer of every prompt has 100.
+- A prompt has at least two answers. An answer's tier is "common" (what nearly everyone says
+  first), "familiar", "uncommon", "rare" or "gem", and every prompt has at least one gem. A
+  pack written with a rarity from 1 to 100 instead was moved to tiers once: up to 20 common, to
+  40 familiar, to 60 uncommon, below 100 rare, and 100 gem.
 - Every spelling (the text and each alias) is at most 40 characters, has at least one letter
   or digit, and matches no other spelling of the prompt (spellings that differ only in simplified
   and traditional characters match).

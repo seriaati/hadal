@@ -13,11 +13,11 @@ import { validatePack } from "./packs";
 await migrate();
 process.env.HADAL_SECRET = "a secret for the tests, long enough";
 const KEY = "sk-ant-test-0123456789";
-const DRAFT = {
+const DRAFT: Parameters<typeof tidy>[0] = {
   name: "Rivers",
   prompts: [
-    { text: "Name a river in Africa", answers: [{ text: "Nile", aliases: [], rarity: 5 }, { text: "Okavango", aliases: ["Cubango"], rarity: 100 }] },
-    { text: "Name a river in Europe", answers: [{ text: "Danube", aliases: [], rarity: 10 }, { text: "Vltava", aliases: ["Moldau"], rarity: 100 }] },
+    { text: "Name a river in Africa", answers: [{ text: "Nile", aliases: [], tier: "common" }, { text: "Okavango", aliases: ["Cubango"], tier: "gem" }] },
+    { text: "Name a river in Europe", answers: [{ text: "Danube", aliases: [], tier: "common" }, { text: "Vltava", aliases: ["Moldau"], tier: "gem" }] },
   ],
 };
 
@@ -176,14 +176,14 @@ test("a draft is mended into a valid pack", () => {
         {
           text: "Name a river in Africa",
           answers: [
-            { text: "Nile", aliases: ["the Nile", "Nilus"], rarity: 0 },
-            { text: "nile", aliases: [], rarity: 30 },
-            { text: "Congo", aliases: ["Zaire", "ZAIRE", "x".repeat(41)], rarity: 40 },
-            { text: "Okavango", aliases: [], rarity: 80.4 },
-            { text: "!!", aliases: [], rarity: 90 },
+            { text: "Nile", aliases: ["the Nile", "Nilus"], tier: "common" },
+            { text: "nile", aliases: [], tier: "familiar" },
+            { text: "Congo", aliases: ["Zaire", "ZAIRE", "x".repeat(41)], tier: "familiar" },
+            { text: "Okavango", aliases: [], tier: "rare" },
+            { text: "!!", aliases: [], tier: "rare" },
           ],
         },
-        { text: "Name a river with one answer", answers: [{ text: "Styx", aliases: [], rarity: 100 }] },
+        { text: "Name a river with one answer", answers: [{ text: "Styx", aliases: [], tier: "gem" }] },
         { text: "x".repeat(81), answers: DRAFT.prompts[0]!.answers },
         DRAFT.prompts[1]!,
       ],
@@ -194,8 +194,8 @@ test("a draft is mended into a valid pack", () => {
   expect(pack.name).toBe("A name far too long for");
   expect(pack.prompts.map((prompt) => prompt.id)).toEqual(["prompt-1", "prompt-2"]);
   expect(pack.prompts[0]!.answers).toEqual([
-    { text: "Nile", aliases: ["Nilus"], rarity: 1 },
-    { text: "Congo", aliases: ["Zaire"], rarity: 50 },
-    { text: "Okavango", rarity: 100 },
+    { text: "Nile", aliases: ["Nilus"], tier: "common" },
+    { text: "Congo", aliases: ["Zaire"], tier: "familiar" },
+    { text: "Okavango", tier: "gem" },
   ]);
 });

@@ -1,3 +1,4 @@
+import { TIERS } from "../shared/types";
 import type { CreatureKind } from "./pixel/creatures";
 import type { Frame } from "./pixel/frame";
 import type { MultiplayerPanel } from "./pixel/multiplayer";
@@ -12,7 +13,7 @@ function asking(game: Game): boolean {
   return game.phase === "ask" && !game.judging;
 }
 
-/** A correct answer of about this rarity to a prompt, which only the server can name. */
+/** A correct answer to a prompt worth about these points, which only the server can name. */
 async function correct(promptId: string, rarity: number): Promise<string | null> {
   const res = await fetch(`/api/dev/answer?promptId=${encodeURIComponent(promptId)}&rarity=${rarity}`);
   return res.ok ? ((await res.json()) as { answer: string }).answer : null;
@@ -83,7 +84,7 @@ export function showDevMenu(parent: HTMLElement, tools: DevTools) {
     hide.ariaLabel = "Hide the developer menu";
     menu.replaceChildren(
       hide,
-      line("Answer with rarity near", [1, 25, 50, 75, 100].map((rarity) => button(String(rarity), () => void answer(tools, rarity)))),
+      line("Answer in tier", Object.entries(TIERS).map(([tier, points]) => button(tier, () => void answer(tools, points)))),
       line("Air", [button("Run out", () => asking(game) && (game.air = 0))]),
       line("Dive", [button("End", () => endDive(game))]),
       line("Creature", CREATURES.map(([kind, name]) => button(name, () => scene.ambient.spawn(kind, frame.width, frame.height, scene.depth)))),

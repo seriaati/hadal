@@ -206,10 +206,10 @@ export const zhCN: Words = {
     slug: (where: string) => `${where}只能由小写字母和数字组成，用连字符连接，如“asia-countries”`,
     list: (where: string, min: number) => `${where}必须是列表${min ? `，至少 ${min} 项` : ""}`,
     sameId: (where: string) => `${where}：已有其他题目使用这个 id`,
-    rarity: (where: string) => `${where}：“rarity”必须是 1 到 100 的整数`,
+    tier: (where: string, tiers: string[]) => `${where}：“tier”必须是 ${tiers.map((tier) => `“${tier}”`).join("、")} 之一`,
     noLetters: (where: string, spelling: string) => `${where}：“${spelling}”没有字母或数字`,
     twice: (where: string, spelling: string) => `${where}：“${spelling}”已经是这道题的答案`,
-    rarest: (where: string) => `${where}：最冷门答案的“rarity”必须是 100`,
+    gem: (where: string) => `${where}：至少要有一个答案的“tier”是“gem”`,
   },
 
   rooms: {

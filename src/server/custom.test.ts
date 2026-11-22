@@ -19,7 +19,7 @@ const file = (id = "rivers", name = "Rivers") =>
   JSON.stringify({
     id,
     name,
-    prompts: [{ id: "africa", text: "Name a river in Africa", answers: [{ text: "Nile", rarity: 10 }, { text: "Okavango", rarity: 100 }] }],
+    prompts: [{ id: "africa", text: "Name a river in Africa", answers: [{ text: "Nile", tier: "common" }, { text: "Okavango", tier: "gem" }] }],
   });
 
 afterAll(async () => {
