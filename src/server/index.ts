@@ -7,7 +7,7 @@ import { SESSION_DAYS, accountIdOf, accountOf, signInFrom, signOut, signUp, type
 import { MAX_PACKS, listPacks, loadPack, removePack, savePack } from "./custom";
 import { migrate } from "./db";
 import { OWN, buildIndex, judge, nearestAnswer, pickPrompts, type PromptIndex } from "./game";
-import { writePack } from "./generate";
+import { resumeWritings, run, stopWriting, writePack, writingOf } from "./generate";
 import { removeKey, saveKey } from "./keys";
 import { judgeLive } from "./live";
 import { loadBuiltIn } from "./packs";
@@ -40,6 +40,7 @@ const promptsIn = inEach(buildIndex);
 const prompts = buildIndex(Object.values(builtIn).flat());
 usePrompts(builtIn);
 await migrate();
+void resumeWritings();
 
 function languageOf(req: BunRequest): Language {
   const language = req.cookies.get(LANGUAGE_COOKIE);
@@ -86,6 +87,12 @@ async function packs(req: BunRequest, change?: (accountId: string) => Promise<st
   const problems = (await change?.(accountId)) ?? [];
   if (problems.length) return Response.json({ problems }, { status: 400 });
   return Response.json(await listPacks(accountId));
+}
+
+async function writing(req: BunRequest, answer: (accountId: string) => Promise<Response>) {
+  const accountId = await accountIdOf(req.cookies.get(SESSION));
+  if (!accountId) return Response.json({ problems: [wordsOf(req).packs.signInFirst] }, { status: 401 });
+  return answer(accountId);
 }
 
 async function key(req: BunRequest<"/api/account/key/:provider">, change: (accountId: string, provider: Provider, words: Words) => Promise<string | null | void>) {
@@ -178,34 +185,23 @@ const server = Bun.serve({
       },
       DELETE: (req) => packs(req, (accountId) => removePack(accountId, req.params.id)),
     },
+    // A pack is written in the background: POST begins it, GET says how it stands (null when there is none), DELETE stops it.
     "/api/write": {
-      // The answer is a line of JSON at a time: `{"prompts": n}` each time another prompt is written, then the
-      // player's packs (`{"packs": [...]}`) or why none was written (`{"problems": [...]}`).
-      POST: async (req, server) => {
-        // Writing a pack takes a minute or so, and Bun closes a request that is silent for ten seconds unless told otherwise.
-        server.timeout(req, 0);
-        const accountId = await accountIdOf(req.cookies.get(SESSION));
-        const asked = (await req.json()) as Partial<WriteOrder>;
-        const order = { ...asked, topic: String(asked.topic ?? ""), instructions: String(asked.instructions ?? "") };
-        // If the player stops the writing, or leaves, the request to Anthropic is ended too.
-        const stop = new AbortController();
-        req.signal.addEventListener("abort", () => stop.abort());
-        const encoder = new TextEncoder();
-        const lines = new ReadableStream({
-          async start(controller) {
-            const say = (line: object) => {
-              if (!stop.signal.aborted) controller.enqueue(encoder.encode(`${JSON.stringify(line)}\n`));
-            };
-            const problems = accountId
-              ? await writePack(accountId, order, (prompts) => say({ prompts }), stop.signal, languageOf(req))
-              : [wordsOf(req).packs.signInFirst];
-            say(problems.length || !accountId ? { problems } : { packs: await listPacks(accountId) });
-            if (!stop.signal.aborted) controller.close();
-          },
-          cancel: () => stop.abort(),
-        });
-        return new Response(lines, { headers: { "content-type": "application/x-ndjson" } });
-      },
+      GET: (req) => writing(req, async (accountId) => Response.json(await writingOf(accountId))),
+      POST: (req) =>
+        writing(req, async (accountId) => {
+          const asked = (await req.json()) as Partial<WriteOrder>;
+          const order = { ...asked, topic: String(asked.topic ?? ""), instructions: String(asked.instructions ?? "") };
+          const problems = await writePack(accountId, order, languageOf(req));
+          if (problems.length) return Response.json({ problems });
+          void run(accountId);
+          return Response.json(await writingOf(accountId));
+        }),
+      DELETE: (req) =>
+        writing(req, async (accountId) => {
+          await stopWriting(accountId);
+          return new Response(null, { status: 204 });
+        }),
     },
     "/api/room": async (req, server) => {
       const accountId = await accountIdOf(req.cookies.get(SESSION));

@@ -4,7 +4,7 @@ import { MAX_TOPIC_LENGTH } from "../shared/types";
 import { accountIdOf, signUp } from "./accounts";
 import { listPacks, loadPack } from "./custom";
 import { migrate, sql } from "./db";
-import { promptsBegun, tidy, writePack } from "./generate";
+import { run, stopWriting, tidy, writePack, writingOf } from "./generate";
 import { saveKey } from "./keys";
 import { validatePack } from "./packs";
 
@@ -20,26 +20,38 @@ const DRAFT: Parameters<typeof tidy>[0] = {
     { text: "Name a river in Europe", answers: [{ text: "Danube", aliases: [], tier: "common" }, { text: "Vltava", aliases: ["Moldau"], tier: "gem" }] },
   ],
 };
+const PLAN = { name: DRAFT.name, prompts: DRAFT.prompts.map((prompt) => prompt.text) };
 
-/** `searched`: Claude says something and searches before the pack. `paused`: the first answer is paused after a search. */
-let reply: { status?: number; stop?: string; text?: string; searched?: boolean; paused?: boolean };
-let asked: { key: string | null; body: { model: string; system: string; tools?: object[]; messages: { role: string; content: string | object[] }[] } }[] = [];
+/**
+ * How the stand-in answers a request: for the plan ("plan") or for one prompt (its text). `searched`: Claude says
+ * something and searches before its answer. `paused`: the first such request is paused after a search.
+ */
+type Reply = { status?: number; stop?: string; text?: string; searched?: boolean; paused?: boolean; delay?: number };
+let reply: (asking: string) => Reply;
+type Body = { model: string; system: string; tools?: object[]; messages: { role: string; content: string | object[] }[] };
+let asked: { key: string | null; asking: string; body: Body }[] = [];
 const event = (data: { type: string }) => `event: ${data.type}\ndata: ${JSON.stringify(data)}\n\n`;
 const api = Bun.serve({
   port: 0,
   fetch: async (req) => {
-    asked.push({ key: req.headers.get("authorization"), body: (await req.json()) as (typeof asked)[number]["body"] });
-    if (reply.status) {
-      return Response.json({ type: "error", error: { type: "authentication_error", message: "invalid x-api-key" } }, { status: reply.status });
+    const body = (await req.json()) as Body;
+    const first = String(body.messages[0]!.content);
+    const asking = first.match(/^Prompt: (.*)$/m)?.[1] ?? "plan";
+    const answer = reply(asking);
+    const paused = answer.paused === true && !asked.some((one) => one.asking === asking);
+    asked.push({ key: req.headers.get("authorization"), asking, body });
+    if (answer.delay) await Bun.sleep(answer.delay);
+    if (answer.status) {
+      return Response.json({ type: "error", error: { type: "authentication_error", message: "invalid x-api-key" } }, { status: answer.status });
     }
+    const written = asking === "plan" ? PLAN : { answers: DRAFT.prompts.find((prompt) => prompt.text === asking)?.answers ?? [] };
     const message = { id: "msg_1", type: "message", role: "assistant", model: "claude-opus-5-5", content: [], stop_reason: null, stop_sequence: null, usage: { input_tokens: 1, output_tokens: 1 } };
     const search = [
       { type: "text", text: "Let me check." },
       { type: "server_tool_use", id: "srvtoolu_1", name: "web_search", input: {} },
       { type: "web_search_tool_result", tool_use_id: "srvtoolu_1", content: [] },
     ];
-    const paused = reply.paused && asked.length === 1;
-    const blocks = paused ? search : [...(reply.searched ? search : []), { type: "text", text: reply.text ?? JSON.stringify(DRAFT) }];
+    const blocks = paused ? search : [...(answer.searched ? search : []), { type: "text", text: answer.text ?? JSON.stringify(written) }];
     const events = [
       { type: "message_start", message },
       ...blocks.flatMap((block, index) => [
@@ -48,7 +60,7 @@ const api = Bun.serve({
           : [{ type: "content_block_start", index, content_block: block }],
         { type: "content_block_stop", index },
       ].flat()),
-      { type: "message_delta", delta: { stop_reason: paused ? "pause_turn" : (reply.stop ?? "end_turn"), stop_sequence: null }, usage: { output_tokens: 1 } },
+      { type: "message_delta", delta: { stop_reason: paused ? "pause_turn" : (answer.stop ?? "end_turn"), stop_sequence: null }, usage: { output_tokens: 1 } },
       { type: "message_stop" },
     ];
     return new Response(events.map(event).join(""), { headers: { "content-type": "text/event-stream" } });
@@ -66,9 +78,15 @@ const account = async (key = true) => {
   if (key) await saveKey(id, "anthropic", KEY);
   return id;
 };
+/** Begins a writing and waits for it to end; returns why it could not begin. */
+const write = async (id: string, order: Parameters<typeof writePack>[1], language?: Parameters<typeof writePack>[2]) => {
+  const problems = await writePack(id, order, language);
+  if (!problems.length) await run(id);
+  return problems;
+};
 
 beforeEach(() => {
-  reply = {};
+  reply = () => ({});
   asked = [];
 });
 afterAll(async () => {
@@ -76,74 +94,92 @@ afterAll(async () => {
   await api.stop();
 });
 
-test("a written pack is kept among the player's packs, paid for with their key", async () => {
+test("a pack is planned, then each prompt's answers are written, paid for with the player's key", async () => {
   const id = await account();
-  expect(await writePack(id, { topic: " rivers " })).toEqual([]);
+  expect(await write(id, { topic: " rivers " })).toEqual([]);
   expect(await listPacks(id)).toEqual([{ id: "rivers", name: "Rivers", prompts: 2 }]);
   expect(validatePack(await loadPack(id, "rivers"))).toEqual([]);
-  expect(asked).toHaveLength(1);
-  expect(asked[0]!.key).toBe(`Bearer ${KEY}`);
-  expect(asked[0]!.body.model).toBe("claude-opus-5-5");
+  expect(await writingOf(id)).toBeNull();
+  expect(asked.map((one) => one.asking).sort()).toEqual(["Name a river in Africa", "Name a river in Europe", "plan"]);
+  expect(asked.every((one) => one.key === `Bearer ${KEY}` && one.body.model === "claude-opus-5-5" && one.body.tools === undefined)).toBe(true);
   expect(asked[0]!.body.messages[0]!.content).toBe("Topic: rivers\nLanguage: English\nPrompts: 10");
-  expect(asked[0]!.body.tools).toBeUndefined();
+  expect(asked.find((one) => one.asking === "Name a river in Africa")!.body.messages[0]!.content).toBe("Topic: rivers\nLanguage: English\nPrompt: Name a river in Africa");
 });
 
 test("Claude is told how many prompts to write and the player's notes, and searches only when asked to", async () => {
   const id = await account();
-  expect(await writePack(id, { topic: "rivers", instructions: " only rivers in Asia ", prompts: 30, search: true })).toEqual([]);
-  expect(asked[0]!.body.messages[0]!.content).toBe("Topic: rivers\nLanguage: English\nPrompts: 30\nInstructions from the player: only rivers in Asia");
-  expect(asked[0]!.body.tools).toEqual([{ type: "web_search_20260318", name: "web_search", max_uses: 30, response_inclusion: "excluded" }]);
-  expect(asked[0]!.body.system).toContain("search the web");
+  expect(await write(id, { topic: "rivers", instructions: " only rivers in Asia ", prompts: 30, search: true })).toEqual([]);
+  expect(asked[0]!.body.messages[0]!.content).toBe("Topic: rivers\nLanguage: English\nInstructions from the player: only rivers in Asia\nPrompts: 30");
+  expect(asked[1]!.body.messages[0]!.content).toContain("Instructions from the player: only rivers in Asia");
+  for (const one of asked) {
+    expect(one.body.tools).toEqual([{ type: "web_search_20260318", name: "web_search", max_uses: 5, response_inclusion: "excluded" }]);
+    expect(one.body.system).toContain("search the web");
+  }
 });
 
-test("what Claude says before a search is not part of the pack, and a paused search goes on", async () => {
+test("what Claude says before a search is not part of the answer, and a paused search goes on", async () => {
   const id = await account();
-  reply = { searched: true };
-  expect(await writePack(id, { topic: "rivers", search: true })).toEqual([]);
-  reply = { paused: true };
+  reply = () => ({ searched: true });
+  expect(await write(id, { topic: "rivers", search: true })).toEqual([]);
+  reply = () => ({ paused: true });
   asked = [];
-  expect(await writePack(id, { topic: "rivers", search: true })).toEqual([]);
-  expect(asked).toHaveLength(2);
+  expect(await write(id, { topic: "rivers", search: true })).toEqual([]);
+  expect(asked).toHaveLength(6);
   expect(asked[1]!.body.messages.map((message) => message.role)).toEqual(["user", "assistant"]);
-  expect((await listPacks(id)).map((pack) => pack.name)).toEqual(["Rivers", "Rivers"]);
+  expect((await listPacks(id)).map((pack) => pack.prompts)).toEqual([2, 2]);
 });
 
-test("the prompts that are finished are counted while the pack is written", async () => {
-  const counts: number[] = [];
-  expect(await writePack(await account(), { topic: "rivers" }, (prompts) => counts.push(prompts))).toEqual([]);
-  expect(counts).toEqual([1]);
-  expect(promptsBegun('{"name":"Rivers","prompts":[{"text":"Name a river","answers":[{"text":"Nile"')).toBe(1);
-  expect(promptsBegun('{"prompts":[{"text":"Which word comes after \\"answers\\": in a pack?","answers" : [')).toBe(1);
-  expect(promptsBegun('{"name":"Riv')).toBe(0);
-});
-
-test("writing that is stopped keeps no pack", async () => {
+test("how a writing stands is told while it goes on, and it picks up where it stood", async () => {
   const id = await account();
-  const stop = new AbortController();
-  stop.abort();
-  expect(await writePack(id, { topic: "rivers" }, undefined, stop.signal)).toEqual([expect.stringContaining("stopped")]);
+  expect(await writePack(id, { topic: "rivers" })).toEqual([]);
+  expect(await writingOf(id)).toEqual({ topic: "rivers", done: 0, of: 10 });
+  // As if the server had stopped once the plan and the first prompt were written.
+  await sql`update writings set plan = ${PLAN}, answers = ${{ 0: DRAFT.prompts[0]!.answers }}::jsonb where account_id = ${id}`;
+  expect(await writingOf(id)).toEqual({ topic: "rivers", done: 1, of: 2 });
+  await run(id);
+  expect(asked.map((one) => one.asking)).toEqual(["Name a river in Europe"]);
+  expect(await listPacks(id)).toEqual([{ id: "rivers", name: "Rivers", prompts: 2 }]);
+});
+
+test("a player has one writing at a time, and may stop it", async () => {
+  const id = await account();
+  expect(await writePack(id, { topic: "rivers" })).toEqual([]);
+  expect(await writePack(id, { topic: "lakes" })).toEqual([expect.stringContaining("still writing")]);
+  await stopWriting(id);
+  expect(await writingOf(id)).toBeNull();
+  // Stopped while a prompt is being written.
+  reply = () => ({ delay: 200 });
+  expect(await writePack(id, { topic: "rivers" })).toEqual([]);
+  const going = run(id);
+  await Bun.sleep(50);
+  await stopWriting(id);
+  await going;
+  expect(await writingOf(id)).toBeNull();
   expect(await listPacks(id)).toEqual([]);
 });
 
 test("a second pack of the same name does not replace the first", async () => {
   const id = await account();
-  await writePack(id, { topic: "rivers" });
-  expect(await writePack(id, { topic: "rivers" })).toEqual([]);
+  await write(id, { topic: "rivers" });
+  expect(await write(id, { topic: "rivers" })).toEqual([]);
   expect((await listPacks(id)).map((pack) => pack.id)).toEqual(["rivers", "rivers-2"]);
 });
 
 test("a pack named in another script still gets an id", async () => {
   const id = await account();
-  reply = { text: JSON.stringify({ ...DRAFT, name: "河流" }) };
-  expect(await writePack(id, { topic: "河流" })).toEqual([]);
+  reply = (asking) => (asking === "plan" ? { text: JSON.stringify({ ...PLAN, name: "河流" }) } : {});
+  expect(await write(id, { topic: "河流" })).toEqual([]);
   expect(await listPacks(id)).toEqual([{ id: "pack", name: "河流", prompts: 2 }]);
 });
 
-test("Claude is told the player's language, and a refusal comes back in it", async () => {
+test("Claude is told the player's language, and what goes wrong is said in it", async () => {
   const id = await account();
-  expect(await writePack(id, { topic: "rivers" }, undefined, undefined, "zh-CN")).toEqual([]);
+  expect(await write(id, { topic: "rivers" }, "zh-CN")).toEqual([]);
   expect(asked[0]!.body.messages[0]!.content).toBe("Topic: rivers\nLanguage: Simplified Chinese\nPrompts: 10");
-  expect(await writePack(id, { topic: "  " }, undefined, undefined, "zh-CN")).toEqual([wordsIn("zh-CN").packs.badTopic(MAX_TOPIC_LENGTH)]);
+  expect(await writePack(id, { topic: "  " }, "zh-CN")).toEqual([wordsIn("zh-CN").packs.badTopic(MAX_TOPIC_LENGTH)]);
+  reply = () => ({ status: 401 });
+  await write(id, { topic: "rivers" }, "zh-CN");
+  expect((await writingOf(id))?.failed).toBe(wordsIn("zh-CN").packs.keyRefused);
 });
 
 test("without a key, a topic or a sound order, nothing is asked of Anthropic", async () => {
@@ -155,17 +191,38 @@ test("without a key, a topic or a sound order, nothing is asked of Anthropic", a
   expect(asked).toHaveLength(0);
 });
 
-test("what goes wrong at Anthropic is said in words, and no pack is kept", async () => {
+test("a writing that fails says why once, keeps no pack, and makes way for the next", async () => {
   const id = await account();
-  reply = { status: 401 };
-  expect(await writePack(id, { topic: "rivers" })).toEqual([expect.stringContaining("did not accept")]);
-  reply = { stop: "refusal", text: "" };
-  expect(await writePack(id, { topic: "rivers" })).toEqual([expect.stringContaining("declined")]);
-  reply = { stop: "max_tokens", text: '{"name": "Riv' };
-  expect(await writePack(id, { topic: "rivers" })).toEqual([expect.stringContaining("too long")]);
-  reply = { text: JSON.stringify({ name: "Rivers", prompts: [] }) };
-  expect(await writePack(id, { topic: "rivers" })).toEqual([expect.stringContaining("could not be used")]);
+  const failsWith = async (answer: (asking: string) => Reply) => {
+    reply = answer;
+    expect(await write(id, { topic: "rivers" })).toEqual([]);
+    const failed = (await writingOf(id))?.failed;
+    expect(await writingOf(id)).toBeNull();
+    return failed;
+  };
+  expect(await failsWith(() => ({ status: 401 }))).toContain("did not accept");
+  expect(await failsWith((asking) => (asking === "plan" ? { stop: "refusal", text: "" } : {}))).toContain("declined");
+  expect(await failsWith((asking) => (asking === "plan" ? { stop: "max_tokens", text: '{"name": "Riv' } : {}))).toContain("too long");
+  expect(await failsWith((asking) => (asking === "plan" ? { text: JSON.stringify({ name: "Rivers", prompts: [] }) } : {}))).toContain("could not be used");
+  expect(await failsWith((asking) => (asking === "plan" ? {} : { stop: "refusal", text: "" }))).toContain("could not be used");
   expect(await listPacks(id)).toEqual([]);
+});
+
+test("a key that fails on one prompt ends the writing, and no more prompts are asked for", async () => {
+  const id = await account();
+  const many = { name: "Rivers", prompts: Array.from({ length: 10 }, (_, i) => `Name river ${i}`) };
+  reply = (asking) => (asking === "plan" ? { text: JSON.stringify(many) } : asking === "Name river 1" ? { status: 401 } : { delay: 100 });
+  expect(await write(id, { topic: "rivers" })).toEqual([]);
+  expect((await writingOf(id))?.failed).toContain("did not accept");
+  // The plan, the failed prompt and the one being written beside it.
+  expect(asked).toHaveLength(3);
+});
+
+test("a prompt Claude will not write is left out of the pack", async () => {
+  const id = await account();
+  reply = (asking) => (asking === "Name a river in Africa" ? { stop: "refusal", text: "" } : {});
+  expect(await write(id, { topic: "rivers" })).toEqual([]);
+  expect(await listPacks(id)).toEqual([{ id: "rivers", name: "Rivers", prompts: 1 }]);
 });
 
 test("a draft is mended into a valid pack", () => {

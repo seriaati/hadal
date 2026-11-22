@@ -40,7 +40,10 @@ clock, which the server waits a moment for, so the last letters typed before it 
 count. Players can also add
 packs of their own, have Claude write one (10 to 50 prompts on a topic, with notes of their
 own, searching the web if they turn that on), and have answers a pack does not list judged
-live with their own API key.
+live with their own API key. Claude writes a pack in the background, one at a time for each
+player: first its name and prompts, then each prompt's answers, which may run to thousands.
+The game may be closed meanwhile, and a server that restarts goes on where it stood; the pack
+appears among the player's when it is done.
 
 The game speaks English, Simplified Chinese and Traditional Chinese (as written in Taiwan). It
 starts in the browser's language, and the settings change it; Claude writes a player's packs in

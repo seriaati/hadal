@@ -47,6 +47,8 @@ export const MAX_INSTRUCTIONS_LENGTH = 300;
 export const WRITTEN_PROMPTS = [10, 20, 30, 40, 50];
 /** What a player asks Claude for: `instructions` are their own words on top of the game's. */
 export type WriteOrder = { topic: string; instructions: string; prompts: number; search: boolean };
+/** How a pack Claude is writing stands: `done` prompts of `of` are written. `failed` is why it stopped. */
+export type Writing = { topic: string; done: number; of: number; failed?: string };
 /** Lower-case letters and digits only: what the pixel fonts can draw. */
 export const USERNAME = /^[a-z0-9]{3,16}$/;
 export const USERNAME_MAX = 16;

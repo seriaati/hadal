@@ -1,4 +1,4 @@
-import { MAX_INSTRUCTIONS_LENGTH, MAX_PACK_BYTES, MAX_TOPIC_LENGTH, WRITTEN_PROMPTS, type PackSummary, type WriteOrder } from "../../shared/types";
+import { MAX_INSTRUCTIONS_LENGTH, MAX_PACK_BYTES, MAX_TOPIC_LENGTH, WRITTEN_PROMPTS, type PackSummary, type Writing, type WriteOrder } from "../../shared/types";
 import { t } from "../language";
 import type { Sound } from "../sound";
 import type { AccountPanel } from "./account";
@@ -8,6 +8,8 @@ import type { Part, Step, Ui } from "./ui";
 /** As many lines about a refused file as fit on the shortest screen, wrapped as in the narrowest column. */
 const MAX_LINES = 10;
 const COLUMN = 128;
+/** How often the server is asked how a pack being written stands. */
+const FOLLOW_MS = 3000;
 
 /** The problems of a file, as many as fit, then a count of the rest. */
 function report(problems: string[]): string[] {
@@ -34,7 +36,11 @@ export class PacksPanel {
   private refused: string[] = [];
   /** Whether what was refused was a file, so that another can be chosen. */
   private refusedFile = false;
-  private writing: { topic: string; done: number; of: number; stop: AbortController } | null = null;
+  /** The pack Claude is writing for the player, as the server last told it. */
+  private writing: Writing | null = null;
+  private nextLook: ReturnType<typeof setTimeout> | undefined;
+  /** Counts the looks at the writing, so that one answered after the player stopped it counts for nothing. */
+  private looks = 0;
   /** What the next pack is asked to be, besides its topic and the notes. */
   private prompts = WRITTEN_PROMPTS[0]!;
   private search = false;
@@ -56,10 +62,58 @@ export class PacksPanel {
   async load() {
     if (!this.account.account) {
       this.packs = [];
+      this.forget();
       return;
     }
+    await this.loadPacks();
+    await this.look();
+  }
+
+  private async loadPacks() {
     const body = (await (await fetch("/api/packs")).json()) as PackSummary[] | { problems: string[] };
     if (Array.isArray(body)) this.packs = body;
+  }
+
+  /** Asks the server how the writing stands, and asks again a little later while it goes on. */
+  private async look() {
+    clearTimeout(this.nextLook);
+    const look = ++this.looks;
+    let now: Writing | null;
+    try {
+      const res = await fetch("/api/write");
+      if (!res.ok) return this.forget();
+      now = (await res.json()) as Writing | null;
+    } catch {
+      // The server cannot be reached, perhaps while it restarts: the writing goes on there.
+      now = this.writing;
+    }
+    if (look !== this.looks) return;
+    const was = this.writing;
+    if (now?.failed) {
+      this.writing = null;
+      this.unwritten = now.failed;
+      this.sound.written(false);
+      return;
+    }
+    this.writing = now;
+    if (now) this.nextLook = setTimeout(() => void this.look(), FOLLOW_MS);
+    else if (was) await this.written();
+  }
+
+  private forget() {
+    this.looks++;
+    clearTimeout(this.nextLook);
+    this.writing = null;
+  }
+
+  private async written() {
+    const had = new Set(this.packs.map((pack) => pack.id));
+    await this.loadPacks();
+    this.sound.written(true);
+    if (this.ui.top !== this.write) return;
+    this.ui.back();
+    const fresh = this.packs.find((pack) => !had.has(pack.id));
+    if (fresh) this.ui.focus(`dive:${fresh.id}`);
   }
 
   private list = (): Step => {
@@ -144,7 +198,7 @@ export class PacksPanel {
         rows: [
           { kind: "wait", text: words.writing(writing.topic), done: writing.done, of: writing.of },
           { kind: "gap" },
-          { kind: "press", id: "stop", label: words.stop, press: () => writing.stop.abort() },
+          { kind: "press", id: "stop", label: words.stop, press: () => void this.stop() },
         ],
       };
     }
@@ -167,6 +221,7 @@ export class PacksPanel {
     };
     return {
       title,
+      busy: this.busy,
       rows: [
         { kind: "field", id: "topic", label: words.topic, max: MAX_TOPIC_LENGTH, autocomplete: "off" },
         { kind: "field", id: "instructions", label: words.instructions, max: MAX_INSTRUCTIONS_LENGTH, autocomplete: "off" },
@@ -240,47 +295,33 @@ export class PacksPanel {
     this.ui.focus(next ? `remove:${next.id}` : "add");
   }
 
-  /** The panel may be left meanwhile: the writing goes on. */
+  /** The writing goes on at the server, even if the game is closed. */
   private async begin() {
     const topic = this.ui.value("topic").trim();
     if (!topic) return;
-    const had = new Set(this.packs.map((pack) => pack.id));
-    const stop = new AbortController();
     const order: WriteOrder = { topic, instructions: this.ui.value("instructions").trim(), prompts: this.prompts, search: this.search };
-    const writing = (this.writing = { topic, done: 0, of: order.prompts, stop });
-    let problems = [t().noAnswer];
+    this.busy = true;
+    let body: Writing | { problems: string[] };
     try {
-      const res = await fetch("/api/write", { method: "POST", body: JSON.stringify(order), signal: stop.signal });
-      // The answer comes a line at a time: how many prompts are written so far, and at the end the packs or what went wrong.
-      const reader = res.body!.pipeThrough(new TextDecoderStream()).getReader();
-      for (let rest = ""; ; ) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        const lines = (rest + value).split("\n");
-        rest = lines.pop()!;
-        for (const line of lines) {
-          const said = JSON.parse(line) as { prompts?: number; packs?: PackSummary[]; problems?: string[] };
-          if (said.prompts !== undefined) writing.done = said.prompts;
-          if (said.problems) problems = said.problems;
-          if (said.packs) {
-            this.packs = said.packs;
-            problems = [];
-          }
-        }
-      }
+      body = (await (await fetch("/api/write", { method: "POST", body: JSON.stringify(order) })).json()) as typeof body;
     } catch {
-      // Stopped by the player, or the connection was lost: the signal says which.
+      body = { problems: [t().noAnswer] };
     }
-    this.writing = null;
-    this.unwritten = stop.signal.aborted ? "" : (problems[0] ?? "");
-    if (stop.signal.aborted) return;
-    this.sound.written(!this.unwritten);
-    if (this.unwritten) return;
+    this.busy = false;
+    if ("problems" in body) {
+      this.unwritten = body.problems[0] ?? "";
+      this.sound.written(false);
+      return;
+    }
+    this.unwritten = "";
     this.ui.clear("topic");
     this.ui.clear("instructions");
-    if (this.ui.top !== this.write) return;
-    this.ui.back();
-    const fresh = this.packs.find((pack) => !had.has(pack.id));
-    if (fresh) this.ui.focus(`dive:${fresh.id}`);
+    this.writing = body;
+    this.nextLook = setTimeout(() => void this.look(), FOLLOW_MS);
+  }
+
+  private async stop() {
+    this.forget();
+    await fetch("/api/write", { method: "DELETE" }).catch(() => {});
   }
 }
