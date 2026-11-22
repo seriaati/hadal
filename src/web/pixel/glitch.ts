@@ -172,6 +172,7 @@ export class Glitch {
       for (let k = 0; k < 4; k++) layers[k]![to] = from[k]![at]!;
     };
     const blank = (i: number, color = 0) => {
+      frame.clearFine(i % W, Math.floor(i / W));
       frame.color[i] = color;
       frame.glowColor[i] = 0;
       frame.shade[i] = 0;
@@ -362,6 +363,7 @@ export class Glitch {
           const d = Math.hypot(x - ex, y - cy);
           const vein = hash(Math.round(Math.atan2(y - cy, x - ex) * 6), 7) < 0.3 && d > r * 0.55;
           const i = y * W + x;
+          frame.clearFine(x, y);
           frame.color[i] = d < r * 0.22 ? 0 : d < r * 0.5 ? 18 : vein ? 18 : 7;
           frame.glowColor[i] = frame.color[i] === 18 ? 19 : 0;
           frame.glowStrength[i] = frame.color[i] === 18 ? 60 : 0;

@@ -117,6 +117,12 @@ export class Frame {
     if (this.block >= 0) this.shade[i] = this.block;
   }
 
+  clearFine(x: number, y: number) {
+    const top = y * 2 * this.width * 2 + x * 2;
+    this.fine.fill(0, top, top + 2);
+    this.fine.fill(0, top + this.width * 2, top + this.width * 2 + 2);
+  }
+
   /** If `glowChars` is given, only those characters glow. */
   sprite(rows: string[], x: number, y: number, glowChars?: string) {
     const emit = this.emit;
