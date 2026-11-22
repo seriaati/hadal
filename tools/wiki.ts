@@ -104,6 +104,13 @@ export async function entities(qids: string[], languages: string[]): Promise<Map
   return found;
 }
 
+/** A page as Wikipedia shows it, in HTML: its templates (flags, links built by them) already worked out. */
+export async function rendered(title: string, language: string): Promise<string> {
+  const answer = await get(api(language), { action: "parse", page: title, prop: "text", redirects: "1" });
+  if (answer.error) throw new Error(`${title}: ${answer.error.info}`);
+  return answer.parse.text;
+}
+
 /** The articles a page links to, or the articles in a category ("Category:Dog breeds"): candidates for a list, to be sorted by hand. */
 export async function members(source: string, language: string): Promise<string[]> {
   const titles: string[] = [];
