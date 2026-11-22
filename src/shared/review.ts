@@ -1,27 +1,37 @@
 // For the review page of developer mode, and the pack tools that feed it (`tools/`).
 import type { Pack, Tier } from "./types";
 
+/** "known" for a set most players know well (countries, capitals), "open" for one nobody knows whole (species, films). */
+export type Curve = "known" | "open";
+
 /**
  * How many answers of a prompt with `n` answers reach each tier and those above it: `n` to these
- * powers. Fitted by eye to krillion.io's lists, where the top tiers grow far slower than the list
- * (2 common of 9 neighbours of Germany, 12 of 37,000 fish). To tune by the players' counts.
+ * powers. Fitted to krillion.io's lists on 2026-11-22: its 217 capitals reach 0.45, 0.69 and 0.86,
+ * its fish, rom-coms and video games about 0.2, 0.4 and 0.65. To tune by the players' counts.
  */
-const PYRAMID: [Tier, number][] = [
-  ["common", 0.3],
-  ["familiar", 0.5],
-  ["uncommon", 0.7],
-];
+const PYRAMIDS: Record<Curve, [Tier, number][]> = {
+  known: [
+    ["common", 0.45],
+    ["familiar", 0.69],
+    ["uncommon", 0.86],
+  ],
+  open: [
+    ["common", 0.3],
+    ["familiar", 0.5],
+    ["uncommon", 0.7],
+  ],
+};
 
 /**
  * A tier for each answer from how much it is read or given (null where that is not known), by its
  * rank among the others. The first answer is always common; a gem is chosen, never suggested.
  */
-export function pyramid(amounts: (number | null)[]): (Tier | null)[] {
+export function pyramid(amounts: (number | null)[], curve: Curve = "open"): (Tier | null)[] {
   const known = amounts.filter((amount): amount is number => amount !== null).sort((a, b) => b - a);
   return amounts.map((amount) => {
     if (amount === null) return null;
     const rank = known.indexOf(amount);
-    return PYRAMID.find(([, power]) => rank < known.length ** power)?.[0] ?? "rare";
+    return PYRAMIDS[curve].find(([, power]) => rank < known.length ** power)?.[0] ?? "rare";
   });
 }
 

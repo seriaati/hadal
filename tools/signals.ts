@@ -1,8 +1,9 @@
 // Looks every answer of a pack up on Wikipedia: which article it means, how often that was read in
 // the last 60 days, and in how many Wikipedias it has an article. Suggests a tier from the reads,
 // writes it all to `curation/<pack id>.signals.json` for the review page, and lists the answers
-// whose tier is far from the suggestion, and those it found no article for.
-//   bun tools/signals.ts packs/en/geography.json [--prompt germany-borders] [--hint "dog breed"]
+// whose tier is far from the suggestion, and those it found no article for. `--known` suggests on
+// the curve for sets most players know well (countries, capitals) rather than open ones (species).
+//   bun tools/signals.ts packs/en/geography.json [--prompt germany-borders] [--hint "dog breed"] [--known]
 import { pyramid, type Signals } from "../src/shared/review";
 import { TIERS, type Tier } from "../src/shared/types";
 import { option, readPack, resolve, signalsFile, titlesOf, wikiOf } from "./curation";
@@ -15,6 +16,7 @@ if (!file) {
 }
 const only = option("--prompt");
 const hint = option("--hint");
+const curve = process.argv.includes("--known") ? "known" : "open";
 const pack = await readPack(file);
 const language = wikiOf(file);
 const titles = await titlesOf(pack.id);
@@ -32,7 +34,7 @@ for (const prompt of pack.prompts.filter((prompt) => !only || prompt.id === only
     const article = found.get(name);
     return article ? (read.get(article.title) ?? 0) : null;
   });
-  const suggested = pyramid(amounts);
+  const suggested = pyramid(amounts, curve);
   signals[prompt.id] = Object.fromEntries(
     prompt.answers.map((answer, i) => {
       const article = found.get(names[i]!);
@@ -41,7 +43,7 @@ for (const prompt of pack.prompts.filter((prompt) => !only || prompt.id === only
     }),
   );
 
-  console.log(`\n${prompt.id}: ${found.size} of ${prompt.answers.length} answers found on ${language}.wikipedia.org`);
+  console.log(`\n${prompt.id}: ${found.size} of ${prompt.answers.length} answers found on ${language}.wikipedia.org, suggested on the ${curve} curve`);
   prompt.answers.forEach((answer, i) => {
     const tip = suggested[i];
     // A gem is chosen among the rarest, so it is weighed as one of them.
