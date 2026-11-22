@@ -1,0 +1,108 @@
+# Writing good packs
+
+The packs are the game. This is how a good prompt, a good answer list and good tiers look, and
+how the built-in packs are made. The format itself is under "Pack format" in `docs/GAME.md`.
+
+## A good prompt
+
+A prompt asks for one item of a set. It works when every one of these holds:
+
+1. **One source can list the whole set**: a Wikipedia list, an official register, a ballot, a
+   game's own data. If no source lists it, the list will have gaps, and a gap punishes exactly
+   the well-read player the game rewards. Rewrite the prompt or drop it.
+2. **Its edges are pinned.** Every answer a player could defend is either listed or ruled out
+   by the prompt's own words. Try to break it: name five answers a player might argue for,
+   and check each one. Where the edge is unclear, say it in the prompt: "Name a fish (living
+   species)", "Name a rom-com (1000+ IMDb votes)", "within city limits".
+3. **It is neither too narrow nor too broad.** "Name a member of Queen" is too narrow: up to six
+   divers share a prompt, and the last finds nothing left. "Name a band" is too broad: nobody
+   can list it. Add constraints until the set is closed and still large.
+4. **Its answers differ in how well known they are.** The twelve signs of the Chinese zodiac are
+   all equally known, so no answer can be told rare. Drop such sets, or cut them differently.
+5. **Anyone can start.** An ordinary adult who is no fan can name two or three answers.
+6. **Deep answers can be reached.** The best rare answer is one a player can reason their way
+   to and knows at once is right ("Central African Republic" for "a country with a P in its
+   name": few notice the P in Republic). A tail of answers nobody could think of is noise.
+7. **It stays put.** No current rosters or latest winners; nothing not yet released.
+8. **It suits the pack's language.** An English pack does not ask about the classic Chinese
+   novels; a Chinese pack may. What is rare depends on who plays.
+
+### Patterns that work
+
+- **A familiar set cut by a property**: "a country whose flag has a star", "a capital that is
+  not its country's largest city", "an island country", "a country whose English name has J, K
+  or V". The set is closed, everyone can start, and rarity comes both from how well known an
+  item is and from how plain it is that it has the property.
+- **A set an outside authority defines**: Oscar winners, UNESCO sites, the 88 constellations,
+  a game's full item list.
+- **A large set made closed by a stated cut-off**: a film genre with a vote threshold, living
+  species of a group, works of an author.
+- **Letters as a constraint** on a huge familiar set: "a one-word animal starting with ch or sh".
+
+### Patterns to avoid
+
+- Sets that rest on judgement: "a scary film", "a famous painter".
+- "Name something used to …" (Family Feud style): the list can never be complete.
+- Sets that are all equally known (zodiac signs, days of the week, chess pieces).
+- Sets that change within a few years.
+
+## A good answer list
+
+- **List every answer, not a selection.** Bigger is better as long as each entry is checked: a
+  wrong answer in the list is worse than a missing one. Lists of hundreds or thousands are fine.
+- **Merge sources.** Take the main list, then add what other lists name. Missing a fair answer
+  is the most common complaint about games like this.
+- **Aliases** are other names a player may type: older names, short forms, the English name in
+  a Chinese pack, the mainland name in a Taiwan pack. Wikipedia's redirects to an article are a
+  good source of them. The game already forgives case, accents, punctuation, spaces, a leading
+  "the" and small typos.
+- **Be generous at the edges.** If a player can make a fair case for an answer, accept it.
+
+## Tiers
+
+| Tier | Points | Who gives it |
+|---|---|---|
+| common | 10 | nearly everyone, first |
+| familiar | 30 | most players |
+| uncommon | 60 | some players |
+| rare | 85 | few players |
+| gem | 100 | the most satisfying of the rarest answers |
+
+- **A pyramid.** Common is a handful, even in a list of thousands; familiar and uncommon grow
+  slower than the list does, and most of a long list is rare. Of 9 answers, about 2 common, 1
+  familiar, 2 uncommon and 4 rare; of 1,000, about 8, 24, 94 and 874.
+- **Gems are chosen, not computed.** One to three per prompt, from the rarest answers, for being
+  a pleasure to land on. Not merely the most obscure: something at least a few players get.
+- **Watch the "too clever" pick**, the go-to obscure answer that many players give (Eswatini for
+  an African country). It is not rare. Data catches it; a guess usually does not.
+- **Rarity is about recall, not fame.** The question is "would a player think of it unprompted?",
+  not "has a player heard of it?".
+
+## Measuring rarity
+
+Guesses are a start; data is better. `bun tools/signals.ts <pack file>` looks every answer up on
+Wikipedia and suggests tiers from how often its article is read. Use it as a check, not the score:
+
+- **Pageviews measure curiosity as well as fame.** People read about what they do not know:
+  Eswatini's article is read more than Mongolia's, yet nobody names Eswatini first. Distrust a
+  rare answer the data calls common, and the reverse.
+- **Ambiguous names** (Mercury, Chad, Boxer) need the right article; the tool says which it used.
+- **Chinese Wikipedia** is thin and is not read in mainland China; an answer with no Chinese
+  article at all is likely rare for Chinese players.
+
+The best data is the players' own. The game counts every answer typed to a built-in prompt, right
+or wrong (`answer_counts`). The review page shows those counts, the answers players typed that
+the pack does not list, and tiers the counts disagree with.
+
+## How a built-in pack is made
+
+The `curate-pack` skill (`.claude/skills/curate-pack/SKILL.md`) walks Claude Code through it:
+
+1. Draft twice as many prompts as needed, check each against "A good prompt", and choose.
+2. Build each answer list from sources, with aliases.
+3. Tier it: signals first, then judgement, then the gems.
+4. Check it with `validatePack`, and write `packs/<language>/<id>.json`.
+5. Review it in the game with developer mode on, at `/dev/review`: move answers between tiers,
+   fix or remove them, add what players typed, and save.
+6. Make the Chinese packs from it: the names Wikidata gives in Simplified and Traditional
+   Chinese, with the English names as aliases.
