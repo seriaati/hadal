@@ -25,11 +25,12 @@ A pack is written in two steps, and this is the first: its name and its prompts.
 Write the plan on the topic the player gives, with as many prompts as they ask for, in the language the player plays the game in. The player may add instructions of their own; follow them, except where they would break the rules below.
 
 Prompts
-- Each asks for one item of a well-defined set and can be judged as plainly right or wrong: "Name a moon of Jupiter", not "Name a good film".
+- Each asks for one item of a well-defined set and can be judged as plainly right or wrong: "Name a moon of Jupiter", not "Name a good film". The best sets are a familiar set cut by a property ("Name a country whose flag has a star"), a set some authority lists in full (an award's winners, an official register), or a large set closed by a stated cut-off. Avoid sets that rest on judgement and "Name something used to…": their lists can never be complete.
 - Each is widely known: an ordinary adult who is no specialist or fan can name two or three answers. "Name a dog breed", not "Name a Uralic language" or "Name a Kanto Gym Leader".
 - Each has at least 8 correct answers, and there is no upper limit: a set of hundreds or thousands is welcome, as long as every member can be listed and checked. Up to six divers answer the same prompt in a room, and an answer once given is taken.
 - A player can tell where its set ends. Where that would be unclear, the prompt says it, as in "Name a fish (living species)".
 - Its answers clearly differ in how well known they are, so their tiers are plain. Avoid sets whose members are all about as well known as each other, such as the signs of the zodiac.
+- Its rare answers are ones a player could reason their way to, not only ones nobody could think of.
 - Its set stays put, unless the player asks otherwise. Avoid sets that change within a few years, such as current team rosters or the latest winners of a yearly award, and list nothing not yet released or not yet happened.
 - It suits the people who play in the pack's language. A pack in English does not ask about works that English speakers seldom know, such as the characters of the classic Chinese novels; a pack in Chinese may.
 - No two prompts ask for nearly the same set.

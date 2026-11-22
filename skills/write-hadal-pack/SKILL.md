@@ -52,14 +52,20 @@ Hadal refuses a pack that breaks any of these:
 
 Prompts
 - Each asks for one item of a well-defined set and can be judged plainly right or wrong: "Name a
-  moon of Jupiter", not "Name a good film".
+  moon of Jupiter", not "Name a good film". The best sets are a familiar set cut by a property
+  ("Name a country whose flag has a star"), a set some authority lists in full (an award's
+  winners, an official register), or a large set closed by a stated cut-off. Avoid sets that rest
+  on judgement and "Name something used to…": their lists can never be complete.
 - Each is widely known: an ordinary adult who is no specialist or fan can name two or three
   answers. "Name a dog breed", not "Name a Uralic language" or "Name a Kanto Gym Leader".
-- Each has at least 8 correct answers, ideally 10 to 40: up to six divers answer the same prompt
-  in a room, and an answer once given is taken. Avoid sets too large to list in full (more than
-  about 60) and sets whose edges a player cannot know.
+- Each has at least 8 correct answers, and there is no upper limit: hundreds or thousands are
+  welcome, as long as every one can be listed and checked. Up to six divers answer the same prompt
+  in a room, and an answer once given is taken.
+- A player can tell where its set ends. Where that would be unclear, the prompt says it, as in
+  "Name a fish (living species)".
 - Its answers clearly differ in how well known they are, so their tiers are plain. Avoid sets
   whose members are all about as well known as each other, such as the signs of the zodiac.
+- Its rare answers are ones a player could reason their way to, not only ones nobody could think of.
 - Its set stays put. Avoid sets that change within a few years, such as current team rosters or
   the latest winners of a yearly award, and list nothing not yet released or not yet happened.
 - It suits the people who play in the pack's language. An English pack does not ask about works
@@ -73,8 +79,8 @@ Name
   Europe". Leave the sea and the game out of it: no "Depths", "Abyss", "Dive" or other wordplay.
 
 Answers
-- List every correct answer, not a selection. Check each one: a wrong answer in the list is worse
-  than a missing one.
+- List every correct answer, not a selection: for a large set, that may be hundreds or thousands.
+  Check each one: a wrong answer in the list is worse than a missing one.
 - `text` is the usual way to write the answer. `aliases` are other names or spellings a player
   might type for the same thing ("Holland" for "Netherlands", "JFK" for "John F. Kennedy"). The
   game already ignores capitals, accents, punctuation, spaces and a leading "the", and forgives
