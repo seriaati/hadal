@@ -23,7 +23,10 @@ A prompt asks for one item of a set. It works when every one of these holds:
 6. **Deep answers can be reached.** The best rare answer is one a player can reason their way
    to and knows at once is right ("Central African Republic" for "a country with a P in its
    name": few notice the P in Republic). A tail of answers nobody could think of is noise.
-7. **It stays put.** No current rosters or latest winners; nothing not yet released.
+7. **It stays put.** A set that grows on a schedule (award winners, champions, rankings, a
+   studio's films) says where it stops: "(to 2025)", "(to the 2026 Oscars)". A living person's
+   body of work, which grows seldom and which players expect to be current, may stay open and be
+   updated when a new work comes out. No current rosters; nothing not yet released.
 8. **It suits the pack's language.** An English pack does not ask about the classic Chinese
    novels; a Chinese pack may. What is rare depends on who plays.
 
@@ -57,6 +60,9 @@ A prompt asks for one item of a set. It works when every one of these holds:
   good source of them. The game already forgives case, accents, punctuation, spaces, a leading
   "the" and small typos.
 - **Be generous at the edges.** If a player can make a fair case for an answer, accept it.
+- **Political sensitivity is no reason to drop or change a prompt or an answer**, in any
+  language's pack. The zh-CN packs list what the sources list, the Dalai Lama among the Nobel
+  Peace laureates included.
 
 ## Tiers
 
