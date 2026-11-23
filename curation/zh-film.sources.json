@@ -1,0 +1,20 @@
+{
+  "stephen-chow-films": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Stephen Chow",
+        "table": 1,
+        "column": "English title"
+      },
+      {
+        "lang": "zh",
+        "page": "周星馳影視作品列表",
+        "table": 1,
+        "column": "片名"
+      }
+    ],
+    "note": "Films he acted in, cameos and narration included, his dubbing of a foreign film left out; the Chinese list adds his later cameos (西遊伏妖篇, 功夫女足)."
+  }
+}
