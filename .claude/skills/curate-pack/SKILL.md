@@ -39,8 +39,18 @@ owner decides which prompts stay and has the last word on tiers.
   nicknames, romanizations and sub-topics. Add by hand the longer forms the game does not take
   for the short one: "Amazon River" for "Amazon".
 - An answer that leads to the wrong article ("Newfoundland" to the province) gets its title in
-  `curation/<id>.titles.json`: `{ "<prompt id>": { "Newfoundland": "Newfoundland dog" } }`. That
-  file is kept in git; the others under `curation/` are made again whenever a tool runs.
+  `curation/<id>.titles.json`: `{ "<prompt id>": { "Newfoundland": "Newfoundland dog" } }`.
+- A prompt whose set can grow (a cut-off year, a living person's work, a list that gains members)
+  gets its sources in `curation/<id>.sources.json` (`zh-<id>`/`tw-<id>` for a prompt only a Chinese
+  pack asks), so the monthly update (`.github/workflows/update-packs.yml`) can check them:
+  `{ "<prompt id>": { "kind": "cutoff" | "open", "until": 2025, "sources": [{ "lang": "en", "page":
+  "List of …", "table": 1, "column": "Title" }], "note": "how the source was filtered" } }`, with
+  `"members": true` in place of table and column for a page read with `tools/members.ts`, a column
+  number for a table with no header row, and `"fixed": true` on a cut-off chosen to keep the prompt
+  deep ("before 2000") rather than current, which the January run then leaves alone. Then run
+  `bun tools/sources.ts --write` to record what the sources list now in `curation/<id>.seen.json`.
+- The titles, sources and seen files are kept in git; the others under `curation/` are made again
+  whenever a tool runs.
 
 ## 3. Put the answers in tiers
 

@@ -1,0 +1,116 @@
+# Keeps the prompts whose answers grow over time up to date. A free check (tools/sources.ts) looks
+# for rows their Wikipedia sources gained since the last run; only then does Claude add the
+# answers, and the result comes as a pull request to review. In January it also moves cut-off
+# years forward ("to 2025" becomes "to 2026").
+name: Update packs
+
+on:
+  schedule:
+    - cron: "0 3 1 * *"
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Also move cut-off years forward, as the January run does
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+# Two runs at once would open two pull requests for the same rows.
+concurrency: update-packs
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4"
+
+      - run: bun install --frozen-lockfile
+
+      - name: Check the sources
+        id: check
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          flags=""
+          if [ "$(date -u +%m)" = "01" ] || [ "$BUMP" = "true" ]; then flags="--bump"; fi
+          bun tools/sources.ts $flags --report update-report.json
+          work=$(bun -e 'const r = await Bun.file("update-report.json").json(); console.log(r.prompts.length + r.problems.length > 0)')
+          echo "work=$work" >> "$GITHUB_OUTPUT"
+
+      - name: Update the packs
+        if: steps.check.outputs.work == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_args: >-
+            --max-turns 200
+            --allowedTools "Read,Edit,Write,Glob,Grep,Skill,Bash(bun tools/table.ts:*),Bash(bun tools/members.ts:*),Bash(bun tools/names.ts:*),Bash(bun tools/signals.ts:*),Bash(bun tools/check.ts:*),Bash(bun test:*),Bash(bun typecheck)"
+          prompt: |
+            You are updating Hadal's built-in trivia packs from their sources. First read CLAUDE.md,
+            docs/PACKS.md and .claude/skills/curate-pack/SKILL.md.
+
+            update-report.json, in the repository root, lists each prompt whose answers can grow:
+            - "added": rows its sources list that were not there at the last check, each with its
+              value (an article title or the cell's text) and its whole table row.
+            - "pastCutoff" (January only): rows dated after the prompt's cut-off year ("until").
+            - "packs": the pack files that ask the prompt, in English, zh-CN and zh-TW.
+            - "sources": the file that says where the prompt's answers come from. Its "note" says
+              how the source was filtered.
+            The report's "problems" are sources that could not be read (a table moved, a column renamed).
+
+            For each prompt:
+            1. Decide for every added row whether it is a fair answer to the prompt as worded.
+               Skip rows the note filters out, answers already listed under another spelling, and
+               anything that is not an answer.
+            2. Add each new answer to every pack listed, under the name a player would type, with
+               aliases. `bun tools/names.ts <pack file> --prompt <id>` gives redirects and Chinese
+               names: the zh-CN pack uses mainland names and the zh-TW pack Taiwan's, each with the
+               other's and the English name as aliases. Tier each by the curate-pack skill (new
+               answers are usually rare; `bun tools/signals.ts <pack file> --prompt <id>` helps).
+               Never make a new answer a gem.
+            3. Only for prompts with "pastCutoff" rows: move the cut-off forward to the newest year
+               the source lists in full (an award whose ceremony has happened, a season that has
+               ended; when unsure, the earlier year). Change the year in the prompt's text in every
+               pack listed and "until" in its sources file, and add the rows up to that year as in step 2.
+            4. For each problem, find where the list is now (`bun tools/table.ts "<page>"`) and fix
+               that source's "table" or "column" in its sources file. Change no answers because of a problem.
+
+            Never remove answers or prompts, and never change a prompt's id. Political sensitivity is
+            no reason to leave anything out. Change only files in packs/ and curation/*.sources.json.
+
+            Finish with `bun tools/check.ts --write` on every pack you changed, then `bun test`.
+            Both must pass. Then write update-summary.md in the repository root, for the pull
+            request's description: per prompt, the answers you added with their tiers, cut-offs
+            moved, sources fixed, and the rows you skipped with a few words on why.
+
+      - name: Record what the sources list now
+        if: steps.check.outputs.work == 'true'
+        run: bun tools/sources.ts --write
+
+      - name: Open a pull request
+        if: steps.check.outputs.work == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- packs curation; then
+            echo "Nothing changed in the packs."
+            exit 0
+          fi
+          branch="packs/update-$(date -u +%Y-%m-%d)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add packs curation
+          git commit -m "feat(packs): update time-sensitive prompts from their sources"
+          git push origin "$branch"
+          [ -f update-summary.md ] || echo "Claude wrote no summary; see the run's log." > update-summary.md
+          gh pr create --base main --head "$branch" --title "Update packs from their sources ($(date -u +%Y-%m))" --body-file update-summary.md

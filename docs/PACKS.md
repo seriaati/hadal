@@ -122,3 +122,7 @@ The `curate-pack` skill (`.claude/skills/curate-pack/SKILL.md`) walks Claude Cod
    fix or remove them, add what players typed, and save.
 6. Make the Chinese packs from it: the names Wikidata gives in Simplified and Traditional
    Chinese, with the English names as aliases.
+
+Prompts whose sets grow keep their sources in `curation/<pack id>.sources.json`. Once a month a
+GitHub Actions workflow checks those sources for new rows and, when there are some, has Claude add
+the answers and open a pull request; each January it also moves the cut-off years forward.

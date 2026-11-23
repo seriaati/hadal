@@ -25,7 +25,8 @@ Use `bun`, not `npm`/`node`/`vite`.
 - `docker compose up -d --build`: run the database and the game as in production
 - `bun tools/check.ts [--write] <pack files>`: check built-in packs and lay them out as the others
   are; `tools/table.ts`, `tools/members.ts`, `tools/names.ts` and `tools/signals.ts` look answers
-  up on Wikipedia (see `docs/PACKS.md`)
+  up on Wikipedia (see `docs/PACKS.md`); `bun tools/sources.ts [--bump] [--write]` reports what
+  the sources of time-sensitive prompts gained since last recorded
 
 API keys: `HADAL_SECRET` in `.env` (32 characters or more, e.g. from `openssl rand -base64 32`)
 seals the keys players store. Without it the game runs but keeps no keys.
@@ -58,7 +59,11 @@ built-in pack files (`src/web/review/`, served through `src/server/review.ts`).
   described under "Pack format" in `docs/GAME.md` and checked by `validatePack` in
   `src/server/packs.ts`
 - `tools/`: the pack tools, and `curation/` what they learn about each pack (only the
-  `<pack id>.titles.json` files, kept by hand, are in git)
+  `<pack id>.titles.json`, `.sources.json` and `.seen.json` files are in git)
+- `.github/workflows/update-packs.yml`: once a month, checks the sources of the prompts whose
+  answers grow (`tools/sources.ts`) and, if they gained rows, has Claude add the answers and open
+  a pull request; in January it also moves cut-off years forward. It runs on the
+  `CLAUDE_CODE_OAUTH_TOKEN` secret (the owner's Claude Pro plan)
 - `design/brand/`: the logo (the diver's helmet) and the link preview; `bun design/brand/render.ts`
   draws the icons and `og-2.png` into `src/web/` (the preview needs Google Chrome)
 
