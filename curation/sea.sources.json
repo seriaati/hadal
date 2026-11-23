@@ -1,0 +1,2448 @@
+{
+  "sharks": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of sharks",
+        "members": true
+      }
+    ],
+    "note": "Common names read from the parentheses after each species in the page's lists; the old pack's group names and a few well-known extinct genera added by hand"
+  },
+  "cetaceans": {
+    "kind": "open",
+    "sources": [],
+    "note": "Genus and subfamily heading rows dropped; group names (bottlenose dolphin, beaked whale) added by hand"
+  },
+  "cephalopods": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Category:Octopuses",
+        "members": true
+      },
+      {
+        "lang": "en",
+        "page": "Category:Squid",
+        "members": true
+      },
+      {
+        "lang": "en",
+        "page": "Category:Cuttlefish",
+        "members": true
+      }
+    ],
+    "note": "Built by hand from the old pack and these categories; every name checked to have an article"
+  },
+  "crabs": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Crab",
+        "members": true
+      }
+    ],
+    "note": "Built by hand from the old pack; every name checked to have an article"
+  },
+  "crustaceans": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Crustacean",
+        "members": true
+      }
+    ],
+    "note": "Built by hand; every name checked to have an article"
+  },
+  "jellyfish": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Jellyfish",
+        "members": true
+      },
+      {
+        "lang": "en",
+        "page": "Category:Scyphozoa",
+        "members": true
+      }
+    ],
+    "note": "Built by hand from the old pack; every name checked to have an article"
+  },
+  "marine-reptiles": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of plesiosaur genera",
+        "table": 1,
+        "column": "Genus"
+      },
+      {
+        "lang": "en",
+        "page": "List of ichthyosaur genera",
+        "table": 1,
+        "column": "Genus"
+      },
+      {
+        "lang": "en",
+        "page": "List of mosasaur genera",
+        "table": 1,
+        "column": "Genus"
+      },
+      {
+        "lang": "en",
+        "page": "Marine reptile",
+        "members": true
+      }
+    ],
+    "note": "Genera whose Status is Valid or Dubious; the groups and other well-known genera (placodonts, nothosaurs, marine crocodiles, sea turtles) added from Marine reptile"
+  },
+  "sea-fish": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of common fish names",
+        "members": true
+      }
+    ],
+    "note": "Built by hand from the old pack (marine fish only); not a full source, every name checked to have an article"
+  },
+  "spongebob": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of SpongeBob SquarePants characters",
+        "members": true
+      }
+    ],
+    "note": "Names read from the page's character headings and the first words of each entry under Other characters"
+  },
+  "pirates": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of pirates",
+        "table": 1,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pirates",
+        "table": 2,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pirates",
+        "table": 3,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pirates",
+        "table": 4,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pirates",
+        "table": 5,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pirates",
+        "table": 6,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pirates",
+        "table": 7,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pirates",
+        "table": 8,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pirates",
+        "table": 9,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pirates",
+        "table": 10,
+        "column": "Name"
+      }
+    ],
+    "note": "Nicknames in quotes taken as aliases; some well-known pirates and privateers the tables miss added by hand"
+  },
+  "naval-battles": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of naval battles",
+        "table": 1,
+        "column": "Battle"
+      },
+      {
+        "lang": "en",
+        "page": "List of naval battles",
+        "table": 2,
+        "column": "Battle"
+      },
+      {
+        "lang": "en",
+        "page": "List of naval battles",
+        "table": 3,
+        "column": "Battle"
+      },
+      {
+        "lang": "en",
+        "page": "List of naval battles",
+        "table": 4,
+        "column": "Battle"
+      },
+      {
+        "lang": "en",
+        "page": "List of naval battles",
+        "table": 5,
+        "column": "Battle"
+      },
+      {
+        "lang": "en",
+        "page": "List of naval battles",
+        "table": 6,
+        "column": "Battle"
+      },
+      {
+        "lang": "en",
+        "page": "List of naval battles",
+        "table": 7,
+        "column": "Battle"
+      },
+      {
+        "lang": "en",
+        "page": "List of naval battles",
+        "table": 8,
+        "column": "Battle"
+      },
+      {
+        "lang": "en",
+        "page": "List of naval battles",
+        "table": 9,
+        "column": "Battle"
+      },
+      {
+        "lang": "en",
+        "page": "List of naval battles",
+        "table": 10,
+        "column": "Battle"
+      },
+      {
+        "lang": "en",
+        "page": "List of naval battles",
+        "table": 11,
+        "column": "Battle"
+      },
+      {
+        "lang": "en",
+        "page": "List of naval battles",
+        "table": 12,
+        "column": "Battle"
+      },
+      {
+        "lang": "en",
+        "page": "List of naval battles",
+        "table": 13,
+        "column": "Battle"
+      },
+      {
+        "lang": "en",
+        "page": "List of naval battles",
+        "table": 14,
+        "column": "Battle"
+      }
+    ],
+    "note": "Entries named only by a date (Action of 28 November 1751) left out; a bare place name becomes 'Battle of <place>'"
+  },
+  "shipwrecks": {
+    "kind": "cutoff",
+    "until": 2025,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 4,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 5,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 6,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 7,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 8,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 9,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 10,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 11,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 12,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 13,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 14,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 15,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 16,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 17,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 18,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 19,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 20,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 21,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 22,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 23,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 24,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 25,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 26,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 27,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 28,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 29,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 30,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 31,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 32,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters",
+        "table": 1,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters",
+        "table": 2,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in World War I",
+        "table": 1,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in World War II",
+        "table": 1,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in the 18th century",
+        "table": 1,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in the 18th century",
+        "table": 2,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in the 19th century",
+        "table": 1,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in the 19th century",
+        "table": 2,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in the 20th century",
+        "table": 1,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in the 20th century",
+        "table": 2,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in the 20th century",
+        "table": 3,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in the 20th century",
+        "table": 4,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in the 20th century",
+        "table": 5,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in the 20th century",
+        "table": 6,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in the 20th century",
+        "table": 7,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in the 20th century",
+        "table": 8,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in the 21st century",
+        "table": 1,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in the 21st century",
+        "table": 2,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in the 21st century",
+        "table": 3,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in the 21st century",
+        "table": 4,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in the 21st century",
+        "table": 5,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of maritime disasters in the 21st century",
+        "table": 6,
+        "column": "Description"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks before Anno Domini",
+        "table": 1,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks before Anno Domini",
+        "table": 2,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks before Anno Domini",
+        "table": 3,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks before Anno Domini",
+        "table": 4,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks before Anno Domini",
+        "table": 5,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks before Anno Domini",
+        "table": 6,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks before Anno Domini",
+        "table": 7,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks before Anno Domini",
+        "table": 8,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks before Anno Domini",
+        "table": 9,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in international waters",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in international waters",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in international waters",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in international waters",
+        "table": 4,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Atlantic Ocean",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Atlantic Ocean",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Atlantic Ocean",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Atlantic Ocean",
+        "table": 4,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Atlantic Ocean",
+        "table": 5,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Atlantic Ocean",
+        "table": 6,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Atlantic Ocean",
+        "table": 7,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Atlantic Ocean",
+        "table": 8,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Atlantic Ocean",
+        "table": 9,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Atlantic Ocean",
+        "table": 10,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Atlantic Ocean",
+        "table": 11,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Atlantic Ocean",
+        "table": 12,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Atlantic Ocean",
+        "table": 13,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Atlantic Ocean",
+        "table": 14,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Great Lakes",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Great Lakes",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Great Lakes",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Indian Ocean",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Indian Ocean",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Indian Ocean",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Indian Ocean",
+        "table": 4,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Indian Ocean",
+        "table": 5,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Indian Ocean",
+        "table": 6,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Indian Ocean",
+        "table": 7,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Indian Ocean",
+        "table": 8,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Indian Ocean",
+        "table": 9,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Indian Ocean",
+        "table": 10,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Indian Ocean",
+        "table": 11,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 4,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 5,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 6,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 7,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 8,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 9,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 10,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 11,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 12,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 13,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 14,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 15,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 16,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 17,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 18,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 19,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 20,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 21,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks in the Pacific Ocean",
+        "table": 22,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 4,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 5,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 6,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 7,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 8,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 9,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 10,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 11,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 12,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 13,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 14,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 15,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 16,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 17,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 18,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 19,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 20,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 21,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 22,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 23,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 24,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Africa",
+        "table": 25,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 4,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 5,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 6,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 7,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 8,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 9,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 10,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 11,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 12,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 13,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 14,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 15,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 16,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 17,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 18,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 19,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 20,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 21,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 22,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 23,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 24,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 25,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Asia",
+        "table": 26,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Australia",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Australia",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Australia",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Australia",
+        "table": 4,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Australia",
+        "table": 5,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Australia",
+        "table": 6,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Australia",
+        "table": 7,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Australia",
+        "table": 8,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Canada",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Canada",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Canada",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Canada",
+        "table": 4,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Canada",
+        "table": 5,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Canada",
+        "table": 6,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Canada",
+        "table": 7,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Canada",
+        "table": 8,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Canada",
+        "table": 9,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Canada",
+        "table": 10,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Canada",
+        "table": 11,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Canada",
+        "table": 12,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 4,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 5,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 6,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 7,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 8,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 9,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 10,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 11,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 12,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 13,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 14,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 15,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 16,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 17,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 18,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 19,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 20,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 21,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of England",
+        "table": 22,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 4,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 5,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 6,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 7,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 8,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 9,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 10,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 11,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 12,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 13,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 14,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 15,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 16,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 17,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 18,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 19,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 20,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 21,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 22,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 23,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 24,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 25,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 26,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 27,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 28,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 29,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 30,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 31,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Europe",
+        "table": 32,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of France",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of France",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of France",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of France",
+        "table": 4,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of France",
+        "table": 5,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of France",
+        "table": 6,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of France",
+        "table": 7,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of France",
+        "table": 8,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of France",
+        "table": 9,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of France",
+        "table": 10,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 4,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 5,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 6,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 7,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 8,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 9,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 10,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 11,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 12,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 13,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 14,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 15,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 16,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 17,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 18,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 19,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of North America",
+        "table": 20,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Oceania",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Oceania",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Oceania",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Oceania",
+        "table": 4,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Oceania",
+        "table": 5,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Oceania",
+        "table": 6,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Oceania",
+        "table": 7,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Oceania",
+        "table": 8,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Oceania",
+        "table": 9,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Oceania",
+        "table": 10,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Oceania",
+        "table": 11,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Oceania",
+        "table": 12,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Oceania",
+        "table": 13,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Oceania",
+        "table": 14,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Oceania",
+        "table": 15,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Oceania",
+        "table": 16,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of Oceania",
+        "table": 17,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of South America",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of South America",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of South America",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of South America",
+        "table": 4,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of South America",
+        "table": 5,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of South America",
+        "table": 6,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of South America",
+        "table": 7,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of South America",
+        "table": 8,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of South America",
+        "table": 9,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United Kingdom",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United Kingdom",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United Kingdom",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 4,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 5,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 6,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 7,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 8,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 9,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 10,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 11,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 12,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 13,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 14,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 15,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 16,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 17,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 18,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 19,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 20,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 21,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 22,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 23,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 24,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 25,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 26,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 27,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 28,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 29,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 30,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 31,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 32,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 33,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 34,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 35,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 36,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 37,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 38,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 39,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of shipwrecks of the United States",
+        "table": 40,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of sunken aircraft carriers",
+        "table": 1,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of sunken aircraft carriers",
+        "table": 2,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of sunken aircraft carriers",
+        "table": 3,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of sunken aircraft carriers",
+        "table": 4,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of sunken aircraft carriers",
+        "table": 5,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of sunken aircraft carriers",
+        "table": 6,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of sunken aircraft carriers",
+        "table": 7,
+        "column": "Ship"
+      },
+      {
+        "lang": "en",
+        "page": "List of sunken battlecruisers",
+        "table": 1,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sunken battlecruisers",
+        "table": 2,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sunken battlecruisers",
+        "table": 3,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sunken battleships",
+        "table": 1,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sunken battleships",
+        "table": 2,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sunken battleships",
+        "table": 3,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sunken battleships",
+        "table": 5,
+        "column": "Name"
+      }
+    ],
+    "note": "From the maritime disaster tables only descriptions whose first link is a ship; ships sunk after 2025 left out"
+  },
+  "warships": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of types of naval vessels",
+        "members": true
+      },
+      {
+        "lang": "en",
+        "page": "List of ship types",
+        "members": true
+      }
+    ],
+    "note": "Merchant and sailing rigs left out; the old pack's types kept"
+  },
+  "knots": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of knots",
+        "members": true
+      }
+    ],
+    "note": "Links whose title names a knot, hitch, bend, loop, splice, lashing or whipping; list pages and knot theory left out"
+  }
+}
