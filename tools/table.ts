@@ -5,56 +5,52 @@
 import { option } from "./curation";
 import { rendered } from "./wiki";
 
-type Cell = { text: string; link: string | null; rows: number; columns: number };
+export type Cell = { text: string; link: string | null };
+type Spanning = Cell & { rows: number; columns: number };
 
-const page = process.argv[2];
-if (!page || page.startsWith("--")) {
-  console.error('Name a page: bun tools/table.ts "List of national capitals"');
-  process.exit(1);
+/** Every `wikitable` on a page, in page order, each as rows of cells with spanning cells copied into each place they cover. */
+export async function tables(page: string, language: string): Promise<Cell[][][]> {
+  const html = await rendered(page, language);
+  const found: Spanning[][][] = [];
+  let cell: Spanning | null = null;
+  // Footnote marks and hidden sort keys are not part of what a cell says.
+  let skipping = 0;
+  new HTMLRewriter()
+    .on("table.wikitable", { element: () => void found.push([]) })
+    .on("table.wikitable tr", { element: () => void found.at(-1)!.push([]) })
+    .on("table.wikitable td, table.wikitable th", {
+      element(element) {
+        const span = (name: string) => Math.max(1, Number(element.getAttribute(name)) || 1);
+        cell = { text: "", link: null, rows: span("rowspan"), columns: span("colspan") };
+        found.at(-1)!.at(-1)?.push(cell);
+      },
+      text(chunk) {
+        if (cell && !skipping) cell.text += chunk.text;
+      },
+    })
+    .on("table.wikitable sup, table.wikitable style, table.wikitable [style*='display:none']", {
+      element(element) {
+        skipping++;
+        element.onEndTag(() => void skipping--);
+      },
+    })
+    .on("table.wikitable br", {
+      element: () => void (cell && (cell.text += " ")),
+    })
+    .on("table.wikitable a[title]", {
+      element(element) {
+        if (cell && !skipping && !cell.link) cell.link = element.getAttribute("title");
+      },
+    })
+    .transform(html);
+  return found.map(grid);
 }
-const only = option("--table");
-const links = process.argv.includes("--links");
-const html = await rendered(page, option("--language") ?? "en");
 
-const tables: Cell[][][] = [];
-let cell: Cell | null = null;
-// Footnote marks and hidden sort keys are not part of what a cell says.
-let skipping = 0;
-new HTMLRewriter()
-  .on("table.wikitable", { element: () => void tables.push([]) })
-  .on("table.wikitable tr", { element: () => void tables.at(-1)!.push([]) })
-  .on("table.wikitable td, table.wikitable th", {
-    element(element) {
-      const span = (name: string) => Math.max(1, Number(element.getAttribute(name)) || 1);
-      cell = { text: "", link: null, rows: span("rowspan"), columns: span("colspan") };
-      tables.at(-1)!.at(-1)?.push(cell);
-    },
-    text(chunk) {
-      if (cell && !skipping) cell.text += chunk.text;
-    },
-  })
-  .on("table.wikitable sup, table.wikitable style, table.wikitable [style*='display:none']", {
-    element(element) {
-      skipping++;
-      element.onEndTag(() => void skipping--);
-    },
-  })
-  .on("table.wikitable br", {
-    element: () => void (cell && (cell.text += " ")),
-  })
-  .on("table.wikitable a[title]", {
-    element(element) {
-      if (cell && !skipping && !cell.link) cell.link = element.getAttribute("title");
-    },
-  })
-  .transform(html);
-
-/** The table's rows with every spanning cell copied into each place it covers. */
-function grid(rows: Cell[][]): string[][] {
-  const out: string[][] = [];
-  const carried: { value: string; left: number }[] = [];
+function grid(rows: Spanning[][]): Cell[][] {
+  const out: Cell[][] = [];
+  const carried: { value: Cell; left: number }[] = [];
   for (const row of rows) {
-    const line: string[] = [];
+    const line: Cell[] = [];
     let column = 0;
     const take = () => {
       while (carried[column]?.left) {
@@ -65,7 +61,7 @@ function grid(rows: Cell[][]): string[][] {
     };
     for (const one of row) {
       take();
-      const value = links && one.link ? one.link : one.text.replace(/&#\d+;|&\w+;/g, " ").replace(/\s+/g, " ").trim();
+      const value = { text: one.text.replace(/&#\d+;|&\w+;/g, " ").replace(/\s+/g, " ").trim(), link: one.link };
       for (let i = 0; i < one.columns; i++) {
         line[column] = value;
         if (one.rows > 1) carried[column] = { value, left: one.rows - 1 };
@@ -78,10 +74,18 @@ function grid(rows: Cell[][]): string[][] {
   return out;
 }
 
-tables.forEach((rows, i) => {
-  if (only && Number(only) !== i + 1) return;
-  const lines = grid(rows);
-  console.log(`## Table ${i + 1} (${lines.length} rows)`);
-  for (const line of lines) console.log(line.join("\t"));
-  console.log();
-});
+if (import.meta.main) {
+  const page = process.argv[2];
+  if (!page || page.startsWith("--")) {
+    console.error('Name a page: bun tools/table.ts "List of national capitals"');
+    process.exit(1);
+  }
+  const only = option("--table");
+  const links = process.argv.includes("--links");
+  (await tables(page, option("--language") ?? "en")).forEach((lines, i) => {
+    if (only && Number(only) !== i + 1) return;
+    console.log(`## Table ${i + 1} (${lines.length} rows)`);
+    for (const line of lines) console.log(line.map((cell) => (links && cell.link ? cell.link : cell.text)).join("\t"));
+    console.log();
+  });
+}
