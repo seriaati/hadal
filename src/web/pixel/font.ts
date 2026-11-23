@@ -214,6 +214,34 @@ export function measure(font: Font, text: string): number {
   return Math.max(0, width - trail);
 }
 
+/** How far on from where `text` starts the letter after it would start. */
+function reach(font: Font, text: string): number {
+  let width = 0;
+  for (const unit of units(font, text)) {
+    const glyph = glyphOf(font, unit);
+    if (unit === " ") width += font.space;
+    else if (glyph) width += advance(glyph, font);
+  }
+  return width;
+}
+
+/** The background of selected letters, behind the letters `from` to `to` of `text`, which is drawn as `lines` (from `wrap`) at `x`, `y` and `gap` apart. */
+export function drawSelection(frame: Frame, font: Font, text: string, lines: string[], from: number, to: number, x: number, y: number, gap: number) {
+  const top = y - 1 - rise(font, text);
+  let at = 0;
+  lines.forEach((line, i) => {
+    // A line break takes the space it falls on: each line is found from where the one before it ended.
+    at = text.indexOf(line, at);
+    const start = Math.max(from, at) - at;
+    const end = Math.min(to, at + line.length) - at;
+    at += line.length;
+    if (start >= end) return;
+    const left = x + reach(font, line.slice(0, start)) - 1;
+    const right = x + reach(font, line.slice(0, end));
+    for (let j = top; j <= y + font.height; j++) for (let k = left; k < right; k++) frame.put(k, j + i * gap, 5);
+  });
+}
+
 type TextColor = number | ((row: number) => number);
 
 /** Draw text with its top-left at (x, y), or its top-right if `right` is set. Returns the x after it. */

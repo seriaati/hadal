@@ -14,7 +14,7 @@ import { MultiplayerPanel } from "./pixel/multiplayer";
 import { PacksPanel } from "./pixel/packs";
 import { Scene, type Menu } from "./pixel/scene";
 import { drawCog, overCog, settingsStep } from "./pixel/settings";
-import { steering, Ui, type Step } from "./pixel/ui";
+import { selection, steering, Ui, type Step } from "./pixel/ui";
 
 const REPO = "https://github.com/seriaati/hadal";
 /** How often an open page asks whether a newer version of the game is out, in milliseconds. */
@@ -294,6 +294,7 @@ requestAnimationFrame(function loop(now) {
   scene.lobby = multiplayer.lobby;
   scene.chat = multiplayer.chat();
   scene.draft = multiplayer.draft(talking() ? talk.value : null);
+  scene.selection = selection(document.activeElement);
   scene.turn = multiplayer.turn(input.value);
   scene.talkButton = scene.touch && multiplayer.talking ? (talking() ? "open" : "closed") : null;
   talkButton.ariaLabel = t().rooms.sayIt;

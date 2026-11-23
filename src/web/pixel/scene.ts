@@ -4,7 +4,7 @@ import { ZONES, formatMeters, lightOf } from "../depth";
 import { t } from "../language";
 import { ascentSeconds, fullAir, type Game, type Lamp } from "../state";
 import { Ambient } from "./creatures";
-import { FONTS, drawText, fit, measure, pitch, plain, rise, wrap, type Font } from "./font";
+import { FONTS, drawSelection, drawText, fit, measure, pitch, plain, rise, wrap, type Font } from "./font";
 import { dither, hash, type Frame, type Light } from "./frame";
 import { drawCrown, drawMark, drawMuted } from "./ui";
 
@@ -388,6 +388,8 @@ export class Scene {
   /** What each diver of a room last said, and what the player is typing to say (null while they are not): over the divers before a dive. */
   chat: Chat[] = [];
   draft: Draft | null = null;
+  /** The letters selected in what the player types (from `selection` in ui.ts): of the draft while there is one, else of the answer. */
+  selection: [number, number] | null = null;
   /** Where what the player is typing was drawn, for the field that takes it to be laid over. */
   speaking: { x: number; y: number; w: number; h: number } | null = null;
   /**
@@ -1016,8 +1018,8 @@ export class Scene {
         }
         return speech(typing ? text : `${name} ~ ${text}`, 0, corner, W, typing, false, false);
       };
-      const spoken: (Speech & { edge: number; ink: number; caret?: boolean })[] = [];
-      if (this.draft) spoken.push({ ...place(this.draft.name, this.draft.text, true, 0), edge: 15, ink: 7, caret: Math.floor(time * 2.5) % 2 === 0 });
+      const spoken: (Speech & { edge: number; ink: number; caret?: boolean; selected?: [number, number] | null })[] = [];
+      if (this.draft) spoken.push({ ...place(this.draft.name, this.draft.text, true, 0), edge: 15, ink: 7, caret: !this.selection && Math.floor(time * 2.5) % 2 === 0, selected: this.selection });
       const said = this.chat.filter((chat) => chat.age < speechSeconds(chat.text));
       for (const chat of said.toSorted((a, b) => a.age - b.age)) {
         const dim = speechSeconds(chat.text) - chat.age < SPEECH_FADE;
@@ -1033,7 +1035,7 @@ export class Scene {
         spoken.push({ ...bubble, edge: chat.bad ? 18 : dim ? 4 : 5, ink: dim ? 5 : 7 });
       }
       for (const bubble of spoken.toReversed()) {
-        drawSpeech(frame, bubble, bubble.edge, bubble.ink, bubble.caret);
+        drawSpeech(frame, bubble, bubble.edge, bubble.ink, bubble.caret, bubble.selected);
         this.cover(bubble.x, bubble.x + bubble.w, bubble.y, bubble.y + bubble.h);
       }
       if (this.draft) this.speaking = spoken[0]!;
@@ -1265,8 +1267,10 @@ export class Scene {
       else if (turn?.yours) say(tiny, t().dive.yourTurn, x, typingY - 9, 15);
       // One who joined during the dive only watches it, and is told so where a diver is told their turn has come.
       else if (turn?.watcher) say(tiny, t().dive.watcher, x, typingY - 9, 6);
+      const selected = yours && !this.draft ? this.selection : null;
+      if (selected) drawSelection(frame, font, typed, wrap(font, typed, room), selected[0], selected[1], x, typingY, pitch(font, typed));
       const { end, y } = sayWrapped(font, typed, typingY, yours ? 7 : 6);
-      if (yours && Math.floor(time * 2.5) % 2 === 0) {
+      if (yours && !selected && Math.floor(time * 2.5) % 2 === 0) {
         frame.emit = 200;
         for (let j = 0; j < font.height; j++) for (let i = 0; i < (font === large ? 2 : 1); i++) frame.put(end + i, y + j, 16);
         frame.emit = 0;
@@ -1306,7 +1310,7 @@ export class Scene {
 }
 
 /** Words in a bubble: where it stands, the diver it points down to (`cx`) if `tail`, and its lines. */
-type Speech = { x: number; y: number; w: number; h: number; cx: number; tail: boolean; down: boolean; lines: string[]; gap: number; above: number };
+type Speech = { x: number; y: number; w: number; h: number; cx: number; tail: boolean; down: boolean; said: string; lines: string[]; gap: number; above: number };
 
 /**
  * The bubble of words said over (cx, edge), standing as low as it can, or with `down` hanging under it as high as it
@@ -1320,14 +1324,14 @@ function speech(text: string, cx: number, edge: number, W: number, typing: boole
   const above = rise(tiny, said);
   const w = Math.max(...lines.map((line) => measure(tiny, line))) + (typing ? 9 : 7);
   const h = lines.length * gap + 3 + above;
-  return { x: Math.max(2, Math.min(W - w - 2, cx - (w >> 1))), y: down ? edge + 4 : edge - h - 4, w, h, cx, tail, down, lines, gap, above };
+  return { x: Math.max(2, Math.min(W - w - 2, cx - (w >> 1))), y: down ? edge + 4 : edge - h - 4, w, h, cx, tail, down, said, lines, gap, above };
 }
 
 /**
  * A bubble of words, rounded at its corners, with two small bubbles between it and who says it (under it, or over it if
- * it hangs `down`). With `caret` true, a caret after the words.
+ * it hangs `down`). With `caret` true, a caret after the words; `selected` letters of them have the background of a selection.
  */
-function drawSpeech(frame: Frame, { x, y, w, h, cx, tail, down, lines, gap, above }: Speech, edge: number, ink: number, caret?: boolean) {
+function drawSpeech(frame: Frame, { x, y, w, h, cx, tail, down, lines, gap, above, said }: Speech, edge: number, ink: number, caret?: boolean, selected?: [number, number] | null) {
   for (let j = 0; j < h; j++) {
     for (let i = 0; i < w; i++) {
       const rim = i === 0 || j === 0 || i === w - 1 || j === h - 1;
@@ -1342,6 +1346,7 @@ function drawSpeech(frame: Frame, { x, y, w, h, cx, tail, down, lines, gap, abov
     frame.put(cx, y + h + 1, edge);
     frame.put(cx - 1, y + h + 3, edge);
   }
+  if (selected) drawSelection(frame, FONTS.tiny, said, lines, selected[0], selected[1], x + 3, y + 2 + above, gap);
   let end = x + 3;
   lines.forEach((line, i) => (end = drawText(frame, FONTS.tiny, line, x + 3, y + 2 + above + i * gap, ink)));
   if (caret) for (let j = 0; j < 5; j++) frame.put(end, y + 2 + above + (lines.length - 1) * gap + j, 16);

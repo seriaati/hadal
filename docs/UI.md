@@ -48,7 +48,7 @@ a row.
 | State | Shown as |
 |---|---|
 | At rest | As above |
-| In focus | An amber mark `▸` before it, and its words turn cream and glow a little. A field's rule turns amber and its caret blinks. A slider's lit pips turn amber |
+| In focus | An amber mark `▸` before it, and its words turn cream and glow a little. A field's rule turns amber and its caret blinks; letters selected in it (Ctrl+A, Shift and an arrow) stand on a band of colour 5 and the caret is hidden, as in the answer and what is said. A slider's lit pips turn amber |
 | Under the pointer | The same as in focus: moving the pointer over a thing gives it the focus, so there is never a second highlight. Moving it off onto nothing takes the focus away, and nothing is lit until the pointer is over a thing again or a key that moves lights that line again (owner, 2026-11-21). A field is the one exception: it takes the focus, and its caret, only when it is clicked or reached by the keys (owner, 2026-11-18, after play) |
 | Pressed | Nothing of its own: a press acts at once |
 | Busy | The line that was pressed keeps the look of the focus, wherever the focus goes, and dots after its words fill one by one. Presses wait until the answer has come. A panel that leads into a dive stays until the dive has begun |
@@ -119,7 +119,7 @@ The same in every panel.
 ## Colours (palette indices)
 
 Step name 6, line 7, lesser line 6, message 6, action 15 (5 while dim), in focus 16 with the mark in 15, rose 18,
-field rule 4 (15 in focus), caret 16, pips 6 on and 4 off (15 on in focus), wait pips 10, scroll bar 4 with the part in
+field rule 4 (15 in focus), caret 16, selection 5, pips 6 on and 4 off (15 on in focus), wait pips 10, scroll bar 4 with the part in
 view 6.
 
 ## The world

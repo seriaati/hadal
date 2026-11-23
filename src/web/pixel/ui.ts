@@ -1,4 +1,4 @@
-import { FONTS, drawText, measure, pitch, plain, rise, wrap } from "./font";
+import { FONTS, drawSelection, drawText, measure, pitch, plain, rise, wrap } from "./font";
 import type { Frame } from "./frame";
 import { t } from "../language";
 import type { Scene } from "./scene";
@@ -106,6 +106,17 @@ const spaceOnControl = (event: KeyboardEvent) => event.key === " " && (event.tar
 const WASD: Record<string, string> = { KeyW: "ArrowUp", KeyA: "ArrowLeft", KeyS: "ArrowDown", KeyD: "ArrowRight" };
 /** The key pressed, with W, A, S and D read as the arrows. Only where nothing is being typed. */
 export const steering = (event: KeyboardEvent) => (event.ctrlKey || event.metaKey || event.altKey ? undefined : WASD[event.code]) ?? event.key;
+
+/**
+ * The letters selected in a line of typing that has the focus, counted in its text as `plain` draws it; null if none are.
+ * The line itself is invisible, so the game draws the selection.
+ */
+export function selection(control: Element | null): [number, number] | null {
+  if (!(control instanceof HTMLInputElement) || control !== document.activeElement) return null;
+  const { value, selectionStart: from, selectionEnd: to } = control;
+  if (from === null || to === null || from === to) return null;
+  return [plain(value.slice(0, from)).length, plain(value.slice(0, to)).length];
+}
 
 const isControl = <T extends Part | Diver>(part: T): part is T & Control =>
   part.kind === "press" || part.kind === "field" || part.kind === "slider" || part.kind === "action" || part.kind === "diver" || (part.kind === "summary" && !!part.id && !!part.press);
@@ -798,6 +809,7 @@ export class Ui {
       } else if (part.kind === "field") {
         const value = plain(control!.value);
         const caret = (control as HTMLInputElement).selectionStart ?? value.length;
+        const selected = selection(control!);
         const typed = py + h - 11;
         const room = w - INDENT;
         let at = tx;
@@ -805,19 +817,22 @@ export class Ui {
         say(part.label, tx, py + 2, on ? 7 : 6);
         if (part.dots) {
           const dots = Math.min(value.length, Math.floor(room / 4));
+          if (selected) for (let i = selected[0]; i < Math.min(selected[1], dots); i++) for (let j = -1; j <= 5; j++) for (let k = -1; k < 3; k++) frame.put(tx + i * 4 + k, typed + j, 5);
           for (let i = 0; i < dots; i++) for (let j = 0; j < 4; j++) frame.put(tx + i * 4 + (j & 1), typed + 2 + (j >> 1), 7);
           at += Math.min(caret, dots) * 4;
         } else {
           // Of typing too long for the line, the end is shown: the part being typed.
           let cut = 0;
           while (measure(tiny, value.slice(cut)) > room - 2) cut++;
-          say(value.slice(cut), tx, typed, 7);
+          const shown = value.slice(cut);
+          if (selected) drawSelection(frame, tiny, shown, [shown], selected[0] - cut, selected[1] - cut, tx, typed, 0);
+          say(shown, tx, typed, 7);
           if (caret > cut) at += measure(tiny, value.slice(cut, caret)) + 1;
         }
         frame.emit = on ? 120 : 0;
         for (let i = tx; i < px + w; i++) frame.put(i, typed + 7, on ? 15 : 4);
         frame.emit = 200;
-        if (on && blink) for (let j = -1; j < 6; j++) frame.put(at, typed + j, 16);
+        if (on && blink && !selected) for (let j = -1; j < 6; j++) frame.put(at, typed + j, 16);
         frame.emit = 0;
         place(control!, px, w);
       } else if (part.kind === "slider") {
