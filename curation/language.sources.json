@@ -1,0 +1,287 @@
+{
+  "eu-languages": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Languages of the European Union",
+        "members": true
+      }
+    ],
+    "note": "Only the EU's official languages (24 in 2026); the page also links regional and minority languages, which are left out."
+  },
+  "india-languages": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Languages with official recognition in India",
+        "table": 1,
+        "column": "Language"
+      },
+      {
+        "lang": "en",
+        "page": "Languages with official recognition in India",
+        "table": 2,
+        "column": "Official language(s)"
+      },
+      {
+        "lang": "en",
+        "page": "Languages with official recognition in India",
+        "table": 2,
+        "column": "Additional official language(s)"
+      },
+      {
+        "lang": "en",
+        "page": "Languages with official recognition in India",
+        "table": 3,
+        "column": "Official language(s)"
+      },
+      {
+        "lang": "en",
+        "page": "Languages with official recognition in India",
+        "table": 3,
+        "column": "Additional official language(s)"
+      }
+    ],
+    "note": "The Eighth Schedule, English, and every state's or union territory's official and additional official languages (French for Puducherry included)."
+  },
+  "arabic-speaking": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of countries and territories where Arabic is an official language",
+        "table": 1,
+        "column": "Sovereign state"
+      },
+      {
+        "lang": "en",
+        "page": "List of countries and territories where Arabic is an official language",
+        "table": 2,
+        "column": "State/Territory"
+      },
+      {
+        "lang": "en",
+        "page": "List of countries and territories where Arabic is an official language",
+        "table": 3,
+        "column": "Country"
+      }
+    ],
+    "note": "Table 1, plus Palestine (missing from it), Somaliland and the Sahrawi Republic from table 2, and Eritrea (working language) and Israel (official until 2018) from table 3; Zanzibar and countries where Arabic is only a minority or national language are left out."
+  },
+  "national-official": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of official languages by country and territory",
+        "table": 1,
+        "column": "Official language(s)"
+      }
+    ],
+    "note": "Languages official (de jure or de facto) at national level in a sovereign or partly recognised state, sign languages included; Hong Kong's Cantonese and Taiwan's national languages (Hokkien, Hakka) are accepted too. Mexico's 68 national languages are left out."
+  },
+  "english-official": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of countries and territories where English is an official language",
+        "table": 1,
+        "column": "Country"
+      },
+      {
+        "lang": "en",
+        "page": "List of countries and territories where English is an official language",
+        "table": 2,
+        "column": "Country"
+      },
+      {
+        "lang": "en",
+        "page": "List of countries and territories where English is an official language",
+        "table": 3,
+        "column": "Country"
+      },
+      {
+        "lang": "en",
+        "page": "List of countries and territories where English is an official language",
+        "table": 4,
+        "column": "Entity"
+      }
+    ],
+    "note": "Tables 1 to 3 in full; from table 4 only the Cook Islands and Niue, the self-governing states in free association. Other territories are left out."
+  },
+  "african-official": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Languages of Africa",
+        "table": 2,
+        "column": "Language"
+      },
+      {
+        "lang": "en",
+        "page": "List of official languages by country and territory",
+        "table": 1,
+        "column": "Official language(s)"
+      },
+      {
+        "lang": "en",
+        "page": "List of official languages by country and territory",
+        "table": 1,
+        "column": "National language(s)"
+      }
+    ],
+    "note": "African countries only, and only languages indigenous to Africa (Afrikaans and the African creoles included; Arabic, English, French, Portuguese and Spanish left out). Eritrea's nine equal languages, Benin's, Togo's, Guinea's national languages and Ghana's government-sponsored languages were added by hand."
+  },
+  "living-scripts": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Script (Unicode)",
+        "table": 1,
+        "column": "ISO formal name"
+      }
+    ],
+    "note": "Only scripts in use today (Unicode's recommended and limited-use scripts, plus scripts with living liturgical or heritage use such as Coptic, Samaritan, Nüshu and Dongba); Braille, the IPA, SignWriting and shorthand added by hand."
+  },
+  "constructed-languages": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of constructed languages",
+        "table": 1,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of constructed languages",
+        "table": 2,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of constructed languages",
+        "table": 3,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of constructed languages",
+        "table": 4,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of constructed languages",
+        "table": 5,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of constructed languages",
+        "table": 6,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of constructed languages",
+        "table": 7,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of constructed languages",
+        "table": 8,
+        "column": "Language"
+      },
+      {
+        "lang": "en",
+        "page": "List of constructed languages",
+        "table": 9,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of constructed languages",
+        "table": 10,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of constructed languages",
+        "table": 11,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of constructed languages",
+        "table": 12,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of constructed languages",
+        "table": 13,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of constructed languages",
+        "table": 14,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of constructed languages",
+        "table": 15,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of constructed languages",
+        "table": 16,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of constructed languages",
+        "table": 17,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of constructed languages",
+        "table": 18,
+        "column": "Name"
+      }
+    ],
+    "note": "Fictional languages well known from books, films and games (Parseltongue, Minionese, Hylian and others) added by hand; language games such as Pig Latin left out."
+  },
+  "japanese-loanwords": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of English words of Japanese origin",
+        "members": true
+      }
+    ],
+    "note": "The page is a definition list: the words are its terms, not its links. Proper names and two sexual terms left out; words in English dictionaries the page lacks (tatami, yakuza, cosplay and others) added by hand."
+  },
+  "spanish-loanwords": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of English words of Spanish origin",
+        "members": true
+      }
+    ],
+    "note": "The page is a definition list: the words are its terms, not its links. Place and people names and slurs left out; well-attested loans the page lacks (enchilada, machete, hammock and others) added by hand."
+  }
+}
