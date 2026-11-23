@@ -1,0 +1,11 @@
+{
+  "kof-characters": {
+    "kind": "cutoff",
+    "until": 2025,
+    "sources": [
+      { "lang": "zh", "page": "拳皇系列角色列表", "table": 1, "column": "角色名" },
+      { "lang": "en", "page": "List of The King of Fighters characters", "members": true }
+    ],
+    "note": "Playable characters of the main games ('94 to XV) and Maximum Impact; English names added by hand"
+  }
+}
