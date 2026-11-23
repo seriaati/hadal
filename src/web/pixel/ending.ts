@@ -25,6 +25,16 @@ const RISE_SECONDS = 0.7;
 /** When the first lamp starts to rise, and the most time between one lamp and the next. */
 const RISE_FROM = 0.35;
 const STAGGER = 0.06;
+/**
+ * Once the lamps have arrived the words come in through a dither, each part this many seconds after the lamps: the head,
+ * what is under it, the names or numbers of the lamps, the details of the lamp in focus and the line back.
+ */
+const WORDS_AT = { head: 0, under: 0.1, names: 0.2, details: 0.3, back: 0.45 };
+const WORDS_SECONDS = 0.4;
+/** How long the details take to come in again when the focus moves to another lamp. */
+const DETAILS_SECONDS = 0.2;
+/** How far a part of the words that comes in at `at` has come, `after` seconds after the lamps arrived: 1 once it is whole. */
+const coming = (after: number, at: number) => (after - at) / WORDS_SECONDS;
 /** How many pixels a lamp's chain hangs from the rope; and the mark under the lamp in focus in a room. */
 const CHAIN = 4;
 const UNDER = [".a.", "aaa"];
@@ -67,6 +77,9 @@ export class Ending {
   wordsTo = new Int16Array(0);
   /** Where the focus is on the frame: the tape's faults gather there, and the eyes look at it. */
   point = { x: 0, y: 0 };
+  /** The lamp whose details were last drawn, as "line:lamp", and when they began to come in. */
+  private detailed = "";
+  private detailedAt = 0;
 
   constructor(
     private log: Log,
@@ -265,7 +278,9 @@ export class Ending {
         }
         if (cut < W) for (let j = 1; j < 12; j++) frame.put(cut + (j > 7 ? 1 : 0), ropeAt(cut) + j, j % 3 === 2 ? 3 : 4);
       }
+      this.reveal(frame, coming(since - arrived, WORDS_AT.names));
       if (room) this.drawName(frame, row, since > arrived);
+      frame.veil = null;
       xs.forEach((lx, k) => {
         const lamp = row.from + k;
         const hung = this.lines[row.line]![lamp]!;
@@ -298,6 +313,7 @@ export class Ending {
         frame.block = -1;
         if (on) this.point = { x: lx + 2, y: y + 3 };
         if (since < arrived) return;
+        this.reveal(frame, coming(since - arrived, WORDS_AT.names));
         if (room) {
           if (on) {
             frame.emit = 220;
@@ -312,12 +328,15 @@ export class Ending {
           this.say(frame, tiny, label, lx + 3, ny, on ? 16 : hung.answer ? 6 : 4, true, on ? 70 : 0);
           this.spots.push({ spot: { line: row.line, lamp }, x: lx + 2 - (gap >> 1), y: top - 4, w: gap, h: 30 });
         }
+        frame.veil = null;
       });
     }
     if (since < arrived) return lights;
 
-    this.drawHead(frame);
-    this.drawDetails(frame);
+    // Each part leaves its veil on the frame for the next to replace.
+    this.drawHead(frame, since - arrived);
+    this.drawDetails(frame, since - arrived, time);
+    this.reveal(frame, coming(since - arrived, WORDS_AT.back));
     const backY = H - (wide ? 14 : 22);
     const back = isRoom(this.log) ? t().ending.backToRoom : t().ending.backToTitle;
     const on = this.focus === "back";
@@ -325,6 +344,7 @@ export class Ending {
     if (on) drawMark(frame, bx - 6, backY);
     if (on) this.point = { x: W >> 1, y: backY + 2 };
     this.say(frame, tiny, back, bx, backY, on ? 16 : 7, false, on ? 70 : 0);
+    frame.veil = null;
     // Room for a fingertip around the line.
     this.spots.push({ spot: "back", x: bx - 10, y: backY - 6, w: measure(tiny, back) + 20, h: 17 });
     if (chaos) this.drawEyes(frame, since - arrived, time, lost);
@@ -351,6 +371,11 @@ export class Ending {
     });
   }
 
+  /** Words drawn from now on show on only `share` of their pixels, in a dither: none at 0, all at 1. */
+  private reveal(frame: Frame, share: number) {
+    frame.veil = share >= 1 ? null : (x, y) => !dither(x, y, share);
+  }
+
   private say(frame: Frame, font: Font, text: string, x: number, y: number, color: number | ((row: number) => number), center = false, glow = 0): number {
     frame.emit = glow;
     const from = center ? x - (measure(font, text) >> 1) : x;
@@ -372,17 +397,20 @@ export class Ending {
     return y;
   }
 
-  private drawHead(frame: Frame) {
+  private drawHead(frame: Frame, after: number) {
     const W = frame.width;
     const log = this.log;
+    this.reveal(frame, coming(after, WORDS_AT.head));
     if (isRoom(log)) {
       const y = this.centred(frame, medium, this.winnerWords(), 6, 16, 70, 11);
+      this.reveal(frame, coming(after, WORDS_AT.under));
       const under = this.centred(frame, tiny, this.whyWords(), y + 1, 6);
       if (log.mode === "chaos") this.centred(frame, tiny, t().ending.chaosRoom, under - 1 + rise(tiny, t().ending.chaosRoom), 18);
       return;
     }
     const top = W >= 300 ? 10 : 40;
     this.say(frame, large, formatMeters(log.depth).toUpperCase(), W >> 1, top, amber(14), true, 255);
+    this.reveal(frame, coming(after, WORDS_AT.under));
     const zone = this.centred(frame, tiny, zoneAt(log.depth), top + 18, 6);
     const chaos = lostDive(log) ? t().ending.signalLost : t().ending.chaosAir(CHAOS_AIR_SECONDS);
     if (log.chaos) this.centred(frame, tiny, chaos, zone - 1 + rise(tiny, chaos), 18);
@@ -405,11 +433,18 @@ export class Ending {
     this.say(frame, tiny, name, 16, row.y - 2, on ? 16 : diver.won ? 15 : 7, false, on || diver.won ? 70 : 0);
   }
 
-  private drawDetails(frame: Frame) {
+  private drawDetails(frame: Frame, after: number, time: number) {
     const hung = this.focused;
     const at = this.lastLamp;
     if (!hung || !at) return;
     const { width: W } = frame;
+    const detailed = `${at.line}:${at.lamp}`;
+    if (detailed !== this.detailed) {
+      this.detailed = detailed;
+      this.detailedAt = time;
+    }
+    // The later of the two: the first coming in, or the coming in again after the focus moved.
+    this.reveal(frame, Math.min(coming(after, WORDS_AT.details), (time - this.detailedAt) / DETAILS_SECONDS));
     let y = this.detailsTop(frame);
     if (this.divers.length) {
       const diver = this.divers[at.line]!;

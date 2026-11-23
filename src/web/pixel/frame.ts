@@ -68,6 +68,8 @@ export class Frame {
   block = -1;
   /** Where this is true, pixels drawn from now on are no brighter than colour 4 and do not glow, so they cannot be mistaken for words over them. */
   hushed: ((x: number, y: number) => boolean) | null = null;
+  /** Where this is true, nothing is drawn: words come in through it. */
+  veil: ((x: number, y: number) => boolean) | null = null;
   /** Rows above `clipTop` and from `clipBottom` down are not drawn on. */
   clipTop = 0;
   clipBottom = Infinity;
@@ -95,7 +97,7 @@ export class Frame {
   put(x: number, y: number, color: number) {
     x |= 0;
     y |= 0;
-    if (x < 0 || y < 0 || x >= this.width || y >= this.height || y < this.clipTop || y >= this.clipBottom) return;
+    if (x < 0 || y < 0 || x >= this.width || y >= this.height || y < this.clipTop || y >= this.clipBottom || this.veil?.(x, y)) return;
     const i = y * this.width + x;
     const hushed = this.hushed?.(x, y) ?? false;
     this.color[i] = hushed ? Math.min(color, 4) : color;
@@ -108,7 +110,7 @@ export class Frame {
   putFine(fx: number, fy: number, color: number) {
     const x = fx >> 1;
     const y = fy >> 1;
-    if (x < 0 || y < 0 || x >= this.width || y >= this.height || y < this.clipTop || y >= this.clipBottom) return;
+    if (x < 0 || y < 0 || x >= this.width || y >= this.height || y < this.clipTop || y >= this.clipBottom || this.veil?.(x, y)) return;
     const i = y * this.width + x;
     const hushed = this.hushed?.(x, y) ?? false;
     this.fine[fy * this.width * 2 + fx] = (hushed ? Math.min(color, 4) : color) + 1;
