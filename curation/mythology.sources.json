@@ -1,0 +1,13 @@
+{
+  "cryptids": {
+    "kind": "open",
+    "sources": [
+      { "lang": "en", "page": "List of cryptids", "table": 1, "column": "Name" },
+      { "lang": "en", "page": "List of cryptids", "table": 2, "column": "Name" },
+      { "lang": "en", "page": "List of cryptids", "table": 3, "column": "Name" },
+      { "lang": "en", "page": "List of cryptids", "table": 4, "column": "Name" },
+      { "lang": "en", "page": "Category:Cryptids", "members": true }
+    ],
+    "note": "Category members left out: list pages, Salinella, and Trevor Henderson's creations (Long Horse, Siren Head, Bridge Worm), which are modern fiction. Kept the well-known cryptids of the earlier pack (Kraken, Wendigo, Thunderbird, Hodag, Owlman and others) that neither source lists."
+  }
+}
