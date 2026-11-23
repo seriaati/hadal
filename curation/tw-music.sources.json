@@ -1,0 +1,105 @@
+{
+  "jay-chou-songs": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of songs recorded by Jay Chou",
+        "table": 1,
+        "column": "Track title"
+      },
+      {
+        "lang": "zh",
+        "page": "周杰倫歌曲列表",
+        "table": 7,
+        "column": "歌曲"
+      },
+      {
+        "lang": "zh",
+        "page": "周杰倫歌曲列表",
+        "table": 2,
+        "column": "曲目"
+      }
+    ],
+    "note": "The Chinese part of each track title; the English part kept as an alias. Plus his non-album singles (table 7) and the soundtrack and EP songs named in table 2 and on his album pages (不能說的秘密, 蝸牛, 世界末日, 你比從前快樂, 霍元甲, 黃金甲, 千山萬水, 獻世)."
+  },
+  "golden-melody-singers": {
+    "kind": "cutoff",
+    "until": 2026,
+    "sources": [
+      {
+        "lang": "zh",
+        "page": "金曲獎最佳華語男歌手獎",
+        "table": 3,
+        "column": "入圍名單"
+      },
+      {
+        "lang": "zh",
+        "page": "金曲獎最佳華語男歌手獎",
+        "table": 4,
+        "column": "入圍名單"
+      },
+      {
+        "lang": "zh",
+        "page": "金曲獎最佳華語男歌手獎",
+        "table": 5,
+        "column": "入圍名單"
+      },
+      {
+        "lang": "zh",
+        "page": "金曲獎最佳華語男歌手獎",
+        "table": 6,
+        "column": "入圍名單"
+      },
+      {
+        "lang": "zh",
+        "page": "金曲獎最佳華語男歌手獎",
+        "table": 7,
+        "column": "入圍名單"
+      },
+      {
+        "lang": "zh",
+        "page": "金曲獎最佳華語男歌手獎",
+        "table": 9,
+        "column": "得獎者"
+      },
+      {
+        "lang": "zh",
+        "page": "金曲獎最佳華語女歌手獎",
+        "table": 1,
+        "column": "得獎者"
+      },
+      {
+        "lang": "zh",
+        "page": "金曲獎最佳華語女歌手獎",
+        "table": 2,
+        "column": "得獎者"
+      },
+      {
+        "lang": "zh",
+        "page": "金曲獎最佳華語女歌手獎",
+        "table": 3,
+        "column": "得獎者"
+      },
+      {
+        "lang": "zh",
+        "page": "金曲獎最佳華語女歌手獎",
+        "table": 4,
+        "column": "得獎者"
+      },
+      {
+        "lang": "zh",
+        "page": "金曲獎最佳華語女歌手獎",
+        "table": 5,
+        "column": "得獎者"
+      },
+      {
+        "lang": "zh",
+        "page": "金曲獎最佳華語女歌手獎",
+        "table": 6,
+        "column": "得獎者"
+      }
+    ],
+    "note": "Winners only. The men's page lists each year's nominees with the winner written 'name 《album》' with a space, the others with ／; the women's page has a winner column. The Golden Bell era (1980-1988) tables left out. A singer who won more than once is one answer."
+  }
+}
