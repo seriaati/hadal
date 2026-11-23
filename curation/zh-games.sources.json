@@ -1,0 +1,88 @@
+{
+  "china-olympic-champions": {
+    "kind": "cutoff",
+    "until": 2026,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of Olympic medalists for China",
+        "table": 1,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of Olympic medalists for China",
+        "table": 2,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "China at the 2024 Summer Olympics",
+        "table": 1,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "China at the 2022 Winter Olympics",
+        "table": 1,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "China at the 2026 Winter Olympics",
+        "table": 2,
+        "column": "Name"
+      }
+    ],
+    "note": "Gold rows only, every athlete of a team event; one answer per Chinese name. The volleyball golds of 1984, 2004 and 2016 are listed as a team, so their players were added by hand."
+  },
+  "olympic-table-tennis": {
+    "kind": "cutoff",
+    "until": 2024,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of Olympic medalists in table tennis",
+        "table": 1,
+        "column": "Gold"
+      },
+      {
+        "lang": "en",
+        "page": "List of Olympic medalists in table tennis",
+        "table": 3,
+        "column": "Gold"
+      },
+      {
+        "lang": "en",
+        "page": "List of Olympic medalists in table tennis",
+        "table": 5,
+        "column": "Gold"
+      },
+      {
+        "lang": "en",
+        "page": "List of Olympic medalists in table tennis",
+        "table": 7,
+        "column": "Gold"
+      },
+      {
+        "lang": "en",
+        "page": "List of Olympic medalists in table tennis",
+        "table": 9,
+        "column": "Gold"
+      },
+      {
+        "lang": "en",
+        "page": "List of Olympic medalists in table tennis",
+        "table": 13,
+        "column": "Gold"
+      },
+      {
+        "lang": "en",
+        "page": "List of Olympic medalists in table tennis",
+        "table": 15,
+        "column": "Gold"
+      }
+    ],
+    "note": "Every name in a gold cell: singles, doubles, mixed doubles and team events."
+  }
+}

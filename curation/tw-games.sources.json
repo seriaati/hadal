@@ -1,0 +1,51 @@
+{
+  "olympic-table-tennis": {
+    "kind": "cutoff",
+    "until": 2024,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of Olympic medalists in table tennis",
+        "table": 1,
+        "column": "Gold"
+      },
+      {
+        "lang": "en",
+        "page": "List of Olympic medalists in table tennis",
+        "table": 3,
+        "column": "Gold"
+      },
+      {
+        "lang": "en",
+        "page": "List of Olympic medalists in table tennis",
+        "table": 5,
+        "column": "Gold"
+      },
+      {
+        "lang": "en",
+        "page": "List of Olympic medalists in table tennis",
+        "table": 7,
+        "column": "Gold"
+      },
+      {
+        "lang": "en",
+        "page": "List of Olympic medalists in table tennis",
+        "table": 9,
+        "column": "Gold"
+      },
+      {
+        "lang": "en",
+        "page": "List of Olympic medalists in table tennis",
+        "table": 13,
+        "column": "Gold"
+      },
+      {
+        "lang": "en",
+        "page": "List of Olympic medalists in table tennis",
+        "table": 15,
+        "column": "Gold"
+      }
+    ],
+    "note": "Every name in a gold cell: singles, doubles, mixed doubles and team events."
+  }
+}

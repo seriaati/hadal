@@ -1,0 +1,297 @@
+{
+  "summer-olympic-cities": {
+    "kind": "cutoff",
+    "until": 2024,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of Olympic Games host cities",
+        "table": 1,
+        "column": "City or area"
+      }
+    ],
+    "note": "Summer rows up to 2024. Stockholm (1956) and Hong Kong (2008) are in for hosting the equestrian events."
+  },
+  "winter-olympic-cities": {
+    "kind": "cutoff",
+    "until": 2026,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of Olympic Games host cities",
+        "table": 1,
+        "column": "City or area"
+      }
+    ],
+    "note": "Winter rows up to 2026. Whistler, Gangneung and Zhangjiakou, named co-hosts of 2010, 2018 and 2022, added by hand."
+  },
+  "asian-games-cities": {
+    "kind": "cutoff",
+    "until": 2026,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Asian Games",
+        "table": 1,
+        "column": "Host"
+      }
+    ],
+    "note": "Rows up to 2026; \"Jakarta and Palembang\" split, Aichi taken as an alias of Nagoya."
+  },
+  "world-cup-hosts": {
+    "kind": "cutoff",
+    "until": 2026,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "FIFA World Cup hosts",
+        "table": 1,
+        "column": "Host nation(s)"
+      }
+    ],
+    "note": "West Germany is an alias of Germany."
+  },
+  "world-cup-nations": {
+    "kind": "cutoff",
+    "until": 2026,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "National team appearances in the FIFA World Cup",
+        "table": 1,
+        "column": "Team"
+      }
+    ],
+    "note": "Predecessor teams (West Germany, Yugoslavia, Soviet Union, Czechoslovakia, Zaire, Dutch East Indies) are aliases of the teams FIFA counts them under."
+  },
+  "euro-winners": {
+    "kind": "cutoff",
+    "until": 2024,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "UEFA European Championship",
+        "table": 3,
+        "column": "Team"
+      }
+    ],
+    "note": "Teams with one title or more."
+  },
+  "champions-league-winners": {
+    "kind": "cutoff",
+    "until": 2026,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of European Cup and UEFA Champions League finals",
+        "table": 4,
+        "column": "Club"
+      }
+    ],
+    "note": "Clubs with one title or more."
+  },
+  "premier-league-clubs": {
+    "kind": "cutoff",
+    "until": 2026,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of Premier League clubs",
+        "table": 1,
+        "column": "Club"
+      }
+    ],
+    "note": "The prompt names the 2026–27 season, which the table counts."
+  },
+  "f1-champions": {
+    "kind": "cutoff",
+    "until": 2025,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of Formula One World Drivers' Champions",
+        "table": 3,
+        "column": "Driver"
+      }
+    ],
+    "note": "Seasons up to 2025; the 2026 champion waits for the cut-off to move."
+  },
+  "ballon-dor-winners": {
+    "kind": "cutoff",
+    "until": 2026,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Ballon d'Or",
+        "table": 3,
+        "column": "Player"
+      }
+    ]
+  },
+  "nba-teams": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "National Basketball Association",
+        "table": 1,
+        "column": "Team"
+      }
+    ]
+  },
+  "mlb-teams": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Major League Baseball",
+        "table": 1,
+        "column": "Team"
+      }
+    ],
+    "note": "In the English and Taiwan packs only; the zh-CN pack asks china-olympic-champions instead."
+  },
+  "grand-slam-champions": {
+    "kind": "cutoff",
+    "until": 2026,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of Grand Slam men's singles champions",
+        "table": 3,
+        "column": "Australian Open"
+      },
+      {
+        "lang": "en",
+        "page": "List of Grand Slam men's singles champions",
+        "table": 3,
+        "column": "French Open"
+      },
+      {
+        "lang": "en",
+        "page": "List of Grand Slam men's singles champions",
+        "table": 3,
+        "column": "Wimbledon"
+      },
+      {
+        "lang": "en",
+        "page": "List of Grand Slam men's singles champions",
+        "table": 3,
+        "column": "US Open"
+      },
+      {
+        "lang": "en",
+        "page": "List of Grand Slam women's singles champions",
+        "table": 2,
+        "column": "Australian Open"
+      },
+      {
+        "lang": "en",
+        "page": "List of Grand Slam women's singles champions",
+        "table": 2,
+        "column": "French Open"
+      },
+      {
+        "lang": "en",
+        "page": "List of Grand Slam women's singles champions",
+        "table": 2,
+        "column": "Wimbledon"
+      },
+      {
+        "lang": "en",
+        "page": "List of Grand Slam women's singles champions",
+        "table": 2,
+        "column": "US Open"
+      }
+    ],
+    "note": "Champions from the 1968 French Open on (the Open era), up to the 2026 US Open; the count after each name stripped."
+  },
+  "ioc-sports": {
+    "kind": "cutoff",
+    "until": 2026,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Association of Summer Olympic International Federations",
+        "table": 2,
+        "column": "Sport"
+      },
+      {
+        "lang": "en",
+        "page": "Association of Summer Olympic International Federations",
+        "table": 3,
+        "column": "Sport"
+      },
+      {
+        "lang": "en",
+        "page": "Association of International Olympic Winter Sports Federations",
+        "table": 2,
+        "column": "Sport"
+      },
+      {
+        "lang": "en",
+        "page": "Association of IOC Recognised International Sports Federations",
+        "table": 2,
+        "column": "Sport"
+      },
+      {
+        "lang": "en",
+        "page": "Association of IOC Recognised International Sports Federations",
+        "table": 3,
+        "column": "Sport"
+      }
+    ],
+    "note": "Each federation's sports and their disciplines listed as answers (World Aquatics gives swimming, diving, water polo and so on)."
+  },
+  "paralympic-sports": {
+    "kind": "cutoff",
+    "until": 2026,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Paralympic sports",
+        "table": 1,
+        "column": "Sport"
+      },
+      {
+        "lang": "en",
+        "page": "Paralympic sports",
+        "table": 2,
+        "column": "Sport"
+      }
+    ],
+    "note": "Current and discontinued sports; climbing, first held in 2028, left out."
+  },
+  "chess-champions": {
+    "kind": "cutoff",
+    "until": 2025,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "World Chess Championship",
+        "table": 6,
+        "column": "Champion"
+      },
+      {
+        "lang": "en",
+        "page": "Women's World Chess Championship",
+        "table": 3,
+        "column": "Champion"
+      }
+    ],
+    "note": "Undisputed and FIDE champions, open and women's."
+  },
+  "olympic-gold-countries": {
+    "kind": "cutoff",
+    "until": 2026,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "All-time Olympic Games medal table",
+        "table": 1,
+        "column": "Team"
+      }
+    ],
+    "note": "English pack only. Teams with a gold in the combined total; neutral and mixed teams left out; Unified Team, ROC, Russian Empire, Australasia and the United Team of Germany are aliases."
+  }
+}
