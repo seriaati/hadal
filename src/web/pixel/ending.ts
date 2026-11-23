@@ -31,8 +31,6 @@ const STAGGER = 0.06;
  */
 const WORDS_AT = { head: 0, under: 0.1, names: 0.2, details: 0.3, back: 0.45 };
 const WORDS_SECONDS = 0.4;
-/** How long the details take to come in again when the focus moves to another lamp. */
-const DETAILS_SECONDS = 0.2;
 /** How far a part of the words that comes in at `at` has come, `after` seconds after the lamps arrived: 1 once it is whole. */
 const coming = (after: number, at: number) => (after - at) / WORDS_SECONDS;
 /** How many pixels a lamp's chain hangs from the rope; and the mark under the lamp in focus in a room. */
@@ -77,9 +75,6 @@ export class Ending {
   wordsTo = new Int16Array(0);
   /** Where the focus is on the frame: the tape's faults gather there, and the eyes look at it. */
   point = { x: 0, y: 0 };
-  /** The lamp whose details were last drawn, as "line:lamp", and when they began to come in. */
-  private detailed = "";
-  private detailedAt = 0;
 
   constructor(
     private log: Log,
@@ -335,7 +330,7 @@ export class Ending {
 
     // Each part leaves its veil on the frame for the next to replace.
     this.drawHead(frame, since - arrived);
-    this.drawDetails(frame, since - arrived, time);
+    this.drawDetails(frame, since - arrived);
     this.reveal(frame, coming(since - arrived, WORDS_AT.back));
     const backY = H - (wide ? 14 : 22);
     const back = isRoom(this.log) ? t().ending.backToRoom : t().ending.backToTitle;
@@ -433,18 +428,12 @@ export class Ending {
     this.say(frame, tiny, name, 16, row.y - 2, on ? 16 : diver.won ? 15 : 7, false, on || diver.won ? 70 : 0);
   }
 
-  private drawDetails(frame: Frame, after: number, time: number) {
+  private drawDetails(frame: Frame, after: number) {
     const hung = this.focused;
     const at = this.lastLamp;
     if (!hung || !at) return;
     const { width: W } = frame;
-    const detailed = `${at.line}:${at.lamp}`;
-    if (detailed !== this.detailed) {
-      this.detailed = detailed;
-      this.detailedAt = time;
-    }
-    // The later of the two: the first coming in, or the coming in again after the focus moved.
-    this.reveal(frame, Math.min(coming(after, WORDS_AT.details), (time - this.detailedAt) / DETAILS_SECONDS));
+    this.reveal(frame, coming(after, WORDS_AT.details));
     let y = this.detailsTop(frame);
     if (this.divers.length) {
       const diver = this.divers[at.line]!;
