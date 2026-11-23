@@ -1,0 +1,14 @@
+{
+  "china-protected": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "zh",
+        "page": "国家重点保护野生动物名录",
+        "table": 1,
+        "column": "中文名"
+      }
+    ],
+    "note": "Only rows whose 保護級別 is Ⅰ (Class I, 2021 list); former names (原名) kept as aliases."
+  }
+}

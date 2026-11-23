@@ -1,0 +1,6169 @@
+{
+  "extinct-since-1500": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of recently extinct mammals",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of recently extinct mammals",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of extinct bird species since 1500",
+        "members": true
+      },
+      {
+        "lang": "en",
+        "page": "List of recently extinct reptiles",
+        "members": true
+      },
+      {
+        "lang": "en",
+        "page": "List of recently extinct amphibians",
+        "members": true
+      },
+      {
+        "lang": "en",
+        "page": "List of recently extinct fishes",
+        "members": true
+      },
+      {
+        "lang": "en",
+        "page": "List of recently extinct insects",
+        "members": true
+      },
+      {
+        "lang": "en",
+        "page": "List of recently extinct molluscs",
+        "members": true
+      },
+      {
+        "lang": "en",
+        "page": "List of recently extinct invertebrates",
+        "members": true
+      }
+    ],
+    "note": "Species and subspecies with an English common name; the bulleted lists give it as \"Common name (Binomial)\", and lines with only a binomial are left out. A few well-known losses (dodo, aurochs, Javan tiger) added by hand."
+  },
+  "penguins": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of penguins",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of penguins",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of penguins",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of penguins",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of penguins",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of penguins",
+        "table": 6,
+        "column": "Common name"
+      }
+    ],
+    "note": "Plus the extinct Chatham and Waitaha penguins, and \"Rockhopper penguin\" for both rockhoppers."
+  },
+  "national-animals": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of national animals",
+        "table": 1,
+        "column": "Name of animal"
+      },
+      {
+        "lang": "en",
+        "page": "List of national birds",
+        "table": 1,
+        "column": "Name of bird"
+      }
+    ],
+    "note": "Every animal listed, national fish and insects included; heraldic forms (Bundesadler, Leo Belgicus) folded into Eagle and Lion."
+  },
+  "wild-cats": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of felids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of felids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of felids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of felids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of felids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of felids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of felids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of felids",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of felids",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of felids",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of felids",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of felids",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of felids",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of felids",
+        "table": 14,
+        "column": "Common name"
+      }
+    ],
+    "note": "Domestic cat left out; generic Lynx, Wildcat and Golden cat added."
+  },
+  "marsupials": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 15,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 17,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 18,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyuromorphs",
+        "table": 19,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of didelphimorphs",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of didelphimorphs",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of didelphimorphs",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of didelphimorphs",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of didelphimorphs",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of didelphimorphs",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of didelphimorphs",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of didelphimorphs",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of didelphimorphs",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of didelphimorphs",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of didelphimorphs",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of didelphimorphs",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of didelphimorphs",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of didelphimorphs",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of didelphimorphs",
+        "table": 15,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of didelphimorphs",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of didelphimorphs",
+        "table": 17,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of didelphimorphs",
+        "table": 18,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of macropodiformes",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of macropodiformes",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of macropodiformes",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of macropodiformes",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of macropodiformes",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of macropodiformes",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of macropodiformes",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of macropodiformes",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of macropodiformes",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of macropodiformes",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of macropodiformes",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of macropodiformes",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of macropodiformes",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of macropodiformes",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of macropodiformes",
+        "table": 15,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of macropodiformes",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of macropodiformes",
+        "table": 17,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of macropodiformes",
+        "table": 18,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 15,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 17,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 18,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 19,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of phalangeriformes",
+        "table": 20,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of peramelemorphs",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of peramelemorphs",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of peramelemorphs",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of peramelemorphs",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of peramelemorphs",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of peramelemorphs",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of peramelemorphs",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of peramelemorphs",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of recently extinct mammals",
+        "table": 1,
+        "column": "Common name"
+      }
+    ],
+    "note": "Extinct mammals only of the marsupial orders; kinds (kangaroo, possum, quoll) added by hand."
+  },
+  "rodents": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 15,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 17,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 18,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 19,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 20,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 21,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 22,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 23,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 24,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 25,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 26,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 27,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 28,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 29,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 30,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 31,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 32,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 33,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 34,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 35,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 36,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 37,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 38,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 39,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 40,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 41,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 42,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 43,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 44,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 45,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 46,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 47,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 48,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 49,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 50,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 51,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 52,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 53,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 54,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 55,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 56,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 57,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 58,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 59,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sciurids",
+        "table": 60,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of glirids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of glirids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of glirids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of glirids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of glirids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of glirids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of glirids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of glirids",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of glirids",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of geomyids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of geomyids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of geomyids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of geomyids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of geomyids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of geomyids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of geomyids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of heteromyids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of heteromyids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of heteromyids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of heteromyids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of heteromyids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dipodids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dipodids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dipodids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dipodids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dipodids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dipodids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dipodids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dipodids",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dipodids",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dipodids",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dipodids",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dipodids",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dipodids",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sminthids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of spalacids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of spalacids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of spalacids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of spalacids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of spalacids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of spalacids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of spalacids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 15,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 17,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 18,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 19,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 20,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of nesomyids",
+        "table": 21,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 15,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 17,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 18,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 19,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 20,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 21,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 22,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 23,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 24,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 25,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 26,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 27,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 28,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 29,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of arvicolines",
+        "table": 30,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cricetines",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cricetines",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cricetines",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cricetines",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cricetines",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cricetines",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cricetines",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cricetines",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cricetines",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of neotomines",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of neotomines",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of neotomines",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of neotomines",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of neotomines",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of neotomines",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of neotomines",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of neotomines",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of neotomines",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of neotomines",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of neotomines",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of neotomines",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of neotomines",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of neotomines",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of neotomines",
+        "table": 15,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of neotomines",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 15,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 17,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 18,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 19,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 20,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 21,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 22,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 23,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 24,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 25,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 26,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 27,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 28,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 29,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 30,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 31,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 32,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 33,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 34,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 35,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 36,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 37,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 38,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 39,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 40,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 41,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 42,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 43,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 44,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 45,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 46,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 47,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 48,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 49,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 50,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 51,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 52,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 53,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 54,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 55,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 56,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 57,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 58,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 59,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 60,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 61,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 62,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 63,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 64,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 65,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 66,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 67,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 68,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 69,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 70,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 71,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 72,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 73,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 74,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 75,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 76,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 77,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 78,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 79,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 80,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 81,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 82,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 83,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 84,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 85,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 86,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of sigmodontines",
+        "table": 87,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of deomyines",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of deomyines",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of deomyines",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of deomyines",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of gerbillines",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of gerbillines",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of gerbillines",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of gerbillines",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of gerbillines",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of gerbillines",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of gerbillines",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of gerbillines",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of gerbillines",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of gerbillines",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of gerbillines",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of gerbillines",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of gerbillines",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of gerbillines",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 15,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 17,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 18,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 19,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 20,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 21,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 22,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 23,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 24,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 25,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 26,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 27,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 28,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 29,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 30,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 31,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 32,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 33,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 34,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 35,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 36,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 37,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 38,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 39,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 40,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 41,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 42,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 43,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 44,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 45,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 46,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 47,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 48,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 49,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 50,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 51,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 52,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 53,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 54,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 55,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 56,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 57,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 58,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 59,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 60,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 61,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 62,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 63,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 64,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 65,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 66,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 67,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 68,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 69,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 70,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 71,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 72,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 73,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 74,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 75,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 76,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 77,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 78,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 79,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 80,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 81,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 82,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 83,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 84,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 85,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 86,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 87,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 88,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 89,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 90,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 91,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 92,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 93,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 94,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 95,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 96,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 97,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 98,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 99,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 100,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 101,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 102,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 103,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 104,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 105,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 106,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 107,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 108,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 109,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 110,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 111,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 112,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 113,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 114,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 115,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 116,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 117,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 118,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 119,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 120,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 121,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 122,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 123,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 124,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 125,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 126,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 127,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 128,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 129,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 130,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 131,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 132,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 133,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 134,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 135,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of murines",
+        "table": 136,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of caviids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of caviids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of caviids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of caviids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of caviids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of caviids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bathyergids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bathyergids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bathyergids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bathyergids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bathyergids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of capromyids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of capromyids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of capromyids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of capromyids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of capromyids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of capromyids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of capromyids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of capromyids",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of capromyids",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of ctenomyids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyproctids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of dasyproctids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 15,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 17,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 18,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 19,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 20,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 21,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 22,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 23,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 24,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of echimyids",
+        "table": 25,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of erethizontids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of erethizontids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of erethizontids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of hystricids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of hystricids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of hystricids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of octodontids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of octodontids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of octodontids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of octodontids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of octodontids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of octodontids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of octodontids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 1,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 2,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 3,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 4,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 5,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 6,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 7,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 8,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 9,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 10,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 11,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 12,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 13,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 14,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 15,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 16,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 17,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 18,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 19,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 20,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 21,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 22,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 23,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 24,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 25,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 26,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 27,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 28,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 29,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 30,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 31,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 32,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 33,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 34,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 35,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 36,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 37,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 38,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 39,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 40,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 41,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 42,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 43,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 44,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 45,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 46,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 47,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 48,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 49,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 50,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 51,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 52,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 53,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 54,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 55,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 56,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 57,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 58,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 59,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 60,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 61,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 62,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 63,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 64,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 65,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 66,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 67,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 68,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 69,
+        "column": "Name"
+      },
+      {
+        "lang": "en",
+        "page": "List of rodents",
+        "table": 70,
+        "column": "Name"
+      }
+    ],
+    "note": "List of rodents gives genera: only the common name in brackets is taken (\"Anomalurus (scaly-tailed flying squirrel)\"). Recently extinct rodents from List of recently extinct mammals."
+  },
+  "flightless-birds": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Flightless bird",
+        "members": true
+      },
+      {
+        "lang": "en",
+        "page": "Category:Flightless birds",
+        "members": true
+      }
+    ],
+    "note": "The article's bulleted species; plus all penguins and a few famous prehistoric ones (terror bird, Gastornis, Hesperornis, Dromornis)."
+  },
+  "cat-breeds": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of cat breeds",
+        "table": 1,
+        "column": "Breed"
+      }
+    ]
+  },
+  "monkeys": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 15,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 17,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 18,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 19,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 20,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 21,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 22,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cercopithecoids",
+        "table": 23,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 15,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 17,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 18,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 19,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 20,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of platyrrhines",
+        "table": 21,
+        "column": "Common name"
+      }
+    ],
+    "note": "Kinds (baboon, macaque, tamarin) added by hand."
+  },
+  "wild-canids": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of canids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of canids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of canids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of canids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of canids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of canids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of canids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of canids",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of canids",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of canids",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of canids",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of canids",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of canids",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of canids",
+        "table": 14,
+        "column": "Common name"
+      }
+    ],
+    "note": "Domestic dog and the extinct Falkland Islands wolf and Dusicyon avus left out; dingo and New Guinea singing dog added at the edge."
+  },
+  "deer": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 15,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 17,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 18,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of cervids",
+        "table": 19,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of artiodactyls",
+        "table": 1,
+        "column": "Name"
+      }
+    ],
+    "note": "Musk deer and chevrotains (Moschidae, Tragulidae) accepted at the edge."
+  },
+  "crocodilians": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of crocodilians",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of crocodilians",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of crocodilians",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of crocodilians",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of crocodilians",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of crocodilians",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of crocodilians",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of crocodilians",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of crocodilians",
+        "table": 9,
+        "column": "Common name"
+      }
+    ]
+  },
+  "snakes": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of snakes by common name",
+        "members": true
+      }
+    ],
+    "note": "Merged with Wikidata: species under Serpentes (Q25537662) with an English article and a common name (title, label or P1843)."
+  },
+  "parrots": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 15,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 17,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 18,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 19,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 20,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 21,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 22,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 23,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 24,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 25,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 26,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 27,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 28,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 29,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 30,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 31,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 32,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 33,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 34,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 35,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 36,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 37,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 38,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 39,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 40,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 41,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 42,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 43,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 44,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 45,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 46,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 47,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 48,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 49,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 50,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 51,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 52,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 53,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 54,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 55,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 56,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 57,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 58,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 59,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 60,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 61,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 62,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 63,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 64,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 65,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 66,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 67,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 68,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 69,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 70,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 71,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 72,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 73,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 74,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 75,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 76,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 77,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 78,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 79,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 80,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 81,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 82,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 83,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 84,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 85,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 86,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 87,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 88,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 89,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 90,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 91,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 92,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 93,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 94,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 95,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 96,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 97,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of parrots",
+        "table": 98,
+        "column": "Common name"
+      }
+    ]
+  },
+  "owls": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of owl species",
+        "table": 1,
+        "column": "Common name"
+      }
+    ]
+  },
+  "antelopes": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 15,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 17,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 18,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 19,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 20,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 21,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 22,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 23,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 24,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 25,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 26,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 27,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 28,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 29,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 30,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 31,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 32,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 33,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 34,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 35,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 36,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 37,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 38,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 39,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 40,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 41,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 42,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 43,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 44,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 45,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 46,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 47,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 48,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 49,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 50,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 51,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 52,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of bovids",
+        "table": 53,
+        "column": "Common name"
+      }
+    ],
+    "note": "Cattle, buffalo, bison, sheep, goats, ibexes, tahrs and the muskox left out; goat-antelopes (serow, goral, chamois, takin, mountain goat) and the pronghorn kept."
+  },
+  "lagomorphs": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of leporids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of leporids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of leporids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of leporids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of leporids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of leporids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of leporids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of leporids",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of leporids",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of leporids",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of leporids",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of ochotonids",
+        "table": 1,
+        "column": "Common name"
+      }
+    ]
+  },
+  "mustelids": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 15,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 17,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 18,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 19,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 20,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 21,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 22,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of mustelids",
+        "table": 23,
+        "column": "Common name"
+      }
+    ]
+  },
+  "dog-breeds": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of dog breeds",
+        "members": true
+      },
+      {
+        "lang": "en",
+        "page": "List of dog crossbreeds",
+        "table": 1,
+        "column": "Name"
+      }
+    ],
+    "note": "Breeds from the page's bulleted lists, extinct ones included; crossbreeds accepted at the edge."
+  },
+  "horse-breeds": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of horse breeds",
+        "members": true
+      }
+    ],
+    "note": "Breeds, pony breeds, colour breeds and crossbred registries; modern and archaic types left out."
+  },
+  "domesticated": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of domesticated animals",
+        "table": 1,
+        "column": "Species and subspecies"
+      },
+      {
+        "lang": "en",
+        "page": "List of domesticated animals",
+        "table": 2,
+        "column": "Species and subspecies"
+      }
+    ],
+    "note": "All of table 1; from table 2 (tamed and semi-domesticated) only the well-known ones (reindeer, elephant, hamster, budgerigar, goldfish)."
+  },
+  "not-monkeys": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of hominoids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of hominoids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of hominoids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of hominoids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of hominoids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of hominoids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of hominoids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of hominoids",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lemuroids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lemuroids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lemuroids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lemuroids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lemuroids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lemuroids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lemuroids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lemuroids",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lemuroids",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lemuroids",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lemuroids",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lemuroids",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lemuroids",
+        "table": 13,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lemuroids",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lemuroids",
+        "table": 15,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lemuroids",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lorisoids",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lorisoids",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lorisoids",
+        "table": 3,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lorisoids",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lorisoids",
+        "table": 5,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lorisoids",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lorisoids",
+        "table": 7,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lorisoids",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lorisoids",
+        "table": 9,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lorisoids",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of lorisoids",
+        "table": 11,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of tarsiiformes",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of tarsiiformes",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of tarsiiformes",
+        "table": 3,
+        "column": "Common name"
+      }
+    ],
+    "note": "Plus kinds, and a few extinct hominins and giant lemurs a player may name."
+  },
+  "birds-of-prey": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of Accipitriformes species",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of Falconidae",
+        "table": 2,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of Falconidae",
+        "table": 4,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of Falconidae",
+        "table": 6,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of Falconidae",
+        "table": 8,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of Falconidae",
+        "table": 10,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of Falconidae",
+        "table": 12,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of Falconidae",
+        "table": 14,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of Falconidae",
+        "table": 16,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of Falconidae",
+        "table": 18,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of Falconidae",
+        "table": 20,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of Falconidae",
+        "table": 22,
+        "column": "Common name"
+      }
+    ]
+  },
+  "hybrids": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of genetic hybrids",
+        "members": true
+      },
+      {
+        "lang": "en",
+        "page": "Felid hybrid",
+        "members": true
+      },
+      {
+        "lang": "en",
+        "page": "Equid hybrid",
+        "members": true
+      },
+      {
+        "lang": "en",
+        "page": "Canid hybrid",
+        "members": true
+      },
+      {
+        "lang": "en",
+        "page": "Bovid hybrid",
+        "members": true
+      }
+    ],
+    "note": "Only hybrids with a name of their own (liger, zorse, wholphin); individuals, hypothetical and hoax hybrids left out."
+  },
+  "ducks-geese-swans": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of Anatidae species",
+        "table": 1,
+        "column": "Common name"
+      }
+    ],
+    "note": "Plus the magpie goose and the domestic duck and goose."
+  },
+  "pigeons-doves": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of wild pigeon species",
+        "table": 1,
+        "column": "Common name"
+      },
+      {
+        "lang": "en",
+        "page": "List of extinct bird species since 1500",
+        "members": true
+      }
+    ],
+    "note": "Extinct pigeons and doves (dodo, Rodrigues solitaire, passenger pigeon) from the Columbiformes section of the extinct birds list."
+  }
+}
