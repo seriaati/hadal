@@ -260,7 +260,9 @@ requestAnimationFrame(function loop(now) {
   else if (!multiplayer.ahead) input.value = "";
   // A prompt in another script keeps its air until the font that draws it has arrived.
   const prompt = game.phase === "ask" && game.prompts[game.round];
-  if (!prompt || drawable(prompt.text)) tick(game, dt);
+  // The air runs on the clock, not on frames: a browser draws none for a tab out of sight, and the diver must not keep
+  // their breath while the player looks the answer up elsewhere.
+  if (!prompt || drawable(prompt.text)) tick(game, elapsed);
   const log = multiplayer.ending?.log ?? (game.phase === "ascent" || game.phase === "lost" || game.phase === "done" ? game : null);
   if (log !== ended) {
     ended = log;
