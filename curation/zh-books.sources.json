@@ -1,0 +1,27 @@
+{
+  "murakami-novels": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Haruki Murakami bibliography",
+        "table": 1,
+        "column": "English publication"
+      }
+    ],
+    "note": "Novels only; Chinese titles are the usual mainland and Taiwan translations. The Tale of Kaho (2026) is left out until it is out."
+  },
+  "mao-dun-prize": {
+    "kind": "cutoff",
+    "until": 2023,
+    "sources": [
+      {
+        "lang": "zh",
+        "page": "茅盾文学奖",
+        "table": 1,
+        "column": "作品"
+      }
+    ],
+    "note": "Honorary awards of the third prize (浴血罗霄, 金瓯缺) included."
+  }
+}

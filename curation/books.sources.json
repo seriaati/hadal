@@ -1,0 +1,243 @@
+{
+  "nobel-literature": {
+    "kind": "cutoff",
+    "until": 2026,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of Nobel laureates in Literature",
+        "table": 1,
+        "column": "Name"
+      }
+    ],
+    "note": "Rows marked Not awarded left out; laureates of shared years both listed."
+  },
+  "pulitzer-fiction": {
+    "kind": "cutoff",
+    "until": 2026,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Pulitzer Prize for Fiction",
+        "table": 1,
+        "column": "Work"
+      }
+    ],
+    "note": "Winners only: the rows whose Genre(s) cell is filled; finalists left out. Two collections titled Collected Stories become The Collected Stories (Porter) and The Collected Stories of Jean Stafford."
+  },
+  "booker-winners": {
+    "kind": "cutoff",
+    "until": 2026,
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of winners and nominated authors of the Booker Prize",
+        "table": 1,
+        "column": "Title"
+      }
+    ],
+    "note": "Rows whose Award is Winner, the 1970 Lost Man Booker included; shortlists left out."
+  },
+  "king-books": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Stephen King bibliography",
+        "table": 1,
+        "column": "Title"
+      },
+      {
+        "lang": "en",
+        "page": "Stephen King bibliography",
+        "table": 2,
+        "column": "Title"
+      }
+    ],
+    "note": "Table 1 gives the novels (books not yet published left out); the novellas are taken by hand from the collections of table 2 (Different Seasons, Four Past Midnight, Hearts in Atlantis, Full Dark, No Stars, If It Bleeds, You Like It Darker, The Mist from Skeleton Crew) and the standalone novellas (UR, Blockade Billy, Mile 81, In the Tall Grass, Riding the Bullet, The Plant)."
+  },
+  "pen-names": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 1,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 2,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 3,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 4,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 5,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 6,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 7,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 8,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 9,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 10,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 11,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 12,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 13,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 14,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 15,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 16,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 17,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 18,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 19,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 20,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 21,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 22,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 23,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 24,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 25,
+        "column": "Pen name"
+      },
+      {
+        "lang": "en",
+        "page": "List of pen names",
+        "table": 26,
+        "column": "Pen name"
+      }
+    ],
+    "note": "Generic descriptions used as pseudonyms (A Lady, A Friend, A Layman) and fictional people left out; real names kept as aliases where they lead to the same article. Some Chinese and other writers the list lacks were added by hand (Maxim Gorky, Mo Yan, Lao She, Gu Long, Lu Yao and others)."
+  },
+  "dystopian-novels": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of dystopian literature",
+        "members": true
+      }
+    ],
+    "note": "Only the italic titles (books); short stories, plays and picture books left out. Added The Road, Animal Farm and I Am Legend, which players name and the list lacks."
+  },
+  "fictional-detectives": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "List of fictional detectives",
+        "members": true
+      }
+    ],
+    "note": "Only detectives who first appeared in books or comics (manga included); those created for film, TV or games left out. Many famous book detectives the list lacks were added by hand."
+  }
+}

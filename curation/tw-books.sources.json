@@ -1,0 +1,14 @@
+{
+  "murakami-novels": {
+    "kind": "open",
+    "sources": [
+      {
+        "lang": "en",
+        "page": "Haruki Murakami bibliography",
+        "table": 1,
+        "column": "English publication"
+      }
+    ],
+    "note": "Novels only; Chinese titles are the usual mainland and Taiwan translations. The Tale of Kaho (2026) is left out until it is out."
+  }
+}
