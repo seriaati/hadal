@@ -1,5 +1,5 @@
 // The built-in packs, for an admin. Its words are English in every language of the game (owner, 2026-11-24).
-import { LANGUAGES, LANGUAGE_NAMES, type Language } from "../../shared/language";
+import { LANGUAGES, type Language } from "../../shared/language";
 import type { SystemPackSummary, UpdateSummary } from "../../shared/types";
 import type { Part, Step, Ui } from "./ui";
 
@@ -7,6 +7,8 @@ import type { Part, Step, Ui } from "./ui";
 const SHOWN_PROBLEMS = 4;
 const SHOWN_PROMPTS = 4;
 const SOURCES = ".sources.json";
+/** Short enough to sit beside "Language" on one line. */
+const NAMES: Record<Language, string> = { en: "English", "zh-CN": "Simplified Chinese", "zh-TW": "Traditional Chinese" };
 
 type Held = { file: File; removes: string[] };
 
@@ -47,7 +49,7 @@ export class AdminPanel {
       title: "Admin",
       busy: this.busy,
       rows: [
-        { kind: "press", id: "language", label: "Language", value: LANGUAGE_NAMES[this.language], press: () => shift(1), shift },
+        { kind: "press", id: "language", label: "Language", value: NAMES[this.language], press: () => shift(1), shift },
         { kind: "press", id: "update", label: "Last update", value: this.update?.month ?? "none yet", press: () => this.update && this.ui.go(this.updated) },
         { kind: "gap" },
         // No note stands in for an empty list: a step keeps the room its words took, so the packs would come in under a gap.
@@ -61,8 +63,7 @@ export class AdminPanel {
         })),
       ],
       foot: [
-        // The font draws no semicolons and no angle brackets.
-        { kind: "note", text: `Uploads go into ${LANGUAGE_NAMES[this.language]}, except sources files such as animals${SOURCES}` },
+        { kind: "gap" },
         { kind: "press", id: "upload", label: "Upload packs", multiple: true, file: (files) => void this.upload(files) },
       ],
     };
