@@ -48,6 +48,8 @@ A prompt asks for one item of a set. It works when every one of these holds:
 - "Name something used to …" (Family Feud style): the list can never be complete.
 - Sets that are all equally known (zodiac signs, days of the week, chess pieces).
 - Sets that change within a few years.
+- Sets of ordinary words anyone can guess (colours, numbers, shapes): naming colours at random
+  lands Among Us's Coral without knowing the game, so no answer is rare.
 
 ## A good answer list
 

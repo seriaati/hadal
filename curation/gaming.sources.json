@@ -216,5 +216,12 @@
       { "lang": "en", "page": "List of Blizzard Entertainment games", "table": 3, "column": "Title" }
     ],
     "note": "Cancelled games left out; expansions and remasters released by 2025 (The Burning Crusade to The War Within, Brood War, Reforged…) added by hand"
+  },
+  "lol-champions": {
+    "kind": "cutoff",
+    "until": 2025,
+    "sources": [
+      { "url": "https://wiki.leagueoflegends.com/en-us/List_of_champions", "note": "Champions released by the end of 2025 (Zaahen the last); Chinese names from Riot's Data Dragon (zh_CN, zh_TW)" }
+    ]
   }
 }
