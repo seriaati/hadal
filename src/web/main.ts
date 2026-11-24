@@ -236,6 +236,8 @@ talk.addEventListener("keydown", (event) => {
   takeKeys();
 });
 // The cog and the title menu are drawn, not page controls, so the pointer is tested against them here.
+/** The icon at the top right under the mouse, which is lit. */
+let hovered: "cog" | "admin" | "update" | null = null;
 const onPointer = (event: PointerEvent) => {
   const at = canvas.getBoundingClientRect();
   const x = (event.clientX - at.left) / display.scale;
@@ -252,6 +254,8 @@ const onPointer = (event: PointerEvent) => {
   const cog = overIcon(frame, x, y, 0);
   const update = offersUpdate() && overIcon(frame, x, y, updateSlot());
   const key = offersAdmin() && overIcon(frame, x, y, 1);
+  // Only a mouse rests over an icon: a finger lifted off it leaves it unlit.
+  hovered = event.pointerType !== "mouse" ? null : cog ? "cog" : key ? "admin" : update ? "update" : null;
   const line = shown.phase === "title" && !ui.open && menu.items[scene.menuAt(x, y)] ? scene.menuAt(x, y) : -1;
   const named = ui.open ? undefined : multiplayer.pickable(scene.nameAt(x, y));
   canvas.style.cursor = cog || update || key || line >= 0 || named ? "pointer" : "";
@@ -286,6 +290,7 @@ input.addEventListener("keydown", onKey);
 addEventListener("mousedown", keepFocus);
 canvas.addEventListener("pointerdown", onPointer);
 canvas.addEventListener("pointermove", onPointer);
+canvas.addEventListener("pointerleave", () => (hovered = null));
 
 let ended: Log | null = null;
 let done = false;
@@ -372,9 +377,9 @@ requestAnimationFrame(function loop(now) {
   if (!closing && glitch.count > faults && Math.random() < 0.5) scene.ambient.jolt(frame.width, frame.height);
   glitch.apply(frame, closing ? closing.wordsFrom : scene.wordsFrom, closing ? closing.wordsTo : scene.wordsTo, now / 1000, focus, !closing);
   if (glitch.blackout) lights.length = 0;
-  if (!closing) drawCog(frame);
-  if (!closing && offersAdmin()) drawAdmin(frame);
-  if (!closing && offersUpdate()) drawUpdate(frame, updateSlot());
+  if (!closing) drawCog(frame, hovered === "cog");
+  if (!closing && offersAdmin()) drawAdmin(frame, hovered === "admin");
+  if (!closing && offersUpdate()) drawUpdate(frame, updateSlot(), hovered === "update");
   const box = closing ? null : scene.talkBox;
   talkButton.hidden = !box;
   if (box) {

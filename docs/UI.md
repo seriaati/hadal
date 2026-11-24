@@ -104,7 +104,8 @@ The same in every panel.
   An admin has a key at the cog's left, at the title and not in a room, that opens the admin
   panel; its words are English in every language, the one panel that does not follow the
   player's (owner, 2026-11-24). When a newer version is out, an amber turning arrow at the far
-  left reloads the game; it shows only at the title, where no dive is lost.
+  left reloads the game; it shows only at the title, where no dive is lost. The icons stand clear of
+  the frame's edges, and the one under the mouse turns cream and glows, as a line in focus does.
 - **No key hints are drawn.** The keys are the ones every game uses.
 - **Nothing waits for an animation.** A panel is there on the frame its key is pressed.
 
