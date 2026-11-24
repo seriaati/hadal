@@ -18,6 +18,19 @@ export const MAX_PACK_BYTES = 5_000_000;
 /** As the browser sees it: no prompts or answers. */
 export type PackSummary = { id: string; name: string; prompts: number };
 export type SystemPackSummary = PackSummary & { language: Language };
+/**
+ * What a month's update of the prompts that grow did to one: the answers it added (in English, or in the language of a
+ * pack only it asks), the cut-off it moved, whether it mended the sources, the rows it skipped and why; or why it failed.
+ */
+export type Updated = { pack: string; prompt: string; text: string; added: string[]; until: [number, number] | null; mended: boolean; skipped: string[]; failed: string | null };
+/** A month's update, as `YYYY-MM`, and what it used of the instance's key. */
+export type UpdateSummary = {
+  month: string;
+  prompts: Updated[];
+  problems: string[];
+  used: { input: number; cacheWrite: number; cacheRead: number; output: number; searches: number };
+};
+
 /** A prompt as the browser sees it: no answers. */
 export type GamePrompt = { id: string; text: string; pack: string };
 /** `answer` is the pack's spelling of a correct answer, or null when wrong. `rarity` is the points of its tier, 0 when wrong. */

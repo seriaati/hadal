@@ -18,8 +18,14 @@ packs of their language or from the packs they choose. The daily dive asks every
 prompts all day, one from each of 10 built-in packs, in normal mode; a day runs from midnight to
 midnight in UTC+8. Only a player's first daily dive of the day is scored (by account, or by browser
 for a guest): its depth is kept when it ends or is left, and a later one says it is not scored and
-how deep the scored one went. An instance offers it only with its own Anthropic key, and always in
-developer mode, where the day's prompts are picked from the packs at random. Multiplayer is private rooms joined by
+how deep the scored one went. An instance offers it only with its own Anthropic key, with which
+Claude writes each day's prompts the day before: for each of the day's 10 packs a new prompt, in
+English and then in both Chinese, made as the built-in packs are made and unlike any the game asks,
+and accepted by a strict reviewer before its answers are written. When the day is over, each
+prompt it asked joins its pack for good, tiered by how often the day's players gave each answer.
+A pack whose prompt cannot be written gives one of its own instead, and a day that begins before
+its prompts are written picks them all from the packs at random, as developer mode always does.
+Multiplayer is private rooms joined by
 a code or a link. A player joins in the suit they chose, or in one nobody in the room wears yet if
 it is taken, and in the room may press their own diver to change it. A new room starts with the
 settings of the last room its host's browser set up. A player whose connection drops keeps their

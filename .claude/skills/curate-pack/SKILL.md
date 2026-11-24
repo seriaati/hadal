@@ -42,15 +42,16 @@ owner decides which prompts stay and has the last word on tiers.
   `curation/<id>.titles.json`: `{ "<prompt id>": { "Newfoundland": "Newfoundland dog" } }`.
 - A prompt whose set can grow (a cut-off year, a living person's work, a list that gains members)
   gets its sources in `curation/<id>.sources.json` (`zh-<id>`/`tw-<id>` for a prompt only a Chinese
-  pack asks), so the monthly update (`.github/workflows/update-packs.yml`) can check them:
+  pack asks), so the server's monthly update (`src/server/updates.ts`) can check them:
   `{ "<prompt id>": { "kind": "cutoff" | "open", "until": 2025, "sources": [{ "lang": "en", "page":
   "List of …", "table": 1, "column": "Title" }], "note": "how the source was filtered" } }`, with
   `"members": true` in place of table and column for a page read with `tools/members.ts`, a column
   number for a table with no header row, and `"fixed": true` on a cut-off chosen to keep the prompt
-  deep ("before 2000") rather than current, which the January run then leaves alone. Then run
-  `bun tools/sources.ts --write` to record what the sources list now in `curation/<id>.seen.json`.
-- The titles, sources and seen files are kept in git; the others under `curation/` are made again
-  whenever a tool runs.
+  deep ("before 2000") rather than current, which the January run then leaves alone. The owner
+  uploads the file from the admin panel with the pack; from its next check on, the update reports
+  what the sources gain.
+- The titles files are kept in git; the others under `curation/` are made again whenever a tool
+  runs, and the live sources are in the game's database.
 
 ## 3. Put the answers in tiers
 

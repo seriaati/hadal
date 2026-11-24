@@ -7,7 +7,7 @@ import type { Words } from "../shared/words/en";
 import { SESSION_DAYS, accountIdOf, accountOf, isAdmin, signInFrom, signOut, signUp, type Entry } from "./accounts";
 import { MAX_PACKS, listPacks, loadPack, removePack, savePack } from "./custom";
 import { heard } from "./counts";
-import { claim, dailyPrompts, dayOf, isDay, numberOf, record, standing } from "./daily";
+import { claim, dailyPrompts, dayOf, isDay, numberOf, record, standing, writtenPacks } from "./daily";
 import { migrate } from "./db";
 import { OWN, buildIndex, judge, nearestAnswer, pickPrompts, type PromptIndex } from "./game";
 import { resumeWritings, run, stopWriting, writePack, writingOf } from "./generate";
@@ -17,6 +17,8 @@ import { formatPack } from "./packs";
 import { review, reviewList, saveReviewed } from "./review";
 import { lost, receive, usePrompts, type Member } from "./rooms";
 import { listSystemPacks, loadSystemPack, loadSystemPacks, saveSystemPack, seedSystemPacks } from "./system";
+import { lastUpdate, saveSources, seedSources } from "./updates";
+import { startWriting } from "./writer";
 
 const PROMPTS_PER_GAME = 10;
 /**
@@ -26,7 +28,7 @@ const PROMPTS_PER_GAME = 10;
  */
 const DEV_MODE = process.env.HADAL_DEV_MODE === "1";
 const PRODUCTION = process.env.NODE_ENV === "production";
-/** The daily dive is offered with the instance's own Anthropic key, and always in developer mode. */
+/** The daily dive is offered with the instance's own Anthropic key, which writes its prompts, and always in developer mode. */
 const DAILY = DEV_MODE || !!process.env.HADAL_DAILY_KEY;
 const SESSION = "session";
 /** A random id the browser keeps, so that a room's ban holds a guest without an account, and their daily dive counts once. */
@@ -43,7 +45,10 @@ async function versionOf(): Promise<string> {
 const VERSION = await versionOf();
 let summaries: Record<Language, PackSummary[]>;
 let packsIn: Record<Language, Pack[]>;
-/** A dive draws from the packs of the player's language; an answer is judged against every built-in prompt. */
+/**
+ * A dive draws from the packs of the player's language; an answer is judged against every built-in prompt, and the
+ * prompts written for daily dives that have not joined their packs yet.
+ */
 let promptsIn: Record<Language, PromptIndex>;
 let prompts: PromptIndex;
 /** Loads the built-in packs: at start-up, and again whenever one changes. */
@@ -53,13 +58,16 @@ async function useBuiltIn() {
   const inEach = <T>(make: (packs: Pack[]) => T) => Object.fromEntries(LANGUAGES.map((language) => [language, make(builtIn[language])])) as Record<Language, T>;
   summaries = inEach((packs): PackSummary[] => packs.map((pack) => ({ id: pack.id, name: pack.name, prompts: pack.prompts.length })));
   promptsIn = inEach(buildIndex);
-  prompts = buildIndex(Object.values(builtIn).flat());
+  prompts = buildIndex([...Object.values(builtIn).flat(), ...(await writtenPacks(builtIn))]);
   usePrompts(builtIn);
 }
 await migrate();
 const seeded = await seedSystemPacks();
 if (seeded) console.log(`filled the empty database with the ${seeded} packs of packs/`);
+const sourced = await seedSources();
+if (sourced) console.log(`filled the empty database with the sources of ${sourced} prompts from curation/`);
 await useBuiltIn();
+startWriting(() => packsIn, useBuiltIn);
 void resumeWritings();
 
 function languageOf(req: BunRequest): Language {
@@ -184,7 +192,7 @@ const server = Bun.serve({
         dailyPlayer(req, async (player) => {
           const day = dayOf();
           const language = languageOf(req);
-          const asked = await dailyPrompts(language, packsIn[language], promptsIn[language], day);
+          const asked = await dailyPrompts(language, packsIn[language], prompts, day);
           if (!asked.length) return new Response("No daily dive today", { status: 404 });
           const scored = await claim(player, day);
           const { depth } = await standing(player, day);
@@ -271,6 +279,19 @@ const server = Bun.serve({
           if ("removes" in saved) return Response.json(saved, { status: 409 });
           await useBuiltIn();
           return Response.json(await listSystemPacks());
+        }),
+    },
+    "/api/admin/updates": {
+      GET: (req) => admin(req, async () => Response.json(await lastUpdate())),
+    },
+    // A pack's sources file, named after its pack as in curation/: `<pack id>.sources.json`.
+    "/api/admin/sources/:pack": {
+      POST: (req) =>
+        admin(req, async () => {
+          const file = await req.text();
+          if (Buffer.byteLength(file) > MAX_PACK_BYTES) return Response.json({ problems: [wordsIn("en").packs.tooBig(MAX_PACK_BYTES / 1_000_000)] }, { status: 400 });
+          const problems = await saveSources(req.params.pack, file);
+          return Response.json({ problems }, { status: problems.length ? 400 : 200 });
         }),
     },
     // Laid out as the pack files are, so the pack tools can work on a downloaded pack.

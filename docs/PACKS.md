@@ -128,6 +128,16 @@ The `curate-pack` skill (`.claude/skills/curate-pack/SKILL.md`) walks Claude Cod
 6. Make the Chinese packs from it: the names Wikidata gives in Simplified and Traditional
    Chinese, with the English names as aliases.
 
-Prompts whose sets grow keep their sources in `curation/<pack id>.sources.json`. Once a month a
-GitHub Actions workflow checks those sources for new rows and, when there are some, has Claude add
-the answers and open a pull request; each January it also moves the cut-off years forward.
+The packs also grow by one prompt a day from the daily dive (`src/server/writer.ts`). The day
+before, Claude writes a prompt for each of the day's ten packs as above, unattended: a reviewer
+that has not seen its research must accept the prompt against "A good prompt" before its answers
+are written, and the game checks the result. When the day is over the prompt joins its pack, the
+tiers of the answers players gave set by their counts once it has had a hundred answers, and right
+answers the live judge allowed added as rare.
+
+Prompts whose sets grow keep their sources in the game's database, as `curation/<pack id>.sources.json`
+has them (a pack's file is uploaded from the admin panel). Once a month the server checks those
+sources for new rows and, when there are some, has Claude add the answers to every pack that asks
+the prompt; each January it also moves the cut-off years forward. The changes go live at once, and
+the admin panel shows what the last update did. A daily prompt whose set grows names its sources
+when it is written, and is checked from the day it joins its pack.

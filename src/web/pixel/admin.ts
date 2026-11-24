@@ -1,16 +1,19 @@
 // The built-in packs, for an admin. Its words are English in every language of the game (owner, 2026-11-24).
 import { LANGUAGES, LANGUAGE_NAMES, type Language } from "../../shared/language";
-import type { SystemPackSummary } from "../../shared/types";
+import type { SystemPackSummary, UpdateSummary } from "../../shared/types";
 import type { Part, Step, Ui } from "./ui";
 
 /** Of a refused file's problems, as many as fit on the shortest screen. */
 const SHOWN_PROBLEMS = 4;
 const SHOWN_PROMPTS = 4;
+const SOURCES = ".sources.json";
 
 type Held = { file: File; removes: string[] };
 
 export class AdminPanel {
   private packs: SystemPackSummary[] = [];
+  /** The last monthly update of the prompts that grow. */
+  private update: UpdateSummary | null = null;
   private language: Language = "en";
   private busy = false;
   /** Of the last upload: the files refused, each with its problems, and those that would remove prompts. */
@@ -33,6 +36,8 @@ export class AdminPanel {
   private async load() {
     const res = await fetch("/api/admin/packs");
     if (res.ok) this.packs = (await res.json()) as SystemPackSummary[];
+    const updated = await fetch("/api/admin/updates");
+    if (updated.ok) this.update = (await updated.json()) as UpdateSummary | null;
   }
 
   private list = (): Step => {
@@ -43,6 +48,7 @@ export class AdminPanel {
       busy: this.busy,
       rows: [
         { kind: "press", id: "language", label: "Language", value: LANGUAGE_NAMES[this.language], press: () => shift(1), shift },
+        { kind: "press", id: "update", label: "Last update", value: this.update?.month ?? "none yet", press: () => this.update && this.ui.go(this.updated) },
         { kind: "gap" },
         ...(packs.length
           ? packs.map((pack): Part => ({
@@ -55,7 +61,34 @@ export class AdminPanel {
             }))
           : [{ kind: "note", text: "No packs in this language yet" } satisfies Part]),
       ],
-      foot: [{ kind: "gap" }, { kind: "press", id: "upload", label: "Upload packs", multiple: true, file: (files) => void this.upload(files) }],
+      foot: [
+        { kind: "note", text: `Packs go into ${LANGUAGE_NAMES[this.language]}; a file named <pack>${SOURCES} sets that pack's sources` },
+        { kind: "press", id: "upload", label: "Upload packs", multiple: true, file: (files) => void this.upload(files) },
+      ],
+    };
+  };
+
+  /** What the last monthly update did, prompt by prompt. */
+  private updated = (): Step => {
+    const update = this.update!;
+    const { input, cacheWrite, cacheRead, output, searches } = update.used;
+    const changed = update.prompts.filter((prompt) => prompt.added.length || prompt.until || prompt.mended).length;
+    return {
+      title: "Last update",
+      rows: [
+        { kind: "note", text: `${update.month}: ${changed} ${changed === 1 ? "prompt" : "prompts"} changed` },
+        { kind: "note", text: `Tokens: ${input} input, ${cacheWrite} cache written, ${cacheRead} cache read, ${output} output; ${searches} searches` },
+        ...update.problems.slice(0, SHOWN_PROBLEMS).map((text): Part => ({ kind: "note", text, bad: true })),
+        ...update.prompts.flatMap((prompt): Part[] => [
+          { kind: "gap" },
+          { kind: "note", text: `${prompt.pack}/${prompt.prompt}: ${prompt.text}`, warm: true },
+          ...(prompt.failed ? [{ kind: "note", text: `failed: ${prompt.failed}`, bad: true } satisfies Part] : []),
+          ...(prompt.added.length ? [{ kind: "note", text: `added ${prompt.added.length}: ${prompt.added.join(", ")}` } satisfies Part] : []),
+          ...(prompt.until ? [{ kind: "note", text: `cut-off moved from ${prompt.until[0]} to ${prompt.until[1]}` } satisfies Part] : []),
+          ...(prompt.mended ? [{ kind: "note", text: "sources mended" } satisfies Part] : []),
+          ...prompt.skipped.slice(0, SHOWN_PROMPTS).map((text): Part => ({ kind: "note", text: `skipped ${text}` })),
+        ]),
+      ],
     };
   };
 
@@ -96,14 +129,19 @@ export class AdminPanel {
     if (this.refused.length || this.held.length) this.ui.go(this.result);
   }
 
+  /** A file named `<pack id>.sources.json` is that pack's sources, whatever the language chosen; any other is a pack. */
   private async send(file: File, replace: boolean) {
+    const url = file.name.endsWith(SOURCES)
+      ? `/api/admin/sources/${encodeURIComponent(file.name.slice(0, -SOURCES.length))}`
+      : `/api/admin/packs/${this.language}${replace ? "?replace=1" : ""}`;
     let body: SystemPackSummary[] | { problems: string[] } | { removes: string[] };
     try {
-      body = (await (await fetch(`/api/admin/packs/${this.language}${replace ? "?replace=1" : ""}`, { method: "POST", body: file })).json()) as typeof body;
+      body = (await (await fetch(url, { method: "POST", body: file })).json()) as typeof body;
     } catch {
       body = { problems: ["the server did not answer"] };
     }
     if (Array.isArray(body)) this.packs = body;
+    else if ("problems" in body && !body.problems.length) return;
     else if ("removes" in body) this.held.push({ file, removes: body.removes });
     else this.refused.push({ name: file.name, problems: body.problems });
   }

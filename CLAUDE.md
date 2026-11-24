@@ -26,12 +26,18 @@ Use `bun`, not `npm`/`node`/`vite`.
 - `bun tools/check.ts [--write] <pack files>`: check built-in packs and lay them out as the others
   are; `tools/table.ts`, `tools/members.ts`, `tools/names.ts` and `tools/signals.ts` look answers
   up on Wikipedia (see `docs/PACKS.md`); `bun tools/sources.ts [--bump] [--write]` reports what
-  the sources of time-sensitive prompts gained since last recorded
+  the sources of time-sensitive prompts in `curation/` gained since last recorded (the server's
+  monthly update does this for the live packs)
 
 API keys: `HADAL_SECRET` in `.env` (32 characters or more, e.g. from `openssl rand -base64 32`)
 seals the keys players store. Without it the game runs but keeps no keys. `HADAL_DAILY_KEY`, the
 instance's own Anthropic key, turns on the daily dive (`src/server/daily.ts`), which developer
-mode always has.
+mode always has, runs the monthly update of the prompts that grow (`src/server/updates.ts`; a
+server started with the key runs it at once if this month's has not run), and has Claude write
+each day's prompts the day before (`src/server/writer.ts`,
+on `HADAL_DAILY_MODEL`, `claude-opus-5-5` if unset; what each prompt cost is in `daily_prompts`).
+The writer follows `docs/PACKS.md` and the curate-pack skill: a change to either changes it too.
+The live judge never uses this key, only players' own.
 
 Developer mode: put `HADAL_DEV_MODE=1` in `.env` (git-ignored, read by Bun at start-up) and
 restart the server. The game then shows a menu of shortcuts (`src/web/devmenu.ts`): answer
@@ -51,7 +57,8 @@ lists, downloads and uploads the built-in packs of each language.
   written by Claude in the background (`generate.ts`), the live judge for answers a pack does not
   list (`live.ts`), the count of answers players give to built-in prompts (`counts.ts`), the
   built-in packs, kept in the database and changed from the admin panel (`system.ts`), the daily
-  dive (`daily.ts`), the
+  dive (`daily.ts`), its prompts written by Claude the day before (`writer.ts`) and brought into
+  their packs when the day is over (`absorb.ts`), the
   multiplayer rooms, kept in memory and reached over a WebSocket
   (`rooms.ts`), the database (`db.ts`; schema changes are numbered files in
   `migrations/`, run at start-up, never edited once released)
@@ -70,11 +77,14 @@ lists, downloads and uploads the built-in packs of each language.
   here reaches it by an upload from the admin panel, and one downloaded from there is laid out
   like these files
 - `tools/`: the pack tools, and `curation/` what they learn about each pack (only the
-  `<pack id>.titles.json`, `.sources.json` and `.seen.json` files are in git)
-- `.github/workflows/update-packs.yml`: once a month, checks the sources of the prompts whose
-  answers grow (`tools/sources.ts`) and, if they gained rows, has Claude add the answers and open
-  a pull request; in January it also moves cut-off years forward. It runs on the
-  `CLAUDE_CODE_OAUTH_TOKEN` secret (the owner's Claude Pro plan)
+  `<pack id>.titles.json`, `.sources.json` and `.seen.json` files are in git). The sources and seen
+  files only fill an empty database's `prompt_sources` at start-up, which keeps the live ones; once
+  production has them they can leave git like the packs. A pack's sources file is uploaded from the
+  admin panel
+- `src/server/updates.ts`: once a month (on the instance's key), reads the sources of the prompts
+  whose answers grow and has Claude add what they gained to every pack that asks the prompt; in
+  January it also moves cut-off years forward. Changes go live at once; the admin panel shows the
+  last update. `research.ts` is the Claude loop and pack tools it shares with the daily writer
 - `design/brand/`: the logo (the diver's helmet) and the link preview; `bun design/brand/render.ts`
   draws the icons and `og-2.png` into `src/web/` (the preview needs Google Chrome)
 

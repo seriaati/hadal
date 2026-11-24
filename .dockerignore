@@ -2,4 +2,6 @@
 .env
 node_modules
 design
-docs
+# The daily dive's writer reads the guide to packs.
+docs/*
+!docs/PACKS.md
