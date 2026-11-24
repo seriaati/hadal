@@ -253,7 +253,11 @@ export function view(height: number, wish: number, ceiling: number, bottom: numb
  * screen is the browser's own, and passwords, phone keyboards and screen readers work.
  */
 export class Ui {
-  private steps: { build: () => Step; focus: string; kept: Map<string, number>; footKept: Map<string, number> }[] = [];
+  /**
+   * Each open step, with the room its words keep: laid out whole, with its rows alone, and with its foot alone. The words
+   * of the foot follow the last row when laid out whole, so their room must not be kept when the rows are laid alone.
+   */
+  private steps: { build: () => Step; focus: string; wholeKept: Map<string, number>; kept: Map<string, number>; footKept: Map<string, number> }[] = [];
   private step: Step = { title: "", rows: [] };
   private parts = new Map<string, Control>();
   private controls = new Map<string, HTMLInputElement | HTMLButtonElement>();
@@ -346,7 +350,7 @@ export class Ui {
   go(build: () => Step, focus = "") {
     const top = this.steps.at(-1);
     if (top) top.focus = (document.activeElement as HTMLElement | null)?.dataset.id ?? "";
-    this.steps.push({ build, focus: "", kept: new Map(), footKept: new Map() });
+    this.steps.push({ build, focus: "", wholeKept: new Map(), kept: new Map(), footKept: new Map() });
     this.wanted = focus;
     this.unpark();
     this.sync();
@@ -658,8 +662,8 @@ export class Ui {
     // A line is tall enough for a fingertip (40 screen pixels), unless smaller lines spare the step from scrolling.
     const whole = { ...this.step, rows: [...this.step.rows, ...(this.step.foot ?? [])] };
     let line = Math.max(LINE, Math.ceil(40 / scale));
-    let laid = lay(whole, width, line, step.kept);
-    const small = laid.height > bottom - ceiling ? lay(whole, width, LINE, step.kept) : null;
+    let laid = lay(whole, width, line, step.wholeKept);
+    const small = laid.height > bottom - ceiling ? lay(whole, width, LINE, step.wholeKept) : null;
     if (small && small.height <= bottom - ceiling) [laid, line] = [small, LINE];
     // A step that still has to scroll keeps its foot at the bottom, unless that would leave the rows above it too little room.
     let foot: Placed[] = [];
