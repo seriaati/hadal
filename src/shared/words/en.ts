@@ -28,15 +28,15 @@ export const en = {
   single: {
     /** The number is not known until the server has said. */
     daily: (number: number | null) => (number ? `Daily dive #${number}` : "Daily dive"),
-    dailyHow: "Today's 10 prompts from 10 packs, the same for everyone: only your first dive of the day is scored",
-    dailyDived: (depth: string) => `Today your scored dive reached ${depth}: diving again is not scored`,
-    dailyLeft: "You have dived today: diving again is not scored",
+    dailyHow: (air: number) => `10 prompts from random themes of the built-in packs, the same for everyone all day, ${air} s of air each: only your first dive of the day is scored`,
+    dailyDived: (depth: string) => `You scored ${depth} today: newer dives are not scored`,
+    dailyLeft: "You have dived today: newer dives are not scored",
     descend: "Descend",
-    descendHow: (air: number) => `10 prompts with ${air} s of air each: an empty tank only loses that prompt`,
+    descendHow: (air: number) => `10 random prompts from the curated themed packs, ${air} s of air each`,
     chaos: "Chaos",
-    chaosHow: (air: number) => `10 prompts with ${air} s of air each: the first empty tank ends the dive`,
+    chaosHow: (air: number) => `10 random prompts from the curated themed packs, ${air} s of air each: the first empty tank ends the dive`,
     custom: "Custom",
-    customHow: "10 prompts from the packs you choose, in either mode",
+    customHow: "10 random prompts from the packs you choose, your own packs included",
     noPacks: "no pack is chosen: choose some above",
   },
   /** Under the description of chaos mode, in rose. */

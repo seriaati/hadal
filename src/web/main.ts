@@ -94,7 +94,7 @@ const diveDaily = () => {
   void ui.wait(startDaily(game)).then((started) => started && ui.close());
 };
 const dailyNote = () => {
-  if (!daily?.dived) return t().single.dailyHow;
+  if (!daily?.dived) return t().single.dailyHow(AIR_SECONDS);
   return daily.depth === null ? t().single.dailyLeft : t().single.dailyDived(formatMeters(daily.depth));
 };
 const openSingle = () => {
