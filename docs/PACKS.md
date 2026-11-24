@@ -87,6 +87,8 @@ A prompt asks for one item of a set. It works when every one of these holds:
   a pleasure to land on. Not merely the most obscure: something at least a few players get.
 - **Watch the "too clever" pick**, the go-to obscure answer that many players give (Eswatini for
   an African country). It is not rare. Data catches it; a guess usually does not.
+- **A numbered series is not rare past its first few.** Whoever knows "the First Crusade" can
+  count up to the Seventh without knowing anything about it, so such answers are uncommon at most.
 - **Rarity is about recall, not fame.** The question is "would a player think of it unprompted?",
   not "has a player heard of it?".
 
