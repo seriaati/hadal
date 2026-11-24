@@ -61,7 +61,8 @@ owner decides which prompts stay and has the last word on tiers.
   know well, such as countries, capitals or states; without it the suggestions come out far too rare.
 - Trust the suggestions only as far as `docs/PACKS.md` says: a fair first draft for a plain set
   (capitals, rivers), not for a set cut by a property ("an island country") or a fan topic.
-- Judge each answer by the one question that matters: would a player think of it unprompted?
+- Judge each answer by the one question that matters: of many people with a basic knowledge of the
+  theme, how many would think of it unprompted, and how soon?
   Pageviews also count curiosity: a strange name people look up (Eswatini, Xoloitzcuintle) is read a
   lot but seldom given. When torn between two tiers, choose the rarer. Keep the pyramid of
   `docs/PACKS.md`.

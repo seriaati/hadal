@@ -68,6 +68,12 @@ A prompt asks for one item of a set. It works when every one of these holds:
 
 ## Tiers
 
+Picture asking many people for an answer, one at a time: people with a basic knowledge of the
+pack's theme, neither experts nor strangers to it, who speak the pack's language. The answers most
+of them give, and give first, are common. The fewer of them would give an answer, the rarer it is,
+down to answers only someone deep in the field would think of. An answer even those few would not
+think of is noise, not rare (see "Deep answers can be reached").
+
 | Tier | Points | Who gives it |
 |---|---|---|
 | common | 10 | nearly everyone, first |
