@@ -50,8 +50,8 @@ owner decides which prompts stay and has the last word on tiers.
   deep ("before 2000") rather than current, which the January run then leaves alone. The owner
   uploads the file from the admin panel with the pack; from its next check on, the update reports
   what the sources gain.
-- The titles files are kept in git; the others under `curation/` are made again whenever a tool
-  runs, and the live sources are in the game's database.
+- Nothing under `curation/` is in git: the titles files live only on this machine, the others are
+  made again whenever a tool runs, and the live sources are in the game's database.
 
 ## 3. Put the answers in tiers
 

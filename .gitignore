@@ -6,14 +6,9 @@ node_modules/
 # The bundled page the link preview is drawn from
 design/brand/out/
 
-# What the pack tools learn from Wikipedia, made again whenever they run. The titles kept by hand stay.
-curation/*.signals.json
-curation/*.names.json
-
-# The sources of the prompts that grow live in the database. A copy here is what tools/sources.ts reads, and fills an
-# empty local database
-curation/*.sources.json
-curation/*.seen.json
+# What the pack tools learn about each pack. The sources of the prompts that grow live in the database; a local copy
+# is what tools/sources.ts reads, and fills an empty local database
+curation/*.json
 
 # The built-in packs live in the database. A copy here is what the pack tools work on, and fills an empty local database
 /packs/
