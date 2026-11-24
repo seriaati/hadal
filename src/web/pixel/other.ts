@@ -50,11 +50,24 @@ export function drawable(text: string): boolean {
   return state !== "coming";
 }
 
+/**
+ * What a letter shows while the font is on its way: a dim block as wide as the letter will be (Unifont draws these
+ * scripts 16 half pixels wide and the rest 8, less the gap after each), so the text keeps its length and lines their breaks.
+ */
+const WIDE = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u;
+const waiting = (width: number) =>
+  Array.from({ length: ASCENT + DESCENT }, (_, y) =>
+    Array.from({ length: width }, (_, x) => (y >= 2 && y <= 13 && x >= 1 && x < width - 1 && (x + y) % 2 === 0 ? "#" : ".")).join(""),
+  );
+const WAITING_WIDE = waiting(15);
+const WAITING_NARROW = waiting(7);
+
 other.ascent = ASCENT / 2;
 other.line = LINE;
 other.glyph = (unit) => {
   if (latin(unit)) return undefined;
   if (state === "unasked") send();
+  if (state === "coming") return WIDE.test(unit) ? WAITING_WIDE : WAITING_NARROW;
   if (state !== "here") return undefined;
   let rows = drawn.get(unit);
   if (!rows) {
