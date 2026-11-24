@@ -132,32 +132,32 @@ export class Sound {
   }
 
   tick() {
-    if (this.rig) this.burst("bandpass", 2000, 0.3, 0.06);
+    if (this.playing) this.burst("bandpass", 2000, 0.3, 0.06);
   }
 
   written(pack: boolean) {
-    if (!this.rig) return;
+    if (!this.playing) return;
     if (pack) this.bell(pitch(CHIME[3]!), 0.22, 2.5);
     else this.note("effects", "triangle", 320, 110, 0.35, 0.25);
   }
 
   /** The host changed the room's settings and every lantern went out: a new prompt's two pings, falling and softer. */
   reset() {
-    if (!this.rig) return;
+    if (!this.playing) return;
     this.note("effects", "sine", 988, 960, 0.09, 0.5);
     this.note("effects", "sine", 740, 720, 0.09, 0.8, 0.005, 0.14);
   }
 
   /** The host called those not ready in the room: a ship's bell struck twice, with the first two red blinks. */
   call() {
-    if (!this.rig) return;
+    if (!this.playing) return;
     this.bell(pitch(24), 0.16, 1.4);
     this.bell(pitch(24), 0.16, 1.4, 2 / 3);
   }
 
   /** A lit lantern means the diver is ready in the room. */
   lantern(lit: boolean) {
-    if (!this.rig) return;
+    if (!this.playing) return;
     if (lit) {
       this.burst("bandpass", 3200, 0.2, 0.08);
       this.note("effects", "sine", 392, 587, 0.12, 0.7, 0.03);
@@ -168,7 +168,7 @@ export class Sound {
   }
 
   heart() {
-    if (!this.rig) return;
+    if (!this.playing) return;
     this.note("effects", "sine", pitch(CHIME[5]!) * 2, pitch(CHIME[5]!) * 2, 0.1, 1.2, 0.005, 0.35);
     this.note("effects", "sine", pitch(CHIME[5]!) * 3, pitch(CHIME[5]!) * 3, 0.06, 1, 0.005, 0.5);
   }
@@ -188,13 +188,22 @@ export class Sound {
     if (this.rig.context.state !== "running") void this.rig.context.resume();
   };
 
+  /**
+   * A suspended context's clock stands still, so every sound made meanwhile would start at the same moment once it
+   * resumes, all at once and far too loud. It is suspended while the page is hidden, while resuming, and when the browser
+   * would not let it start (a key such as Ctrl or Alt wakes it, but does not count as the player's gesture).
+   */
+  private get playing() {
+    return this.rig?.context.state === "running";
+  }
+
   /** A hidden page stops drawing, so its sound stops too. */
   private rest = () => void (document.hidden ? this.rig?.context.suspend() : this.rig?.context.resume());
 
   /** Called once a frame, after the scene is drawn. */
   update(game: Game, scene: Scene, dt: number, glitch?: Glitch) {
     const rig = this.rig;
-    if (!rig) return;
+    if (!rig || !this.playing) return;
     const steer = (param: AudioParam, value: number) => param.setTargetAtTime(value, rig.context.currentTime, 0.25);
     const depth = scene.depth;
 
