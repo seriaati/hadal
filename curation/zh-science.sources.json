@@ -1,9 +1,0 @@
-{
-  "metal-radical-elements": {
-    "kind": "open",
-    "sources": [
-      { "lang": "zh", "page": "元素列表", "table": 1, "column": "中國大陸名稱" }
-    ],
-    "note": "Elements whose name is written with the 钅 radical, plus gold (金, the radical itself). Characters GNU Unifont cannot draw are left out (outside the Basic Multilingual Plane)."
-  }
-}

@@ -77,10 +77,9 @@ lists, downloads and uploads the built-in packs of each language.
   here reaches it by an upload from the admin panel, and one downloaded from there is laid out
   like these files
 - `tools/`: the pack tools, and `curation/` what they learn about each pack (only the
-  `<pack id>.titles.json`, `.sources.json` and `.seen.json` files are in git). The sources and seen
-  files only fill an empty database's `prompt_sources` at start-up, which keeps the live ones; once
-  production has them they can leave git like the packs. A pack's sources file is uploaded from the
-  admin panel
+  `<pack id>.titles.json` files are in git). Local `.sources.json` and `.seen.json` files fill an
+  empty database's `prompt_sources` at start-up; the live sources are in the database, and a pack's
+  sources file is uploaded from the admin panel
 - `src/server/updates.ts`: once a month (on the instance's key), reads the sources of the prompts
   whose answers grow and has Claude add what they gained to every pack that asks the prompt; in
   January it also moves cut-off years forward. Changes go live at once; the admin panel shows the

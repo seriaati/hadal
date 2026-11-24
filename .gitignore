@@ -10,5 +10,10 @@ design/brand/out/
 curation/*.signals.json
 curation/*.names.json
 
+# The sources of the prompts that grow live in the database. A copy here is what tools/sources.ts reads, and fills an
+# empty local database
+curation/*.sources.json
+curation/*.seen.json
+
 # The built-in packs live in the database. A copy here is what the pack tools work on, and fills an empty local database
 /packs/
