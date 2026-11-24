@@ -50,19 +50,19 @@ export class AdminPanel {
         { kind: "press", id: "language", label: "Language", value: LANGUAGE_NAMES[this.language], press: () => shift(1), shift },
         { kind: "press", id: "update", label: "Last update", value: this.update?.month ?? "none yet", press: () => this.update && this.ui.go(this.updated) },
         { kind: "gap" },
-        ...(packs.length
-          ? packs.map((pack): Part => ({
-              kind: "press",
-              id: `download:${pack.id}`,
-              label: pack.name,
-              value: `${pack.prompts} prompts`,
-              says: `Download ${pack.name}`,
-              press: () => Object.assign(document.createElement("a"), { href: `/api/admin/packs/${pack.language}/${pack.id}`, download: `${pack.id}.json` }).click(),
-            }))
-          : [{ kind: "note", text: "No packs in this language yet" } satisfies Part]),
+        // No note stands in for an empty list: a step keeps the room its words took, so the packs would come in under a gap.
+        ...packs.map((pack): Part => ({
+          kind: "press",
+          id: `download:${pack.id}`,
+          label: pack.name,
+          value: `${pack.prompts} prompts`,
+          says: `Download ${pack.name}`,
+          press: () => Object.assign(document.createElement("a"), { href: `/api/admin/packs/${pack.language}/${pack.id}`, download: `${pack.id}.json` }).click(),
+        })),
       ],
       foot: [
-        { kind: "note", text: `Packs go into ${LANGUAGE_NAMES[this.language]}; a file named <pack>${SOURCES} sets that pack's sources` },
+        // The font draws no semicolons and no angle brackets.
+        { kind: "note", text: `Uploads go into ${LANGUAGE_NAMES[this.language]}, except sources files such as animals${SOURCES}` },
         { kind: "press", id: "upload", label: "Upload packs", multiple: true, file: (files) => void this.upload(files) },
       ],
     };
