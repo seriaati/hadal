@@ -23,9 +23,13 @@ export type GamePrompt = { id: string; text: string; pack: string };
 /** `answer` is the pack's spelling of a correct answer, or null when wrong. `rarity` is the points of its tier, 0 when wrong. */
 export type Verdict = { answer: string | null; rarity: number };
 
-/** `version` changes whenever the game's own code does: an open page that sees a new one offers to update. */
-export type Config = { devMode: boolean; version: string };
+/** `version` changes whenever the game's own code does: an open page that sees a new one offers to update. `daily`: the daily dive is offered. */
+export type Config = { devMode: boolean; version: string; daily: boolean };
 
+/** How the player stands with today's daily dive: whether they have dived it, and how deep their scored dive went (null until it ends). */
+export type DailyStanding = { number: number; dived: boolean; depth: number | null };
+/** A daily dive begun on `day`: `scored` only for the player's first of the day; `depth` is that one's, as in `DailyStanding`. */
+export type DailyDive = { day: string; number: number; scored: boolean; depth: number | null; prompts: GamePrompt[] };
 
 /** A correct answer scores its rarity in points; each point is this many metres. */
 export const METERS_PER_POINT = 11;

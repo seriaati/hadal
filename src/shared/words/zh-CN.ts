@@ -6,7 +6,7 @@ export const zhCN: Words = {
   name: "简体中文",
   // Names in a room may be in Latin letters, so 和 is set off by spaces.
   list: (items: string[]) => (items.length < 2 ? items.join("") : `${items.slice(0, -1).join("、")} 和 ${items.at(-1)}`),
-  meters: (meters: number) => `${Math.round(meters).toLocaleString("en-US")} m`,
+  meters: (meters: number) => `${Math.round(meters).toLocaleString("en-US")}\u00a0m`,
   count: (n: number, of: number) => `${n}/${of}`,
   noAnswer: "服务器没有回应，请再试一次",
 
@@ -21,6 +21,10 @@ export const zhCN: Words = {
     about: "关于",
   },
   single: {
+    daily: (number: number | null) => (number ? `每日下潜 #${number}` : "每日下潜"),
+    dailyHow: "今天的 10 道题出自 10 个题库，人人相同：只有当天第一次下潜计分",
+    dailyDived: (depth: string) => `你今天计分的下潜到达了 ${depth}：再次下潜不计分`,
+    dailyLeft: "你今天已经下潜过：再次下潜不计分",
     descend: "下潜",
     descendHow: (air: number) => `10 道题，每题 ${air} 秒氧气：氧气耗尽只会失去这一题`,
     chaos: "混乱",
@@ -94,6 +98,9 @@ export const zhCN: Words = {
     stillIn: "仍在场",
     outAt: (prompt: number) => `第 ${prompt} 题出局`,
     points: (points: number) => `${points} 分`,
+    daily: (number: number) => `每日下潜 #${number}`,
+    notScored: "不计分",
+    scoredDive: (depth: string) => `计分的那次：${depth}`,
   },
 
   account: {

@@ -2,7 +2,7 @@ import type { Finish, Mode } from "../../shared/room";
 import { METERS_PER_POINT } from "../../shared/types";
 import { formatMeters, lightOf, zoneAt } from "../depth";
 import { t } from "../language";
-import { CHAOS_AIR_SECONDS, lostDive, type Game } from "../state";
+import { CHAOS_AIR_SECONDS, lostDive, type Daily, type Game } from "../state";
 import { FONTS, drawText, fit, measure, pitch, plain, rise, wrap, type Font } from "./font";
 import { dither, hash, type Frame, type Light } from "./frame";
 import { FRY, LAMP_DEAD, LAMP_LIT, SUIT_COLORS } from "./scene";
@@ -49,6 +49,12 @@ const EYES_WIDE: [number, number][] = [[0.08, 0.12], [0.84, 0.17], [0.05, 0.62],
 const EYES_NARROW: [number, number][] = [[0.12, 0.05], [0.8, 0.08], [0.06, 0.42], [0.88, 0.46], [0.18, 0.8], [0.76, 0.84]];
 
 const { tiny, medium, large } = FONTS;
+
+function dailyWords({ number, scored, depth }: Daily): string {
+  const words = t().ending;
+  if (scored) return words.daily(number);
+  return [words.daily(number), words.notScored, ...(depth === null ? [] : [words.scoredDive(formatMeters(depth))])].join(" ~ ");
+}
 const amber = (tall: number) => (row: number) => (row < tall * 0.3 ? 16 : row < tall * 0.8 ? 15 : 14);
 const mint = (tall: number) => (row: number) => (row < tall * 0.22 ? 11 : row < tall * 0.8 ? 10 : 9);
 const ease = (t: number) => 1 - (1 - t) ** 3;
@@ -409,6 +415,10 @@ export class Ending {
     const zone = this.centred(frame, tiny, zoneAt(log.depth), top + 18, 6);
     const chaos = lostDive(log) ? t().ending.signalLost : t().ending.chaosAir(CHAOS_AIR_SECONDS);
     if (log.chaos) this.centred(frame, tiny, chaos, zone - 1 + rise(tiny, chaos), 18);
+    if (log.daily) {
+      const daily = dailyWords(log.daily);
+      this.centred(frame, tiny, daily, zone - 1 + rise(tiny, daily), 6);
+    }
   }
 
   /**

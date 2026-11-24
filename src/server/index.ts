@@ -2,11 +2,12 @@ import app from "../web/index.html";
 import reviewPage from "../web/review/index.html";
 import type { BunRequest, Server } from "bun";
 import { LANGUAGES, LANGUAGE_COOKIE, isLanguage, wordsIn, type Language } from "../shared/language";
-import { MAX_PACK_BYTES, PROVIDERS, type Config, type Pack, type PackSummary, type Provider, type WriteOrder } from "../shared/types";
+import { MAX_PACK_BYTES, PROVIDERS, type Config, type DailyDive, type Pack, type PackSummary, type Provider, type WriteOrder } from "../shared/types";
 import type { Words } from "../shared/words/en";
 import { SESSION_DAYS, accountIdOf, accountOf, isAdmin, signInFrom, signOut, signUp, type Entry } from "./accounts";
 import { MAX_PACKS, listPacks, loadPack, removePack, savePack } from "./custom";
 import { heard } from "./counts";
+import { claim, dailyPrompts, dayOf, isDay, numberOf, record, standing } from "./daily";
 import { migrate } from "./db";
 import { OWN, buildIndex, judge, nearestAnswer, pickPrompts, type PromptIndex } from "./game";
 import { resumeWritings, run, stopWriting, writePack, writingOf } from "./generate";
@@ -25,9 +26,12 @@ const PROMPTS_PER_GAME = 10;
  */
 const DEV_MODE = process.env.HADAL_DEV_MODE === "1";
 const PRODUCTION = process.env.NODE_ENV === "production";
+/** The daily dive is offered with the instance's own Anthropic key, and always in developer mode. */
+const DAILY = DEV_MODE || !!process.env.HADAL_DAILY_KEY;
 const SESSION = "session";
-/** A random id the browser keeps, so that a room's ban holds a guest without an account. */
+/** A random id the browser keeps, so that a room's ban holds a guest without an account, and their daily dive counts once. */
 const BROWSER = "browser";
+const BROWSER_COOKIE = { httpOnly: true, sameSite: "lax", secure: PRODUCTION, path: "/", maxAge: 400 * 24 * 60 * 60 } as const;
 /** A digest of the code the browser runs, so that a page still open from before a release can tell that it is out of date. */
 async function versionOf(): Promise<string> {
   const root = `${import.meta.dir}/..`;
@@ -38,12 +42,14 @@ async function versionOf(): Promise<string> {
 }
 const VERSION = await versionOf();
 let summaries: Record<Language, PackSummary[]>;
+let packsIn: Record<Language, Pack[]>;
 /** A dive draws from the packs of the player's language; an answer is judged against every built-in prompt. */
 let promptsIn: Record<Language, PromptIndex>;
 let prompts: PromptIndex;
 /** Loads the built-in packs: at start-up, and again whenever one changes. */
 async function useBuiltIn() {
   const builtIn = await loadSystemPacks();
+  packsIn = builtIn;
   const inEach = <T>(make: (packs: Pack[]) => T) => Object.fromEntries(LANGUAGES.map((language) => [language, make(builtIn[language])])) as Record<Language, T>;
   summaries = inEach((packs): PackSummary[] => packs.map((pack) => ({ id: pack.id, name: pack.name, prompts: pack.prompts.length })));
   promptsIn = inEach(buildIndex);
@@ -108,6 +114,19 @@ async function admin(req: BunRequest, answer: () => Promise<Response>) {
   return (await isAdmin(req.cookies.get(SESSION))) ? answer() : new Response("Not found", { status: 404 });
 }
 
+/** Who dives the daily: the account when signed in, or else the browser, which is given an id if it has none. */
+async function dailyPlayer(req: BunRequest, answer: (player: string) => Promise<Response>) {
+  if (!DAILY) return new Response("Not found", { status: 404 });
+  const accountId = await accountIdOf(req.cookies.get(SESSION));
+  if (accountId) return answer(`a${accountId}`);
+  let browser = req.cookies.get(BROWSER);
+  if (!browser) {
+    browser = crypto.randomUUID();
+    req.cookies.set(BROWSER, browser, BROWSER_COOKIE);
+  }
+  return answer(`b${browser}`);
+}
+
 async function writing(req: BunRequest, answer: (accountId: string) => Promise<Response>) {
   const accountId = await accountIdOf(req.cookies.get(SESSION));
   if (!accountId) return Response.json({ problems: [wordsOf(req).packs.signInFirst] }, { status: 401 });
@@ -138,7 +157,7 @@ const server = Bun.serve({
         headers: { "content-disposition": 'attachment; filename="SKILL.md"' },
       }),
     "/api/config": {
-      GET: () => Response.json({ devMode: DEV_MODE, version: VERSION } satisfies Config, { headers: { "cache-control": "no-store" } }),
+      GET: () => Response.json({ devMode: DEV_MODE, version: VERSION, daily: DAILY } satisfies Config, { headers: { "cache-control": "no-store" } }),
     },
     "/api/builtin": {
       GET: (req) => Response.json(summaries[languageOf(req)]),
@@ -157,6 +176,30 @@ const server = Bun.serve({
         if (!index.size) return new Response("Unknown pack", { status: 404 });
         return Response.json({ prompts: pickPrompts(index, PROMPTS_PER_GAME) });
       },
+    },
+    // GET says how the player stands today; POST begins a daily dive, the first of the day claiming the scored one.
+    "/api/daily": {
+      GET: (req) => dailyPlayer(req, async (player) => Response.json(await standing(player))),
+      POST: (req) =>
+        dailyPlayer(req, async (player) => {
+          const day = dayOf();
+          const language = languageOf(req);
+          const asked = await dailyPrompts(language, packsIn[language], promptsIn[language], day);
+          if (!asked.length) return new Response("No daily dive today", { status: 404 });
+          const scored = await claim(player, day);
+          const { depth } = await standing(player, day);
+          return Response.json({ day, number: numberOf(day), scored, depth, prompts: asked } satisfies DailyDive);
+        }),
+    },
+    // The depth the scored dive of `day` reached; named by its day, since a dive begun before midnight may end after it.
+    "/api/daily/:day": {
+      PUT: (req) =>
+        dailyPlayer(req, async (player) => {
+          const { depth } = (await req.json()) as { depth: unknown };
+          if (!isDay(req.params.day) || !Number.isInteger(depth) || (depth as number) < 0) return new Response("Bad depth", { status: 400 });
+          await record(player, req.params.day, depth as number);
+          return new Response(null, { status: 204 });
+        }),
     },
     "/api/answer": {
       POST: async (req, server) => {
@@ -265,7 +308,7 @@ const server = Bun.serve({
       const browser = known ?? crypto.randomUUID();
       const headers = known
         ? undefined
-        : { "Set-Cookie": new Bun.Cookie(BROWSER, browser, { httpOnly: true, sameSite: "lax", secure: PRODUCTION, path: "/", maxAge: 400 * 24 * 60 * 60 }).serialize() };
+        : { "Set-Cookie": new Bun.Cookie(BROWSER, browser, BROWSER_COOKIE).serialize() };
       if (server.upgrade(req, { headers, data: { accountId, browser, language: languageOf(req), send() {} } })) return;
       return new Response("Expected a WebSocket", { status: 400 });
     },

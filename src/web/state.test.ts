@@ -1,5 +1,5 @@
 import { afterAll, expect, test } from "bun:test";
-import { CHAOS_AIR_SECONDS, DROP_SECONDS, LOST_SECONDS, createGame, leave, lostDive, pressEnter, start, tick } from "./state";
+import { CHAOS_AIR_SECONDS, DROP_SECONDS, LOST_SECONDS, createGame, leave, lostDive, pressEnter, start, startDaily, tick } from "./state";
 
 // Every test file runs in one process: the server's tests need the real `fetch` back.
 const realFetch = globalThis.fetch;
@@ -111,4 +111,54 @@ test("a chaos dive drops the diver off, gives 8 seconds of air, and ends at the 
   tick(game, LOST_SECONDS);
   expect(game.phase).toBe("done");
   expect(game.results).toEqual([{ answer: "Peru", rarity: 40, correct: true }, { answer: "", rarity: 0, correct: false }]);
+});
+
+test("a scored daily dive tells the server how deep it went when it ends, and an unscored one does not", async () => {
+  const prompts = [{ id: "p/a", text: "A", pack: "P" }];
+  const recorded: unknown[] = [];
+  let scored = true;
+  globalThis.fetch = (async (url: string, init?: RequestInit) => {
+    if (url === "/api/daily") return Response.json({ day: "2026-11-24", number: 1, scored, depth: null, prompts });
+    if (url === "/api/daily/2026-11-24") recorded.push(JSON.parse(String(init?.body)));
+    return Response.json({ answer: "Peru", rarity: 60 });
+  }) as unknown as typeof fetch;
+
+  const game = createGame();
+  expect(await startDaily(game)).toBe(true);
+  expect(game.phase).toBe("ask");
+  expect(game.daily).toEqual({ day: "2026-11-24", number: 1, scored: true, depth: null });
+  game.input = "peru";
+  pressEnter(game);
+  await Bun.sleep(1);
+  tick(game, 1);
+  pressEnter(game);
+  expect(game.phase).toBe("ascent");
+  expect(recorded).toEqual([{ depth: 660 }]);
+
+  scored = false;
+  await startDaily(game);
+  game.input = "peru";
+  pressEnter(game);
+  await Bun.sleep(1);
+  tick(game, 1);
+  pressEnter(game);
+  expect(recorded).toHaveLength(1);
+});
+
+test("a scored daily dive that is left keeps the depth it had reached", async () => {
+  const prompts = [{ id: "p/a", text: "A", pack: "P" }, { id: "p/b", text: "B", pack: "P" }];
+  const recorded: unknown[] = [];
+  globalThis.fetch = (async (url: string, init?: RequestInit) => {
+    if (url === "/api/daily") return Response.json({ day: "2026-11-24", number: 1, scored: true, depth: null, prompts });
+    if (url === "/api/daily/2026-11-24") recorded.push(JSON.parse(String(init?.body)));
+    return Response.json({ answer: "Peru", rarity: 30 });
+  }) as unknown as typeof fetch;
+
+  const game = createGame();
+  await startDaily(game);
+  game.input = "peru";
+  pressEnter(game);
+  await Bun.sleep(1);
+  leave(game);
+  expect(recorded).toEqual([{ depth: 330 }]);
 });

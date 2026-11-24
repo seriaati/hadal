@@ -17,7 +17,7 @@ const TINY = {
   ".": "././././#", ",": "././././#/#", "+": ".../.#./###/.#./...", "-": ".../.../###/.../...",
   "/": "..#/..#/.#./#../#..", ":": "./#/./#/.", "~": "././#/./.", "?": "##./..#/.#./.../.#.", "!": "#/#/#/./#",
   "'": "#/#/././.", '"': "#.#/#.#/.../.../...", "(": ".#/#./#./#./.#", ")": "#./.#/.#/.#/#.", "&": ".#./#.#/.#./#.#/.##",
-  "‹": "../.#/#./.#/..", "%": "#.#/..#/.#./#../#.#",
+  "‹": "../.#/#./.#/..", "%": "#.#/..#/.#./#../#.#", "#": ".#.#./#####/.#.#./#####/.#.#.",
 };
 
 const MEDIUM = {
@@ -137,7 +137,7 @@ export const other: { glyph: (unit: string) => string[] | undefined; ascent: num
 };
 
 /** Whether text holds nothing beyond the plain Latin letters, digits and signs of a keyboard. */
-export const latin = (text: string) => /^[ -~]*$/.test(text);
+export const latin = (text: string) => /^[ -~\u00a0]*$/.test(text);
 
 const letters = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 const segmented = new Map<string, string[]>();
@@ -159,7 +159,8 @@ function pieces(text: string): string[] {
   return parts;
 }
 
-const units = (font: Font, text: string) => pieces(font.capitals ? text.toUpperCase() : text);
+// A no-break space is drawn as a space; only `wrap` tells them apart, and never breaks a line at one.
+const units = (font: Font, text: string) => pieces((font.capitals ? text.toUpperCase() : text).replaceAll("\u00a0", " "));
 
 type Glyph = { rows: string[]; rise: number; fine: boolean };
 

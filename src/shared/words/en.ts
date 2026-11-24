@@ -10,7 +10,7 @@ export const en = {
   name: "English",
   /** "ben", "ben and cal", "ana, ben and cal". */
   list: (items: string[]) => (items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`),
-  meters: (meters: number) => `${Math.round(meters).toLocaleString("en-US")} m`,
+  meters: (meters: number) => `${Math.round(meters).toLocaleString("en-US")}\u00a0m`,
   /** "Geography ~ 3 of 10". */
   count: (n: number, of: number) => `${n} of ${of}`,
   noAnswer: "no answer came from the server: try again",
@@ -26,6 +26,11 @@ export const en = {
     about: "About",
   },
   single: {
+    /** The number is not known until the server has said. */
+    daily: (number: number | null) => (number ? `Daily dive #${number}` : "Daily dive"),
+    dailyHow: "Today's 10 prompts from 10 packs, the same for everyone: only your first dive of the day is scored",
+    dailyDived: (depth: string) => `Today your scored dive reached ${depth}: diving again is not scored`,
+    dailyLeft: "You have dived today: diving again is not scored",
     descend: "Descend",
     descendHow: (air: number) => `10 prompts with ${air} s of air each: an empty tank only loses that prompt`,
     chaos: "Chaos",
@@ -111,6 +116,9 @@ export const en = {
     stillIn: "still in",
     outAt: (prompt: number) => `out at prompt ${prompt}`,
     points: (points: number) => `${points} points`,
+    daily: (number: number) => `Daily dive #${number}`,
+    notScored: "not scored",
+    scoredDive: (depth: string) => `your scored dive: ${depth}`,
   },
 
   account: {

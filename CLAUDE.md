@@ -29,7 +29,9 @@ Use `bun`, not `npm`/`node`/`vite`.
   the sources of time-sensitive prompts gained since last recorded
 
 API keys: `HADAL_SECRET` in `.env` (32 characters or more, e.g. from `openssl rand -base64 32`)
-seals the keys players store. Without it the game runs but keeps no keys.
+seals the keys players store. Without it the game runs but keeps no keys. `HADAL_DAILY_KEY`, the
+instance's own Anthropic key, turns on the daily dive (`src/server/daily.ts`), which developer
+mode always has.
 
 Developer mode: put `HADAL_DEV_MODE=1` in `.env` (git-ignored, read by Bun at start-up) and
 restart the server. The game then shows a menu of shortcuts (`src/web/devmenu.ts`): answer
@@ -48,7 +50,8 @@ lists, downloads and uploads the built-in packs of each language.
   sessions (`accounts.ts`), players' own packs (`custom.ts`), their API keys (`keys.ts`), packs
   written by Claude in the background (`generate.ts`), the live judge for answers a pack does not
   list (`live.ts`), the count of answers players give to built-in prompts (`counts.ts`), the
-  built-in packs, kept in the database and changed from the admin panel (`system.ts`), the
+  built-in packs, kept in the database and changed from the admin panel (`system.ts`), the daily
+  dive (`daily.ts`), the
   multiplayer rooms, kept in memory and reached over a WebSocket
   (`rooms.ts`), the database (`db.ts`; schema changes are numbered files in
   `migrations/`, run at start-up, never edited once released)

@@ -1,5 +1,5 @@
 import { DROP_SECONDS } from "../shared/room";
-import { METERS_PER_POINT, type GamePrompt, type Verdict } from "../shared/types";
+import { METERS_PER_POINT, type DailyDive, type GamePrompt, type Verdict } from "../shared/types";
 
 /** Seconds of air the diver has for each prompt. Wrong answers can be retried until it runs out. */
 export const AIR_SECONDS = 18;
@@ -18,9 +18,13 @@ export type Result = { answer: string; rarity: number; correct: boolean };
  */
 export type Phase = "title" | "drop" | "ask" | "verdict" | "ascent" | "lost" | "done";
 
+/** A daily dive: which day's, and whether it is the player's scored one; if not, `depth` is how deep that one went. */
+export type Daily = Omit<DailyDive, "prompts">;
+
 export type Game = {
   phase: Phase;
   chaos: boolean;
+  daily: Daily | null;
   /** Seconds since the phase began. */
   phaseTime: number;
   prompts: GamePrompt[];
@@ -40,7 +44,7 @@ export type Game = {
 
 export function createGame(): Game {
   return {
-    phase: "title", chaos: false, phaseTime: 0, prompts: [], round: 0, input: "", air: AIR_SECONDS,
+    phase: "title", chaos: false, daily: null, phaseTime: 0, prompts: [], round: 0, input: "", air: AIR_SECONDS,
     judging: null, rejected: null, depth: 0, lamps: [], result: null, results: [],
   };
 }
@@ -77,6 +81,22 @@ export async function start(game: Game, packs?: Chosen, chaos = false): Promise<
   return true;
 }
 
+/** Today's daily dive, in normal mode. Says whether it began. */
+export async function startDaily(game: Game): Promise<boolean> {
+  const res = await fetch("/api/daily", { method: "POST" });
+  if (!res.ok) return false;
+  const { prompts, ...daily } = (await res.json()) as DailyDive;
+  Object.assign(game, createGame(), { prompts, daily });
+  enter(game, "ask");
+  return true;
+}
+
+/** Keeps how deep the scored daily dive went: when it ends, or when it is left, which ends it too. */
+function recordDaily(game: Game) {
+  if (!game.daily?.scored) return;
+  void fetch(`/api/daily/${game.daily.day}`, { method: "PUT", body: JSON.stringify({ depth: Math.round(game.depth) }) }).catch(() => {});
+}
+
 function fail(game: Game) {
   game.lamps.push({ depth: game.depth, lit: false });
   finish(game, { answer: "", rarity: 0, correct: false });
@@ -108,8 +128,9 @@ async function attempt(game: Game) {
   }
 }
 
-/** Nothing of the dive is kept, so no end screen opens. */
+/** Nothing of the dive is kept but a scored daily dive's depth, so no end screen opens. */
 export function leave(game: Game) {
+  if (game.phase === "ask" || game.phase === "verdict") recordDaily(game);
   Object.assign(game, createGame());
 }
 
@@ -141,6 +162,8 @@ export function pressEnter(game: Game) {
     game.air = fullAir(game);
     game.rejected = null;
     game.result = null;
-    enter(game, game.round === game.prompts.length ? "ascent" : "ask");
+    const last = game.round === game.prompts.length;
+    enter(game, last ? "ascent" : "ask");
+    if (last) recordDaily(game);
   }
 }

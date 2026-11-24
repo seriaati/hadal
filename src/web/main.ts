@@ -1,13 +1,14 @@
 import { CHAT_MAX } from "../shared/room";
-import { MAX_ANSWER_LENGTH, type Config } from "../shared/types";
+import { MAX_ANSWER_LENGTH, type Config, type DailyStanding } from "../shared/types";
 import { showDevMenu } from "./devmenu";
 import { t } from "./language";
 import { Sound } from "./sound";
-import { AIR_SECONDS, CHAOS_AIR_SECONDS, createGame, leave, lostDive, pressEnter, start, tick, type Chosen, type Phase } from "./state";
+import { AIR_SECONDS, CHAOS_AIR_SECONDS, createGame, leave, lostDive, pressEnter, start, startDaily, tick, type Chosen, type Phase } from "./state";
 import { AccountPanel } from "./pixel/account";
 import { AdminPanel } from "./pixel/admin";
 import { CustomPanel } from "./pixel/choice";
 import { drawable } from "./pixel/other";
+import { formatMeters } from "./depth";
 import { Ending, FADE_SECONDS, type Log } from "./pixel/ending";
 import { Display, Frame, visible, type Light } from "./pixel/frame";
 import { Glitch, strength } from "./pixel/glitch";
@@ -16,7 +17,7 @@ import { PacksPanel } from "./pixel/packs";
 import { Scene, type Menu } from "./pixel/scene";
 import { drawAdmin, drawCog, drawUpdate, overIcon } from "./pixel/icons";
 import { settingsStep } from "./pixel/settings";
-import { selection, steering, Ui, type Step } from "./pixel/ui";
+import { selection, steering, Ui, type Part, type Step } from "./pixel/ui";
 
 const REPO = "https://github.com/seriaati/hadal";
 /** How often an open page asks whether a newer version of the game is out, in milliseconds. */
@@ -76,9 +77,39 @@ const dive = (chaos: boolean, packs?: Chosen) => {
   void ui.wait(start(game, packs, chaos)).then((started) => started && ui.close());
 };
 const custom = new CustomPanel(ui, account, (packs, chaos) => dive(chaos, packs));
+/**
+ * Whether this instance offers the daily dive, and how the player stands with today's. Asked for before the panel opens
+ * (at the start and after every dive), so its note does not change length on the screen; and again as it opens, for a new day.
+ */
+let offersDaily = false;
+let daily: DailyStanding | null = null;
+const loadDaily = () => {
+  if (!offersDaily) return;
+  void fetch("/api/daily")
+    .then((res) => (res.ok ? (res.json() as Promise<DailyStanding>) : null))
+    .then((standing) => (daily = standing), () => {});
+};
+const diveDaily = () => {
+  input.focus();
+  void ui.wait(startDaily(game)).then((started) => started && ui.close());
+};
+const dailyNote = () => {
+  if (!daily?.dived) return t().single.dailyHow;
+  return daily.depth === null ? t().single.dailyLeft : t().single.dailyDived(formatMeters(daily.depth));
+};
+const openSingle = () => {
+  loadDaily();
+  ui.go(single);
+};
 const single = (): Step => ({
   title: t().title.single,
   rows: [
+    ...(offersDaily
+      ? [
+          { kind: "press", id: "mode:daily", label: t().single.daily(daily?.number ?? null), press: diveDaily } satisfies Part,
+          { kind: "note", text: dailyNote() } satisfies Part,
+        ]
+      : []),
     { kind: "press", id: "mode:descend", label: t().single.descend, press: () => dive(false) },
     { kind: "note", text: t().single.descendHow(AIR_SECONDS) },
     { kind: "press", id: "mode:chaos", label: t().single.chaos, press: () => dive(true) },
@@ -108,7 +139,7 @@ const menu: Menu = { items: menuItems(), choice: 0 };
 let menuPointed = false;
 let menuParked = 0;
 const choose = (line: number) => {
-  if (line === 0) ui.go(single);
+  if (line === 0) openSingle();
   else if (line === 1) multiplayer.show();
   else if (line === 2) packs.show();
   else if (line === 3) account.show();
@@ -143,6 +174,8 @@ if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game
 const config = () => fetch("/api/config", { cache: "no-store" }).then((res) => res.json() as Promise<Config>);
 void config().then((config) => {
   version = config.version;
+  offersDaily = config.daily;
+  loadDaily();
   if (config.devMode) showDevMenu(stage, { game, scene, frame, multiplayer });
 });
 const checkVersion = () => {
@@ -329,6 +362,7 @@ requestAnimationFrame(function loop(now) {
   // A dive may have used the player's keys: refresh so the menu can tell of any that failed.
   if (shown.phase === "title" && phase !== "title") {
     account.refresh();
+    loadDaily();
     if (scene.touch) input.blur();
   }
   phase = shown.phase;
