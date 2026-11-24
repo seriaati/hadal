@@ -13,7 +13,8 @@ import { Glitch, strength } from "./pixel/glitch";
 import { MultiplayerPanel } from "./pixel/multiplayer";
 import { PacksPanel } from "./pixel/packs";
 import { Scene, type Menu } from "./pixel/scene";
-import { drawCog, overCog, settingsStep } from "./pixel/settings";
+import { drawCog, drawUpdate, overIcon } from "./pixel/icons";
+import { settingsStep } from "./pixel/settings";
 import { selection, steering, Ui, type Step } from "./pixel/ui";
 
 const REPO = "https://github.com/seriaati/hadal";
@@ -98,7 +99,7 @@ let version = "";
 let newer = false;
 const menuItems = () => {
   const words = t().title;
-  return [words.single, words.multiplayer, words.packs, account.account ? words.account : words.signIn, words.about, ...(newer ? [words.update] : [])];
+  return [words.single, words.multiplayer, words.packs, account.account ? words.account : words.signIn, words.about];
 };
 const menu: Menu = { items: menuItems(), choice: 0 };
 /** Whether the pointer chose the menu's line, and which line it took away when it moved off: Up or Down gives it back. */
@@ -109,9 +110,10 @@ const choose = (line: number) => {
   else if (line === 1) multiplayer.show();
   else if (line === 2) packs.show();
   else if (line === 3) account.show();
-  else if (line === 4) ui.go(about);
-  else location.reload();
+  else ui.go(about);
 };
+/** Only at the title, where reloading loses no dive. */
+const offersUpdate = () => newer && shown.phase === "title" && !ui.open;
 const leaveDive = () => {
   if (multiplayer.diving) multiplayer.leaveDive();
   else leave(game);
@@ -209,10 +211,11 @@ const onPointer = (event: PointerEvent) => {
     if (event.type === "pointerdown" && spot === "back") closeEnding();
     return;
   }
-  const cog = overCog(frame, x, y);
+  const cog = overIcon(frame, x, y, 0);
+  const update = offersUpdate() && overIcon(frame, x, y, 1);
   const line = shown.phase === "title" && !ui.open && menu.items[scene.menuAt(x, y)] ? scene.menuAt(x, y) : -1;
   const named = ui.open ? undefined : multiplayer.pickable(scene.nameAt(x, y));
-  canvas.style.cursor = cog || line >= 0 || named ? "pointer" : "";
+  canvas.style.cursor = cog || update || line >= 0 || named ? "pointer" : "";
   if (event.type === "pointermove") {
     // Moving the pointer over a line of the menu chooses it, and moving off takes the choice away, as with a control of a panel.
     if (!(event.pointerType === "mouse" && (event.movementX || event.movementY))) return;
@@ -224,7 +227,8 @@ const onPointer = (event: PointerEvent) => {
       menu.choice = -1;
       menuPointed = false;
     }
-  } else if (cog) {
+  } else if (update) location.reload();
+  else if (cog) {
     if (ui.top === settings || ui.top === leaving) ui.back();
     else openMenu();
   }
@@ -325,6 +329,7 @@ requestAnimationFrame(function loop(now) {
   glitch.apply(frame, closing ? closing.wordsFrom : scene.wordsFrom, closing ? closing.wordsTo : scene.wordsTo, now / 1000, focus, !closing);
   if (glitch.blackout) lights.length = 0;
   if (!closing) drawCog(frame);
+  if (!closing && offersUpdate()) drawUpdate(frame, 1);
   const box = closing ? null : scene.talkBox;
   talkButton.hidden = !box;
   if (box) {

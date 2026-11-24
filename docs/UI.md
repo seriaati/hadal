@@ -99,7 +99,10 @@ The same in every panel.
 - **Leaving a room** asks the same way: every way out (Escape, Left, a press on "Leave") first turns "Leave" into a rose "Sure?" and puts the focus on it. A
   second way out leaves.
 - **The cursor is a hand** over everything that can be pressed: the title menu's lines, the
-  cog, and every line, field and slider of a panel.
+  icons at the top right, and every line, field and slider of a panel.
+- **The icons at the top right** stand in a row with the cog always rightmost. When a newer
+  version is out, an amber turning arrow at its left reloads the game; it shows only at the
+  title, where no dive is lost.
 - **No key hints are drawn.** The keys are the ones every game uses.
 - **Nothing waits for an animation.** A panel is there on the frame its key is pressed.
 
