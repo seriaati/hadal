@@ -36,7 +36,11 @@ restart the server. The game then shows a menu of shortcuts (`src/web/devmenu.ts
 correctly in a chosen tier (in a room too, on the player's turn), run out of air, end the
 dive, summon a creature. Its "Hide" button folds it away, and the browser remembers. Developer
 mode also serves the pack review page at http://localhost:3000/dev/review, which rewrites the
-built-in pack files (`src/web/review/`, served through `src/server/review.ts`).
+built-in packs in the local database (`src/web/review/`, served through `src/server/review.ts`).
+
+Admins: an account whose `admin` column is true (set by hand in the database, nowhere else) sees a
+key at the top right that opens the admin panel (`src/web/pixel/admin.ts`, in English only): it
+lists, downloads and uploads the built-in packs of each language.
 
 ## Layout
 
@@ -44,6 +48,7 @@ built-in pack files (`src/web/review/`, served through `src/server/review.ts`).
   sessions (`accounts.ts`), players' own packs (`custom.ts`), their API keys (`keys.ts`), packs
   written by Claude in the background (`generate.ts`), the live judge for answers a pack does not
   list (`live.ts`), the count of answers players give to built-in prompts (`counts.ts`), the
+  built-in packs, kept in the database and changed from the admin panel (`system.ts`), the
   multiplayer rooms, kept in memory and reached over a WebSocket
   (`rooms.ts`), the database (`db.ts`; schema changes are numbered files in
   `migrations/`, run at start-up, never edited once released)
@@ -55,9 +60,12 @@ built-in pack files (`src/web/review/`, served through `src/server/review.ts`).
   which only list what they hold, and the screen that ends a dive, `ending.ts`)
 - `src/shared/`: types and constants used by both sides, and every word the game says, one
   table per language in `words/` (`en.ts` is the model; the compiler holds the others to it)
-- `packs/`: built-in packs, a folder per language with one JSON file each, in the format
-  described under "Pack format" in `docs/GAME.md` and checked by `validatePack` in
-  `src/server/packs.ts`
+- `packs/` (git-ignored): a working copy of the built-in packs, a folder per language with one
+  JSON file each, in the format described under "Pack format" in `docs/GAME.md` and checked by
+  `validatePack` in `src/server/packs.ts`. The pack tools work on it, and an empty database is
+  filled from it at start-up. The packs the game plays are those in the database: a pack edited
+  here reaches it by an upload from the admin panel, and one downloaded from there is laid out
+  like these files
 - `tools/`: the pack tools, and `curation/` what they learn about each pack (only the
   `<pack id>.titles.json`, `.sources.json` and `.seen.json` files are in git)
 - `.github/workflows/update-packs.yml`: once a month, checks the sources of the prompts whose
@@ -72,7 +80,7 @@ built-in pack files (`src/web/review/`, served through `src/server/review.ts`).
 - Pack answers stay on the server. `src/web` may import from `src/shared`, never from `src/server`.
   The one exception is developer mode, whose `/api/dev/answer` endpoint names a correct answer
   and whose review page shows and rewrites every pack; it must stay off on any instance other
-  people play on.
+  people play on. The admin routes (`/api/admin/`) answer only an admin.
 - A player's API key stays on the server, encrypted. It is used only for that player and never
   sent back to the browser or written to a log.
 - The project owner is new to web development: build in small stages and explain tradeoffs.

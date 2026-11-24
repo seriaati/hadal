@@ -63,7 +63,7 @@ export async function signInFrom(address: string, username: string, password: st
 export async function accountOf(token: string | null): Promise<Account | null> {
   if (!token) return null;
   const [row] = await sql`
-    select username,
+    select username, admin,
       exists (select from keys where keys.account_id = accounts.id and provider = 'anthropic') as anthropic,
       exists (select from keys where keys.account_id = accounts.id and provider = 'jev') as jev,
       (select failed from keys where keys.account_id = accounts.id and provider = 'anthropic') as anthropic_failed,
@@ -71,7 +71,7 @@ export async function accountOf(token: string | null): Promise<Account | null> {
     from sessions join accounts on accounts.id = account_id
     where token_hash = ${hashToken(token)} and expires_at > now()`;
   if (!row) return null;
-  return { username: row.username, keys: { anthropic: row.anthropic, jev: row.jev }, failed: { anthropic: row.anthropic_failed, jev: row.jev_failed } };
+  return { username: row.username, admin: row.admin, keys: { anthropic: row.anthropic, jev: row.jev }, failed: { anthropic: row.anthropic_failed, jev: row.jev_failed } };
 }
 
 /** The account's id never goes to the browser. */
@@ -79,6 +79,14 @@ export async function accountIdOf(token: string | null): Promise<string | null> 
   if (!token) return null;
   const [row] = await sql`select account_id from sessions where token_hash = ${hashToken(token)} and expires_at > now()`;
   return row?.account_id ?? null;
+}
+
+export async function isAdmin(token: string | null): Promise<boolean> {
+  if (!token) return false;
+  const [row] = await sql`
+    select admin from sessions join accounts on accounts.id = account_id
+    where token_hash = ${hashToken(token)} and expires_at > now()`;
+  return row?.admin === true;
 }
 
 export async function signOut(token: string) {

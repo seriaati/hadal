@@ -5,6 +5,11 @@ const COG = [
   "6666..6666", "..666666..", ".66666666.", ".66.66.66.", "....66....",
 ];
 
+const KEY = [
+  "..........", "..........", "..........", ".666......", "6...6.....",
+  "6...666666", "6...6..6.6", ".666...6.6", "..........", "..........",
+];
+
 // A turning arrow, in amber so a new version is noticed.
 const UPDATE = [
   "...aaaa..a", ".aa....a.a", ".a......aa", "a.....aaaa", "a.........",
@@ -25,4 +30,5 @@ export function overIcon(frame: Frame, x: number, y: number, slot: number): bool
 }
 
 export const drawCog = (frame: Frame) => drawIcon(frame, COG, 0);
+export const drawAdmin = (frame: Frame) => drawIcon(frame, KEY, 1);
 export const drawUpdate = (frame: Frame, slot: number) => drawIcon(frame, UPDATE, slot, "a");

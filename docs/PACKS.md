@@ -121,7 +121,8 @@ The `curate-pack` skill (`.claude/skills/curate-pack/SKILL.md`) walks Claude Cod
 1. Draft twice as many prompts as needed, check each against "A good prompt", and choose.
 2. Build each answer list from sources, check it against a second source, and add aliases.
 3. Tier it: signals first, then judgement, then the gems.
-4. Check it with `validatePack`, and write `packs/<language>/<id>.json`.
+4. Check it with `validatePack`, write `packs/<language>/<id>.json`, and upload it from the admin
+   panel. The live packs are in the database: download a pack from there before working on it.
 5. Review it in the game with developer mode on, at `/dev/review`: move answers between tiers,
    fix or remove them, add what players typed, and save.
 6. Make the Chinese packs from it: the names Wikidata gives in Simplified and Traditional

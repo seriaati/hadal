@@ -1,3 +1,5 @@
+import type { Language } from "./language";
+
 export type Pack = { id: string; name: string; prompts: Prompt[] };
 export type Prompt = { id: string; text: string; answers: Answer[] };
 /**
@@ -15,7 +17,7 @@ export const MAX_ANSWER_LENGTH = 40;
 export const MAX_PACK_BYTES = 5_000_000;
 /** As the browser sees it: no prompts or answers. */
 export type PackSummary = { id: string; name: string; prompts: number };
-
+export type SystemPackSummary = PackSummary & { language: Language };
 /** A prompt as the browser sees it: no answers. */
 export type GamePrompt = { id: string; text: string; pack: string };
 /** `answer` is the pack's spelling of a correct answer, or null when wrong. `rarity` is the points of its tier, 0 when wrong. */
@@ -23,6 +25,7 @@ export type Verdict = { answer: string | null; rarity: number };
 
 /** `version` changes whenever the game's own code does: an open page that sees a new one offers to update. */
 export type Config = { devMode: boolean; version: string };
+
 
 /** A correct answer scores its rarity in points; each point is this many metres. */
 export const METERS_PER_POINT = 11;
@@ -39,7 +42,8 @@ export type KeyFailure = "refused" | "limited" | "unanswered";
  * A signed-in player, as the browser sees them. `keys` is which API keys of theirs are kept: the keys themselves stay on the server.
  * `failed` is why the last use of each kept key failed, or null if it worked.
  */
-export type Account = { username: string; keys: Record<Provider, boolean>; failed: Record<Provider, KeyFailure | null> };
+/** `admin` may change the built-in packs. */
+export type Account = { username: string; admin: boolean; keys: Record<Provider, boolean>; failed: Record<Provider, KeyFailure | null> };
 export const MAX_KEY_LENGTH = 300;
 export const MAX_TOPIC_LENGTH = 60;
 export const MAX_INSTRUCTIONS_LENGTH = 300;

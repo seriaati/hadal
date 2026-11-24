@@ -73,9 +73,11 @@ owner decides which prompts stay and has the last word on tiers.
 
 - `bun tools/check.ts --write packs/<language>/<id>.json` checks the pack as the game does, lays
   it out as the other packs are, and shows each prompt's spread over the tiers.
+- The game plays the packs in its database, not the files: work on a pack downloaded from the admin
+  panel, and tell the owner to upload the files you changed there when they are done.
 - Tell the owner to review it at `/dev/review` (with `HADAL_DEV_MODE=1` in `.env` and the game
   running): they can move answers between tiers, fix or remove them, and add what players typed.
-  A save rewrites the file, and the game plays it at once.
+  A save rewrites the pack in the local database, and the game plays it at once.
 
 ## 5. The Chinese packs
 

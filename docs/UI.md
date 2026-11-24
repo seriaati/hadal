@@ -100,9 +100,11 @@ The same in every panel.
   second way out leaves.
 - **The cursor is a hand** over everything that can be pressed: the title menu's lines, the
   icons at the top right, and every line, field and slider of a panel.
-- **The icons at the top right** stand in a row with the cog always rightmost. When a newer
-  version is out, an amber turning arrow at its left reloads the game; it shows only at the
-  title, where no dive is lost.
+- **The icons at the top right** stand in a row with the cog always rightmost: [update][admin][cog].
+  An admin has a key at the cog's left, at the title and not in a room, that opens the admin
+  panel; its words are English in every language, the one panel that does not follow the
+  player's (owner, 2026-11-24). When a newer version is out, an amber turning arrow at the far
+  left reloads the game; it shows only at the title, where no dive is lost.
 - **No key hints are drawn.** The keys are the ones every game uses.
 - **Nothing waits for an animation.** A panel is there on the frame its key is pressed.
 

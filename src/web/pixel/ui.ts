@@ -10,8 +10,9 @@ export type Press = {
   id: string;
   label: string;
   press?: () => void;
-  /** Pressing it opens the device's file chooser instead, and the chosen file comes here. */
-  file?: (file: File) => void;
+  /** Pressing it opens the device's file chooser instead, and the chosen files come here: one, unless `multiple`. */
+  file?: (files: File[]) => void;
+  multiple?: boolean;
   /** What a screen reader says, where the label alone would not tell. */
   says?: string;
   /** Pressing it sends the form, which is what tells a password manager that a password was used. */
@@ -477,13 +478,13 @@ export class Ui {
         if (kind === "press") this.act(id);
       });
     } else if (part.kind === "press") {
-      Object.assign(control, { type: "file", accept: ".json,application/json" });
+      Object.assign(control, { type: "file", accept: ".json,application/json", multiple: !!part.multiple });
       control.addEventListener("change", () => {
-        const file = control.files?.[0];
+        const files = [...(control.files ?? [])];
         control.value = ""; // so that the same file can be chosen again once it is mended
         const now = this.parts.get(id);
         this.pressing = id;
-        if (file && now?.kind === "press") now.file?.(file);
+        if (files.length && now?.kind === "press") now.file?.(files);
         this.sync();
       });
     } else if (part.kind === "slider") {

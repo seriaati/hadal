@@ -4,7 +4,7 @@ import type { BunRequest, Server } from "bun";
 import { LANGUAGES, LANGUAGE_COOKIE, isLanguage, wordsIn, type Language } from "../shared/language";
 import { MAX_PACK_BYTES, PROVIDERS, type Config, type Pack, type PackSummary, type Provider, type WriteOrder } from "../shared/types";
 import type { Words } from "../shared/words/en";
-import { SESSION_DAYS, accountIdOf, accountOf, signInFrom, signOut, signUp, type Entry } from "./accounts";
+import { SESSION_DAYS, accountIdOf, accountOf, isAdmin, signInFrom, signOut, signUp, type Entry } from "./accounts";
 import { MAX_PACKS, listPacks, loadPack, removePack, savePack } from "./custom";
 import { heard } from "./counts";
 import { migrate } from "./db";
@@ -12,9 +12,10 @@ import { OWN, buildIndex, judge, nearestAnswer, pickPrompts, type PromptIndex } 
 import { resumeWritings, run, stopWriting, writePack, writingOf } from "./generate";
 import { removeKey, saveKey } from "./keys";
 import { judgeLive } from "./live";
-import { loadBuiltIn } from "./packs";
+import { formatPack } from "./packs";
 import { review, reviewList, saveReviewed } from "./review";
 import { lost, receive, usePrompts, type Member } from "./rooms";
+import { listSystemPacks, loadSystemPack, loadSystemPacks, saveSystemPack, seedSystemPacks } from "./system";
 
 const PROMPTS_PER_GAME = 10;
 /**
@@ -40,17 +41,19 @@ let summaries: Record<Language, PackSummary[]>;
 /** A dive draws from the packs of the player's language; an answer is judged against every built-in prompt. */
 let promptsIn: Record<Language, PromptIndex>;
 let prompts: PromptIndex;
-/** Loads the built-in packs: at start-up, and again when the review page of developer mode changes one. */
+/** Loads the built-in packs: at start-up, and again whenever one changes. */
 async function useBuiltIn() {
-  const builtIn = await loadBuiltIn();
+  const builtIn = await loadSystemPacks();
   const inEach = <T>(make: (packs: Pack[]) => T) => Object.fromEntries(LANGUAGES.map((language) => [language, make(builtIn[language])])) as Record<Language, T>;
   summaries = inEach((packs): PackSummary[] => packs.map((pack) => ({ id: pack.id, name: pack.name, prompts: pack.prompts.length })));
   promptsIn = inEach(buildIndex);
   prompts = buildIndex(Object.values(builtIn).flat());
   usePrompts(builtIn);
 }
-await useBuiltIn();
 await migrate();
+const seeded = await seedSystemPacks();
+if (seeded) console.log(`filled the empty database with the ${seeded} packs of packs/`);
+await useBuiltIn();
 void resumeWritings();
 
 function languageOf(req: BunRequest): Language {
@@ -98,6 +101,11 @@ async function packs(req: BunRequest, change?: (accountId: string) => Promise<st
   const problems = (await change?.(accountId)) ?? [];
   if (problems.length) return Response.json({ problems }, { status: 400 });
   return Response.json(await listPacks(accountId));
+}
+
+/** Only an admin is answered, and anyone else is told there is nothing here. */
+async function admin(req: BunRequest, answer: () => Promise<Response>) {
+  return (await isAdmin(req.cookies.get(SESSION))) ? answer() : new Response("Not found", { status: 404 });
 }
 
 async function writing(req: BunRequest, answer: (accountId: string) => Promise<Response>) {
@@ -197,6 +205,41 @@ const server = Bun.serve({
         });
       },
       DELETE: (req) => packs(req, (accountId) => removePack(accountId, req.params.id)),
+    },
+    "/api/admin/packs": {
+      GET: (req) => admin(req, async () => Response.json(await listSystemPacks())),
+    },
+    // An upload answers with every built-in pack as they now stand; with 409, the prompts it would remove unless `replace=1`.
+    "/api/admin/packs/:language": {
+      POST: (req) =>
+        admin(req, async () => {
+          const { language } = req.params;
+          if (!isLanguage(language)) return new Response("Unknown language", { status: 404 });
+          const file = await req.text();
+          if (Buffer.byteLength(file) > MAX_PACK_BYTES) return Response.json({ problems: [wordsIn("en").packs.tooBig(MAX_PACK_BYTES / 1_000_000)] }, { status: 400 });
+          let pack: unknown;
+          try {
+            pack = JSON.parse(file);
+          } catch (error) {
+            return Response.json({ problems: [wordsIn("en").packs.notJson((error as Error).message)] }, { status: 400 });
+          }
+          const saved = await saveSystemPack(language, pack, new URL(req.url).searchParams.get("replace") === "1");
+          if ("problems" in saved) return Response.json(saved, { status: 400 });
+          if ("removes" in saved) return Response.json(saved, { status: 409 });
+          await useBuiltIn();
+          return Response.json(await listSystemPacks());
+        }),
+    },
+    // Laid out as the pack files are, so the pack tools can work on a downloaded pack.
+    "/api/admin/packs/:language/:id": {
+      GET: (req) =>
+        admin(req, async () => {
+          const found = await loadSystemPack(req.params.id);
+          if (found?.language !== req.params.language) return new Response("Unknown pack", { status: 404 });
+          return new Response(formatPack(found.pack), {
+            headers: { "content-type": "application/json", "content-disposition": `attachment; filename="${found.pack.id}.json"` },
+          });
+        }),
     },
     // A pack is written in the background: POST begins it, GET says how it stands (null when there is none), DELETE stops it.
     "/api/write": {

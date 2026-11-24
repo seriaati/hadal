@@ -4,7 +4,8 @@ import { MAX_ANSWER_LENGTH, TIERS, type Answer, type Pack } from "../shared/type
 import { en, type Words } from "../shared/words/en";
 import { normalize } from "./game";
 
-const PACKS_DIR = join(import.meta.dir, "../../packs");
+/** The pack files of a working copy, outside git: the tools work on them, and a new database is filled from them. */
+export const PACKS_DIR = join(import.meta.dir, "../../packs");
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const MAX_ID_LENGTH = 40;
 // The pack's name shares one line of the screen with the round count.

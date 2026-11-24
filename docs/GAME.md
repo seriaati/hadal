@@ -89,8 +89,8 @@ How the panels look and are worked is in `docs/UI.md`.
 ## Pack format
 
 A pack is one JSON file; `validatePack` in `src/server/packs.ts` checks it and lists every
-problem at once, in words meant for the pack's author. The server refuses to start if a
-built-in pack is not valid. Uploaded packs go through the same check.
+problem at once, in words meant for the pack's author. Every upload goes through it: a player's
+own pack, and a built-in pack an admin uploads.
 
 ```json
 {
@@ -112,9 +112,12 @@ built-in pack is not valid. Uploaded packs go through the same check.
 
 - No other fields are allowed, so a misspelt field name is caught.
 - Ids are lower-case letters and digits joined by hyphens, at most 40 characters. A prompt's
-  id is unique within its pack. A built-in pack's id is its file name, unique across every
-  language: the packs of a language are in `packs/<language>/` (`packs/en/`, `packs/zh-CN/`,
-  `packs/zh-TW/`).
+  id is unique within its pack. A built-in pack's id is unique across every language, and in a
+  working copy it is the file's name: the packs of a language are in `packs/<language>/`
+  (`packs/en/`, `packs/zh-CN/`, `packs/zh-TW/`). A built-in pack is uploaded into the language
+  chosen in the admin panel; one with the id of a pack already there replaces it, and the old
+  version is kept in the database. An upload that would remove prompts the pack has (added since
+  the copy was downloaded) asks first.
 - The name is at most 24 characters and a prompt's text at most 80.
 - A prompt has at least two answers. An answer's tier is "common" (what nearly everyone says
   first), "familiar", "uncommon", "rare" or "gem", and every prompt has at least one gem. A

@@ -5,6 +5,7 @@ import { t } from "./language";
 import { Sound } from "./sound";
 import { AIR_SECONDS, CHAOS_AIR_SECONDS, createGame, leave, lostDive, pressEnter, start, tick, type Chosen, type Phase } from "./state";
 import { AccountPanel } from "./pixel/account";
+import { AdminPanel } from "./pixel/admin";
 import { CustomPanel } from "./pixel/choice";
 import { drawable } from "./pixel/other";
 import { Ending, FADE_SECONDS, type Log } from "./pixel/ending";
@@ -13,7 +14,7 @@ import { Glitch, strength } from "./pixel/glitch";
 import { MultiplayerPanel } from "./pixel/multiplayer";
 import { PacksPanel } from "./pixel/packs";
 import { Scene, type Menu } from "./pixel/scene";
-import { drawCog, drawUpdate, overIcon } from "./pixel/icons";
+import { drawAdmin, drawCog, drawUpdate, overIcon } from "./pixel/icons";
 import { settingsStep } from "./pixel/settings";
 import { selection, steering, Ui, type Step } from "./pixel/ui";
 
@@ -50,6 +51,7 @@ const settings = () => settingsStep(sound, display);
 const account: AccountPanel = new AccountPanel(ui, () => void packs.load());
 const packs = new PacksPanel(ui, account, sound, (pack) => dive(false, { builtIn: [], own: [pack] }));
 const multiplayer = new MultiplayerPanel(ui, account, sound);
+const admin = new AdminPanel(ui);
 multiplayer.announce = (words) => {
   said.append(Object.assign(document.createElement("p"), { textContent: words }));
   while (said.childElementCount > 20) said.firstElementChild!.remove();
@@ -114,6 +116,9 @@ const choose = (line: number) => {
 };
 /** Only at the title, where reloading loses no dive. */
 const offersUpdate = () => newer && shown.phase === "title" && !ui.open;
+/** Not in a room, whose panel it would cover. */
+const offersAdmin = () => !!account.account?.admin && shown.phase === "title" && !multiplayer.lobby;
+const updateSlot = () => (offersAdmin() ? 2 : 1);
 const leaveDive = () => {
   if (multiplayer.diving) multiplayer.leaveDive();
   else leave(game);
@@ -133,7 +138,7 @@ const openMenu = () => {
   if (shown.phase === "title") ui.go(settings);
   else if (shown.phase === "drop" || shown.phase === "ask" || shown.phase === "verdict") ui.go(leaving);
 };
-if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game, scene, frame, display, sound, glitch, ui, account, packs, custom, multiplayer, room: multiplayer.client } });
+if (process.env.NODE_ENV !== "production") Object.assign(window, { hadal: { game, scene, frame, display, sound, glitch, ui, account, admin, packs, custom, multiplayer, room: multiplayer.client } });
 
 const config = () => fetch("/api/config", { cache: "no-store" }).then((res) => res.json() as Promise<Config>);
 void config().then((config) => {
@@ -212,10 +217,11 @@ const onPointer = (event: PointerEvent) => {
     return;
   }
   const cog = overIcon(frame, x, y, 0);
-  const update = offersUpdate() && overIcon(frame, x, y, 1);
+  const update = offersUpdate() && overIcon(frame, x, y, updateSlot());
+  const key = offersAdmin() && overIcon(frame, x, y, 1);
   const line = shown.phase === "title" && !ui.open && menu.items[scene.menuAt(x, y)] ? scene.menuAt(x, y) : -1;
   const named = ui.open ? undefined : multiplayer.pickable(scene.nameAt(x, y));
-  canvas.style.cursor = cog || update || line >= 0 || named ? "pointer" : "";
+  canvas.style.cursor = cog || update || key || line >= 0 || named ? "pointer" : "";
   if (event.type === "pointermove") {
     // Moving the pointer over a line of the menu chooses it, and moving off takes the choice away, as with a control of a panel.
     if (!(event.pointerType === "mouse" && (event.movementX || event.movementY))) return;
@@ -228,6 +234,10 @@ const onPointer = (event: PointerEvent) => {
       menuPointed = false;
     }
   } else if (update) location.reload();
+  else if (key) {
+    if (admin.showing) ui.back();
+    else admin.show();
+  }
   else if (cog) {
     if (ui.top === settings || ui.top === leaving) ui.back();
     else openMenu();
@@ -329,7 +339,8 @@ requestAnimationFrame(function loop(now) {
   glitch.apply(frame, closing ? closing.wordsFrom : scene.wordsFrom, closing ? closing.wordsTo : scene.wordsTo, now / 1000, focus, !closing);
   if (glitch.blackout) lights.length = 0;
   if (!closing) drawCog(frame);
-  if (!closing && offersUpdate()) drawUpdate(frame, 1);
+  if (!closing && offersAdmin()) drawAdmin(frame);
+  if (!closing && offersUpdate()) drawUpdate(frame, updateSlot());
   const box = closing ? null : scene.talkBox;
   talkButton.hidden = !box;
   if (box) {

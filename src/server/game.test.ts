@@ -3,7 +3,8 @@ import type { Pack } from "../shared/types";
 import { buildIndex, judge, named, nearestAnswer, normalize, pickPrompts, typos } from "./game";
 import { loadBuiltIn } from "./packs";
 
-const index = buildIndex(Object.values(await loadBuiltIn()).flat());
+// A few prompts cut from the built-in packs, which are not kept in git.
+const index = buildIndex(Object.values(await loadBuiltIn(`${import.meta.dir}/fixtures/packs`)).flat());
 const ASIA = "geography/asia-countries";
 
 test("normalize ignores case, accents, punctuation, spaces and a leading 'the'", () => {

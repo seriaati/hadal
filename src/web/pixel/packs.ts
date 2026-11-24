@@ -168,7 +168,7 @@ export class PacksPanel {
       foot: [
         { kind: "gap" },
         [
-          { kind: "press", id: "add", label: words.add, file: (file) => void this.add(file) },
+          { kind: "press", id: "add", label: words.add, file: ([file]) => void this.add(file!) },
           { kind: "press", id: "write", label: words.write, press: () => this.ui.go(this.write) },
         ],
       ],
@@ -184,7 +184,7 @@ export class PacksPanel {
     foot: [
       { kind: "gap" },
       this.refusedFile
-        ? { kind: "press", id: "again", label: t().packs.anotherFile, file: (file) => void this.add(file) }
+        ? { kind: "press", id: "again", label: t().packs.anotherFile, file: ([file]) => void this.add(file!) }
         : { kind: "press", id: "again", label: t().packs.backToPacks, press: () => this.ui.back() },
     ],
   });

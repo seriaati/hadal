@@ -15,8 +15,8 @@ const pack = (prompt: object = {}, top: object = {}) => ({
   ...top,
 });
 
-test("every built-in pack is valid, and every language has some", async () => {
-  for (const packs of Object.values(await loadBuiltIn())) expect(packs.length).toBeGreaterThan(0);
+test("the pack files of every language are loaded", async () => {
+  for (const packs of Object.values(await loadBuiltIn(`${import.meta.dir}/fixtures/packs`))) expect(packs.length).toBeGreaterThan(0);
 });
 
 test("two built-in packs of different languages cannot share an id", async () => {
@@ -81,8 +81,8 @@ test("a pack file that is not valid stops the server, naming the file and the pr
   await expect(loadPacks(dir)).rejects.toThrow("broken.json is not a valid pack:\n- the pack's id must be the file's name");
 });
 
-test("every built-in pack is written as formatPack writes it", async () => {
-  for (const file of new Bun.Glob("*/*.json").scanSync({ cwd: `${import.meta.dir}/../../packs`, absolute: true })) {
+test("formatPack writes a pack as the pack files are laid out", async () => {
+  for (const file of new Bun.Glob("*/*.json").scanSync({ cwd: `${import.meta.dir}/fixtures/packs`, absolute: true })) {
     const written = await Bun.file(file).text();
     expect(formatPack(JSON.parse(written))).toBe(written);
   }
