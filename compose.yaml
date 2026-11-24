@@ -27,6 +27,11 @@ services:
       # Seals the API keys players store: 32 characters or more, e.g. from `openssl rand -base64 32`.
       # Without it the game runs but keeps no keys. Changing it makes every stored key unreadable.
       HADAL_SECRET: ${HADAL_SECRET:-}
+      # The instance's own Anthropic key: it turns on the daily dive, writes each day's prompts and runs the monthly
+      # update of the prompts that grow. Without it there is no daily dive. HADAL_DAILY_MODEL is the model it writes
+      # with, claude-opus-5-5 if unset.
+      HADAL_DAILY_KEY: ${HADAL_DAILY_KEY:-}
+      HADAL_DAILY_MODEL: ${HADAL_DAILY_MODEL:-}
       # Behind Cloudflare with a cache rule that keeps the page (/) at its edge: the server clears that copy each time it
       # starts. The token needs only the Zone > Cache Purge permission. Leave them unset when the page is not cached.
       HADAL_URL: ${HADAL_URL:-}
