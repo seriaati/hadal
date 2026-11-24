@@ -529,7 +529,7 @@
         { "text": "细腰猫", "aliases": ["Jaguarundi", "Eyra cat", "Otter cat", "Yaguarondi Jaguarondi"], "tier": "rare" },
         { "text": "渔猫", "aliases": ["Fishing cat", "Water Cat", "Kola Diviya", "Handun Diviya"], "tier": "rare" },
         { "text": "扁头豹猫", "aliases": ["Flat-headed cat"], "tier": "rare" },
-        { "text": "豹猫", "aliases": ["Leopard cat", "Asian leopard cat", "Iriomote cat", "Tsushima leopard cat", "Amur forest cat", "Amur cat", "Tsushima Cat"], "tier": "familiar" },
+        { "text": "豹猫", "aliases": ["石虎", "西表山猫", "对马山猫", "Leopard cat", "Asian leopard cat", "Iriomote cat", "Tsushima leopard cat", "Amur forest cat", "Amur cat", "Tsushima Cat"], "tier": "familiar" },
         { "text": "锈斑豹猫", "aliases": ["Rusty-spotted cat"], "tier": "rare" },
         { "text": "亚非野猫", "aliases": ["African wildcat", "Egyptian cat", "Near Eastern wildcat", "Kaffir cat", "Caffer cat", "Caffre Cat", "Desert Cat"], "tier": "rare" },
         { "text": "黑足猫", "aliases": ["Black-footed cat", "Small-spotted Cat", "Anthill tiger"], "tier": "rare" },
