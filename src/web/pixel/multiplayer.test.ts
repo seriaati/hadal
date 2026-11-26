@@ -143,3 +143,14 @@ test("a room whose every place is taken may be joined as a ghost", () => {
   panel["hear"]({ type: "refused", reason: "ghosts-full" });
   expect(panel["join"]().rows).toContainEqual({ kind: "note", text: "that room is full, ghosts too: a room holds 10 ghosts", bad: true });
 });
+
+test("ghosts are not in the sea: the room says how many there are, and the host reaches them from that line", () => {
+  const panel = new MultiplayerPanel(ui, {} as AccountPanel, sound);
+  const view = room(null);
+  view.players[1]!.ghost = true;
+  panel.client.view = view;
+  const ghosts = panel["room"]().rows.find((row) => "id" in row && row.id === "ghosts");
+  expect(ghosts).toMatchObject({ label: "Ghosts", value: "1" });
+  expect(panel["room"]().world!.map((diver) => diver.name)).toEqual(["ana"]);
+  expect(panel["ghostsStep"]().rows).toEqual([expect.objectContaining({ label: "ben", press: expect.any(Function) })]);
+});

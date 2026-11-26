@@ -1,4 +1,4 @@
-import { AIR_MAX, AIR_MIN, BAR_FULL, CHAT_EVERY, CHAT_MAX, HEARTS, MAX_PLAYERS, MODES, ROOM_CODE_LENGTH, SUITS, type Gone, type Refusal, type RoomPlayer, type RoomSettings, type RoomView } from "../../shared/room";
+import { AIR_MAX, AIR_MIN, BAR_FULL, CHAT_EVERY, CHAT_MAX, HEARTS, MAX_PLAYERS, MODES, ROOM_CODE_LENGTH, SUITS, type Refusal, type RoomPlayer, type RoomSettings, type RoomView } from "../../shared/room";
 import type { Language } from "../../shared/language";
 import { NICKNAME_MAX, type PackSummary } from "../../shared/types";
 import { currentLanguage, t } from "../language";
@@ -9,7 +9,7 @@ import type { Sound } from "../sound";
 import { LOST_SECONDS, ascentSeconds, createGame, type Game } from "../state";
 import type { AccountPanel } from "./account";
 import { builtInRows, packRows, type PackChoice } from "./choice";
-import { CALL_SECONDS, CROWN_SECONDS, GLINT_SECONDS, GOING_SECONDS, LANTERN, LANTERN_OUT, SUIT_COLORS, type Chat, type Crew, type Draft, type Turn } from "./scene";
+import { CALL_SECONDS, CROWN_SECONDS, GLINT_SECONDS, GOING_SECONDS, LANTERN, type Going, LANTERN_OUT, SUIT_COLORS, type Chat, type Crew, type Draft, type Turn } from "./scene";
 import type { Diver, Field, Part, Step, Ui } from "./ui";
 
 /** What is wrong with a typed room code, said before asking the server. Either case is accepted, as the server accepts it. */
@@ -126,14 +126,15 @@ export class MultiplayerPanel {
   private spokeAt = -Infinity;
   private joinedAt = -Infinity;
   /** Divers who have just gone out of the room, as they were last seen, how they went and when, in seconds. */
-  private departing: { crew: Crew; how: Gone; at: number }[] = [];
+  private departing: { crew: Crew; how: Going; at: number }[] = [];
   /** The divers as last shown, so that one who goes is seen off from where they were. */
   private shown: Crew[] = [];
   /** The room's host as the server last said, and the last time the crown passed: to whom, from whom, and when. */
   private host: { code: string; id: number; name: string } | null = null;
   private crowned: { id: number; from: string; at: number } | null = null;
-  /** Who was ready, by room code and id, as the server last said. */
+  /** Who was ready, and who was a ghost, by room code and id, as the server last said. */
   private ready = new Map<string, boolean>();
+  private ghostly = new Map<string, boolean>();
   /** When the host last called those who are not ready, and when that was last heard, in seconds. */
   private called = -Infinity;
   private rung = -Infinity;
@@ -238,11 +239,13 @@ export class MultiplayerPanel {
     }
     if (!this.ui.holds(this.first)) return null;
     if (!view) return [{ slot: 0, suit: this.suit, name: "", lit: true, focus: true, depth: 0 }];
-    // The host has no ready of their own: starting the dive is it. Ghosts hang on no line, and drift by the boat after the divers.
+    // The host has no ready of their own: starting the dive is it. Ghosts are not in the sea.
     const last = (id: number) => view.last?.divers.find((diver) => diver.id === id)?.depth;
-    const shown = (player: RoomPlayer, slot: number): Crew => ({ slot, suit: player.suit, name: player.nickname, lit: !player.ghost && (player.host || player.ready), focus: player.id === view.you, depth: 0, host: player.host, muted: player.muted, crowned: this.crownedOf(player.id), you: player.id === view.you, lastDepth: player.ghost ? undefined : last(player.id), called: player.ghost ? undefined : this.calledOf(player), spoken: this.spoken.get(player.id) ?? 0, joined: player.id === view.you ? performance.now() / 1000 - this.joinedAt : undefined, ghost: player.ghost || undefined });
-    const divers = this.place(view.players.filter((player) => !player.ghost).map(shown));
-    return [...divers, ...view.players.filter((player) => player.ghost).map(shown)];
+    return this.place(
+      view.players
+        .filter((player) => !player.ghost)
+        .map((player, slot) => ({ slot, suit: player.suit, name: player.nickname, lit: player.host || player.ready, focus: player.id === view.you, depth: 0, host: player.host, muted: player.muted, crowned: this.crownedOf(player.id), you: player.id === view.you, lastDepth: last(player.id), called: this.calledOf(player), spoken: this.spoken.get(player.id) ?? 0, joined: player.id === view.you ? performance.now() / 1000 - this.joinedAt : undefined })),
+    );
   }
 
   /** Each diver's place along the boat: one going keeps theirs until they are gone, and those after them then slide over. */
@@ -257,7 +260,7 @@ export class MultiplayerPanel {
   }
 
   /** Another player went out of the room: their diver is seen going. */
-  private seeOff(id: number, how: Gone) {
+  private seeOff(id: number, how: Going) {
     const name = this.client.view?.players.find((player) => player.id === id)?.nickname;
     const diver = this.shown.find((one) => one.name === name && !one.going);
     if (diver) this.departing.push({ crew: { ...diver, focus: false, depthLabel: false, host: false, crowned: undefined, called: undefined }, how, at: performance.now() / 1000 });
@@ -446,6 +449,7 @@ export class MultiplayerPanel {
       const diving = message.room.dive !== null;
       // The ping of a change stands for the lanterns it put out.
       this.hearLanterns(message.room, diving !== this.diving || reset);
+      this.hearGhosts(message.room);
       this.hearHearts(message.room);
       if (diving !== this.diving) {
         this.diving = diving;
@@ -579,6 +583,12 @@ export class MultiplayerPanel {
     this.hearts = new Map(dive?.divers.map((diver) => [diver.id, diver.hearts]));
   }
 
+  /** A diver who has just become a ghost is seen letting go of their line and fading away. */
+  private hearGhosts({ code, players }: RoomView) {
+    for (const player of players) if (player.ghost && this.ghostly.get(`${code}:${player.id}`) === false) this.seeOff(player.id, "ghost");
+    this.ghostly = new Map(players.map((player) => [`${code}:${player.id}`, player.ghost]));
+  }
+
   /** A lantern lit or put out in the room is heard, once for all that changed together; not as a dive begins or ends, which clears them all. */
   private hearLanterns({ code, players }: RoomView, quiet: boolean) {
     const key = (player: RoomPlayer) => `${code}:${player.id}`;
@@ -685,7 +695,7 @@ export class MultiplayerPanel {
       this.client.send({ type: "ghost", ghost });
     };
     // A diver is pressed where they hang: one's own opens their suit, and to the host another's opens what the host can do to them.
-    const world = view.players.flatMap((player): Diver[] => {
+    const world = divers.flatMap((player): Diver[] => {
       const id = `player:${player.id}`;
       if (player.id === you.id) return [{ kind: "diver", id, name: player.nickname, press: () => this.pickSuit(player), says: words.suitSays(player.nickname) }];
       if (!you.host) return [];
@@ -728,6 +738,10 @@ export class MultiplayerPanel {
     if (!you.ghost) rows.push({ kind: "press", id: "ghost", label: words.becomeGhost, press: () => haunt(true) });
     else if (you.host) rows.push({ kind: "press", id: "ghost", label: words.becomeDiver, quiet: !free, press: () => haunt(false) });
     rows.push(...this.refusal("ghost"));
+    // A ghost has no diver to open what they say from, as a phone needs: this line does.
+    if (you.ghost) rows.push({ kind: "press", id: "speak", label: words.sayIt, value: matchMedia("(pointer: coarse)").matches ? undefined : words.sayKey, press: () => this.ui.openChat("speak") });
+    const ghosts = view.players.length - divers.length;
+    if (ghosts) rows.push({ kind: "press", id: "ghosts", label: words.ghosts, value: String(ghosts), press: () => this.open(this.ghostsStep) });
     if (this.client.offline) rows.push({ kind: "note", text: words.reconnecting, bad: true });
     const copy = () => this.copy(view.code);
     const copied = performance.now() - this.copiedAt < COPIED_FOR;
@@ -898,6 +912,24 @@ export class MultiplayerPanel {
     this.ui.back();
     this.ui.focus(next ? `player:${next.id}` : "act");
   }
+
+  /** Who the ghosts are, since the sea does not show them; to the host each opens what the host can do to them. */
+  private ghostsStep = (): Step => {
+    const view = this.client.view;
+    const words = t().rooms;
+    const you = view?.players.find((player) => player.id === view.you);
+    if (!view || !you) return { title: words.ghosts, rows: [] };
+    return {
+      title: words.ghosts,
+      rows: view.players
+        .filter((player) => player.ghost)
+        .map((player): Part =>
+          you.host && player !== you
+            ? { kind: "press", id: `player:${player.id}`, label: player.nickname, says: words.playerSays(player.nickname), press: () => this.pick(player) }
+            : { kind: "press", id: `player:${player.id}`, label: player.nickname, quiet: true },
+        ),
+    };
+  };
 
   private playerStep = (): Step => {
     const words = t().rooms;

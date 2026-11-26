@@ -243,6 +243,7 @@ export const zhCN: Words = {
     becomeGhost: "成为幽灵",
     becomeDiver: "成为潜水员",
     joinAsGhost: "以幽灵身份加入",
+    ghosts: "幽灵",
     air: (seconds: number) => `${seconds} 秒氧气`,
     liveJudging: "实时评判",
     copied: "链接已复制",

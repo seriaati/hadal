@@ -31,8 +31,9 @@ it is taken, and in the room may press their own diver to change it. A room hold
 up to ten ghosts besides them. Between dives a diver may become a ghost, which frees their place,
 and a ghost becomes a diver again whenever a place is free; one who finds every place taken may
 join as a ghost. Ghosts dive in none of the dives and watch them all. They talk, may be the host
-(and start dives they do not dive in), and are kicked, banned or muted like anyone; in the room
-they drift faintly between the lines or under the divers, on no line. A new room starts with the
+(and start dives they do not dive in), and are kicked, banned or muted like anyone. They are not
+seen in the sea: the room says how many there are, and lists them. One who becomes a ghost lets go
+of their line and fades away. A new room starts with the
 settings of the last room its host's browser set up. A player whose connection drops keeps their
 place for 30 seconds while the page connects again; if the server has restarted meanwhile (a new
 version), the room opens again under its code, without the dive that was under way. A page left
@@ -47,7 +48,8 @@ dive a player may also just start typing. On a phone, their own diver opens it b
 a speech mark at the bottom left in one. What they say rises from their helmet in a bubble over
 them and stays long enough to read, then goes; a newer bubble pushes an older one it would cover
 out of its way. One whose diver is out of view says it from where they are named at the edge of
-the screen, or, if they are not named, at the bottom left after their name. Screen readers read
+the screen, or, if they are not named, at the bottom left after their name (in the room, where
+the words lie at the bottom, at the top left). Screen readers read
 out what the others say. Nothing said is kept, and in a dive what names an answer to the prompt
 that nobody has taken yet is refused, so no answer is given away. A room asks no prompt
 twice until it has asked every one. While another diver answers, a player may type their own

@@ -36,7 +36,7 @@ Every panel is built from these, and each has one look.
 | Setting | A line that stands for a choice | Its label, and the choice against the right edge ("Deepest", "built-in + 2"), with a pip before it if it is on or off. Left and Right change it, like a slider; Enter flips an on or off one |
 | Action | The one thing a step is for (lighting the lantern in a room, starting the dive) | The larger letters, in amber, in the middle of its row, after an icon if it has one. Dim while it cannot be done yet, though it may still be pressed to hear why. The focus lands on it when its step opens |
 | Summary | Facts read together, such as how a room is set up | Pale facts with a dim `~` between them, wrapped only between facts. A fact that has just changed glows amber. Where it can be changed it is pressed like a line, with a dim word at the right edge ("Change") |
-| Diver | One of the people in a room, pressed where they hang in the sea | Drawn by the sea, not the panel. A diver is pressed on their name or on themselves. A player's own diver opens their suit and "Say something", with "Tab" at its right where there are keys (Tab opens the chat there too); to the host every other diver opens what the host can do to them. To the others another diver is only seen, and the focus passes over them. The divers are a row over the panel's: Up from its first row reaches them. In a dive the host presses another diver's name to open the same. A ghost is pressed the same way where it drifts |
+| Diver | One of the people in a room, pressed where they hang in the sea | Drawn by the sea, not the panel. A diver is pressed on their name or on themselves. A player's own diver opens their suit and "Say something", with "Tab" at its right where there are keys (Tab opens the chat there too); to the host every other diver opens what the host can do to them. To the others another diver is only seen, and the focus passes over them. The divers are a row over the panel's: Up from its first row reaches them. In a dive the host presses another diver's name to open the same. Ghosts are not in the sea: the room's "Ghosts" line lists them, and there the host presses one to open the same |
 | Message | Words that are only read | Dim words, wrapped |
 | Wait | Something that takes long | Words, then one pip per piece of the work, then "prompt 4 of 10". Past 10 pieces a pip stands for a tenth of the work |
 
@@ -136,11 +136,8 @@ view 6.
   into the boat; one removed is jolted and yanked up; one banned has their line snap and sinks
   into the dark. The crown flies from the old host's name to the new one's and glints there.
   A muted diver has a struck-through speech mark where a host's crown would be.
-- A ghost is the player's diver with the lantern out, darker and shimmering, on no line: between
-  the lines on a wide screen, under the divers on a narrow one. Its name is dim and only as wide
-  as the water it has. One who becomes a ghost lets go of their line and drifts to their place,
-  fading as they go; a ghost who becomes a diver drifts to the free line and takes it as they come
-  clear. Ghosts make room for each other the same way.
+- One who becomes a ghost has their lantern go out, lets go of their line and turns into a
+  shimmering ghost as they drift off it, then fades away; ghosts are not seen in the sea.
 - The host's "Start the dive", pressed while some are not ready, calls them instead of saying
   why: a ship's bell rings twice for everyone, and the lanterns of those not ready blink red
   for a few seconds, until they light them.

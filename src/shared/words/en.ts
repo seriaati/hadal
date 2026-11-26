@@ -268,6 +268,8 @@ export const en = {
     becomeGhost: "Become a ghost",
     becomeDiver: "Become a diver",
     joinAsGhost: "Join as a ghost",
+    /** The line that says how many ghosts a room has, and opens who they are. */
+    ghosts: "Ghosts",
     air: (seconds: number) => `${seconds} s of air`,
     liveJudging: "Live judging",
     copied: "Link copied",

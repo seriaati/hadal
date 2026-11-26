@@ -243,6 +243,7 @@ export const zhTW: Words = {
     becomeGhost: "成為幽靈",
     becomeDiver: "成為潛水員",
     joinAsGhost: "以幽靈身分加入",
+    ghosts: "幽靈",
     air: (seconds: number) => `${seconds} 秒氧氣`,
     liveJudging: "即時評判",
     copied: "連結已複製",

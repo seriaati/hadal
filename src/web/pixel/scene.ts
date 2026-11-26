@@ -163,8 +163,8 @@ export type Crew = {
   host?: boolean;
   /** The host has muted them: marked where a host's crown would be. A host is never muted. */
   muted?: boolean;
-  /** They went out of the room `t` seconds ago, and are seen going: hauled up their line, yanked up it, or cut loose. */
-  going?: { how: Gone; t: number };
+  /** They went out of the room `t` seconds ago, and are seen going: hauled up their line, yanked up it, cut loose, or let go of it as a ghost. */
+  going?: { how: Going; t: number };
   /** The crown came to them `t` seconds ago, from the diver named `from`. */
   crowned?: { from: string; t: number };
   /** In a room before a dive: the player's own diver, marked over the name. */
@@ -177,8 +177,6 @@ export type Crew = {
   spoken?: number;
   /** The player's own diver: seconds since they made or joined the room, while how to talk is shown over them. */
   joined?: number;
-  /** In a room before a dive: they only watch the dives, and drift faintly by the boat on no line; `slot` counts the ghosts. */
-  ghost?: boolean;
 };
 /** What a diver of a room last said, `age` seconds ago, by the name they are hung by. */
 export type Chat = { name: string; text: string; age: number; bad?: boolean };
@@ -188,8 +186,12 @@ export type Draft = { name: string; text: string };
 const speechSeconds = (text: string) => 4 + 0.1 * text.length;
 /** For how much of the end of that it is dim, in seconds. */
 const SPEECH_FADE = 0.6;
+/** How a diver leaves the sea: out of the room, or into it as a ghost, which is not seen there. */
+export type Going = Gone | "ghost";
 /** How long a diver who went out of the room is seen going, in seconds. */
-export const GOING_SECONDS: Record<Gone, number> = { left: 1.4, removed: 1, banned: 2.6 };
+export const GOING_SECONDS: Record<Going, number> = { left: 1.4, removed: 1, banned: 2.6, ghost: 1.8 };
+/** How long one becoming a ghost takes to turn into one, before they fade away, in seconds. */
+const HAUNT = 0.6;
 /** When the line of a banned diver snaps, and how long one removed is jolted before they are yanked up. */
 const SNAP = 0.6;
 const JOLT = 0.25;
@@ -204,20 +206,25 @@ export const GLINT_SECONDS = 0.6;
 
 /**
  * Where a diver who went out of the room is as they go: how far down (up, below 0) and across from their place, how
- * far they have faded (0 to 1), and whether their lantern still burns. One who left is hauled up gently, one removed is
- * jolted and yanked up, both just out of sight (`hidden` pixels up) as their time runs out; one banned has their
- * lantern sputter out and their line snap, and sinks into the dark.
+ * far they have faded (0 to 1), how far they are a ghost (0 to 1), and whether their lantern still burns. One who left
+ * is hauled up gently, one removed is jolted and yanked up, both just out of sight (`hidden` pixels up) as their time
+ * runs out; one banned has their lantern sputter out and their line snap, and sinks into the dark. One who becomes a
+ * ghost lets go of their line, their lantern out, turns into one as they drift off it, and fades away.
  */
-function going({ how, t }: NonNullable<Crew["going"]>, hidden: number): { dy: number; dx: number; fade: number; lit: boolean } {
+function going({ how, t }: NonNullable<Crew["going"]>, hidden: number): { dy: number; dx: number; fade: number; lit: boolean; spirit: number } {
+  if (how === "ghost") {
+    const q = t / GOING_SECONDS.ghost;
+    return { dy: -Math.round(8 * q), dx: Math.round(10 * q), fade: Math.max(0, (t - HAUNT) / (GOING_SECONDS.ghost - HAUNT)), lit: false, spirit: Math.min(1, t / HAUNT) };
+  }
   if (how === "banned") {
     const q = Math.max(0, (t - SNAP) / (GOING_SECONDS.banned - SNAP));
-    return { dy: Math.round(90 * q ** 1.6), dx: 0, fade: q, lit: t < SNAP && hash(Math.floor(t * 14), 7) > t / SNAP };
+    return { dy: Math.round(90 * q ** 1.6), dx: 0, fade: q, lit: t < SNAP && hash(Math.floor(t * 14), 7) > t / SNAP, spirit: 0 };
   }
   if (how === "removed") {
     const q = Math.max(0, (t - JOLT) / (GOING_SECONDS.removed - JOLT));
-    return { dy: -Math.round(hidden * q ** 3), dx: t < JOLT ? Math.round(Math.sin(t * 90)) : 0, fade: 0, lit: true };
+    return { dy: -Math.round(hidden * q ** 3), dx: t < JOLT ? Math.round(Math.sin(t * 90)) : 0, fade: 0, lit: true, spirit: 0 };
   }
-  return { dy: -Math.round(hidden * (t / GOING_SECONDS.left) ** 2), dx: 0, fade: 0, lit: true };
+  return { dy: -Math.round(hidden * (t / GOING_SECONDS.left) ** 2), dx: 0, fade: 0, lit: true, spirit: 0 };
 }
 
 /** How long the last heart of a diver going out of the dive flickers, and when their lantern sputters and is out, in seconds. */
@@ -237,11 +244,8 @@ function dying(t: number, hidden: number): { dy: number; lit: boolean; limp: boo
   return { dy: sag - Math.round((hidden + sag) * q * q), lit, limp: t >= LIGHTS_OUT };
 }
 
-/**
- * A ghost of a room: their diver with the lantern out, two steps darker, a third of their pixels gone and shimmering.
- * `amount` below 1 is a diver part of the way to a ghost, or back.
- */
-function spectral(rows: string[], time: number, amount = 1): string[] {
+/** A diver turning into a ghost, `amount` of the way (0 to 1): up to two steps darker, a third of their pixels gone and shimmering. */
+function spectral(rows: string[], time: number, amount: number): string[] {
   if (amount <= 0) return rows;
   const shift = Math.floor(time * 3);
   const steps = Math.round(2 * amount);
@@ -254,8 +258,6 @@ function spectral(rows: string[], time: number, amount = 1): string[] {
   );
 }
 
-/** How long a diver takes to let go of their line and drift off as a ghost, or a ghost to drift to a line and take it, in seconds. */
-const TURN_SECONDS = 1.2;
 
 /** A diver fading into the dark: a few steps darker first, then a growing share of their pixels gone into the water. */
 function faded(rows: string[], fade: number): string[] {
@@ -420,12 +422,6 @@ export class Scene {
   private slots = new Map<string, number>();
   /** Where the crown set out from, by the name of the diver it is flying to. */
   private flights = new Map<string, { x: number; y: number }>();
-  /**
-   * In a room, by name: where each diver or ghost was last drawn, and the place they were going to then; and the way
-   * from where they were to a new place (theirs as a ghost, as a diver, or among the ghosts), begun at `at` seconds.
-   */
-  private figures = new Map<string, { x: number; y: number; ghost: boolean; to: { x: number; y: number } }>();
-  private moves = new Map<string, { dx: number; dy: number; at: number; turned: boolean }>();
   /** The divers of the room the player is in, or is about to make or join. */
   crew: Crew[] | null = null;
   /**
@@ -542,17 +538,17 @@ export class Scene {
 
     // On a wide screen as many as fit beside the words; in a dive on a narrow one, the diver in focus and the one before.
     // A chaos diver whose air ran out has a dead lantern.
-    const members: Crew[] = crew?.filter((diver) => !diver.ghost).map((diver) => ({ ...diver, slot: this.slots.get(diver.name) ?? diver.slot })) ?? [
+    const members: Crew[] = crew?.map((diver) => ({ ...diver, slot: this.slots.get(diver.name) ?? diver.slot })) ?? [
       { slot: 0, suit: 0, name: "", lit: game.phase !== "lost", focus: true, depth: game.depth, lamps: game.lamps },
     ];
-    // In a room of ghosts alone, nobody hangs on a line.
+    // In a room of ghosts alone nobody hangs on a line.
     const focus = members.find((diver) => diver.focus) ?? members[0] ?? { slot: 0 };
     const lineX = (slot: number) => Math.round(CHAIN_X + slot * this.gap - across);
     // In a room the lines are longer, and on a narrow screen every other diver hangs lower still, so that names have
     // room; sliding between places, smoothly.
     const staggered = (slot: number) => Math.round(this.spread * (LONGER + (wide ? 0 : (STAGGER * (1 - Math.cos(Math.PI * slot))) / 2)));
     const near = (slot: number, to: number) => Math.round(slot) === Math.round(to);
-    const hanging = members
+    const lines = members
       .filter((diver) => (this.lobby || wide || !this.turn ? lineX(diver.slot) > -22 && lineX(diver.slot) + 21 <= (wide && !this.lobby ? 172 : W) : near(diver.slot, focus.slot) || near(diver.slot, focus.slot - 1)))
       .map((diver) => {
         const depth = crew ? this.shown.get(diver.name)! : this.depth;
@@ -567,31 +563,12 @@ export class Scene {
         const y = place + (away?.dy ?? 0) + (death?.dy ?? 0);
         // One hauled up into the boat takes their lantern with them.
         const lit = diver.lit && (!death || death.lit) && (!away || (away.lit && y + 17 > screenY(SURFACE_ROW)));
-        return { ...diver, x, y, bob, depth, lit, fade: away?.fade ?? 0, lamps: hang(marks, diver.lamps ?? [], depth, x) };
+        return { ...diver, x, y, bob, depth, lit, fade: away?.fade ?? 0, spirit: away?.spirit ?? 0, lamps: hang(marks, diver.lamps ?? [], depth, x) };
       });
-    // The ghosts of a room drift where there is open water: between the lines on a wide screen, under the divers on a narrow one.
-    const belowDivers = Math.max(0, ...hanging.map((line) => line.y - line.bob + 34));
-    const gaps = MAX_PLAYERS - 1;
-    const per = Math.max(1, Math.floor((W - 4) / 30));
-    /** How wide a ghost's name may be: the water between the lines, or between one ghost and the next. */
-    const ghostRoom = wide ? Math.round(this.gap) - 26 : Math.floor((W - 4) / per) - 3;
-    const ghosts = !this.lobby
-      ? []
-      : (crew ?? [])
-          .filter((diver) => diver.ghost)
-          .map((ghost, k) => {
-            const drift = Math.round(2 * Math.sin(time * 0.5 + k * 2.3));
-            const bob = Math.round(Math.sin(time * 0.8 + k * 1.7));
-            const [x, y] = wide
-              ? [lineX(k % gaps) + Math.round(this.gap / 2) + Math.floor(k / gaps) * 8, screenY(0) - held(game) + staggered(k % gaps) + 10 + Math.floor(k / gaps) * 14]
-              : [2 + Math.round((((k % per) + 0.5) * (W - 4)) / per) - 10, belowDivers + 10 + Math.floor(k / per) * 36];
-            return { ...ghost, x: x + drift, y: y + bob, bob, depth: 0, lit: false, fade: 0, lamps: [] as ReturnType<typeof hang> };
-          });
-    const lines = this.turning([...hanging, ...ghosts], time);
     const lamps = lines.flatMap((line) => line.lamps);
     // Without the bob, or the top of the dock would bob with the divers.
     this.floor = Math.max(0, ...lines.map((line) => line.y - line.bob + 34));
-    const lead = hanging.find((line) => line.focus);
+    const lead = lines.find((line) => line.focus);
     if (lead) this.focus = { x: lead.x + 10, y: lead.y + 12 };
     const sub = vessel(game);
 
@@ -853,7 +830,7 @@ export class Scene {
     }
 
     frame.block = 166;
-    for (const line of hanging) {
+    for (const line of lines) {
       const x = line.x;
       const snapped = line.going?.how === "banned" && line.going.t >= SNAP;
       for (let y = Math.max(0, snapped ? line.y + 2 : surface); y < H; y++) {
@@ -954,15 +931,13 @@ export class Scene {
 
     // The one in focus is drawn in front. One who is out has been hauled up.
     frame.block = 178;
-    // Ghosts drift behind the divers: no line holds them, and they carry no lantern.
-    for (const ghost of lines.filter((line) => line.ghost)) frame.sprite(spectral(WORN[ghost.suit]![0]!, time, ghost.spirit), ghost.x, ghost.y);
-    for (const { x, y, suit, lit, called, fade, going: away, dying: dead, spirit } of lines.filter((line) => !line.ghost && !line.out).sort((a, b) => Number(a.focus) - Number(b.focus))) {
+    for (const { x, y, suit, lit, called, fade, going: away, dying: dead, spirit } of lines.filter((line) => !line.out).sort((a, b) => Number(a.focus) - Number(b.focus))) {
       // One hauled up goes into the boat, under its hull.
       const top = (away && away.how !== "banned") || dead !== undefined ? surface + 1 : -Infinity;
-      // A ghost on its way to a line is still part ghost.
+      // One becoming a ghost is part ghost.
       const draw = (rows: string[], left: number, from: number, glow?: string) =>
         frame.sprite(spectral(faded(rows.slice(Math.max(0, top - from)), fade), time, spirit), left, Math.max(from, top), spirit ? undefined : glow);
-      // It takes hold of the line once it is more diver than ghost.
+      // They let go of the line once they are more ghost than diver.
       if (spirit < 0.5) draw(lit ? ["rRo"] : ["rrR"], x + 8, y - 1);
       draw(WORN[suit]![lit ? 1 : 0]!, x, y);
       if (y + 16 >= top && !fade && !spirit) frame.put(x + 18, y + 16, lit ? 13 : 12);
@@ -1035,7 +1010,7 @@ export class Scene {
       const under = (line.y < (tag ? 18 : 10) && line.dying === undefined) || !!sub;
       const y = under ? line.y + 29 : line.y - 9;
       frame.emit = line.lit ? 70 : 0;
-      const name = this.lobby ? clip(line.name, (line.ghost ? ghostRoom : room) - crown) : line.name;
+      const name = this.lobby ? clip(line.name, room - crown) : line.name;
       // The diver in focus has the mark before the name, which moves over only if the screen's edge leaves it no room.
       const chosen = this.lobby && this.chosen === line.name;
       const x = Math.max(chosen ? 8 : 2, at(crown + measure(tiny, name) + hearts));
@@ -1089,7 +1064,8 @@ export class Scene {
 
     // What a diver says rises a little over them and stays a while; what the player types stands over their own diver.
     // One not in view says it at the bottom left, after their name, as does one in a dive whose words would reach up into
-    // the prompt. The newest is nearest its diver: an older one it would cover goes up above it.
+    // the prompt; in the room, where the words lie at the bottom, a ghost says it from the sky at the top left. The newest
+    // is nearest its diver: an older one it would cover goes up above it.
     this.speaking = null;
     if (this.lobby || this.turn) {
       // The corner is over the player's hearts, and over the button that opens what they say on a phone.
@@ -1101,7 +1077,7 @@ export class Scene {
           const clear = bubble.y >= this.hudBottom + 2 || bubble.x + bubble.w <= this.hudLeft - 4;
           if (!this.turn || clear) return bubble;
         }
-        return speech(typing ? text : `${name} ~ ${text}`, 0, corner, W, typing, false, false);
+        return speech(typing ? text : `${name} ~ ${text}`, 0, this.lobby ? 0 : corner, W, typing, false, this.lobby);
       };
       const spoken: (Speech & { edge: number; ink: number; caret?: boolean; selected?: [number, number] | null })[] = [];
       if (this.draft) spoken.push({ ...place(this.draft.name, this.draft.text, true, 0), edge: 15, ink: 7, caret: !this.selection && Math.floor(time * 2.5) % 2 === 0, selected: this.selection });
@@ -1154,55 +1130,21 @@ export class Scene {
   }
 
   /**
-   * In a room, one who has just become a ghost or a diver goes from where they were to their new place, turning from
-   * one into the other on the way (`spirit`, 0 for a diver and 1 for a ghost); a ghost whose place among the ghosts
-   * changes drifts there. Before and after a dive everyone is simply where they are.
-   */
-  private turning<Line extends Pick<Crew, "name" | "ghost" | "going"> & { x: number; y: number }>(lines: Line[], time: number): (Line & { spirit: number })[] {
-    if (!this.lobby) {
-      this.figures.clear();
-      this.moves.clear();
-      return lines.map((line) => ({ ...line, spirit: 0 }));
-    }
-    const seen = new Map<string, { x: number; y: number; ghost: boolean; to: { x: number; y: number } }>();
-    const shown = lines.map((line) => {
-      const ghost = !!line.ghost;
-      const was = this.figures.get(line.name);
-      const turned = !!was && was.ghost !== ghost;
-      // A ghost's place sways a pixel or two each frame: only a real change of place is a move.
-      if (was && !line.going && (turned || (ghost && Math.hypot(was.to.x - line.x, was.to.y - line.y) > 4))) {
-        this.moves.set(line.name, { dx: was.x - line.x, dy: was.y - line.y, at: time, turned: turned || !!this.moves.get(line.name)?.turned });
-      }
-      const move = this.moves.get(line.name);
-      const t = move ? (time - move.at) / TURN_SECONDS : 1;
-      if (move && t >= 1) this.moves.delete(line.name);
-      const e = Math.min(1, t) * Math.min(1, t) * (3 - 2 * Math.min(1, t));
-      const x = line.x + Math.round((move?.dx ?? 0) * (1 - e));
-      const y = line.y + Math.round((move?.dy ?? 0) * (1 - e));
-      const spirit = move?.turned && t < 1 ? (ghost ? e : 1 - e) : ghost ? 1 : 0;
-      seen.set(line.name, { x, y, ghost, to: { x: line.x, y: line.y } });
-      return { ...line, x, y, spirit };
-    });
-    this.figures = seen;
-    return shown;
-  }
-
-  /**
    * Ease every diver of a room towards their depth, and the camera towards the one in focus: quickly, across and
    * up or down at once, when the focus passes on, then fixed on them as they go down. Says whether the camera moves.
    */
   private follow(crew: Crew[], dt: number): boolean {
     for (const diver of crew) {
       const at = this.slots.get(diver.name);
-      // A ghost has no place along the boat: one who becomes a diver drifts to theirs (see `turning`), not along it.
-      if (diver.ghost) this.slots.delete(diver.name);
-      else this.slots.set(diver.name, at === undefined || diver.going ? diver.slot : approach(at, diver.slot, 1 - Math.exp(-dt * 5), 1.5 * dt));
+      this.slots.set(diver.name, at === undefined || diver.going ? diver.slot : approach(at, diver.slot, 1 - Math.exp(-dt * 5), 1.5 * dt));
       const was = this.shown.get(diver.name);
       // A diver first seen is shown where they are, their lamps long reached: no lamp flares or rings for them.
       if (was === undefined) this.marks.set(diver.name, new Map(diver.lamps?.map((_, i) => [i, -Infinity])));
       this.shown.set(diver.name, was === undefined || diver.hauled ? diver.depth : approach(was, diver.depth, 1 - Math.exp(-dt * 1.6), 25 * dt));
     }
-    const focus = crew.find((diver) => diver.focus) ?? crew[0]!;
+    const focus = crew.find((diver) => diver.focus) ?? crew[0];
+    // A room of ghosts alone has nobody to look at: the camera stays where it is.
+    if (!focus) return false;
     const depth = (this.held = this.shown.get(focus.name)!);
     const x = (this.slots.get(focus.name) ?? focus.slot) * this.gap;
     if (this.locked !== focus.name) {
