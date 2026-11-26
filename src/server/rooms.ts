@@ -1,5 +1,5 @@
 import {
-  AIR_MAX, AIR_MIN, BAR_FULL, CHAT_EVERY, CHAT_MAX, DEFAULT_AIR, HEARTS, DEFAULT_SETTINGS, DIVE_PROMPTS, MAX_PLAYERS, MODES, ROOM_CODE_LENGTH, SUITS,
+  AIR_MAX, AIR_MIN, BAR_FULL, CHAT_EVERY, CHAT_MAX, DEFAULT_AIR, HEARTS, DEFAULT_SETTINGS, DIVE_PROMPTS, MAX_GHOSTS, MAX_PLAYERS, MODES, ROOM_CODE_LENGTH, SUITS,
   type ClientMessage, type Gone, type Hearts, type Mode, type Refusal, type RoomPlayer, type RoomSettings, type RoomView, type ServerMessage,
 } from "../shared/room";
 import type { Language } from "../shared/language";
@@ -53,6 +53,13 @@ function log(room: Room, player: Pick<Player, "id" | "nickname">, what: string) 
 const isSuit = (suit: number) => Number.isInteger(suit) && suit >= 0 && suit < SUITS;
 const packOf = (promptId: string) => promptId.slice(0, promptId.indexOf("/"));
 const isHost = (member: Member, room: Room) => room.players.some((player) => player.host && player.member === member);
+const diversOf = (room: Room) => room.players.filter((player) => !player.ghost);
+/** A suit is worn by one diver only; ghosts may wear any. */
+function wearable(room: Room, suit: number): number {
+  const worn = new Set(diversOf(room).map((player) => player.suit));
+  const free = Array.from({ length: SUITS }, (_, one) => one).filter((one) => !worn.has(one));
+  return worn.has(suit) ? free[Math.floor(Math.random() * free.length)]! : suit;
+}
 /** What a ban holds on to: the browser, and the account if one is signed in. */
 const marks = ({ browser, accountId }: Member) => [`browser:${browser}`, ...(accountId ? [`account:${accountId}`] : [])];
 
@@ -107,7 +114,7 @@ async function remembered(member: Member, saved: unknown): Promise<RoomSettings>
 }
 
 /** `to` is the code of the room to join, or the settings of a new one (and its code, if it is one coming back), whose host the player becomes. */
-function enter(member: Member, message: { nickname: string; suit: number }, to: string | { code?: string; settings: RoomSettings }): Refusal | void {
+function enter(member: Member, message: { nickname: string; suit: number; ghost?: boolean }, to: string | { code?: string; settings: RoomSettings }): Refusal | void {
   const nickname = String(message.nickname ?? "").trim().normalize("NFC").toLowerCase();
   if (!NICKNAME.test(nickname)) return "bad-name";
   if (!isSuit(message.suit)) return "bad-suit";
@@ -117,16 +124,15 @@ function enter(member: Member, message: { nickname: string; suit: number }, to: 
       : { code: to.code ?? newCode(), players: [], settings: to.settings, nextId: 0, dive: null, last: null, banned: new Set(), asked: new Set(), asking: null };
   if (!room) return "no-room";
   if (marks(member).some((mark) => room.banned.has(mark))) return "banned";
-  if (room.players.length >= MAX_PLAYERS) return "full";
+  const ghost = message.ghost === true;
+  if (ghost ? room.players.length - diversOf(room).length >= MAX_GHOSTS : diversOf(room).length >= MAX_PLAYERS) return ghost ? "ghosts-full" : "full";
   if (room.players.some((player) => player.nickname === nickname)) return "name-taken";
-  const worn = new Set(room.players.map((player) => player.suit));
-  const free = Array.from({ length: SUITS }, (_, suit) => suit).filter((suit) => !worn.has(suit));
-  const suit = worn.has(message.suit) ? free[Math.floor(Math.random() * free.length)]! : message.suit;
-  const player: Player = { id: room.nextId++, nickname, suit, ready: false, host: !room.players.length, muted: false, member };
+  const suit = ghost ? message.suit : wearable(room, message.suit);
+  const player: Player = { id: room.nextId++, nickname, suit, ready: false, host: !room.players.length, muted: false, ghost, member };
   room.players.push(player);
   rooms.set(room.code, room);
   places.set(member, room);
-  log(room, player, player.host ? "opened the room" : "joined");
+  log(room, player, `${player.host ? "opened the room" : "joined"}${ghost ? " as a ghost" : ""}`);
   tell(room);
 }
 
@@ -178,7 +184,8 @@ async function change(member: Member, room: Room, changes: Partial<RoomSettings>
 async function start(member: Member, room: Room): Promise<Refusal | void> {
   if (!isHost(member, room)) return "not-host";
   if (room.dive) return;
-  if (room.players.some((player) => !player.host && !player.ready)) {
+  if (!diversOf(room).length) return "no-divers";
+  if (diversOf(room).some((player) => !player.host && !player.ready)) {
     for (const player of room.players) player.member.send({ type: "called" });
     return;
   }
@@ -190,7 +197,7 @@ async function start(member: Member, room: Room): Promise<Refusal | void> {
   if (places.get(member) !== room || room.dive) return;
   room.settings = { ...room.settings, ownPacks: own.map((pack) => pack.id), judging: judgeAs !== null };
   const chosen = [...builtIn].filter(([id]) => room.settings.builtIn.includes(packOf(id)));
-  const index = enoughFor(new Map([...chosen, ...buildIndex(own, OWN)]), room.players.length);
+  const index = enoughFor(new Map([...chosen, ...buildIndex(own, OWN)]), diversOf(room).length);
   if (!index.size) return "no-prompts";
   room.last = null;
   const { mode } = room.settings;
@@ -199,7 +206,7 @@ async function start(member: Member, room: Room): Promise<Refusal | void> {
     index,
     // "Longest" and "chaos" go on until the prompts run out.
     prompts: unasked(room, index, mode === "deepest" ? DIVE_PROMPTS : index.size),
-    order: shuffle(room.players.map((player) => player.id)),
+    order: shuffle(diversOf(room).map((player) => player.id)),
     air: room.settings.air,
     barFull: BAR_FULL[room.settings.hearts],
     // A host who leaves takes their key with them.
@@ -243,6 +250,19 @@ function crown(member: Member, room: Room, id: number) {
   const player = room.players.find((one) => one.id === id);
   if (!isHost(member, room) || !player || player.member === member) return;
   pass(room, player);
+  tell(room);
+}
+
+/** Between dives a player becomes a ghost, or a diver again while a place is free, with their lantern out. */
+function haunt(member: Member, room: Room, ghost: boolean): Refusal | void {
+  const player = room.players.find((one) => one.member === member)!;
+  if (room.dive || player.ghost === ghost) return;
+  if (ghost && room.players.length - diversOf(room).length >= MAX_GHOSTS) return "ghosts-full";
+  if (!ghost && diversOf(room).length >= MAX_PLAYERS) return "no-place";
+  if (!ghost) player.suit = wearable(room, player.suit);
+  player.ghost = ghost;
+  player.ready = false;
+  log(room, player, ghost ? "became a ghost" : "became a diver");
   tell(room);
 }
 
@@ -375,6 +395,7 @@ export async function receive(member: Member, text: string) {
   else if (message?.type === "remove" && room) remove(member, room, message.id, message.ban === true);
   else if (message?.type === "mute" && room) mute(member, room, message.id, message.muted === true);
   else if (message?.type === "chat" && room) refuse(chat(member, room, message.text));
+  else if (message?.type === "ghost" && room) refuse(haunt(member, room, message.ghost === true));
   else if ((message?.type === "typing" || message?.type === "answer" || message?.type === "out") && room?.dive) {
     const id = room.players.find((player) => player.member === member)!.id;
     if (message.type === "typing") room.dive.type(id, message.text);
@@ -382,8 +403,8 @@ export async function receive(member: Member, text: string) {
     else await room.dive.answer(id, message.text);
   } else if (message?.type === "ready" && room) {
     const player = room.players.find((player) => player.member === member)!;
-    // The host has no ready of their own: starting the game is it.
-    if (player.host || room.dive) return;
+    // The host has no ready of their own: starting the game is it. A ghost has none either.
+    if (player.host || player.ghost || room.dive) return;
     player.ready = message.ready === true;
     tell(room);
   } else if (message?.type === "suit" && room) {

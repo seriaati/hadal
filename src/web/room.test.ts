@@ -31,7 +31,7 @@ class FakeSocket extends EventTarget {
 const view: RoomView = {
   code: "ACDEF",
   you: 1,
-  players: [{ id: 0, nickname: "ana", suit: 0, ready: false, host: true, muted: false }, { id: 1, nickname: "ben", suit: 1, ready: false, host: false, muted: false }],
+  players: [{ id: 0, nickname: "ana", suit: 0, ready: false, host: true, muted: false, ghost: false }, { id: 1, nickname: "ben", suit: 1, ready: false, host: false, muted: false, ghost: false }],
   settings: { ...DEFAULT_SETTINGS, builtIn: [] },
   dive: null,
   last: null,
@@ -80,7 +80,7 @@ test("a connection gone silent shows the player cut off, and is given up for ano
   expect(socket.closedWith).toBe(4000);
   jest.advanceTimersByTime(0);
   const again = FakeSocket.made[1]!;
-  expect(again.sent).toEqual([{ type: "back", code: "ACDEF", id: 1, nickname: "ben", suit: 1, settings: view.settings }]);
+  expect(again.sent).toEqual([{ type: "back", code: "ACDEF", id: 1, nickname: "ben", suit: 1, ghost: false, settings: view.settings }]);
   // A room the old connection still held comes too late to count.
   socket.hear({ type: "room", room: { ...view, code: "ZZZZZ" } });
   expect(client.view?.code).toBe("ACDEF");

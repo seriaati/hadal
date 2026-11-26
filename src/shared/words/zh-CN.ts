@@ -1,4 +1,4 @@
-import { MAX_PLAYERS, type Mode, type Refusal } from "../room";
+import { MAX_GHOSTS, MAX_PLAYERS, type Mode, type Refusal } from "../room";
 import { NICKNAME_MAX, USERNAME_MAX } from "../types";
 import type { Words } from "./en";
 
@@ -240,6 +240,9 @@ export const zhCN: Words = {
     light: "点亮提灯",
     putOutSays: "熄灭提灯：取消准备",
     lightSays: "点亮提灯：准备",
+    becomeGhost: "成为幽灵",
+    becomeDiver: "成为潜水员",
+    joinAsGhost: "以幽灵身份加入",
     air: (seconds: number) => `${seconds} 秒氧气`,
     liveJudging: "实时评判",
     copied: "链接已复制",
@@ -291,6 +294,9 @@ export const zhCN: Words = {
     refusals: {
       "no-room": "没有这个代码的房间",
       full: `房间已满：每个房间最多 ${MAX_PLAYERS} 名潜水员`,
+      "ghosts-full": `房间已满，幽灵也满了：每个房间最多 ${MAX_GHOSTS} 个幽灵`,
+      "no-place": `潜水员已满：每个房间最多 ${MAX_PLAYERS} 名潜水员`,
+      "no-divers": "所有人都是幽灵：下潜至少需要一名潜水员",
       "name-taken": "名字已被使用",
       "bad-name": `名字最多 ${NICKNAME_MAX} 个字，只用文字或数字`,
       "bad-suit": "只有十种潜水服可选",

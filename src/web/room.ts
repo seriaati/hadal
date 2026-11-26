@@ -71,7 +71,7 @@ export class RoomClient {
   private comeBack(view: RoomView) {
     this.retries--;
     const you = view.players.find((player) => player.id === view.you)!;
-    this.write(this.open(), { type: "back", code: view.code, id: view.you, nickname: you.nickname, suit: you.suit, settings: view.settings });
+    this.write(this.open(), { type: "back", code: view.code, id: view.you, nickname: you.nickname, suit: you.suit, ghost: you.ghost, settings: view.settings });
   }
 
   private open(): WebSocket {

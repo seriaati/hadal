@@ -1,4 +1,4 @@
-import { AIR_MAX, AIR_MIN, BAR_FULL, CHAT_EVERY, CHAT_MAX, HEARTS, MODES, ROOM_CODE_LENGTH, SUITS, type Gone, type Refusal, type RoomPlayer, type RoomSettings, type RoomView } from "../../shared/room";
+import { AIR_MAX, AIR_MIN, BAR_FULL, CHAT_EVERY, CHAT_MAX, HEARTS, MAX_PLAYERS, MODES, ROOM_CODE_LENGTH, SUITS, type Gone, type Refusal, type RoomPlayer, type RoomSettings, type RoomView } from "../../shared/room";
 import type { Language } from "../../shared/language";
 import { NICKNAME_MAX, type PackSummary } from "../../shared/types";
 import { currentLanguage, t } from "../language";
@@ -21,13 +21,17 @@ export function codeProblem(code: string): string | undefined {
 }
 
 /**
- * Where a refusal is said: under the field it is about, before the last line, in the room's set-up, under "Copy the link"
- * or under "Start the dive"; or over the player's own diver, in the place of what they said.
+ * Where a refusal is said: under the field it is about, before the last line, in the room's set-up, under "Copy the link",
+ * under "Start the dive" or under the line that makes the player a ghost or a diver; or over the player's own diver, in the
+ * place of what they said.
  */
-type Where = "code" | "name" | "end" | "settings" | "copy" | "start" | "said";
+type Where = "code" | "name" | "end" | "settings" | "copy" | "start" | "ghost" | "said";
 const REFUSALS: Record<Refusal, Where> = {
   "no-room": "code",
   full: "code",
+  "ghosts-full": "ghost",
+  "no-place": "ghost",
+  "no-divers": "start",
   "name-taken": "name",
   "bad-name": "name",
   "bad-suit": "end",
@@ -106,6 +110,8 @@ export class MultiplayerPanel {
   private copiedAt = -Infinity;
   /** The code of the room whose link opened the game, until it is joined. */
   private linked = "";
+  /** Every diver's place in the room the player tried to join was taken: they may join it as a ghost. */
+  private full = false;
   /** Each diver's hearts in the dive, as the server last said. */
   private hearts = new Map<number, number>();
   /** The player whose step the host has open, and which of "Transfer host", "Remove" and "Ban" one more press does. */
@@ -120,7 +126,7 @@ export class MultiplayerPanel {
   private spokeAt = -Infinity;
   private joinedAt = -Infinity;
   /** Divers who have just gone out of the room, as they were last seen, how they went and when, in seconds. */
-  private ghosts: { crew: Crew; how: Gone; at: number }[] = [];
+  private departing: { crew: Crew; how: Gone; at: number }[] = [];
   /** The divers as last shown, so that one who goes is seen off from where they were. */
   private shown: Crew[] = [];
   /** The room's host as the server last said, and the last time the crown passed: to whom, from whom, and when. */
@@ -232,29 +238,29 @@ export class MultiplayerPanel {
     }
     if (!this.ui.holds(this.first)) return null;
     if (!view) return [{ slot: 0, suit: this.suit, name: "", lit: true, focus: true, depth: 0 }];
-    // The host has no ready of their own: starting the dive is it.
+    // The host has no ready of their own: starting the dive is it. Ghosts hang on no line, and drift by the boat after the divers.
     const last = (id: number) => view.last?.divers.find((diver) => diver.id === id)?.depth;
-    return this.place(
-      view.players.map((player, slot) => ({ slot, suit: player.suit, name: player.nickname, lit: player.host || player.ready, focus: player.id === view.you, depth: 0, host: player.host, muted: player.muted, crowned: this.crownedOf(player.id), you: player.id === view.you, lastDepth: last(player.id), called: this.calledOf(player), spoken: this.spoken.get(player.id) ?? 0, joined: player.id === view.you ? performance.now() / 1000 - this.joinedAt : undefined })),
-    );
+    const shown = (player: RoomPlayer, slot: number): Crew => ({ slot, suit: player.suit, name: player.nickname, lit: !player.ghost && (player.host || player.ready), focus: player.id === view.you, depth: 0, host: player.host, muted: player.muted, crowned: this.crownedOf(player.id), you: player.id === view.you, lastDepth: player.ghost ? undefined : last(player.id), called: player.ghost ? undefined : this.calledOf(player), spoken: this.spoken.get(player.id) ?? 0, joined: player.id === view.you ? performance.now() / 1000 - this.joinedAt : undefined, ghost: player.ghost || undefined });
+    const divers = this.place(view.players.filter((player) => !player.ghost).map(shown));
+    return [...divers, ...view.players.filter((player) => player.ghost).map(shown)];
   }
 
   /** Each diver's place along the boat: one going keeps theirs until they are gone, and those after them then slide over. */
   private place(crew: Crew[]): Crew[] {
     const now = performance.now() / 1000;
-    this.ghosts = this.ghosts.filter((ghost) => now - ghost.at < GOING_SECONDS[ghost.how]);
+    this.departing = this.departing.filter((one) => now - one.at < GOING_SECONDS[one.how]);
     const order = [...crew];
-    for (const ghost of this.ghosts.toSorted((a, b) => a.crew.slot - b.crew.slot)) {
-      order.splice(Math.min(ghost.crew.slot, order.length), 0, { ...ghost.crew, going: { how: ghost.how, t: now - ghost.at } });
+    for (const one of this.departing.toSorted((a, b) => a.crew.slot - b.crew.slot)) {
+      order.splice(Math.min(one.crew.slot, order.length), 0, { ...one.crew, going: { how: one.how, t: now - one.at } });
     }
     return (this.shown = order.map((diver, slot) => ({ ...diver, slot })));
   }
 
   /** Another player went out of the room: their diver is seen going. */
-  private ghost(id: number, how: Gone) {
+  private seeOff(id: number, how: Gone) {
     const name = this.client.view?.players.find((player) => player.id === id)?.nickname;
     const diver = this.shown.find((one) => one.name === name && !one.going);
-    if (diver) this.ghosts.push({ crew: { ...diver, focus: false, depthLabel: false, host: false, crowned: undefined, called: undefined }, how, at: performance.now() / 1000 });
+    if (diver) this.departing.push({ crew: { ...diver, focus: false, depthLabel: false, host: false, crowned: undefined, called: undefined }, how, at: performance.now() / 1000 });
   }
 
   /** One still not ready blinks red for a while after the host calls; lighting their lantern stops it. */
@@ -279,6 +285,7 @@ export class MultiplayerPanel {
 
   private open(step: () => Step) {
     this.refused = null;
+    this.full = false;
     this.note = "";
     this.ui.go(step);
   }
@@ -395,7 +402,7 @@ export class MultiplayerPanel {
   }
 
   private hear(message: Heard) {
-    if (message.type === "gone") return this.ghost(message.id, message.how);
+    if (message.type === "gone") return this.seeOff(message.id, message.how);
     if (message.type === "called") return this.call();
     if (message.type === "chat") return this.heard(message.id, message.text);
     // What was refused stays with the player, in the place of what they meant to say.
@@ -473,6 +480,7 @@ export class MultiplayerPanel {
       this.changing = false;
       const where = REFUSALS[message.reason];
       this.refused = [where, t().rooms.refusals[message.reason]];
+      if (message.reason === "full") this.full = true;
       if (where === "code" || where === "name") this.ui.focus(where);
     } else if (entering) {
       this.refused = ["end", t().noAnswer];
@@ -583,8 +591,9 @@ export class MultiplayerPanel {
     return this.refused?.[0] === where ? [{ kind: "note", text: this.refused[1], bad: true }] : [];
   }
 
-  private enter(how: "create" | "join") {
+  private enter(how: "create" | "join", ghost = false) {
     this.refused = null;
+    this.full = false;
     const code = this.ui.value("code").trim();
     const wrong = how === "join" ? codeProblem(code) : undefined;
     if (wrong) {
@@ -594,7 +603,7 @@ export class MultiplayerPanel {
     }
     this.busy = true;
     const you = { nickname: this.ui.value("name").trim(), suit: this.suit };
-    this.client.send(how === "create" ? { type: "create", ...you, settings: rememberedSettings() } : { type: "join", code, ...you });
+    this.client.send(how === "create" ? { type: "create", ...you, settings: rememberedSettings() } : { type: "join", code, ...you, ghost });
   }
 
   /** Without a secure page (plain http to another machine) browsers keep `navigator.clipboard` closed. */
@@ -658,6 +667,8 @@ export class MultiplayerPanel {
       ...this.refusal("code"),
       ...this.you(),
       { kind: "press", id: "enter", label: t().rooms.joinIt, press: () => this.enter("join") },
+      ...(this.full || this.refused?.[0] === "ghost" ? [{ kind: "press", id: "ghost", label: t().rooms.joinAsGhost, press: () => this.enter("join", true) } as Part] : []),
+      ...this.refusal("ghost"),
     ],
   });
 
@@ -666,7 +677,13 @@ export class MultiplayerPanel {
     const words = t().rooms;
     if (!view) return { title: words.leave, exit: true, rows: [] };
     const you = view.players.find((player) => player.id === view.you)!;
-    const waiting = view.players.filter((player) => !player.host && !player.ready).map((player) => player.nickname);
+    const divers = view.players.filter((player) => !player.ghost);
+    const waiting = divers.filter((player) => !player.host && !player.ready).map((player) => player.nickname);
+    const free = divers.length < MAX_PLAYERS;
+    const haunt = (ghost: boolean) => {
+      this.refused = null;
+      this.client.send({ type: "ghost", ghost });
+    };
     // A diver is pressed where they hang: one's own opens their suit, and to the host another's opens what the host can do to them.
     const world = view.players.flatMap((player): Diver[] => {
       const id = `player:${player.id}`;
@@ -694,6 +711,9 @@ export class MultiplayerPanel {
       const dim = waiting.length > 0 || this.client.offline;
       rows.push({ kind: "action", id: "act", label: words.start, says, icon: dim ? { rows: DESCEND_DIM } : { rows: DESCEND, glow: "a" }, dim, press: () => this.start() });
       rows.push(...this.refusal("start"));
+    } else if (you.ghost) {
+      // While every place is taken it is dim, and a press says so.
+      rows.push({ kind: "action", id: "act", label: words.becomeDiver, dim: !free || this.client.offline, press: () => haunt(false) });
     } else {
       rows.push({
         kind: "action",
@@ -705,6 +725,9 @@ export class MultiplayerPanel {
         press: () => this.client.send({ type: "ready", ready: !you.ready }),
       });
     }
+    if (!you.ghost) rows.push({ kind: "press", id: "ghost", label: words.becomeGhost, press: () => haunt(true) });
+    else if (you.host) rows.push({ kind: "press", id: "ghost", label: words.becomeDiver, quiet: !free, press: () => haunt(false) });
+    rows.push(...this.refusal("ghost"));
     if (this.client.offline) rows.push({ kind: "note", text: words.reconnecting, bad: true });
     const copy = () => this.copy(view.code);
     const copied = performance.now() - this.copiedAt < COPIED_FOR;

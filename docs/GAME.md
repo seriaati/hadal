@@ -27,7 +27,12 @@ A pack whose prompt cannot be written gives one of its own instead, and a day th
 its prompts are written picks them all from the packs at random, as developer mode always does.
 Multiplayer is private rooms joined by
 a code or a link. A player joins in the suit they chose, or in one nobody in the room wears yet if
-it is taken, and in the room may press their own diver to change it. A new room starts with the
+it is taken, and in the room may press their own diver to change it. A room holds six divers and
+up to ten ghosts besides them. Between dives a diver may become a ghost, which frees their place,
+and a ghost becomes a diver again whenever a place is free; one who finds every place taken may
+join as a ghost. Ghosts dive in none of the dives and watch them all. They talk, may be the host
+(and start dives they do not dive in), and are kicked, banned or muted like anyone; in the room
+they drift faintly between the lines or under the divers, on no line. A new room starts with the
 settings of the last room its host's browser set up. A player whose connection drops keeps their
 place for 30 seconds while the page connects again; if the server has restarted meanwhile (a new
 version), the room opens again under its code, without the dive that was under way. A page left

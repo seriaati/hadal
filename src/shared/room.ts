@@ -1,6 +1,8 @@
 import type { GamePrompt, Verdict } from "./types";
 
+/** The divers a room holds, and the ghosts besides them, who only watch every dive. */
 export const MAX_PLAYERS = 6;
+export const MAX_GHOSTS = 10;
 export const ROOM_CODE_LENGTH = 5;
 /** A suit is a colour index below this. */
 export const SUITS = 10;
@@ -48,8 +50,8 @@ export const MAX_HEARTS = 5;
 /** The points that fill the bar, by how easily hearts are won. At every level one rare answer alone is not a heart. */
 export const BAR_FULL: Record<Hearts, number> = { easy: 175, medium: 275, hard: 400 };
 
-/** `muted`: the host has stopped them talking to the room. */
-export type RoomPlayer = { id: number; nickname: string; suit: number; ready: boolean; host: boolean; muted: boolean };
+/** `muted`: the host has stopped them talking to the room. `ghost`: they take no place among the divers, and only watch the dives. */
+export type RoomPlayer = { id: number; nickname: string; suit: number; ready: boolean; host: boolean; muted: boolean; ghost: boolean };
 /**
  * A diver of the dive under way: their depth in metres, and the lamps on their line. In "longest" and "chaos" also
  * their hearts, the points in their bar, and whether they are out of the dive (no hearts left).
@@ -108,11 +110,13 @@ export type RoomView = {
 export type ClientMessage =
   /** `settings` are those the host's browser remembers from their last room; the server keeps what still holds of them. */
   | { type: "create"; nickname: string; suit: number; settings?: Partial<RoomSettings> }
-  | { type: "join"; code: string; nickname: string; suit: number }
+  | { type: "join"; code: string; nickname: string; suit: number; ghost?: boolean }
   /** The page's connection closed, and it takes its place in the room back: player `id`, or if the room is gone, as one of these settings. */
-  | { type: "back"; code: string; id: number; nickname: string; suit: number; settings: Partial<RoomSettings> }
+  | { type: "back"; code: string; id: number; nickname: string; suit: number; ghost?: boolean; settings: Partial<RoomSettings> }
   | { type: "ready"; ready: boolean }
   | { type: "suit"; suit: number }
+  /** Between dives, the player becomes a ghost, or a diver again if a place is free. */
+  | { type: "ghost"; ghost: boolean }
   | { type: "settings"; settings: Partial<RoomSettings> }
   | { type: "start" }
   | { type: "typing"; text: string }
@@ -126,8 +130,14 @@ export type ClientMessage =
   /** Asks the server to answer at once, so the page can tell a connection that still works from one that has silently broken. */
   | { type: "ping" };
 
-/** `gives-answer`: what a player said in a dive names an answer to the prompt that nobody has taken yet. `muted`: the host has stopped them talking. */
-export type Refusal = "no-room" | "full" | "name-taken" | "bad-name" | "bad-suit" | "not-host" | "bad-settings" | "no-packs" | "no-prompts" | "banned" | "gives-answer" | "muted";
+/**
+ * `gives-answer`: what a player said in a dive names an answer to the prompt that nobody has taken yet. `muted`: the host has
+ * stopped them talking. `full`: every diver's place is taken; `ghosts-full`: so is every ghost's; `no-place`: a ghost cannot
+ * become a diver while every place is taken. `no-divers`: everyone in the room is a ghost.
+ */
+export type Refusal =
+  | "no-room" | "full" | "ghosts-full" | "no-place" | "name-taken" | "bad-name" | "bad-suit" | "not-host" | "bad-settings" | "no-packs" | "no-prompts" | "no-divers"
+  | "banned" | "gives-answer" | "muted";
 /** How a player went out of a room: of their own accord, or taken out by the host, with or without a ban. */
 export type Gone = "left" | "removed" | "banned";
 /**

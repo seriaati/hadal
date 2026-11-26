@@ -68,7 +68,7 @@ test("creating a room makes its host, with a code and the settings a room starts
   await say(host, { type: "create", nickname: " Ana ", suit: 3 });
   const view = seen(host);
   expect(view.code).toMatch(/^[ACDEFGHJKLMNPRSTUWYZ]{5}$/);
-  expect(view.players).toEqual([{ id: view.you, nickname: "ana", suit: 3, ready: false, host: true, muted: false }]);
+  expect(view.players).toEqual([{ id: view.you, nickname: "ana", suit: 3, ready: false, host: true, muted: false, ghost: false }]);
   expect(view.settings).toEqual(DEFAULT_SETTINGS);
 });
 
@@ -110,6 +110,19 @@ test("a room holds six", async () => {
   await say(seventh, { type: "join", code, nickname: "pal6", suit: 0 });
   expect(seventh.sent).toEqual([{ type: "refused", reason: "full" }]);
   expect(names(host)).toHaveLength(6);
+});
+
+test("a full room takes up to ten ghosts besides its six divers", async () => {
+  const { host, code } = await room(null, "pal1", "pal2", "pal3", "pal4", "pal5");
+  for (let i = 0; i < 10; i++) {
+    const ghost = member();
+    await say(ghost, { type: "join", code, nickname: `ghost${i}`, suit: 0, ghost: true });
+    expect(seen(ghost).players.find((player) => player.id === seen(ghost).you)).toMatchObject({ ghost: true, suit: 0 });
+  }
+  const last = member();
+  await say(last, { type: "join", code, nickname: "ghost10", suit: 0, ghost: true });
+  expect(last.sent).toEqual([{ type: "refused", reason: "ghosts-full" }]);
+  expect(seen(host).players.filter((player) => player.ghost)).toHaveLength(10);
 });
 
 test("a connection is in one room at a time", async () => {
@@ -233,7 +246,7 @@ test("the host mutes another player, who cannot talk until unmuted or crowned", 
   expect(host.sent.at(-1)).toEqual({ type: "chat", id: benId, text: "thanks" });
   await say(host, { type: "mute", id: benId, muted: true });
   await say(host, { type: "host", id: benId });
-  expect(seen(ben!).players.find((player) => player.id === benId)).toMatchObject({ host: true, muted: false });
+  expect(seen(ben!).players.find((player) => player.id === benId)).toMatchObject({ host: true, muted: false, ghost: false });
   leave(host);
   leave(ben!);
 });
@@ -611,3 +624,55 @@ test("a host who leaves during a dive is taken out of it, and the others dive on
   leave(cal!);
 });
 
+/** A prompt six divers can all answer. */
+const seven: Prompt = { id: "seven", text: "Name a sea", answers: ["Baltic", "North", "Red", "Black", "Dead", "Coral", "Java"].map((text) => ({ text, tier: "common" as const })) };
+
+test("between dives a player becomes a ghost, freeing their place, and a diver again only while a place is free", async () => {
+  usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: [seven] }]));
+  const { host, others, code } = await room(null, "pal1", "pal2", "pal3", "pal4", "pal5");
+  const pal1 = others[0]!;
+  await say(pal1, { type: "ready", ready: true });
+  await say(pal1, { type: "ghost", ghost: true });
+  expect(seen(host).players[1]).toMatchObject({ nickname: "pal1", ghost: true, ready: false });
+  // A ghost has no lantern to light.
+  await say(pal1, { type: "ready", ready: true });
+  expect(seen(host).players[1]!.ready).toBe(false);
+  // Their place is free: a newcomer takes it, in the suit pal1 wore, and pal1 cannot come back.
+  const newcomer = member();
+  await say(newcomer, { type: "join", code, nickname: "pal6", suit: 1 });
+  expect(seen(newcomer).players.at(-1)).toMatchObject({ ghost: false, suit: 1 });
+  await say(pal1, { type: "ghost", ghost: false });
+  expect(pal1.sent.at(-1)).toEqual({ type: "refused", reason: "no-place" });
+  // Once a place is free again they come back, in a suit no diver wears.
+  leave(newcomer);
+  await say(pal1, { type: "ghost", ghost: false });
+  const back = seen(host).players.find((player) => player.nickname === "pal1")!;
+  expect(back.ghost).toBe(false);
+  expect(seen(host).players.filter((player) => !player.ghost && player.suit === back.suit)).toHaveLength(1);
+  // Nobody changes over during a dive.
+  for (const guest of others) await say(guest, { type: "ready", ready: true });
+  await say(host, { type: "start" });
+  expect(seen(host).dive).not.toBeNull();
+  await say(pal1, { type: "ghost", ghost: true });
+  expect(seen(host).players.find((player) => player.nickname === "pal1")!.ghost).toBe(false);
+  leave(host);
+});
+
+test("only the divers dive: ghosts are not waited for and only watch, and a room of ghosts cannot dive", async () => {
+  usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: [seven] }]));
+  const { host, others } = await room(null, "ben", "cal");
+  const [ben, cal] = others as [Fake, Fake];
+  await say(host, { type: "ghost", ghost: true });
+  await say(cal, { type: "ghost", ghost: true });
+  await say(host, { type: "start" });
+  expect(host.sent.at(-1)).toEqual({ type: "called" });
+  await say(ben, { type: "ghost", ghost: true });
+  await say(host, { type: "start" });
+  expect(host.sent.at(-1)).toEqual({ type: "refused", reason: "no-divers" });
+  // The host, a ghost, still starts the dive, of the divers alone.
+  await say(ben, { type: "ghost", ghost: false });
+  await say(ben, { type: "ready", ready: true });
+  await say(host, { type: "start" });
+  expect(seen(host).dive!.order).toEqual([seen(ben).you]);
+  leave(host);
+});

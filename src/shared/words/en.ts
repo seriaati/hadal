@@ -1,4 +1,4 @@
-import { MAX_PLAYERS, type Hearts, type Mode, type Refusal } from "../room";
+import { MAX_GHOSTS, MAX_PLAYERS, type Hearts, type Mode, type Refusal } from "../room";
 import { NICKNAME_MAX, USERNAME_MAX } from "../types";
 
 /**
@@ -264,6 +264,10 @@ export const en = {
     light: "Light the lantern",
     putOutSays: "Put the lantern out: not ready",
     lightSays: "Light the lantern: ready",
+    /** A ghost takes no place among the divers and only watches the dives. */
+    becomeGhost: "Become a ghost",
+    becomeDiver: "Become a diver",
+    joinAsGhost: "Join as a ghost",
     air: (seconds: number) => `${seconds} s of air`,
     liveJudging: "Live judging",
     copied: "Link copied",
@@ -327,6 +331,9 @@ export const en = {
     refusals: {
       "no-room": "no room has that code",
       full: `that room is full: a room holds ${MAX_PLAYERS} divers`,
+      "ghosts-full": `that room is full, ghosts too: a room holds ${MAX_GHOSTS} ghosts`,
+      "no-place": `every place is taken: a room holds ${MAX_PLAYERS} divers`,
+      "no-divers": "everyone is a ghost: a dive needs a diver",
       "name-taken": "name is taken",
       "bad-name": `a name is up to ${NICKNAME_MAX} letters or digits`,
       "bad-suit": "that suit is not one of the ten",

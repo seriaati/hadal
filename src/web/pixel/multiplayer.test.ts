@@ -5,7 +5,7 @@ import type { AccountPanel } from "./account";
 import { MultiplayerPanel, codeProblem } from "./multiplayer";
 import type { Ui } from "./ui";
 
-const ui = { close() {}, go() {}, back() {}, top: null, holds: () => false, value: () => "" } as unknown as Ui;
+const ui = { close() {}, go() {}, back() {}, focus() {}, top: null, holds: () => false, value: () => "" } as unknown as Ui;
 const sound = { heart() {}, lantern() {} } as unknown as Sound;
 
 const dive = (air: number): DiveView => ({
@@ -27,7 +27,7 @@ const dive = (air: number): DiveView => ({
 const room = (dive: DiveView | null): RoomView => ({
   code: "ACDEF",
   you: 0,
-  players: [{ id: 0, nickname: "ana", suit: 0, ready: true, host: true, muted: false }, { id: 1, nickname: "ben", suit: 1, ready: true, host: false, muted: false }],
+  players: [{ id: 0, nickname: "ana", suit: 0, ready: true, host: true, muted: false, ghost: false }, { id: 1, nickname: "ben", suit: 1, ready: true, host: false, muted: false, ghost: false }],
   settings: { ...DEFAULT_SETTINGS, builtIn: [] },
   dive,
   last: null,
@@ -132,4 +132,14 @@ test("a diver whose turn put them out of the dive is seen dying through the verd
 
   hear(room({ ...ending, turn: 1, verdict: null }));
   expect(ana()).toMatchObject({ dying: undefined, out: true, focus: false });
+});
+
+test("a room whose every place is taken may be joined as a ghost", () => {
+  const panel = new MultiplayerPanel(ui, {} as AccountPanel, sound);
+  const lines = () => panel["join"]().rows.flatMap((row) => ("label" in row ? [row.label] : []));
+  expect(lines()).not.toContain("Join as a ghost");
+  panel["hear"]({ type: "refused", reason: "full" });
+  expect(lines()).toContain("Join as a ghost");
+  panel["hear"]({ type: "refused", reason: "ghosts-full" });
+  expect(panel["join"]().rows).toContainEqual({ kind: "note", text: "that room is full, ghosts too: a room holds 10 ghosts", bad: true });
 });

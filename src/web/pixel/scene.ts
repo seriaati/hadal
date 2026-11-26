@@ -177,6 +177,8 @@ export type Crew = {
   spoken?: number;
   /** The player's own diver: seconds since they made or joined the room, while how to talk is shown over them. */
   joined?: number;
+  /** In a room before a dive: they only watch the dives, and drift faintly by the boat on no line; `slot` counts the ghosts. */
+  ghost?: boolean;
 };
 /** What a diver of a room last said, `age` seconds ago, by the name they are hung by. */
 export type Chat = { name: string; text: string; age: number; bad?: boolean };
@@ -233,6 +235,14 @@ function dying(t: number, hidden: number): { dy: number; lit: boolean; limp: boo
   // Done a little before the next turn, which the server sends a moment after this page's clock says.
   const q = Math.max(0, Math.min(1, (t - PAUSE_SECONDS) / (DEATH_SECONDS - 0.3)));
   return { dy: sag - Math.round((hidden + sag) * q * q), lit, limp: t >= LIGHTS_OUT };
+}
+
+/** A ghost of a room: their diver with the lantern out, two steps darker, a third of their pixels gone and shimmering. */
+function spectral(rows: string[], time: number): string[] {
+  const shift = Math.floor(time * 3);
+  return rows.map((row, j) =>
+    row.replace(/./g, (char, i: number) => (char === "." || dither(i + shift, j, 0.35) ? "." : (DEEPER[DEEPER[char] ?? char] ?? char))),
+  );
 }
 
 /** A diver fading into the dark: a few steps darker first, then a growing share of their pixels gone into the water. */
@@ -514,16 +524,17 @@ export class Scene {
 
     // On a wide screen as many as fit beside the words; in a dive on a narrow one, the diver in focus and the one before.
     // A chaos diver whose air ran out has a dead lantern.
-    const members: Crew[] = crew?.map((diver) => ({ ...diver, slot: this.slots.get(diver.name) ?? diver.slot })) ?? [
+    const members: Crew[] = crew?.filter((diver) => !diver.ghost).map((diver) => ({ ...diver, slot: this.slots.get(diver.name) ?? diver.slot })) ?? [
       { slot: 0, suit: 0, name: "", lit: game.phase !== "lost", focus: true, depth: game.depth, lamps: game.lamps },
     ];
-    const focus = members.find((diver) => diver.focus) ?? members[0]!;
+    // In a room of ghosts alone, nobody hangs on a line.
+    const focus = members.find((diver) => diver.focus) ?? members[0] ?? { slot: 0 };
     const lineX = (slot: number) => Math.round(CHAIN_X + slot * this.gap - across);
     // In a room the lines are longer, and on a narrow screen every other diver hangs lower still, so that names have
     // room; sliding between places, smoothly.
     const staggered = (slot: number) => Math.round(this.spread * (LONGER + (wide ? 0 : (STAGGER * (1 - Math.cos(Math.PI * slot))) / 2)));
     const near = (slot: number, to: number) => Math.round(slot) === Math.round(to);
-    const lines = members
+    const hanging = members
       .filter((diver) => (this.lobby || wide || !this.turn ? lineX(diver.slot) > -22 && lineX(diver.slot) + 21 <= (wide && !this.lobby ? 172 : W) : near(diver.slot, focus.slot) || near(diver.slot, focus.slot - 1)))
       .map((diver) => {
         const depth = crew ? this.shown.get(diver.name)! : this.depth;
@@ -540,10 +551,29 @@ export class Scene {
         const lit = diver.lit && (!death || death.lit) && (!away || (away.lit && y + 17 > screenY(SURFACE_ROW)));
         return { ...diver, x, y, bob, depth, lit, fade: away?.fade ?? 0, lamps: hang(marks, diver.lamps ?? [], depth, x) };
       });
+    // The ghosts of a room drift where there is open water: between the lines on a wide screen, under the divers on a narrow one.
+    const belowDivers = Math.max(0, ...hanging.map((line) => line.y - line.bob + 34));
+    const gaps = MAX_PLAYERS - 1;
+    const per = Math.max(1, Math.floor((W - 4) / 30));
+    /** How wide a ghost's name may be: the water between the lines, or between one ghost and the next. */
+    const ghostRoom = wide ? Math.round(this.gap) - 26 : Math.floor((W - 4) / per) - 3;
+    const ghosts = !this.lobby
+      ? []
+      : (crew ?? [])
+          .filter((diver) => diver.ghost)
+          .map((ghost, k) => {
+            const drift = Math.round(2 * Math.sin(time * 0.5 + k * 2.3));
+            const bob = Math.round(Math.sin(time * 0.8 + k * 1.7));
+            const [x, y] = wide
+              ? [lineX(k % gaps) + Math.round(this.gap / 2) + Math.floor(k / gaps) * 8, screenY(0) - held(game) + staggered(k % gaps) + 10 + Math.floor(k / gaps) * 14]
+              : [2 + Math.round((((k % per) + 0.5) * (W - 4)) / per) - 10, belowDivers + 10 + Math.floor(k / per) * 36];
+            return { ...ghost, x: x + drift, y: y + bob, bob, depth: 0, lit: false, fade: 0, lamps: [] as ReturnType<typeof hang> };
+          });
+    const lines = [...hanging, ...ghosts];
     const lamps = lines.flatMap((line) => line.lamps);
     // Without the bob, or the top of the dock would bob with the divers.
     this.floor = Math.max(0, ...lines.map((line) => line.y - line.bob + 34));
-    const lead = lines.find((line) => line.focus);
+    const lead = hanging.find((line) => line.focus);
     if (lead) this.focus = { x: lead.x + 10, y: lead.y + 12 };
     const sub = vessel(game);
 
@@ -805,7 +835,7 @@ export class Scene {
     }
 
     frame.block = 166;
-    for (const line of lines) {
+    for (const line of hanging) {
       const x = line.x;
       const snapped = line.going?.how === "banned" && line.going.t >= SNAP;
       for (let y = Math.max(0, snapped ? line.y + 2 : surface); y < H; y++) {
@@ -906,7 +936,9 @@ export class Scene {
 
     // The one in focus is drawn in front. One who is out has been hauled up.
     frame.block = 178;
-    for (const { x, y, suit, lit, called, fade, going: away, dying: dead } of lines.filter((line) => !line.out).sort((a, b) => Number(a.focus) - Number(b.focus))) {
+    // Ghosts drift behind the divers: no line holds them, and they carry no lantern.
+    for (const ghost of ghosts) frame.sprite(spectral(WORN[ghost.suit]![0]!, time), ghost.x, ghost.y);
+    for (const { x, y, suit, lit, called, fade, going: away, dying: dead } of hanging.filter((line) => !line.out).sort((a, b) => Number(a.focus) - Number(b.focus))) {
       // One hauled up goes into the boat, under its hull.
       const top = (away && away.how !== "banned") || dead !== undefined ? surface + 1 : -Infinity;
       const draw = (rows: string[], left: number, from: number, glow?: string) =>
@@ -983,7 +1015,7 @@ export class Scene {
       const under = (line.y < (tag ? 18 : 10) && line.dying === undefined) || !!sub;
       const y = under ? line.y + 29 : line.y - 9;
       frame.emit = line.lit ? 70 : 0;
-      const name = this.lobby ? clip(line.name, room - crown) : line.name;
+      const name = this.lobby ? clip(line.name, (line.ghost ? ghostRoom : room) - crown) : line.name;
       // The diver in focus has the mark before the name, which moves over only if the screen's edge leaves it no room.
       const chosen = this.lobby && this.chosen === line.name;
       const x = Math.max(chosen ? 8 : 2, at(crown + measure(tiny, name) + hearts));
