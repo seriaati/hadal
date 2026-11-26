@@ -124,6 +124,9 @@ function enter(member: Member, message: { nickname: string; suit: number; ghost?
       : { code: to.code ?? newCode(), players: [], settings: to.settings, nextId: 0, dive: null, last: null, banned: new Set(), asked: new Set(), asking: null };
   if (!room) return "no-room";
   if (marks(member).some((mark) => room.banned.has(mark))) return "banned";
+  // One who closed the page and opened it again has no id to come back with: their name and browser say whose place it is.
+  const kept = room.players.find((player) => player.nickname === nickname && player.member.closed && player.member.browser === member.browser);
+  if (kept) return retake(member, room, kept);
   const ghost = message.ghost === true;
   if (ghost ? room.players.length - diversOf(room).length >= MAX_GHOSTS : diversOf(room).length >= MAX_PLAYERS) return ghost ? "ghosts-full" : "full";
   if (room.players.some((player) => player.nickname === nickname)) return "name-taken";
@@ -340,20 +343,24 @@ async function back(member: Member, message: Extract<ClientMessage, { type: "bac
   if (room) {
     // The server may not have noticed yet that the old connection closed: the browser's cookie says whose place it is.
     const player = room.players.find((one) => one.id === message.id && one.member.browser === member.browser);
-    if (!player) return enter(member, message, code);
-    clearTimeout(away.get(player.member));
-    away.delete(player.member);
-    places.delete(player.member);
-    player.member = member;
-    places.set(member, room);
-    log(room, player, "came back");
-    return tell(room);
+    return player ? retake(member, room, player) : enter(member, message, code);
   }
   if (code.length !== ROOM_CODE_LENGTH || [...code].some((letter) => !LETTERS.includes(letter))) return "no-room";
   const settings = await remembered(member, message.settings);
   if (places.has(member) || member.closed) return;
   // Another player may have opened it again meanwhile.
   return enter(member, message, rooms.has(code) ? code : { code, settings });
+}
+
+/** A new connection takes the place a player kept in the room, as it was: host, ghost, suit and all. */
+function retake(member: Member, room: Room, player: Player) {
+  clearTimeout(away.get(player.member));
+  away.delete(player.member);
+  places.delete(player.member);
+  player.member = member;
+  places.set(member, room);
+  log(room, player, "came back");
+  tell(room);
 }
 
 /** When the host goes, the crown passes to the player after them. When the last player goes, so does the room. */

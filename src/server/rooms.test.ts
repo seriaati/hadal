@@ -175,6 +175,28 @@ test("a player whose connection closes keeps their place, and takes it back from
   leave(host);
 });
 
+test("a player who closed the page joins again under their name and takes their place back, the crown with it", async () => {
+  const { host, others: [ben], code } = await room(null, "ben");
+  const id = seen(host).you;
+  // While their old page is still connected, a second page of the same browser cannot take its place.
+  const second = member(null, host.browser);
+  await say(second, { type: "join", code, nickname: "host", suit: 0 });
+  expect(second.sent.at(-1)).toEqual({ type: "refused", reason: "name-taken" });
+  lost(host);
+  const stranger = member();
+  await say(stranger, { type: "join", code, nickname: "host", suit: 0 });
+  expect(stranger.sent.at(-1)).toEqual({ type: "refused", reason: "name-taken" });
+  const again = member(null, host.browser);
+  await say(again, { type: "join", code, nickname: "host", suit: 0 });
+  expect(seen(again).you).toBe(id);
+  expect(seen(ben!).players).toMatchObject([{ nickname: "host", host: true }, { nickname: "ben", host: false }]);
+  // The old connection's place is the new one's: closing it again does nothing more.
+  lost(host);
+  leave(again);
+  expect(seen(ben!).players).toMatchObject([{ nickname: "ben", host: true }]);
+  leave(ben!);
+});
+
 test("a ping is answered at once, in a room or out of one", async () => {
   const stranger = member();
   await say(stranger, { type: "ping" });
