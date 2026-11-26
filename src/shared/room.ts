@@ -115,8 +115,8 @@ export type ClientMessage =
   | { type: "back"; code: string; id: number; nickname: string; suit: number; ghost?: boolean; settings: Partial<RoomSettings> }
   | { type: "ready"; ready: boolean }
   | { type: "suit"; suit: number }
-  /** Between dives, the player becomes a ghost, or a diver again if a place is free. */
-  | { type: "ghost"; ghost: boolean }
+  /** Between dives, the player becomes a ghost, or a diver again if a place is free; with `id`, the host makes that player a ghost. */
+  | { type: "ghost"; ghost: boolean; id?: number }
   | { type: "settings"; settings: Partial<RoomSettings> }
   | { type: "start" }
   | { type: "typing"; text: string }

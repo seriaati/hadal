@@ -22,8 +22,8 @@ export function codeProblem(code: string): string | undefined {
 
 /**
  * Where a refusal is said: under the field it is about, before the last line, in the room's set-up, under "Copy the link",
- * under "Start the dive" or under the line that makes the player a ghost or a diver; or over the player's own diver, in the
- * place of what they said.
+ * under "Start the dive", or under the room's first lines when a change between ghost and diver is refused; or over the
+ * player's own diver, in the place of what they said.
  */
 type Where = "code" | "name" | "end" | "settings" | "copy" | "start" | "ghost" | "said";
 const REFUSALS: Record<Refusal, Where> = {
@@ -699,7 +699,7 @@ export class MultiplayerPanel {
       const id = `player:${player.id}`;
       if (player.id === you.id) return [{ kind: "diver", id, name: player.nickname, press: () => this.pickSuit(player), says: words.suitSays(player.nickname) }];
       if (!you.host) return [];
-      return [{ kind: "diver", id, name: player.nickname, press: () => this.pick(player), says: words.playerSays(player.nickname) }];
+      return [{ kind: "diver", id, name: player.nickname, press: () => this.pick(player), says: words.playerSays(player.nickname, true) }];
     });
     const { mode, air, hearts, judging } = view.settings;
     const hot = (...keys: (keyof RoomSettings)[]) => !!this.changed && performance.now() / 1000 - this.changed.at < HOT_SECONDS && keys.some((key) => this.changed!.keys.includes(key));
@@ -735,8 +735,7 @@ export class MultiplayerPanel {
         press: () => this.client.send({ type: "ready", ready: !you.ready }),
       });
     }
-    if (!you.ghost) rows.push({ kind: "press", id: "ghost", label: words.becomeGhost, press: () => haunt(true) });
-    else if (you.host) rows.push({ kind: "press", id: "ghost", label: words.becomeDiver, quiet: !free, press: () => haunt(false) });
+    if (you.ghost && you.host) rows.push({ kind: "press", id: "ghost", label: words.becomeDiver, quiet: !free, press: () => haunt(false) });
     rows.push(...this.refusal("ghost"));
     // A ghost has no diver to open what they say from, as a phone needs: this line does.
     if (you.ghost) rows.push({ kind: "press", id: "speak", label: words.sayIt, value: matchMedia("(pointer: coarse)").matches ? undefined : words.sayKey, press: () => this.ui.openChat("speak") });
@@ -882,6 +881,13 @@ export class MultiplayerPanel {
       this.ui.back();
       this.ui.openChat(`player:${you.id}`);
     };
+    const haunt = () => {
+      this.refused = null;
+      this.client.send({ type: "ghost", ghost: true });
+      this.ui.back();
+      // The diver this was opened from leaves the sea.
+      this.ui.focus("act");
+    };
     return {
       title: you.nickname,
       // Tab opens the chat here as in the room, as the line under the suit says.
@@ -890,6 +896,7 @@ export class MultiplayerPanel {
         { kind: "slider", id: "suit", label: t().rooms.suit, value: this.suit / (SUITS - 1), steps: SUITS - 1, colors: SUIT_COLORS, set },
         // The key that opens the chat, which a phone has none of.
         { kind: "press", id: "speak", label: t().rooms.sayIt, value: matchMedia("(pointer: coarse)").matches ? undefined : t().rooms.sayKey, press: speak },
+        { kind: "press", id: "ghost", label: t().rooms.becomeGhost, press: haunt },
       ],
     };
   };
@@ -925,7 +932,7 @@ export class MultiplayerPanel {
         .filter((player) => player.ghost)
         .map((player): Part =>
           you.host && player !== you
-            ? { kind: "press", id: `player:${player.id}`, label: player.nickname, says: words.playerSays(player.nickname), press: () => this.pick(player) }
+            ? { kind: "press", id: `player:${player.id}`, label: player.nickname, says: words.playerSays(player.nickname, false), press: () => this.pick(player) }
             : { kind: "press", id: `player:${player.id}`, label: player.nickname, quiet: true },
         ),
     };
@@ -941,6 +948,13 @@ export class MultiplayerPanel {
       this.client.send({ type: "host", id: player.id });
       this.ui.back();
     };
+    const haunt = () => {
+      this.refused = null;
+      this.client.send({ type: "ghost", ghost: true, id: player.id });
+      this.ui.back();
+      // Their diver, which this was opened from, leaves the sea.
+      this.ui.focus("act");
+    };
     return {
       title: player.nickname,
       rows: [
@@ -948,6 +962,7 @@ export class MultiplayerPanel {
         { kind: "press", id: "remove", label: this.doomed === "remove" ? sure : words.remove, danger: this.doomed === "remove", press: () => this.remove(player, false), left: () => (this.doomed = "") },
         { kind: "press", id: "ban", label: this.doomed === "ban" ? sure : words.ban, danger: this.doomed === "ban", press: () => this.remove(player, true), left: () => (this.doomed = "") },
         { kind: "press", id: "mute", label: player.muted ? words.unmute : words.mute, press: () => this.client.send({ type: "mute", id: player.id, muted: !player.muted }) },
+        ...(player.ghost ? [] : [{ kind: "press", id: "ghost", label: words.makeGhost, press: haunt } as Part]),
       ],
     };
   };

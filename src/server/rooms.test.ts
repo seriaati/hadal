@@ -658,6 +658,24 @@ test("between dives a player becomes a ghost, freeing their place, and a diver a
   leave(host);
 });
 
+test("the host may make another player a ghost, but not a diver, and nobody else may", async () => {
+  const { host, others } = await room(null, "ben", "cal");
+  const [ben, cal] = others as [Fake, Fake];
+  const [benId, calId] = [seen(ben).you, seen(cal).you];
+  const ghostly = (id: number) => seen(host).players.find((player) => player.id === id)!.ghost;
+  await say(cal, { type: "ghost", ghost: true, id: benId });
+  expect(ghostly(benId)).toBe(false);
+  await say(ben, { type: "ready", ready: true });
+  await say(host, { type: "ghost", ghost: true, id: benId });
+  expect(seen(host).players.find((player) => player.id === benId)).toMatchObject({ ghost: true, ready: false });
+  await say(host, { type: "ghost", ghost: false, id: benId });
+  expect(ghostly(benId)).toBe(true);
+  await say(cal, { type: "ghost", ghost: true });
+  await say(host, { type: "ghost", ghost: false, id: calId });
+  expect(ghostly(calId)).toBe(true);
+  leave(host);
+});
+
 test("only the divers dive: ghosts are not waited for and only watch, and a room of ghosts cannot dive", async () => {
   usePrompts(inEnglish([{ id: "seas", name: "Seas", prompts: [seven] }]));
   const { host, others } = await room(null, "ben", "cal");

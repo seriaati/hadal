@@ -253,16 +253,21 @@ function crown(member: Member, room: Room, id: number) {
   tell(room);
 }
 
-/** Between dives a player becomes a ghost, or a diver again while a place is free, with their lantern out. */
-function haunt(member: Member, room: Room, ghost: boolean): Refusal | void {
-  const player = room.players.find((one) => one.member === member)!;
+/**
+ * Between dives a player becomes a ghost, or a diver again while a place is free, with their lantern out. The host may
+ * make another player, `id`, a ghost, but not a diver: that is theirs to choose.
+ */
+function haunt(member: Member, room: Room, ghost: boolean, id?: number): Refusal | void {
+  const self = room.players.find((one) => one.member === member)!;
+  const player = id === undefined ? self : room.players.find((one) => one.id === id);
+  if (!player || (player !== self && (!self.host || !ghost))) return;
   if (room.dive || player.ghost === ghost) return;
   if (ghost && room.players.length - diversOf(room).length >= MAX_GHOSTS) return "ghosts-full";
   if (!ghost && diversOf(room).length >= MAX_PLAYERS) return "no-place";
   if (!ghost) player.suit = wearable(room, player.suit);
   player.ghost = ghost;
   player.ready = false;
-  log(room, player, ghost ? "became a ghost" : "became a diver");
+  log(room, player, !ghost ? "became a diver" : player === self ? "became a ghost" : "was made a ghost");
   tell(room);
 }
 
@@ -395,7 +400,7 @@ export async function receive(member: Member, text: string) {
   else if (message?.type === "remove" && room) remove(member, room, message.id, message.ban === true);
   else if (message?.type === "mute" && room) mute(member, room, message.id, message.muted === true);
   else if (message?.type === "chat" && room) refuse(chat(member, room, message.text));
-  else if (message?.type === "ghost" && room) refuse(haunt(member, room, message.ghost === true));
+  else if (message?.type === "ghost" && room) refuse(haunt(member, room, message.ghost === true, message.id));
   else if ((message?.type === "typing" || message?.type === "answer" || message?.type === "out") && room?.dive) {
     const id = room.players.find((player) => player.member === member)!.id;
     if (message.type === "typing") room.dive.type(id, message.text);
