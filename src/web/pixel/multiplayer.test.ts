@@ -110,3 +110,26 @@ test("the host passes the crown only on a second press, and moving away takes th
   crown().press();
   expect(sent).toEqual([{ type: "host", id: 1 }]);
 });
+
+test("a diver whose turn put them out of the dive is seen dying through the verdict, then is out", () => {
+  const panel = new MultiplayerPanel(ui, {} as AccountPanel, sound);
+  panel.client.send = () => {};
+  const hear = (view: RoomView) => {
+    panel.client.view = view;
+    panel["hear"]({ type: "room", room: view });
+  };
+  const ending = { ...dive(0), running: false, verdict: { answer: null, rarity: 0 } };
+  ending.divers = ending.divers.map((diver) => (diver.id === 0 ? { ...diver, hearts: 0, out: true } : diver));
+  ending.order = [1];
+
+  hear(room(ending));
+  const ana = () => panel.crew()!.find((diver) => diver.name === "ana")!;
+  expect(ana()).toMatchObject({ dying: 0, out: false, focus: true });
+  const now = performance.now() / 1000;
+  panel.game(now);
+  panel.game(now + 2);
+  expect(ana().dying).toBeCloseTo(2);
+
+  hear(room({ ...ending, turn: 1, verdict: null }));
+  expect(ana()).toMatchObject({ dying: undefined, out: true, focus: false });
+});

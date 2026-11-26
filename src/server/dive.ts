@@ -1,4 +1,4 @@
-import { DROP_SECONDS, GRACE_SECONDS, MAX_HEARTS, PAUSE_SECONDS, START_HEARTS, type DiveView, type DiverView, type Finish, type Mode, type Said } from "../shared/room";
+import { DEATH_SECONDS, DROP_SECONDS, GRACE_SECONDS, MAX_HEARTS, PAUSE_SECONDS, START_HEARTS, type DiveView, type DiverView, type Finish, type Mode, type Said } from "../shared/room";
 import { MAX_ANSWER_LENGTH, METERS_PER_POINT, type GamePrompt, type Verdict } from "../shared/types";
 import { judge, named, type PromptEntry, type PromptIndex } from "./game";
 
@@ -240,7 +240,7 @@ export class Dive {
     this.said.set(diver.id, said);
     this.verdict = verdict ?? WRONG;
     const turn = this.turns;
-    this.cancel = this.setup.clock.after(PAUSE_SECONDS * 1000, () => {
+    this.cancel = this.setup.clock.after((PAUSE_SECONDS + (diver.out ? DEATH_SECONDS : 0)) * 1000, () => {
       if (turn !== this.turns) return;
       this.queue.shift();
       this.proceed();

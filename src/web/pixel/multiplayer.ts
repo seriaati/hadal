@@ -221,10 +221,12 @@ export class MultiplayerPanel {
         const player = view.players.find((one) => one.id === diver.id);
         const turn = diver.id === dive.turn;
         const { depth, lamps } = diver;
-        // One who has just gone out is still seen through the verdict, and hauled up when the turn passes.
+        // One who has just gone out is seen dying through the verdict, and is out of sight when the turn passes.
         const out = diver.out && !turn;
+        // Before the first update of the verdict the game's time is still that of the turn.
+        const dying = diver.out && turn && dive.verdict ? (this.dive.game.phase === "verdict" ? this.dive.game.phaseTime : 0) : undefined;
         const crowned = this.crownedOf(diver.id);
-        return player ? [{ slot, suit: player.suit, name: player.nickname, lit: turn, focus: turn, depth, lamps, depthLabel: diver.id !== view.you, hearts: longest ? diver.hearts : undefined, out, host: player.host, muted: player.muted, crowned }] : [];
+        return player ? [{ slot, suit: player.suit, name: player.nickname, lit: turn, focus: turn, depth, lamps, depthLabel: diver.id !== view.you, hearts: longest ? diver.hearts : undefined, out, dying, host: player.host, muted: player.muted, crowned }] : [];
       });
       return this.place(divers);
     }
@@ -326,7 +328,7 @@ export class MultiplayerPanel {
     // The player's own diver has just gone out of a chaos dive: their screen dies as a single player's does.
     if (chaos && !this.lost && dive.verdict && dive.divers.find((diver) => diver.id === view.you)?.out) {
       // It is their turn, so theirs is the diver in focus; their lantern goes out.
-      const crew = this.crew()!.map((diver) => (diver.focus ? { ...diver, lit: false } : diver));
+      const crew = this.crew()!.map((diver) => (diver.focus ? { ...diver, lit: false, dying: undefined } : diver));
       this.lost = { at: now, game: { ...game, phase: "lost", phaseTime: 0, lamps: [...game.lamps], results: [...game.results] }, crew };
       return this.lost.game;
     }

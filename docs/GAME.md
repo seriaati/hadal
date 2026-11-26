@@ -48,7 +48,10 @@ that nobody has taken yet is refused, so no answer is given away. A room asks no
 twice until it has asked every one. While another diver answers, a player may type their own
 answer ahead, and send it when their turn comes. A diver's air runs out by their own browser's
 clock, which the server waits a moment for, so the last letters typed before it ran out still
-count. Players can also add
+count. A diver whose turn puts them out of a "longest" or "chaos" dive is seen going by everyone:
+the camera stays on them three seconds past the verdict while their last heart flickers, their
+lantern sputters out and they go limp, and they are hauled up out of sight; from then on they are
+named at the top of the screen with a dead lantern. Players can also add
 packs of their own, have Claude write one (10 to 50 prompts on a topic, with notes of their
 own, searching the web if they turn that on), and have answers a pack does not list judged
 live with their own API key. Claude writes a pack in the background, one at a time for each

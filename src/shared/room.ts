@@ -32,6 +32,8 @@ export const CHAT_EVERY = 1;
 export const DIVE_PROMPTS = 10;
 /** Seconds everyone sees a verdict before the next turn. */
 export const PAUSE_SECONDS = 2.5;
+/** Seconds longer that pause is when the turn put its diver out of the dive, for everyone to see them go. */
+export const DEATH_SECONDS = 3;
 /**
  * Seconds the server waits after a turn's air runs out. The diver's own browser counts the air
  * from when it heard of the turn, a little behind the server, and says when it ran out, with

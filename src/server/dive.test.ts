@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { BAR_FULL, DROP_SECONDS, GRACE_SECONDS, PAUSE_SECONDS, type Finish, type Mode } from "../shared/room";
+import { BAR_FULL, DEATH_SECONDS, DROP_SECONDS, GRACE_SECONDS, PAUSE_SECONDS, type Finish, type Mode } from "../shared/room";
 import type { Pack, Verdict } from "../shared/types";
 import { Dive, enoughFor, type Clock, type Live } from "./dive";
 import { buildIndex } from "./game";
@@ -253,7 +253,10 @@ test("in longest, a turn lost costs a heart, and one with none left is out and s
   await clock.pass(AIR + GRACE_SECONDS);
   expect(view().divers[0]).toMatchObject({ hearts: 0, out: true });
   expect(view().order).toEqual([2, 3]);
+  // Everyone sees them go for longer than an ordinary verdict.
   await clock.pass(PAUSE_SECONDS);
+  expect(view().turn).toBe(1);
+  await clock.pass(DEATH_SECONDS);
   expect(view().divers.map((diver) => diver.id)).toEqual([1, 2, 3]);
   expect(view().turn).not.toBe(1);
 });
@@ -321,7 +324,7 @@ test("in longest, when the prompts run out the deepest of those still in wins", 
   for (const [turn, answer] of [[2, "grey"], [3, "blue"], [1, ""]] as const) {
     if (answer) await d.answer(turn, answer);
     else await clock.pass(AIR + GRACE_SECONDS);
-    await clock.pass(PAUSE_SECONDS);
+    await clock.pass(PAUSE_SECONDS + (answer ? 0 : DEATH_SECONDS));
   }
   expect(ended[0]!.map(({ id, depth, won, place, outAt }) => ({ id, depth, won, place, outAt }))).toEqual([
     { id: 1, depth: 0, won: false, place: 3, outAt: 2 },
@@ -354,13 +357,13 @@ test("in chaos, one empty tank puts a diver out, and the last one in wins", asyn
   await clock.pass(AIR + GRACE_SECONDS);
   expect(view().divers[1]).toMatchObject({ hearts: 0, out: true });
   expect(view().order).toEqual([1, 3]);
-  await clock.pass(PAUSE_SECONDS);
+  await clock.pass(PAUSE_SECONDS + DEATH_SECONDS);
   await d.answer(3, "blue");
   await clock.pass(PAUSE_SECONDS);
   // Prompt two: 3 goes first, since 2, who would have, is out.
   await d.answer(3, "grey");
   await clock.pass(PAUSE_SECONDS);
-  await clock.pass(AIR + GRACE_SECONDS + PAUSE_SECONDS);
+  await clock.pass(AIR + GRACE_SECONDS + PAUSE_SECONDS + DEATH_SECONDS);
   expect(ended).toHaveLength(1);
   expect(ended[0]!.map(({ id, won, place, outAt }) => ({ id, won, place, outAt }))).toEqual([
     { id: 1, won: false, place: 2, outAt: 2 },

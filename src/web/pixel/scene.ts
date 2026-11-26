@@ -1,4 +1,4 @@
-import { MAX_HEARTS, MAX_PLAYERS, START_HEARTS, type Gone } from "../../shared/room";
+import { DEATH_SECONDS, MAX_HEARTS, MAX_PLAYERS, PAUSE_SECONDS, START_HEARTS, type Gone } from "../../shared/room";
 import { METERS_PER_POINT } from "../../shared/types";
 import { ZONES, formatMeters, lightOf } from "../depth";
 import { t } from "../language";
@@ -51,6 +51,8 @@ const UP = ["..6..", ".666.", "66666"];
 const DOWN = ["66666", ".666.", "..6.."];
 const HEART = ["xx.xx", "xxxxx", "xxxxx", ".xxx.", "..x.."];
 const SPENT = ["55.55", "5.5.5", "5...5", ".5.5.", "..5.."];
+/** The lantern of a diver who is out of a room's dive, after their name at the top of the screen. */
+const OUT = ["rrrrR", ".434.", "43334", ".434.", "rrrrR"];
 /**
  * The submarine of a chaos dive, bow to the right. Its warning lamps blink in two groups, "x" and "X"; the screw is
  * the first column. It holds the diver by the helmet in a clamp under its keel.
@@ -154,6 +156,8 @@ export type Crew = {
   hearts?: number;
   /** Hauled up in "longest": their line and lamps stay, and they are named at the top of the screen. */
   out?: boolean;
+  /** Their turn ended `dying` seconds ago and put them out of the dive: they are seen dying, then hauled up (see `dying`). */
+  dying?: number;
   /** Being hauled up at the end of a dive: shown exactly at `depth`, which is given afresh every frame. */
   hauled?: boolean;
   host?: boolean;
@@ -212,6 +216,23 @@ function going({ how, t }: NonNullable<Crew["going"]>, hidden: number): { dy: nu
     return { dy: -Math.round(hidden * q ** 3), dx: t < JOLT ? Math.round(Math.sin(t * 90)) : 0, fade: 0, lit: true };
   }
   return { dy: -Math.round(hidden * (t / GOING_SECONDS.left) ** 2), dx: 0, fade: 0, lit: true };
+}
+
+/** How long the last heart of a diver going out of the dive flickers, and when their lantern sputters and is out, in seconds. */
+const HEART_GONE = 1.2;
+const SPUTTER_AT = 0.5;
+const LIGHTS_OUT = 1.5;
+/**
+ * Where a diver who has gone out of a room's dive is, `t` seconds after their turn ended, and whether their lantern
+ * still burns: it sputters out, they go limp and sag on the line, and once the verdict's pause is over they are hauled
+ * slowly up, `hidden` pixels, out of sight just before the next turn. The camera stays on them throughout.
+ */
+function dying(t: number, hidden: number): { dy: number; lit: boolean; limp: boolean } {
+  const lit = t < SPUTTER_AT || (t < LIGHTS_OUT && hash(Math.floor(t * 14), 11) > (t - SPUTTER_AT) / (LIGHTS_OUT - SPUTTER_AT));
+  const sag = Math.round(2 * Math.max(0, Math.min(1, (t - LIGHTS_OUT) / 0.8)));
+  // Done a little before the next turn, which the server sends a moment after this page's clock says.
+  const q = Math.max(0, Math.min(1, (t - PAUSE_SECONDS) / (DEATH_SECONDS - 0.3)));
+  return { dy: sag - Math.round((hidden + sag) * q * q), lit, limp: t >= LIGHTS_OUT };
 }
 
 /** A diver fading into the dark: a few steps darker first, then a growing share of their pixels gone into the water. */
@@ -507,15 +528,16 @@ export class Scene {
       .map((diver) => {
         const depth = crew ? this.shown.get(diver.name)! : this.depth;
         const settled = diver.focus ? !diving : Math.abs(diver.depth - depth) <= 4;
-        const bob = settled ? Math.round(Math.sin(time * 1.3 + diver.slot * 2)) : 0;
+        const death = diver.dying !== undefined ? dying(diver.dying, screenY(rowOf(depth)) - held(game) + staggered(diver.slot) + 26 - Math.max(0, screenY(SURFACE_ROW))) : null;
+        const bob = settled && !death?.limp ? Math.round(Math.sin(time * 1.3 + diver.slot * 2)) : 0;
         const place = screenY(rowOf(depth)) + bob - held(game) + staggered(diver.slot);
         // Hauled up, a diver is out of sight once their boots are under the hull, or over the top of the screen.
         const away = diver.going ? going(diver.going, place + 26 - Math.max(0, screenY(SURFACE_ROW))) : null;
         const x = lineX(diver.slot) + (away?.dx ?? 0);
         const marks = crew ? (this.marks.get(diver.name) ?? this.marks.set(diver.name, new Map()).get(diver.name)!) : this.reached;
-        const y = place + (away?.dy ?? 0);
+        const y = place + (away?.dy ?? 0) + (death?.dy ?? 0);
         // One hauled up into the boat takes their lantern with them.
-        const lit = diver.lit && (!away || (away.lit && y + 17 > screenY(SURFACE_ROW)));
+        const lit = diver.lit && (!death || death.lit) && (!away || (away.lit && y + 17 > screenY(SURFACE_ROW)));
         return { ...diver, x, y, bob, depth, lit, fade: away?.fade ?? 0, lamps: hang(marks, diver.lamps ?? [], depth, x) };
       });
     const lamps = lines.flatMap((line) => line.lamps);
@@ -859,7 +881,8 @@ export class Scene {
       this.spoken.set(line.name, line.spoken);
     }
     this.nextBubble -= dt;
-    if (this.nextBubble <= 0 && lead) {
+    // One whose lantern has gone out in the dive breathes no more.
+    if (this.nextBubble <= 0 && lead && !(lead.dying !== undefined && lead.dying >= LIGHTS_OUT)) {
       this.nextBubble = (0.5 + Math.random() * 0.9) * (1 - 0.7 * this.panic);
       this.bubbles.push({ x: lead.x + 11 + Math.random() * 3, y: lead.y - 3, size: 1 + Math.floor(Math.random() * 3), phase: Math.random() * 6 });
     }
@@ -881,9 +904,9 @@ export class Scene {
 
     // The one in focus is drawn in front. One who is out has been hauled up.
     frame.block = 178;
-    for (const { x, y, suit, lit, called, fade, going: away } of lines.filter((line) => !line.out).sort((a, b) => Number(a.focus) - Number(b.focus))) {
+    for (const { x, y, suit, lit, called, fade, going: away, dying: dead } of lines.filter((line) => !line.out).sort((a, b) => Number(a.focus) - Number(b.focus))) {
       // One hauled up goes into the boat, under its hull.
-      const top = away && away.how !== "banned" ? surface + 1 : -Infinity;
+      const top = (away && away.how !== "banned") || dead !== undefined ? surface + 1 : -Infinity;
       const draw = (rows: string[], left: number, from: number, glow?: string) =>
         frame.sprite(faded(rows.slice(Math.max(0, top - from)), fade), left, Math.max(from, top), glow);
       draw(lit ? ["rRo"] : ["rrR"], x + 8, y - 1);
@@ -921,8 +944,13 @@ export class Scene {
         crowns.set(line.name, { x: line.x + 10 - (measure(tiny, line.name) >> 1) - 7, y: line.y - 9 });
         continue;
       }
-      const tag = line.depthLabel && !line.out ? formatMeters(line.depth) : "";
-      const hearts = line.hearts === undefined ? 0 : 2 + heartsWidth(line.hearts);
+      // One going out of the dive is not named once in the boat; with the surface out of view, they are named at the top edge.
+      if (line.dying !== undefined && surface > 0 && line.y + 6 < surface) continue;
+      // Out of the dive, a diver has a dead lantern after their name instead of hearts; their last heart flickers as they go.
+      const gone = line.out || (line.dying ?? 0) >= HEART_GONE;
+      const tag = line.depthLabel && !gone ? formatMeters(line.depth) : "";
+      const left = line.hearts !== undefined && line.dying !== undefined && !gone && Math.floor(line.dying * 8) % 2 === 0 ? line.hearts + 1 : line.hearts;
+      const hearts = gone ? 2 + OUT[0]!.length : left === undefined ? 0 : 2 + heartsWidth(left);
       const crown = line.host || line.muted ? 7 : 0;
       // While the crown flies to them it is not yet on their head; as it lands it glints.
       const flying = !!line.crowned && line.crowned.t < CROWN_SECONDS;
@@ -940,15 +968,17 @@ export class Scene {
         this.names.set(line.name, { x, y: y - 2, w: width, h: 9 });
         if (line.host && !flying) drawCrown(frame, x + 7, y, 6);
         if (line.muted) drawMuted(frame, x + 7, y, 6);
-        const end = drawText(frame, tiny, text, x + 7 + crown, y, 6);
-        if (line.hearts !== undefined) drawHearts(frame, line.hearts, end + 2, y);
+        const end = drawText(frame, tiny, text, x + 7 + crown, y, gone ? 5 : 6);
+        if (gone) frame.sprite(OUT, end + 2, y);
+        else if (left !== undefined) drawHearts(frame, left, end + 2, y);
         // What they say comes from where they are named: hanging under a name at the top, rising over one at the bottom.
         anchors.set(line.name, { cx: x + (width >> 1), y: above ? y + 7 : y - 2, down: above });
         continue;
       }
       const at = (width: number) => Math.max(2, Math.min(right - width, line.x + 10 - (width >> 1)));
       // One the top of the screen cuts through is named under the boots, as are those still held under a submarine.
-      const under = line.y < (tag ? 18 : 10) || !!sub;
+      // One going out of the dive is hauled up past the top, their name going with them.
+      const under = (line.y < (tag ? 18 : 10) && line.dying === undefined) || !!sub;
       const y = under ? line.y + 29 : line.y - 9;
       frame.emit = line.lit ? 70 : 0;
       const name = this.lobby ? clip(line.name, room - crown) : line.name;
@@ -971,7 +1001,8 @@ export class Scene {
       if (chosen) frame.emit = 70;
       const end = drawText(frame, tiny, name, x + crown, y, line.lit || chosen ? 16 : 6);
       frame.emit = 0;
-      if (line.hearts !== undefined) drawHearts(frame, line.hearts, end + 2, y);
+      if (gone) frame.sprite(OUT, end + 2, y);
+      else if (left !== undefined) drawHearts(frame, left, end + 2, y);
       if (tag) drawText(frame, tiny, tag, at(measure(tiny, tag)), under ? y + 8 : y - 8, 6);
       // Over the highest of their name, their depth and the player's own mark; over the helmet when they are named under the boots.
       anchors.set(line.name, { cx: line.x + 10, y: (under ? line.y : tag ? y - 8 : y) - (line.you && !under ? 6 : 0) - 1, down: false });
