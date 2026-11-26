@@ -138,7 +138,9 @@ view 6.
   A muted diver has a struck-through speech mark where a host's crown would be.
 - A ghost is the player's diver with the lantern out, darker and shimmering, on no line: between
   the lines on a wide screen, under the divers on a narrow one. Its name is dim and only as wide
-  as the water it has.
+  as the water it has. One who becomes a ghost lets go of their line and drifts to their place,
+  fading as they go; a ghost who becomes a diver drifts to the free line and takes it as they come
+  clear. Ghosts make room for each other the same way.
 - The host's "Start the dive", pressed while some are not ready, calls them instead of saying
   why: a ship's bell rings twice for everyone, and the lanterns of those not ready blink red
   for a few seconds, until they light them.
