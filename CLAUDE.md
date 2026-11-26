@@ -23,67 +23,41 @@ Use `bun`, not `npm`/`node`/`vite`.
 - `bun typecheck`: type-check
 - `docker compose up -d --build`: run the database and the game as in production
 - `bun tools/check.ts [--write] <pack files>`: check built-in packs and lay them out as the others
-  are; `tools/table.ts`, `tools/members.ts`, `tools/names.ts` and `tools/signals.ts` look answers
-  up on Wikipedia (see `docs/PACKS.md`); `bun tools/sources.ts [--bump] [--write]` reports what
-  the sources of time-sensitive prompts in `curation/` gained since last recorded (the server's
-  monthly update does this for the live packs)
+  are; `bun tools/sources.ts [--bump] [--write]` reports what the sources of time-sensitive
+  prompts in `curation/` gained. The Wikipedia tools are in `docs/PACKS.md` and the curate-pack
+  skill
 
-API keys: `HADAL_SECRET` in `.env` (32 characters or more, e.g. from `openssl rand -base64 32`)
-seals the keys players store. Without it the game runs but keeps no keys. `HADAL_DAILY_KEY`, the
-instance's own Anthropic key, turns on the daily dive (`src/server/daily.ts`), which developer
-mode always has, runs the monthly update of the prompts that grow (`src/server/updates.ts`; a
-server started with the key runs it at once if this month's has not run), and has Claude write
-each day's prompts the day before (`src/server/writer.ts`,
-on `HADAL_DAILY_MODEL`, `claude-opus-5-5` if unset; what each prompt cost is in `daily_prompts`).
-The writer follows `docs/PACKS.md` and the curate-pack skill: a change to either changes it too.
-The live judge never uses this key, only players' own.
+Environment, in `.env` (git-ignored, read by Bun at start-up):
 
-Developer mode: put `HADAL_DEV_MODE=1` in `.env` (git-ignored, read by Bun at start-up) and
-restart the server. The game then shows a menu of shortcuts (`src/web/devmenu.ts`): answer
-correctly in a chosen tier (in a room too, on the player's turn), run out of air, end the
-dive, summon a creature. Its "Hide" button folds it away, and the browser remembers. Developer
-mode also serves the pack review page at http://localhost:3000/dev/review, which rewrites the
-built-in packs in the local database (`src/web/review/`, served through `src/server/review.ts`).
+- `HADAL_SECRET` (32 characters or more, e.g. from `openssl rand -base64 32`) seals the API keys
+  players store. Without it the game runs but keeps no keys.
+- `HADAL_DAILY_KEY`, the instance's own Anthropic key, turns on what runs on the instance's behalf:
+  the daily dive, the prompts Claude writes for it, and the monthly update of prompts that grow
+  (`HADAL_DAILY_MODEL` picks the model). The live judge never uses it, only players' own keys.
+  What Claude is told there is read from `docs/PACKS.md` and the curate-pack skill, so a change to
+  either changes it too.
+- `HADAL_DEV_MODE=1` turns on developer mode: a menu of shortcuts in the game and the pack review
+  page at http://localhost:3000/dev/review.
 
-Admins: an account whose `admin` column is true (set by hand in the database, nowhere else) sees a
-key at the top right that opens the admin panel (`src/web/pixel/admin.ts`, in English only): it
-lists, downloads and uploads the built-in packs of each language.
+Admins: an account whose `admin` column is true (set by hand in the database, nowhere else) can
+open the admin panel, which manages the built-in packs.
 
 ## Layout
 
-- `src/server/`: `Bun.serve` entry, API routes, pack loading and answer judging, accounts and
-  sessions (`accounts.ts`), players' own packs (`custom.ts`), their API keys (`keys.ts`), packs
-  written by Claude in the background (`generate.ts`), the live judge for answers a pack does not
-  list (`live.ts`), the count of answers players give to built-in prompts (`counts.ts`), the
-  built-in packs, kept in the database and changed from the admin panel (`system.ts`), the daily
-  dive (`daily.ts`), its prompts written by Claude the day before (`writer.ts`) and brought into
-  their packs when the day is over (`absorb.ts`), the
-  multiplayer rooms, kept in memory and reached over a WebSocket
-  (`rooms.ts`), the database (`db.ts`; schema changes are numbered files in
-  `migrations/`, run at start-up, never edited once released)
+- `src/server/`: the `Bun.serve` entry, API routes and everything that runs on the server. The
+  database is `db.ts`; schema changes are numbered files in `migrations/`, run at start-up, never
+  edited once released
 - `src/web/`: the game client (served by the same Bun process). `state.ts` holds the rules of
-  a run; `sound.ts` makes every sound (there are no sound files); `pixel/` is the renderer
-  (frame buffer and soft light, the hand-built fonts and the fetched one for other scripts
-  (`other.ts`), the scene, creatures (those NekuMeow drew are sprite frames in `drawn.ts`), the
-  parts and keys every panel shares (`ui.ts`), and the settings, account and packs panels,
-  which only list what they hold, and the screen that ends a dive, `ending.ts`)
+  a run, `sound.ts` makes every sound (there are no sound files), `pixel/` is the renderer, and
+  `pixel/ui.ts` the parts and keys every panel shares
 - `src/shared/`: types and constants used by both sides, and every word the game says, one
   table per language in `words/` (`en.ts` is the model; the compiler holds the others to it)
-- `packs/` (git-ignored): a working copy of the built-in packs, a folder per language with one
-  JSON file each, in the format described under "Pack format" in `docs/GAME.md` and checked by
-  `validatePack` in `src/server/packs.ts`. The pack tools work on it, and an empty database is
-  filled from it at start-up. The packs the game plays are those in the database: a pack edited
-  here reaches it by an upload from the admin panel, and one downloaded from there is laid out
-  like these files
-- `tools/`: the pack tools, and `curation/` what they learn about each pack (git-ignored). Local
-  `.sources.json` and `.seen.json` files fill an empty database's `prompt_sources` at start-up;
-  the live sources are in the database, and a pack's sources file is uploaded from the admin panel
-- `src/server/updates.ts`: once a month (on the instance's key), reads the sources of the prompts
-  whose answers grow and has Claude add what they gained to every pack that asks the prompt; in
-  January it also moves cut-off years forward. Changes go live at once; the admin panel shows the
-  last update. `research.ts` is the Claude loop and pack tools it shares with the daily writer
-- `design/brand/`: the logo (the diver's helmet) and the link preview; `bun design/brand/render.ts`
-  draws the icons and `og-2.png` into `src/web/` (the preview needs Google Chrome)
+- `packs/` (git-ignored): a working copy of the built-in packs, a folder per language, in the
+  format of "Pack format" in `docs/GAME.md`. The game plays the packs in its database: an empty
+  database is filled from here at start-up, and after that packs move by the admin panel
+- `tools/`: the pack tools, and `curation/` what they learn about each pack (git-ignored)
+- `design/brand/`: the logo and the link preview; `bun design/brand/render.ts` draws them into
+  `src/web/` (the preview needs Google Chrome)
 
 ## Rules
 

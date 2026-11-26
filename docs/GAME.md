@@ -12,71 +12,26 @@ player types one answer.
 - **Score is depth.** The higher the score, the deeper the diver goes, through the real ocean
   zones down to the hadal zone (a perfect dive reaches 11,000 m).
 
-Prompts are grouped into themed packs. A single player dives through 10 prompts, in normal
-mode or in chaos mode (less air, and the first empty tank ends the dive), from the built-in
-packs of their language or from the packs they choose. The daily dive asks everyone the same 10
-prompts all day, one from each of 10 built-in packs, in normal mode; a day runs from midnight to
-midnight in UTC+8. Only a player's first daily dive of the day is scored (by account, or by browser
-for a guest): its depth is kept when it ends or is left, and a later one says it is not scored and
-how deep the scored one went. An instance offers it only with its own Anthropic key, with which
-Claude writes each day's prompts the day before: for each of the day's 10 packs a new prompt, in
-English and then in both Chinese, made as the built-in packs are made and unlike any the game asks,
-and accepted by a strict reviewer before its answers are written. When the day is over, each
-prompt it asked joins its pack for good, tiered by how often the day's players gave each answer.
-A pack whose prompt cannot be written gives one of its own instead, and a day that begins before
-its prompts are written picks them all from the packs at random, as developer mode always does.
-Multiplayer is private rooms joined by
-a code or a link. A player joins in the suit they chose, or in one nobody in the room wears yet if
-it is taken, and in the room may press their own diver to change it. A room holds six divers and
-up to ten ghosts besides them. Between dives a diver may become a ghost, which frees their place,
-and a ghost becomes a diver again whenever a place is free; one who finds every place taken may
-join as a ghost. Ghosts dive in none of the dives and watch them all. They talk, may be the host
-(and start dives they do not dive in), and are kicked, banned or muted like anyone. They are not
-seen in the sea: the room says how many there are, and lists them. One who becomes a ghost lets go
-of their line and fades away. A new room starts with the
-settings of the last room its host's browser set up. A player whose connection drops keeps their
-place for 30 seconds while the page connects again; if the server has restarted meanwhile (a new
-version), the room opens again under its code, without the dive that was under way. A page left
-open across a new version keeps running it, and the title offers to update. The host may pass the crown to another player, kick a player (who may
-come back with the code), ban one (until the room closes) or mute one (who still dives, but cannot
-talk until unmuted or given the crown), in the room or during a dive; one kicked or banned from a
-dive leaves it as if they had left. When the host leaves, the crown
-passes to the next player; the room closes when the last one leaves. The players can talk, 50
-characters at a time, and no chat box is shown. Tab opens it, in the room and in a dive (except
-while the player's own air runs), and types nothing, as a Chinese input method needs; before a
-dive a player may also just start typing. On a phone, their own diver opens it before a dive, and
-a speech mark at the bottom left in one. What they say rises from their helmet in a bubble over
-them and stays long enough to read, then goes; a newer bubble pushes an older one it would cover
-out of its way. One whose diver is out of view says it from where they are named at the edge of
-the screen, or, if they are not named, at the bottom left after their name (in the room, where
-the words lie at the bottom, at the top left). Screen readers read
-out what the others say. Nothing said is kept, and in a dive what names an answer to the prompt
-that nobody has taken yet is refused, so no answer is given away. A room asks no prompt
-twice until it has asked every one. While another diver answers, a player may type their own
-answer ahead, and send it when their turn comes. A diver's air runs out by their own browser's
-clock, which the server waits a moment for, so the last letters typed before it ran out still
-count. A diver whose turn puts them out of a "longest" or "chaos" dive is seen going by everyone:
-the camera stays on them three seconds past the verdict while their last heart flickers, their
-lantern sputters out and they go limp, and they are hauled up out of sight; from then on they are
-named at the top of the screen with a dead lantern. Players can also add
-packs of their own, have Claude write one (10 to 50 prompts on a topic, with notes of their
-own, searching the web if they turn that on), and have answers a pack does not list judged
-live with their own API key. Claude writes a pack in the background, one at a time for each
-player: first its name and prompts, then each prompt's answers, which may run to thousands.
-The game may be closed meanwhile, and a server that restarts goes on where it stood; the pack
-appears among the player's when it is done. Before it begins, the player is told roughly what it
-may cost their key, and while it goes on, what it has cost so far. The game counts the answers
-players give to built-in prompts, right or wrong, tied to nobody, to measure how rare each
-really is and to find the right ones a pack misses (see `docs/PACKS.md`).
+Prompts are grouped into themed packs. A single player dives through 10 prompts from the
+built-in packs of their language or from packs they choose, in normal mode or in chaos mode (less
+air, and the first empty tank ends the dive). The daily dive asks everyone the same 10 prompts for
+a day, written by Claude the day before, and only a player's first daily dive of the day is scored.
+
+Multiplayer is private rooms joined by a code or a link. The divers take turns on the same prompts,
+and others may join as ghosts who watch without diving. The host runs the room and may pass the
+crown, kick, ban or mute. Players can talk, in bubbles over their divers, but nothing said may give
+away an answer nobody has taken yet.
+
+Players can also add packs of their own, have Claude write one in the background, and have answers
+a pack does not list judged live, all with their own API key. The game counts the answers players
+give to built-in prompts, tied to nobody, to measure how rare each really is (see `docs/PACKS.md`).
 
 The game speaks English, Simplified Chinese and Traditional Chinese (as written in Taiwan). It
 starts in the browser's language, and the settings change it; Claude writes a player's packs in
 their language. Each language has built-in packs of its own: the Chinese ones are the English
 packs translated, and their answers also take the English names. Where a prompt is about Chinese
 works that English speakers seldom know (the classic novels), the English pack asks another
-instead; the traditional ones use
-Taiwan's names and also take the mainland's. A room starts with the packs of its host's
-language, and the host may add any others. An answer may be typed in either simplified or
+instead; the traditional ones use Taiwan's names and also take the mainland's. An answer may be typed in either simplified or
 traditional characters: 關 and 关 are the same answer.
 
 ## The look
@@ -85,22 +40,15 @@ traditional characters: 關 and 关 are the same answer.
   at every prompt. A correct answer lights the lamp, brighter the rarer it was; a wrong one
   leaves a dead lamp. One low-resolution pixel grid, a 22-colour palette, hand-built bitmap
   fonts (Chinese and other scripts in half pixels of the grid, so dense characters stay readable),
-  and soft light laid over the crisp pixels. The settings set how finely the light is
-  drawn (Glow: High, Medium, Low), for slower devices; Auto, the default, starts at High and
-  steps down while frames come too slowly. Low keeps the lamps' light but drops the bloom.
+  and soft light laid over the crisp pixels, drawn more coarsely on slower devices.
 - **Subtle deep-sea horror.** The sea is dark, lonely and lit only by the diver's lamps and
   by things that glow. Unsettling creatures appear in the deep: they are scenery, never
   harm the diver and never affect the score. The unease is the player's own. Once in every
-  chaos dive, and only there (never for one who only watches a room's dive), a giant anglerfish
-  comes straight at the diver, bloodied: first
-  only its red lure, a light growing out of the dark, then its face, its eyes and its mouth,
-  wide open round the diver. The screen cuts to dark; after a moment its face slams back at
-  the screen as its jaws shut, then the dark lifts and the dive goes on.
-  Chaos mode warns of its minor horror.
-- **Gentler life at its own depths.** Five creatures drawn by NekuMeow swim past, one at a
-  time, each where the water matches the one it was drawn on: a blue dragon and a sea angel
-  near the surface, a nautilus in the twilight, a squid in the deep and a dumbo octopus in
-  the abyss. Flat blocks of colour (a body, a shadow, a lit upper edge), tentacles that sway.
+  chaos dive a giant anglerfish lunges at the diver and seems to swallow them, then the dive goes
+  on. Chaos mode warns of its minor horror.
+- **Gentler life at its own depths.** Creatures drawn by NekuMeow swim past, one at a time,
+  each where the water matches the one it was drawn on. Flat blocks of colour (a body, a
+  shadow, a lit upper edge), tentacles that sway.
 - **Clean screen.** Only what matters is shown: the prompt, the air left, what is being
   typed, the verdict, the depth. Anything else earns its place or lives in the world.
 - **Quiet sound.** Sparse ambience, small effects and music made up as it plays, all in one
@@ -136,15 +84,10 @@ own pack, and a built-in pack an admin uploads.
 - Ids are lower-case letters and digits joined by hyphens, at most 40 characters. A prompt's
   id is unique within its pack. A built-in pack's id is unique across every language, and in a
   working copy it is the file's name: the packs of a language are in `packs/<language>/`
-  (`packs/en/`, `packs/zh-CN/`, `packs/zh-TW/`). A built-in pack is uploaded into the language
-  chosen in the admin panel; one with the id of a pack already there replaces it, and the old
-  version is kept in the database. An upload that would remove prompts the pack has (added since
-  the copy was downloaded) asks first.
+  (`packs/en/`, `packs/zh-CN/`, `packs/zh-TW/`).
 - The name is at most 24 characters and a prompt's text at most 80.
 - A prompt has at least two answers. An answer's tier is "common" (what nearly everyone says
-  first), "familiar", "uncommon", "rare" or "gem", and every prompt has at least one gem. A
-  pack written with a rarity from 1 to 100 instead was moved to tiers once: up to 20 common, to
-  40 familiar, to 60 uncommon, below 100 rare, and 100 gem.
+  first), "familiar", "uncommon", "rare" or "gem", and every prompt has at least one gem.
 - Every spelling (the text and each alias) is at most 40 characters, has at least one letter
   or digit, and matches no other spelling of the prompt (spellings that differ only in simplified
   and traditional characters match).

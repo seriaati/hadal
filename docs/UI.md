@@ -11,9 +11,9 @@ around darkens towards them over a wide, dithered fade, so the two meet without 
 Nothing is framed and the sea is not dimmed: the game goes on in full view.
 
 - On a wide screen (300 game pixels or more) the words take the column to the right of the
-  diver. On a narrow one they lie under the diver, across the whole width. In a room before a
-  dive, every diver hangs along the boat and the words lie in a dock across the foot of the
-  screen, as low as they fit: a deeper step grows it upwards, never over the divers.
+  diver. On a narrow one they lie under the diver, across the whole width. Where other divers
+  hang in view (a room before a dive), the words lie in a dock across the foot of the screen and
+  never grow over the divers.
 - The words never cover the diver or the lantern. A step too long for its room scrolls under
   its name, and a thin bar at the right edge shows how far. What acts on a list (its lines,
   such as "Add a pack" and "Write a pack") stands at the step's foot: when the step scrolls,
@@ -29,14 +29,14 @@ Every panel is built from these, and each has one look.
 
 | Part | What it is | Look |
 |---|---|---|
-| Step | One screen of a panel | Its name at the top in dim letters, with a `‹` before it. Under the pointer the `‹` and the name light up like a line in focus, since a press there goes back. A step that leaves something (a room) has an exit mark in place of the `‹`, and its name says so ("Leave"). A room's step has its code against the right edge, in pale letters, since it is read out to others; a press on the code copies the room's link, it lights up the same way, and it says the link was copied for a moment |
+| Step | One screen of a panel | Its name at the top in dim letters, with a `‹` before it. Under the pointer the `‹` and the name light up like a line in focus, since a press there goes back. A step that leaves something (a room) has an exit mark in place of the `‹`, and its name says so ("Leave") |
 | Line | Anything pressed: a row of a list, a button, a link | Pale words. A lesser line beside another ("Download", "Remove") is dim; two of them stand side by side against the right edge |
 | Field | A line of typing | Its label in dim letters, the typing under it, a rule under that |
-| Slider | A level from 0 to 1 | Its label, and 20 pips at the right of the line, like the air gauge. It may have fewer steps (the air of a room: 12, with "30 s" after the pips), or be a choice of colours, one pip of each (a suit). On a touch screen a level is a counter instead: a minus, the level ("50%", "30 s") and a plus |
+| Slider | A level from 0 to 1 | Its label, and 20 pips at the right of the line, like the air gauge. It may have fewer steps, with its value after the pips, or be a choice of colours, one pip of each. On a touch screen a level is a counter instead: a minus, the level ("50%", "30 s") and a plus |
 | Setting | A line that stands for a choice | Its label, and the choice against the right edge ("Deepest", "built-in + 2"), with a pip before it if it is on or off. Left and Right change it, like a slider; Enter flips an on or off one |
 | Action | The one thing a step is for (lighting the lantern in a room, starting the dive) | The larger letters, in amber, in the middle of its row, after an icon if it has one. Dim while it cannot be done yet, though it may still be pressed to hear why. The focus lands on it when its step opens |
 | Summary | Facts read together, such as how a room is set up | Pale facts with a dim `~` between them, wrapped only between facts. A fact that has just changed glows amber. Where it can be changed it is pressed like a line, with a dim word at the right edge ("Change") |
-| Diver | One of the people in a room, pressed where they hang in the sea | Drawn by the sea, not the panel. A diver is pressed on their name or on themselves. A player's own diver opens their suit and "Say something", with "Tab" at its right where there are keys (Tab opens the chat there too); to the host every other diver opens what the host can do to them. To the others another diver is only seen, and the focus passes over them. The divers are a row over the panel's: Up from its first row reaches them. In a dive the host presses another diver's name to open the same. Ghosts are not in the sea: the room's "Ghosts" line lists them, and there the host presses one to open the same |
+| Diver | One of the people in a room, pressed where they hang in the sea | Drawn by the sea, not the panel, and pressed on their name or on themselves. A diver with nothing to open for the player is only seen, and the focus passes over them. The divers are a row over the panel's: Up from its first row reaches them |
 | Message | Words that are only read | Dim words, wrapped |
 | Wait | Something that takes long | Words, then one pip per piece of the work, then "prompt 4 of 10". Past 10 pieces a pip stands for a tenth of the work |
 
@@ -49,7 +49,7 @@ a row.
 |---|---|
 | At rest | As above |
 | In focus | An amber mark `▸` before it, and its words turn cream and glow a little. A field's rule turns amber and its caret blinks; letters selected in it (Ctrl+A, Shift and an arrow) stand on a band of colour 5 and the caret is hidden, as in the answer and what is said. A slider's lit pips turn amber |
-| Under the pointer | The same as in focus: moving the pointer over a thing gives it the focus, so there is never a second highlight. Moving it off onto nothing takes the focus away, and nothing is lit until the pointer is over a thing again or a key that moves lights that line again (owner, 2026-11-21). A field is the one exception: it takes the focus, and its caret, only when it is clicked or reached by the keys (owner, 2026-11-18, after play) |
+| Under the pointer | The same as in focus: moving the pointer over a thing gives it the focus, so there is never a second highlight. Moving it off onto nothing takes the focus away, and nothing is lit until the pointer is over a thing again or a key that moves lights that line again. A field is the one exception: it takes the focus, and its caret, only when it is clicked or reached by the keys |
 | Pressed | Nothing of its own: a press acts at once |
 | Busy | The line that was pressed keeps the look of the focus, wherever the focus goes, and dots after its words fill one by one. Presses wait until the answer has come. A panel that leads into a dive stays until the dive has begun |
 | About to destroy | The line's words turn rose and ask "Sure?" (the step's name, when it was the `‹` that was pressed) |
@@ -67,14 +67,14 @@ The same in every panel.
 |---|---|
 | Up, Down | Move to the row above or below, to the thing nearest in line. From the last row Down goes to the first |
 | Left, Right | Move between things on one row. From the leftmost line of a row, Left goes one step back. On a slider, change it one step (5%). In a field, move the caret |
-| Tab, Shift+Tab | The next or the previous thing in reading order, round and round inside the panel. In a room, Tab opens what the player says instead (see Typing), as it does in a dive (owner, 2026-11-21); Shift+Tab and the arrows still move |
+| Tab, Shift+Tab | The next or the previous thing in reading order, round and round inside the panel. Where the player can talk, Tab opens what they say instead (see Typing); Shift+Tab and the arrows still move |
 | Enter | Press what has the focus. In a field: go to the next field, or press the first line after the last one |
-| Space | Nothing, outside a field, where it is typed: only Enter presses (owner, 2026-11-21) |
-| Typing | What the player says to a room, in a bubble over their own diver, edged in amber while it is typed. Tab opens it with nothing typed, in the room and in a dive while it is not the player's turn: an input method (Chinese) composes only into a field that already has the focus. In the room, with no field in focus, a letter or `/` opens it too, and a key an input method takes first opens it and is lost; in a dive letters type the answer, and "/" may be in one. Enter sends it, Escape takes it back (not a step back), Tab goes back with it kept, and the focus returns where it was; while it is open the pointer lights nothing, and only a click on another thing closes it (owner, 2026-11-21); the player's turn closes it the same way. No key moves to it, and nothing of it is drawn until it is typed. A phone opens it from the player's own diver, and in a dive from a speech mark at the bottom left, lit while it is open. What would give away an answer is refused in a rose bubble in its place. A screen reader is told what the others say |
+| Space | Nothing, outside a field, where it is typed: only Enter presses |
+| Typing | What the player says, in a bubble over their own diver, edged in amber while it is typed. Tab opens it with nothing typed, since an input method (Chinese) composes only into a field that already has the focus; where no field is in focus and letters type nothing else, a letter opens it too. Enter sends it, Escape takes it back (not a step back), Tab goes back with it kept, and the focus returns where it was. No key moves to it, and nothing of it is drawn until it is typed. A screen reader is told what the others say |
 | Escape | One step back. With nothing open: at the title it opens the settings, in a dive it asks whether to leave the dive |
-| Pointer | Moving over a thing gives it the focus; a click presses it. A click on the `‹` goes one step back; a click on nothing does nothing (owner, 2026-11-21). The title menu's lines are chosen and let go the same way. On a slider, a press on a pip sets the level there, a click on the label sets it to the lowest (owner, 2026-11-20) or, on a choice of colours, to the next, round to the first (owner, 2026-11-21), and a drag anywhere along the row moves it a step for each pip it passes |
+| Pointer | Moving over a thing gives it the focus; a click presses it. A click on the `‹` goes one step back; a click on nothing does nothing. On a slider, a press on a pip sets the level there, and a drag anywhere along the row moves it a step for each pip it passes |
 | Wheel | Scrolls a step too long for its room |
-| Touch | A tap presses, a drag scrolls. On a counter, a tap on the minus or the plus moves it one step. The `‹` goes back. In a dive a tap anywhere opens the keyboard, and after a verdict it goes on, like Enter (a tap, not a mouse click) |
+| Touch | A tap presses, a drag scrolls. On a counter, a tap on the minus or the plus moves it one step. The `‹` goes back |
 
 - **Back** is always one step: from "Write a pack" to the list, from the list to the title.
   Escape, Left from the leftmost line and the `‹` all mean it.
@@ -84,28 +84,22 @@ The same in every panel.
   on the line that opened it. After something is added, on the new thing. After something is
   removed, on what took its place.
 - **W, A, S and D** are the arrows too (by where they sit, so ZQSD on AZERTY), at the title,
-  in every panel and on the screen that ends a dive. Not in a field, where they are typed, nor
-  in a room, where a letter opens what the player says.
+  in every panel and on the screen that ends a dive. Not where they are typed.
 - **Fields and arrows.** Because a field is alone on its row, Up and Down always leave it and
   Left and Right always belong to its caret. There is no editing mode.
-- **Removing**, and passing a room's crown, take two presses: the line turns into "Sure?", and
-  moving the focus away takes the question back. There is never a hold.
+- **Removing**, and anything else hard to undo (passing a room's crown, leaving a room), takes
+  two presses: the line turns into "Sure?", and moving the focus away takes the question back.
+  There is never a hold.
 - **Nothing jumps.** While a step is open, the line in focus stays where it is when the step
   changes (a message, a player joining), and the step moves, or scrolls, around it as far as
   the screen allows. Words said under a line keep their room after they go until the step closes, so a
   message that comes and goes moves nothing. This holds for every panel, without its own code.
 - **Scrolling.** A thing the keys give the focus to is scrolled into view. One the pointer
   gives it to is under the pointer already, and nothing moves.
-- **Leaving a room** asks the same way: every way out (Escape, Left, a press on "Leave") first turns "Leave" into a rose "Sure?" and puts the focus on it. A
-  second way out leaves.
 - **The cursor is a hand** over everything that can be pressed: the title menu's lines, the
   icons at the top right, and every line, field and slider of a panel.
-- **The icons at the top right** stand in a row with the cog always rightmost: [update][admin][cog].
-  An admin has a key at the cog's left, at the title and not in a room, that opens the admin
-  panel; its words are English in every language, the one panel that does not follow the
-  player's (owner, 2026-11-24). When a newer version is out, an amber turning arrow at the far
-  left reloads the game; it shows only at the title, where no dive is lost. The icons stand clear of
-  the frame's edges, and the one under the mouse turns cream and glows, as a line in focus does.
+- **The icons at the top right** stand in a row with the cog always rightmost. The one under
+  the mouse turns cream and glows, as a line in focus does.
 - **No key hints are drawn.** The keys are the ones every game uses.
 - **Nothing waits for an animation.** A panel is there on the frame its key is pressed.
 
@@ -132,15 +126,8 @@ view 6.
 
 - Sound and light answer for the interface where they can: a slider's step is heard at its
   new level.
-- What happens to the people of a room is seen in the sea. One who leaves is hauled up their line
-  into the boat; one removed is jolted and yanked up; one banned has their line snap and sinks
-  into the dark. The crown flies from the old host's name to the new one's and glints there.
-  A muted diver has a struck-through speech mark where a host's crown would be.
-- One who becomes a ghost has their lantern go out, lets go of their line and turns into a
-  shimmering ghost as they drift off it, then fades away; ghosts are not seen in the sea.
-- The host's "Start the dive", pressed while some are not ready, calls them instead of saying
-  why: a ship's bell rings twice for everyone, and the lanterns of those not ready blink red
-  for a few seconds, until they light them.
+- What happens to the people of a room (leaving, being removed, the crown passing) is seen in
+  the sea, not said in words.
 
 ## Wording
 
