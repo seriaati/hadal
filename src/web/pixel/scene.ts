@@ -677,10 +677,12 @@ export class Scene {
     }
 
     this.ambient.chaos = game.chaos;
-    this.ambient.diving = game.phase === "ask" || game.phase === "verdict";
+    // The giant anglerfish comes only for one who is diving, never for one who watches a room's dive.
+    const watching = !!this.turn?.watcher;
+    this.ambient.diving = (game.phase === "ask" || game.phase === "verdict") && !watching;
     this.ambient.focus = this.focus;
-    // Back on the title screen, the giant anglerfish of a dive that was left is gone.
-    if (game.phase === "title") this.ambient.creatures = this.ambient.creatures.filter((creature) => creature.kind !== "leviathan");
+    // Back on the title screen, or once the player only watches, the giant anglerfish of a dive that was left is gone.
+    if (game.phase === "title" || watching) this.ambient.creatures = this.ambient.creatures.filter((creature) => creature.kind !== "leviathan");
     this.ambient.update(dt, this.depth, scroll, W, H, surface + 1);
     frame.hushed = behindWords;
     this.ambient.draw(frame, water, time, lights, behindWords);
