@@ -1,8 +1,7 @@
 # Hadal
 
 Sea-themed web trivia game: rarer correct answers score higher and take the player deeper.
-Read `docs/GAME.md` first. It holds the game's idea, its look and the pack format. Keep it up
-to date when one of those changes.
+Read `docs/GAME.md` first. It holds the game's idea, its look and the pack format.
 `docs/UI.md` is the design system of the interface: the parts a panel is built from, their
 states, and what every key does. Read it before touching a panel.
 `docs/PACKS.md` is how to write good packs: prompts, answer lists, tiers and how rarity is
@@ -101,3 +100,6 @@ lists, downloads and uploads the built-in packs of each language.
 - Creatures are scenery. They never harm the diver or affect the score (the giant anglerfish
   only seems to swallow them).
 - In development the game is reachable from the browser console as `window.hadal`.
+- This file, `docs/` and the skills are guidelines, not a record of what the game does; the code
+  and the git log are that. Most changes leave them alone. Change one only when a rule in it stops
+  being true or future work needs a new rule, never to describe a new feature, screen or setting.
