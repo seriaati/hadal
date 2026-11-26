@@ -728,10 +728,6 @@ export class Scene {
     }
 
     const boundaries = ZONES.map((from, i) => ({ from, name: t().dive.zones[i]!.short, y: screenY(rowOf(from)) })).slice(1);
-    for (const { y } of boundaries) {
-      if (y < 0 || y >= H) continue;
-      for (let x = 0; x < W; x++) if (x % 5 !== 2 && x % 5 !== 4 && !behindWords(x, y)) frame.put(x, y, x % 5 < 2 ? 5 : 3);
-    }
 
     // The sea behind an open panel's words goes two shades darker, with all that swims in it, and darkens towards them
     // around their box, so the two meet without an edge. As the box grows or shrinks, the darkening around it follows.
